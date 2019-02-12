@@ -181,7 +181,136 @@ void* PictureManagerKernel(void *input_ptr)
                 picture_control_set_ptr = (PictureParentControlSet_t*)queueEntryPtr->parentPcsWrapperPtr->objectPtr;
 
                 predPositionPtr = picture_control_set_ptr->pred_struct_ptr->predStructEntryPtrArray[picture_control_set_ptr->pred_struct_index];
+#if NEW_PRED
+                // If there was a change in the number of temporal layers, then cleanup the Reference Queue's Dependent Counts
+                if (picture_control_set_ptr->hierarchical_layers_diff != 0) {
 
+                    // Dynamic GOP
+                    PredictionStructure_t          *nextPredStructPtr;
+                    PredictionStructureEntry_t     *nextBaseLayerPredPositionPtr;
+                    
+                    uint32_t                        dependantListPositiveEntries;
+                    uint32_t                        dependantListRemovedEntries;
+
+                    referenceQueueIndex = encode_context_ptr->reference_picture_queue_head_index;
+
+                    while (referenceQueueIndex != encode_context_ptr->reference_picture_queue_tail_index) {
+
+                        referenceEntryPtr = encode_context_ptr->reference_picture_queue[referenceQueueIndex];
+
+                        if (referenceEntryPtr->picture_number == (picture_control_set_ptr->picture_number - 1)) { // Picture where the change happened 
+
+                            // Get the prediction struct entry of the next GOP structure
+                            nextPredStructPtr = GetPredictionStructure(
+                                encode_context_ptr->prediction_structure_group_ptr,
+                                picture_control_set_ptr->pred_structure,
+                                1,
+                                picture_control_set_ptr->hierarchical_levels);
+
+                            // Get the prediction struct of a picture in temporal layer 0 (from the new GOP structure)
+                            nextBaseLayerPredPositionPtr = nextPredStructPtr->predStructEntryPtrArray[nextPredStructPtr->predStructEntryCount - 1];
+
+
+                            // Remove all positive entries from the dependant lists
+                            dependantListPositiveEntries = 0;
+                            for (depIdx = 0; depIdx < referenceEntryPtr->list0.listCount; ++depIdx) {
+                                if (referenceEntryPtr->list0.list[depIdx] >= 0) {
+                                    dependantListPositiveEntries++;
+                                }
+                            }
+                            referenceEntryPtr->list0.listCount = referenceEntryPtr->list0.listCount - dependantListPositiveEntries;
+
+                            dependantListPositiveEntries = 0;
+                            for (depIdx = 0; depIdx < referenceEntryPtr->list1.listCount; ++depIdx) {
+                                if (referenceEntryPtr->list1.list[depIdx] >= 0) {
+                                    dependantListPositiveEntries++;
+                                }
+                            }
+                            referenceEntryPtr->list1.listCount = referenceEntryPtr->list1.listCount - dependantListPositiveEntries;
+
+                            for (depIdx = 0; depIdx < nextBaseLayerPredPositionPtr->depList0.listCount; ++depIdx) {
+                                if (nextBaseLayerPredPositionPtr->depList0.list[depIdx] >= 0) {
+                                    referenceEntryPtr->list0.list[referenceEntryPtr->list0.listCount++] = nextBaseLayerPredPositionPtr->depList0.list[depIdx];
+                                }
+                            }
+
+
+                            for (depIdx = 0; depIdx < nextBaseLayerPredPositionPtr->depList1.listCount; ++depIdx) {
+                                if (nextBaseLayerPredPositionPtr->depList1.list[depIdx] >= 0) {
+                                    referenceEntryPtr->list1.list[referenceEntryPtr->list1.listCount++] = nextBaseLayerPredPositionPtr->depList1.list[depIdx];
+                                }
+                            }
+
+                            // Update the dependant count update
+                            dependantListRemovedEntries = referenceEntryPtr->depList0Count + referenceEntryPtr->depList1Count - referenceEntryPtr->dependentCount;
+
+                            referenceEntryPtr->depList0Count = referenceEntryPtr->list0.listCount;
+                            referenceEntryPtr->depList1Count = referenceEntryPtr->list1.listCount;
+                            referenceEntryPtr->dependentCount = referenceEntryPtr->depList0Count + referenceEntryPtr->depList1Count - dependantListRemovedEntries;
+
+                        }
+                        else {
+
+                            // Modify Dependent List0
+                            depListCount = referenceEntryPtr->list0.listCount;
+                            for (depIdx = 0; depIdx < depListCount; ++depIdx) {
+
+
+                                // Adjust the latest currentInputPoc in case we're in a POC rollover scenario 
+                                // currentInputPoc += (currentInputPoc < referenceEntryPtr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
+
+                                depPoc = POC_CIRCULAR_ADD(
+                                    referenceEntryPtr->picture_number, // can't use a value that gets reset
+                                    referenceEntryPtr->list0.list[depIdx]/*,
+                                    sequence_control_set_ptr->bitsForPictureOrderCount*/);
+
+                                    // If Dependent POC is greater or equal to the IDR POC
+                                if (depPoc >= picture_control_set_ptr->picture_number && referenceEntryPtr->list0.list[depIdx]) {
+
+                                    referenceEntryPtr->list0.list[depIdx] = 0;
+
+                                    // Decrement the Reference's referenceCount
+                                    --referenceEntryPtr->dependentCount;
+
+                                    CHECK_REPORT_ERROR(
+                                        (referenceEntryPtr->dependentCount != ~0u),
+                                        encode_context_ptr->app_callback_ptr,
+                                        EB_ENC_PD_ERROR3);
+                                }
+                            }
+
+                            // Modify Dependent List1
+                            depListCount = referenceEntryPtr->list1.listCount;
+                            for (depIdx = 0; depIdx < depListCount; ++depIdx) {
+
+                                // Adjust the latest currentInputPoc in case we're in a POC rollover scenario 
+                                // currentInputPoc += (currentInputPoc < referenceEntryPtr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
+
+                                depPoc = POC_CIRCULAR_ADD(
+                                    referenceEntryPtr->picture_number,
+                                    referenceEntryPtr->list1.list[depIdx]/*,
+                                    sequence_control_set_ptr->bitsForPictureOrderCount*/);
+
+                                    // If Dependent POC is greater or equal to the IDR POC
+                                if ((depPoc >= picture_control_set_ptr->picture_number) && referenceEntryPtr->list1.list[depIdx]) {
+                                    referenceEntryPtr->list1.list[depIdx] = 0;
+
+                                    // Decrement the Reference's referenceCount
+                                    --referenceEntryPtr->dependentCount;
+
+                                    CHECK_REPORT_ERROR(
+                                        (referenceEntryPtr->dependentCount != ~0u),
+                                        encode_context_ptr->app_callback_ptr,
+                                        EB_ENC_PD_ERROR3);
+                                }
+                            }
+                        }
+
+                        // Increment the referenceQueueIndex Iterator
+                        referenceQueueIndex = (referenceQueueIndex == REFERENCE_QUEUE_MAX_DEPTH - 1) ? 0 : referenceQueueIndex + 1;
+                    }
+                }
+#endif
                 // If there was an I-frame or Scene Change, then cleanup the Reference Queue's Dependent Counts
                 if (picture_control_set_ptr->slice_type == I_SLICE)
                 {

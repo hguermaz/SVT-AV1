@@ -300,6 +300,576 @@ EbErrorType ReleasePrevPictureFromReorderQueue(
 
     return return_error;
 }
+#if NEW_PRED
+
+/***************************************************************************************************
+* Initializes mini GOP activity array
+*
+***************************************************************************************************/
+EbErrorType InitializeMiniGopActivityArray(
+    PictureDecisionContext_t        *context_ptr) {
+
+    EbErrorType return_error = EB_ErrorNone;
+
+    uint32_t miniGopIndex;
+
+    // Loop over all mini GOPs
+    for (miniGopIndex = 0; miniGopIndex < MINI_GOP_MAX_COUNT; ++miniGopIndex) {
+
+        context_ptr->miniGopActivityArray[miniGopIndex] = (GetMiniGopStats(miniGopIndex)->hierarchical_levels == MIN_HIERARCHICAL_LEVEL) ?
+            EB_FALSE :
+            EB_TRUE;
+
+    }
+
+    return return_error;
+}
+#if 0
+/***************************************************************************************************
+* Derives each mini GOP activity using Region Activity
+*
+***************************************************************************************************/
+EbBool IsMiniGopActive(
+    SequenceControlSet_t            *sequence_control_set_ptr,
+    PictureDecisionContext_t        *context_ptr,
+    uint32_t							 miniGopIndex,
+    uint32_t						     interLayerCostTh) {
+
+    uint32_t	regionInPictureWidthIndex;
+    uint32_t	regionInPictureHeightIndex;
+
+    for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerWidth; regionInPictureWidthIndex++) {  // loop over horizontal regions
+        for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerHeight; regionInPictureHeightIndex++) { // loop over vertical regions
+            if (context_ptr->miniGopRegionActivityCostArray[miniGopIndex][regionInPictureWidthIndex][regionInPictureHeightIndex] > interLayerCostTh) {
+                return EB_TRUE;
+            }
+        }
+    }
+
+    return EB_FALSE;
+
+}
+
+/***************************************************************************************************
+* Computes each mini GOP cost & performs the inter layer decision
+*
+***************************************************************************************************/
+EbErrorType InterLayerDecision(
+
+    SequenceControlSet_t            *sequence_control_set_ptr,
+    PictureDecisionContext_t        *context_ptr,
+    EncodeContext_t                 *encode_context_ptr) {
+
+    EbErrorType return_error = EB_ErrorNone;
+
+    PictureParentControlSet_t	*picture_control_set_ptr;
+    uint32_t						 pictureIndex;
+    uint32_t						 regionInPictureWidthIndex;
+    uint32_t						 regionInPictureHeightIndex;
+    uint32_t						 miniGopIndex;
+    uint32_t						 l6vsL5CostTh;
+    uint32_t						 l5vsL4CostTh;
+    uint32_t						 l4vsL3CostTh;
+
+    l6vsL5CostTh = DYNAMIC_GOP_ABOVE_1080P_L6_VS_L5_COST_TH;
+    l5vsL4CostTh = DYNAMIC_GOP_ABOVE_1080P_L5_VS_L4_COST_TH;
+    l4vsL3CostTh = DYNAMIC_GOP_ABOVE_1080P_L4_VS_L3_COST_TH;
+
+    // Loop over all mini GOPs
+    miniGopIndex = 0;
+    while (miniGopIndex < MINI_GOP_MAX_COUNT) {
+
+        // Only for a valid mini GOP
+        if (GetMiniGopStats(miniGopIndex)->endIndex < encode_context_ptr->pre_assignment_buffer_count && context_ptr->miniGopActivityArray[miniGopIndex] == EB_TRUE) {
+
+            // Initialize the mini GOP region activity cost
+            for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerWidth; regionInPictureWidthIndex++) {  // loop over horizontal regions
+                for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerHeight; regionInPictureHeightIndex++) { // loop over vertical regions
+                    context_ptr->miniGopRegionActivityCostArray[miniGopIndex][regionInPictureWidthIndex][regionInPictureHeightIndex] = 0;
+                }
+            }
+            // Initialize the mini GOP faded pictures counts
+            context_ptr->miniGopGroupFadedInPicturesCount[miniGopIndex] = 0;
+            context_ptr->miniGopGroupFadedOutPicturesCount[miniGopIndex] = 0;
+            // Loop over picture within the mini GOP
+            for (pictureIndex = GetMiniGopStats(miniGopIndex)->startIndex; pictureIndex <= GetMiniGopStats(miniGopIndex)->endIndex; pictureIndex++) {
+
+                picture_control_set_ptr = (PictureParentControlSet_t*)encode_context_ptr->pre_assignment_buffer[pictureIndex]->objectPtr;
+                for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerWidth; regionInPictureWidthIndex++) {  // loop over horizontal regions
+                    for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerHeight; regionInPictureHeightIndex++) { // loop over vertical regions
+                        context_ptr->miniGopRegionActivityCostArray[miniGopIndex][regionInPictureWidthIndex][regionInPictureHeightIndex] += picture_control_set_ptr->regionActivityCost[regionInPictureWidthIndex][regionInPictureHeightIndex];
+                    }
+                }
+
+                // Keep track of the number of faded pictures
+                context_ptr->miniGopGroupFadedInPicturesCount[miniGopIndex] = (picture_control_set_ptr->isFadedIn == EB_TRUE) ?
+                    context_ptr->miniGopGroupFadedInPicturesCount[miniGopIndex] + 1 :
+                    context_ptr->miniGopGroupFadedInPicturesCount[miniGopIndex];
+
+                context_ptr->miniGopGroupFadedOutPicturesCount[miniGopIndex] = (picture_control_set_ptr->isFadedOut == EB_TRUE) ?
+                    context_ptr->miniGopGroupFadedOutPicturesCount[miniGopIndex] + 1 :
+                    context_ptr->miniGopGroupFadedOutPicturesCount[miniGopIndex];
+
+            }
+
+            for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerWidth; regionInPictureWidthIndex++) {  // loop over horizontal regions
+                for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerHeight; regionInPictureHeightIndex++) { // loop over vertical regions
+                    context_ptr->miniGopRegionActivityCostArray[miniGopIndex][regionInPictureWidthIndex][regionInPictureHeightIndex] = context_ptr->miniGopRegionActivityCostArray[miniGopIndex][regionInPictureWidthIndex][regionInPictureHeightIndex] / GetMiniGopStats(miniGopIndex)->lenght;
+                }
+            }
+
+#if 0 // Dynamic GOP Testing		
+            for (regionInPictureWidthIndex = 0; regionInPictureWidthIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerWidth; regionInPictureWidthIndex++) {  // loop over horizontal regions
+                for (regionInPictureHeightIndex = 0; regionInPictureHeightIndex < sequence_control_set_ptr->pictureAnalysisNumberOfRegionsPerHeight; regionInPictureHeightIndex++) { // loop over vertical regions
+
+                    printf("\n --> POC = %d \t (%d,%d) \t miniGopIndex = %d \t MINI Gop Activity = %d",
+                        ((PictureParentControlSet_t*)encode_context_ptr->pre_assignment_buffer[0]->objectPtr)->picture_number,
+                        regionInPictureHeightIndex,
+                        regionInPictureWidthIndex,
+                        miniGopIndex,
+                        context_ptr->miniGopRegionActivityCostArray[miniGopIndex][regionInPictureWidthIndex][regionInPictureHeightIndex]);
+
+                }
+            }
+#endif
+
+            // Set mini GOP activity - active if more than half input pictures are active
+
+            // The number of active pictures threshold is inter layer dependant:
+            // 5L vs 6L: do not split if no active pictures or only split in presence of 1 active picture
+            if (GetMiniGopStats(miniGopIndex)->lenght == 32) {
+                context_ptr->miniGopActivityArray[miniGopIndex] = ((IsMiniGopActive(sequence_control_set_ptr, context_ptr, miniGopIndex, l6vsL5CostTh) == EB_FALSE) && (context_ptr->miniGopGroupFadedInPicturesCount[miniGopIndex] < FADED_PICTURES_TH) && (context_ptr->miniGopGroupFadedOutPicturesCount[miniGopIndex] < FADED_PICTURES_TH)) ?
+                    EB_FALSE :
+                    EB_TRUE;
+            }
+            // 4L vs 5L: do not split if no active pictures
+            if (GetMiniGopStats(miniGopIndex)->lenght == 16) {
+                context_ptr->miniGopActivityArray[miniGopIndex] = (IsMiniGopActive(sequence_control_set_ptr, context_ptr, miniGopIndex, l5vsL4CostTh) == EB_FALSE) ?
+                    EB_FALSE :
+                    EB_TRUE;
+            }
+            // 3L vs 4L: split only when all pictures are actives
+            else if (GetMiniGopStats(miniGopIndex)->lenght == 8) {
+                context_ptr->miniGopActivityArray[miniGopIndex] = (IsMiniGopActive(sequence_control_set_ptr, context_ptr, miniGopIndex, l4vsL3CostTh) == EB_FALSE) ?
+                    EB_FALSE :
+                    EB_TRUE;
+            }
+
+#if 0 // Dynamic GOP testing  - randomly set mini GOP activity
+            context_ptr->miniGopActivityArray[miniGopIndex] = (EbBool)(rand() % 2);
+#endif
+
+        }
+
+        miniGopIndex += context_ptr->miniGopActivityArray[miniGopIndex] ?
+            1 :
+            MiniGopOffset[GetMiniGopStats(miniGopIndex)->hierarchical_levels - MIN_HIERARCHICAL_LEVEL];
+    }
+
+#if 0 // Dynamic GOP testing - randomly set a split (only for a complete picture window)
+    if (encode_context_ptr->pre_assignment_buffer_count == 32) {
+
+        InitializeMiniGopActivityArray(
+            context_ptr);
+
+        uint32_t layerMix = rand() % 11;	// Only 11 out of 25 combinations are tested - use randomly set mini GOP activity for all possible combinations
+
+        printf("\n--> Split number %d\n", layerMix);
+
+        switch (layerMix) {
+        case 0:
+            // L6
+            context_ptr->miniGopActivityArray[L6_INDEX] = EB_FALSE;
+            break;
+        case 1:
+            // L5 L5
+            context_ptr->miniGopActivityArray[L5_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L5_1_INDEX] = EB_FALSE;
+            break;
+        case 2:
+            // L4 L4 L4 L4
+            context_ptr->miniGopActivityArray[L4_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_3_INDEX] = EB_FALSE;
+            break;
+        case 3:
+            // L3 L3 L3 L3 L3 L3 L3 L3
+            context_ptr->miniGopActivityArray[L3_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_3_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_4_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_5_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_6_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_7_INDEX] = EB_FALSE;
+            break;
+        case 4:
+            // L5 L4 L4
+            context_ptr->miniGopActivityArray[L5_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_3_INDEX] = EB_FALSE;
+            break;
+        case 5:
+            // L5 L4 L3 L3 
+            context_ptr->miniGopActivityArray[L5_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_6_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_7_INDEX] = EB_FALSE;
+            break;
+        case 6:
+            // L5 L3 L3 L3 L3
+            context_ptr->miniGopActivityArray[L5_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_4_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_5_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_6_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_7_INDEX] = EB_FALSE;
+            break;
+        case 7:
+            // L4 L4 L5
+            context_ptr->miniGopActivityArray[L4_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L5_1_INDEX] = EB_FALSE;
+            break;
+        case 8:
+            // L4 L3 L3 L5
+            context_ptr->miniGopActivityArray[L4_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_3_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L5_1_INDEX] = EB_FALSE;
+            break;
+        case 9:
+            // L3 L3 L4 L5
+            context_ptr->miniGopActivityArray[L3_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L5_1_INDEX] = EB_FALSE;
+            break;
+        case 10:
+            // L3 L3 L3 L3 L5
+            context_ptr->miniGopActivityArray[L3_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_3_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L5_1_INDEX] = EB_FALSE;
+
+            break;
+        default:
+            break;
+        }
+    }
+#endif
+#if 0 // Dynamic GOP testing - fixed prediction structure
+    if (encode_context_ptr->pre_assignment_buffer_count == 32) {
+
+        InitializeMiniGopActivityArray(
+            context_ptr);
+
+        uint32_t layerMix = 3;
+
+        switch (layerMix) {
+        case 0:
+            // L6
+            context_ptr->miniGopActivityArray[L6_INDEX] = EB_FALSE;
+            break;
+        case 1:
+            // L5 L5
+            context_ptr->miniGopActivityArray[L5_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L5_1_INDEX] = EB_FALSE;
+            break;
+        case 2:
+            // L4 L4 L4 L4
+            context_ptr->miniGopActivityArray[L4_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L4_3_INDEX] = EB_FALSE;
+            break;
+        case 3:
+            // L3 L3 L3 L3 L3 L3 L3 L3
+            context_ptr->miniGopActivityArray[L3_0_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_1_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_2_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_3_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_4_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_5_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_6_INDEX] = EB_FALSE;
+            context_ptr->miniGopActivityArray[L3_7_INDEX] = EB_FALSE;
+            break;
+        default:
+            break;
+        }
+    }
+#endif
+    return return_error;
+}
+#endif
+/***************************************************************************************************
+* Generates block picture map
+*
+*
+***************************************************************************************************/
+EbErrorType GeneratePictureWindowSplit(
+
+    PictureDecisionContext_t        *context_ptr,
+    EncodeContext_t                 *encode_context_ptr) {
+
+    EbErrorType return_error = EB_ErrorNone;
+
+    uint32_t	miniGopIndex;
+
+    context_ptr->totalNumberOfMiniGops = 0;
+
+    // Loop over all mini GOPs
+    miniGopIndex = 0;
+    while (miniGopIndex < MINI_GOP_MAX_COUNT) {
+
+        // Only for a valid mini GOP
+        if (GetMiniGopStats(miniGopIndex)->endIndex < encode_context_ptr->pre_assignment_buffer_count && context_ptr->miniGopActivityArray[miniGopIndex] == EB_FALSE) {
+
+            context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(miniGopIndex)->startIndex;
+            context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(miniGopIndex)->endIndex;
+            context_ptr->miniGopLenght[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(miniGopIndex)->lenght;
+            context_ptr->miniGopHierarchicalLevels[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(miniGopIndex)->hierarchical_levels;
+            context_ptr->miniGopIntraCount[context_ptr->totalNumberOfMiniGops] = 0;
+            context_ptr->miniGopIdrCount[context_ptr->totalNumberOfMiniGops] = 0;
+
+            context_ptr->totalNumberOfMiniGops++;
+        }
+
+        miniGopIndex += context_ptr->miniGopActivityArray[miniGopIndex] ?
+            1 :
+            MiniGopOffset[GetMiniGopStats(miniGopIndex)->hierarchical_levels - MIN_HIERARCHICAL_LEVEL];
+
+    }
+
+    // Only in presence of at least 1 valid mini GOP
+    if (context_ptr->totalNumberOfMiniGops != 0) {
+        context_ptr->miniGopIntraCount[context_ptr->totalNumberOfMiniGops - 1] = encode_context_ptr->pre_assignment_buffer_intra_count;
+        context_ptr->miniGopIdrCount[context_ptr->totalNumberOfMiniGops - 1] = encode_context_ptr->pre_assignment_buffer_idr_count;
+    }
+
+    return return_error;
+}
+
+/***************************************************************************************************
+* Handles an incomplete picture window map
+*
+*
+***************************************************************************************************/
+EbErrorType HandleIncompletePictureWindowMap(
+    PictureDecisionContext_t        *context_ptr,
+    EncodeContext_t                 *encode_context_ptr) {
+
+    EbErrorType return_error = EB_ErrorNone;
+
+    if (context_ptr->totalNumberOfMiniGops == 0) {
+
+        context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops] = 0;
+        context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - 1;
+        context_ptr->miniGopLenght[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops];
+        context_ptr->miniGopHierarchicalLevels[context_ptr->totalNumberOfMiniGops] = 3;// MIN_HIERARCHICAL_LEVEL; // AMIR
+
+        context_ptr->totalNumberOfMiniGops++;
+
+    }
+    else if (context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops - 1] < encode_context_ptr->pre_assignment_buffer_count - 1) {
+
+        context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops] = context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops - 1] + 1;
+        context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - 1;
+        context_ptr->miniGopLenght[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops];
+        context_ptr->miniGopHierarchicalLevels[context_ptr->totalNumberOfMiniGops] = 3;// MIN_HIERARCHICAL_LEVEL;// AMIR
+        context_ptr->miniGopIntraCount[context_ptr->totalNumberOfMiniGops - 1] = 0;
+        context_ptr->miniGopIdrCount[context_ptr->totalNumberOfMiniGops - 1] = 0;
+
+        context_ptr->totalNumberOfMiniGops++;
+    }
+
+    context_ptr->miniGopIntraCount[context_ptr->totalNumberOfMiniGops - 1] = encode_context_ptr->pre_assignment_buffer_intra_count;
+    context_ptr->miniGopIdrCount[context_ptr->totalNumberOfMiniGops - 1] = encode_context_ptr->pre_assignment_buffer_idr_count;
+
+    return return_error;
+}
+/***************************************************************************************************
+* If a switch happens, then update the RPS of the base layer frame separating the 2 different prediction structures
+* Clean up the reference queue dependant counts of the base layer frame separating the 2 different prediction structures
+*
+***************************************************************************************************/
+EbErrorType UpdateBaseLayerReferenceQueueDependentCount(
+    PictureDecisionContext_t        *context_ptr,
+    EncodeContext_t                 *encode_context_ptr,
+    SequenceControlSet_t            *sequence_control_set_ptr,
+    uint32_t                           miniGopIndex) {
+
+    EbErrorType return_error = EB_ErrorNone;
+
+    PaReferenceQueueEntry_t         *inputEntryPtr;
+    uint32_t                           inputQueueIndex;
+
+    PredictionStructure_t           *nextPredStructPtr;
+    PredictionStructureEntry_t      *nextBaseLayerPredPositionPtr;
+
+    uint32_t                           dependantListPositiveEntries;
+    uint32_t                           dependantListRemovedEntries;
+    uint32_t                           depListCount;
+
+    uint32_t                           depIdx;
+    uint64_t                           depPoc;
+
+    PictureParentControlSet_t       *picture_control_set_ptr;
+
+    // Get the 1st PCS mini GOP
+    picture_control_set_ptr = (PictureParentControlSet_t*)encode_context_ptr->pre_assignment_buffer[context_ptr->miniGopStartIndex[miniGopIndex]]->objectPtr;
+
+    // Derive the temporal layer difference between the current mini GOP and the previous mini GOP 
+    picture_control_set_ptr->hierarchical_layers_diff = (uint8_t)(encode_context_ptr->previous_mini_gop_hierarchical_levels - picture_control_set_ptr->hierarchical_levels);
+
+    // Set init_pred_struct_position_flag to TRUE if mini GOP switch
+    picture_control_set_ptr->init_pred_struct_position_flag = (picture_control_set_ptr->hierarchical_layers_diff != 0) ?
+        EB_TRUE :
+        EB_FALSE;
+
+    // If the current mini GOP is different than the previous mini GOP update then update the positive dependant counts of the reference entry separating the 2 mini GOPs
+    if (picture_control_set_ptr->hierarchical_layers_diff != 0) {
+
+        inputQueueIndex = encode_context_ptr->picture_decision_pa_reference_queue_head_index;
+
+        while (inputQueueIndex != encode_context_ptr->picture_decision_pa_reference_queue_tail_index) {
+
+            inputEntryPtr = encode_context_ptr->picture_decision_pa_reference_queue[inputQueueIndex];
+
+            // Find the reference entry separating the 2 mini GOPs  (picture_control_set_ptr->picture_number is the POC of the first isput in the mini GOP)
+            if (inputEntryPtr->picture_number == (picture_control_set_ptr->picture_number - 1)) {
+
+                // Update the positive dependant counts
+
+                // 1st step: remove all positive entries from the dependant list0 and dependant list1
+                dependantListPositiveEntries = 0;
+                for (depIdx = 0; depIdx < inputEntryPtr->list0.listCount; ++depIdx) {
+                    if (inputEntryPtr->list0.list[depIdx] >= 0) {
+                        dependantListPositiveEntries++;
+                    }
+                }
+                inputEntryPtr->list0.listCount = inputEntryPtr->list0.listCount - dependantListPositiveEntries;
+                dependantListPositiveEntries = 0;
+                for (depIdx = 0; depIdx < inputEntryPtr->list1.listCount; ++depIdx) {
+                    if (inputEntryPtr->list1.list[depIdx] >= 0) {
+                        dependantListPositiveEntries++;
+                    }
+                }
+                inputEntryPtr->list1.listCount = inputEntryPtr->list1.listCount - dependantListPositiveEntries;
+
+                // 2nd step: inherit the positive dependant counts of the current mini GOP
+                // Get the RPS set of the current mini GOP
+                nextPredStructPtr = GetPredictionStructure(
+                    encode_context_ptr->prediction_structure_group_ptr,
+                    picture_control_set_ptr->pred_structure,
+                    1,
+                    picture_control_set_ptr->hierarchical_levels);			// Number of temporal layer in the current mini GOP  
+
+                // Get the RPS of a base layer input
+                nextBaseLayerPredPositionPtr = nextPredStructPtr->predStructEntryPtrArray[nextPredStructPtr->predStructEntryCount - 1];
+
+                for (depIdx = 0; depIdx < nextBaseLayerPredPositionPtr->depList0.listCount; ++depIdx) {
+                    if (nextBaseLayerPredPositionPtr->depList0.list[depIdx] >= 0) {
+                        inputEntryPtr->list0.list[inputEntryPtr->list0.listCount++] = nextBaseLayerPredPositionPtr->depList0.list[depIdx];
+                    }
+                }
+
+
+                for (depIdx = 0; depIdx < nextBaseLayerPredPositionPtr->depList1.listCount; ++depIdx) {
+                    if (nextBaseLayerPredPositionPtr->depList1.list[depIdx] >= 0) {
+                        inputEntryPtr->list1.list[inputEntryPtr->list1.listCount++] = nextBaseLayerPredPositionPtr->depList1.list[depIdx];
+                    }
+                }
+
+                // 3rd step: update the dependant count
+                dependantListRemovedEntries = inputEntryPtr->depList0Count + inputEntryPtr->depList1Count - inputEntryPtr->dependentCount;
+                inputEntryPtr->depList0Count = inputEntryPtr->list0.listCount;
+                inputEntryPtr->depList1Count = inputEntryPtr->list1.listCount;
+                inputEntryPtr->dependentCount = inputEntryPtr->depList0Count + inputEntryPtr->depList1Count - dependantListRemovedEntries;
+
+            }
+            else {
+
+                // Modify Dependent List0
+                depListCount = inputEntryPtr->list0.listCount;
+                for (depIdx = 0; depIdx < depListCount; ++depIdx) {
+
+
+                    // Adjust the latest currentInputPoc in case we're in a POC rollover scenario 
+                    // currentInputPoc += (currentInputPoc < inputEntryPtr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
+
+                    depPoc = POC_CIRCULAR_ADD(
+                        inputEntryPtr->picture_number, // can't use a value that gets reset
+                        inputEntryPtr->list0.list[depIdx]/*,
+                                                         sequence_control_set_ptr->bitsForPictureOrderCount*/);
+
+                                                         // If Dependent POC is greater or equal to the IDR POC
+                    if (depPoc >= picture_control_set_ptr->picture_number && inputEntryPtr->list0.list[depIdx]) {
+
+                        inputEntryPtr->list0.list[depIdx] = 0;
+
+                        // Decrement the Reference's reference_count
+                        --inputEntryPtr->dependentCount;
+
+                        CHECK_REPORT_ERROR(
+                            (inputEntryPtr->dependentCount != ~0u),
+                            encode_context_ptr->app_callback_ptr,
+                            EB_ENC_PD_ERROR3);
+                    }
+                }
+
+                // Modify Dependent List1
+                depListCount = inputEntryPtr->list1.listCount;
+                for (depIdx = 0; depIdx < depListCount; ++depIdx) {
+
+                    // Adjust the latest currentInputPoc in case we're in a POC rollover scenario 
+                    // currentInputPoc += (currentInputPoc < inputEntryPtr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
+
+                    depPoc = POC_CIRCULAR_ADD(
+                        inputEntryPtr->picture_number,
+                        inputEntryPtr->list1.list[depIdx]/*,
+                                                         sequence_control_set_ptr->bitsForPictureOrderCount*/);
+
+                                                         // If Dependent POC is greater or equal to the IDR POC
+                    if ((depPoc >= picture_control_set_ptr->picture_number) && inputEntryPtr->list1.list[depIdx]) {
+                        inputEntryPtr->list1.list[depIdx] = 0;
+
+                        // Decrement the Reference's reference_count
+                        --inputEntryPtr->dependentCount;
+
+                        CHECK_REPORT_ERROR(
+                            (inputEntryPtr->dependentCount != ~0u),
+                            encode_context_ptr->app_callback_ptr,
+                            EB_ENC_PD_ERROR3);
+                    }
+                }
+            }
+
+            // Increment the inputQueueIndex Iterator
+            inputQueueIndex = (inputQueueIndex == PICTURE_DECISION_PA_REFERENCE_QUEUE_MAX_DEPTH - 1) ? 0 : inputQueueIndex + 1;
+        }
+    }
+
+    return return_error;
+}
+
+EbBool isSupposedly4LReferenceFrame(
+    PictureDecisionContext_t        *context_ptr,
+    uint32_t                         miniGopIndex,
+    uint32_t				        pictureIndex) {
+
+    if ((context_ptr->miniGopHierarchicalLevels[miniGopIndex] == 4 && context_ptr->miniGopLenght[miniGopIndex] == 16 && (pictureIndex == 7 || pictureIndex == 23)) ||	// supposedly a 4L reference frame for 5L prediction structure 
+        (context_ptr->miniGopHierarchicalLevels[miniGopIndex] == 5 && context_ptr->miniGopLenght[miniGopIndex] == 32 && (pictureIndex == 7 || pictureIndex == 23))) { // supposedly a 4L reference frame for 6L prediction structure
+        return(EB_TRUE);
+    }
+    else {
+        return(EB_FALSE);
+    }
+}
+
+
+#endif
 
 
 /***************************************************************************************************
@@ -710,6 +1280,233 @@ void  Av1GenerateRpsInfo(
 
 
     }
+#if NEW_PRED
+    else if (picture_control_set_ptr->hierarchical_levels == 4)//RPS for 4L GOP
+    {
+
+    //Reset miniGop Toggling. The first miniGop after a KEY frame has toggle=0
+    if (picture_control_set_ptr->av1FrameType == KEY_FRAME)
+    {
+        context_ptr->miniGopToggle = 0;
+        picture_control_set_ptr->showFrame = EB_TRUE;
+        picture_control_set_ptr->hasShowExisting = EB_FALSE;
+        return;
+    }
+
+    //pictureIndex has this order:
+    //        0      2    4      6  
+    //            1          5
+    //                 3
+    //                             7(could be an I)
+
+    //         0     2    4      6    8     10     12      14
+    //            1          5           9            13
+    //                 3                        11
+    //                              7
+
+    //DPB: Loc7|Loc6|Loc5|Loc4|Loc3|Loc2|Loc1|Loc0
+    //Layer 0 : toggling bwteween DPB Location 0, and  locations 3-4-5-6-7
+    //Layer 1 : DPB Location 1
+    //Layer 2 : DPB Location 2
+    //Layer 3 : DPB Location 3
+
+    //         1     3    5      7    9     11     13      15
+    //            2          6           10            14
+    //                 4                        12
+    //                              8
+    //base0:0                                               base1:16
+    const uint8_t  base0Idx = context_ptr->miniGopToggle ? 0 : 3; //Base layer for prediction from past
+    const uint8_t  base1Idx = context_ptr->miniGopToggle ? 3 : 0; //Base layer for prediction from future
+    const uint8_t  layer1Idx = 1;
+    const uint8_t  layer2Idx = 2;
+    const uint8_t  layer3Idx1 = 4;
+    const uint8_t  layer3Idx2 = 5;
+
+    switch (picture_control_set_ptr->temporal_layer_index) {
+
+    case 0:
+
+        av1Rps->refDpbIndex[0] = base0Idx;
+        av1Rps->refDpbIndex[6] = base0Idx;
+        av1Rps->refreshFrameMask = context_ptr->miniGopToggle ? 200 : 1;
+        break;
+    case 1:
+        av1Rps->refDpbIndex[0] = base0Idx;
+        av1Rps->refDpbIndex[6] = base1Idx;
+        av1Rps->refreshFrameMask = 2;
+        break;
+    case 2:
+
+        if (pictureIndex == 3) {
+            av1Rps->refDpbIndex[0] = base0Idx;
+            av1Rps->refDpbIndex[6] = layer1Idx;
+        }
+        else if (pictureIndex == 11) {
+            av1Rps->refDpbIndex[0] = layer1Idx;
+            av1Rps->refDpbIndex[6] = base1Idx;
+        }
+        av1Rps->refreshFrameMask = 4;
+        break;
+    case 3:
+
+        if (pictureIndex == 1) {
+            av1Rps->refDpbIndex[0] = base0Idx;
+            av1Rps->refDpbIndex[6] = layer2Idx;
+            av1Rps->refreshFrameMask = 16;
+        }
+        else if (pictureIndex == 5) {
+            av1Rps->refDpbIndex[0] = layer2Idx;
+            av1Rps->refDpbIndex[6] = layer1Idx;
+            av1Rps->refreshFrameMask = 32;
+        }
+        else if (pictureIndex == 9) {
+            av1Rps->refDpbIndex[0] = layer1Idx;
+            av1Rps->refDpbIndex[6] = layer2Idx;
+            av1Rps->refreshFrameMask = 16;
+        }
+        else if (pictureIndex == 13) {
+            av1Rps->refDpbIndex[0] = layer2Idx;
+            av1Rps->refDpbIndex[6] = base1Idx;
+            av1Rps->refreshFrameMask = 32;
+        }
+        else {
+            printf("Error in GOp indexing\n");
+        }
+        break;
+    case 4:
+        if (pictureIndex == 0) {
+            av1Rps->refDpbIndex[0] = base0Idx;
+            av1Rps->refDpbIndex[6] = layer3Idx1;
+        }
+        else if (pictureIndex == 2) {
+            av1Rps->refDpbIndex[0] = layer3Idx1;
+            av1Rps->refDpbIndex[6] = layer2Idx;
+        }
+        else if (pictureIndex == 4) {
+            av1Rps->refDpbIndex[0] = layer2Idx;
+            av1Rps->refDpbIndex[6] = layer3Idx2;
+        }
+        else if (pictureIndex == 6) {
+            av1Rps->refDpbIndex[0] = layer3Idx2;
+            av1Rps->refDpbIndex[6] = layer1Idx;
+        }
+        else if (pictureIndex == 8) {
+            av1Rps->refDpbIndex[0] = layer1Idx;
+            av1Rps->refDpbIndex[6] = layer3Idx1;
+        }
+        else if (pictureIndex == 10) {
+            av1Rps->refDpbIndex[0] = layer3Idx1;
+            av1Rps->refDpbIndex[6] = layer2Idx;
+        }
+        else if (pictureIndex == 12) {
+            av1Rps->refDpbIndex[0] = layer2Idx;
+            av1Rps->refDpbIndex[6] = layer3Idx2;
+        }
+        else if (pictureIndex == 14) {
+            av1Rps->refDpbIndex[0] = layer3Idx2;
+            av1Rps->refDpbIndex[6] = base1Idx;
+        }
+        else {
+            printf("Error in GOp indexing\n");
+        }
+        av1Rps->refreshFrameMask = 0;
+        break;
+    default:
+        printf("Error: unexpected picture mini Gop number\n");
+        break;
+    }
+
+    if (picture_control_set_ptr->pred_struct_ptr->predType == EB_PRED_LOW_DELAY_P)
+    {
+        //P frames.
+        av1Rps->refDpbIndex[1] = av1Rps->refDpbIndex[2] = av1Rps->refDpbIndex[3] = av1Rps->refDpbIndex[0];
+        av1Rps->refDpbIndex[4] = av1Rps->refDpbIndex[5] = av1Rps->refDpbIndex[6] = av1Rps->refDpbIndex[0];
+        picture_control_set_ptr->showFrame = EB_TRUE;
+        picture_control_set_ptr->hasShowExisting = EB_FALSE;
+    }
+    else if (picture_control_set_ptr->pred_struct_ptr->predType == EB_PRED_RANDOM_ACCESS)
+    {
+        av1Rps->refDpbIndex[1] = av1Rps->refDpbIndex[2] = av1Rps->refDpbIndex[3] = av1Rps->refDpbIndex[0];
+        av1Rps->refDpbIndex[4] = av1Rps->refDpbIndex[5] = av1Rps->refDpbIndex[6];
+
+        //Decide on Show Mecanism
+        if (picture_control_set_ptr->slice_type == I_SLICE)
+        {
+            //3 cases for I slice:  1:Key Frame treated above.  2: broken MiniGop due to sc or intra refresh  3: complete miniGop due to sc or intra refresh
+            if (context_ptr->miniGopLenght[0] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
+            {
+                //Scene Change that breaks the mini gop and switch to LDP (if I scene change happens to be aligned with a complete miniGop, then we do not break the pred structure)
+                picture_control_set_ptr->showFrame = EB_TRUE;
+                picture_control_set_ptr->hasShowExisting = EB_FALSE;
+            }
+            else
+            {
+                picture_control_set_ptr->showFrame = EB_FALSE;
+                picture_control_set_ptr->hasShowExisting = EB_FALSE;
+            }
+        }
+        else//B pic
+        {
+            if (context_ptr->miniGopLenght[0] != picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
+                printf("Error in GOp indexing3\n");
+
+            if (picture_control_set_ptr->is_used_as_reference_flag)
+            {
+                picture_control_set_ptr->showFrame = EB_FALSE;
+                picture_control_set_ptr->hasShowExisting = EB_FALSE;
+            }
+            else
+            {
+                picture_control_set_ptr->showFrame = EB_TRUE;
+                picture_control_set_ptr->hasShowExisting = EB_TRUE;
+
+                if (pictureIndex == 0) {
+                    picture_control_set_ptr->showExistingLoc = layer3Idx1;
+                }
+                else if (pictureIndex == 2) {
+                    picture_control_set_ptr->showExistingLoc = layer2Idx;
+                }
+                else if (pictureIndex == 4) {
+                    picture_control_set_ptr->showExistingLoc = layer3Idx2;
+                }
+                else if (pictureIndex == 6) {
+                    picture_control_set_ptr->showExistingLoc = layer1Idx;
+                }
+                else if (pictureIndex == 8) {
+                    picture_control_set_ptr->showExistingLoc = layer3Idx1;
+                }
+                else if (pictureIndex == 10) {
+                    picture_control_set_ptr->showExistingLoc = layer2Idx;
+                }
+                else if (pictureIndex == 12) {
+                    picture_control_set_ptr->showExistingLoc = layer3Idx2;
+                }
+                else if (pictureIndex == 14) {
+                    picture_control_set_ptr->showExistingLoc = base1Idx;
+                }
+                else {
+                    printf("Error in GOp indexing2\n");
+                }
+
+            }
+
+        }
+
+    }
+    else {
+        printf("Error: Not supported GOP structure!");
+        exit(0);
+    }
+
+    //last pic in MiniGop: mGop Toggling
+    //mini GOP toggling since last Key Frame.
+    //a regular I keeps the toggling process and does not reset the toggle.  K-0-1-0-1-0-K-0-1-0-1-K-0-1.....
+    if (pictureIndex == context_ptr->miniGopEndIndex[0])
+        context_ptr->miniGopToggle = 1 - context_ptr->miniGopToggle;
+
+
+    }
+#endif
     else
     {
         printf("Error: Not supported GOP structure!");
@@ -981,6 +1778,12 @@ void* PictureDecisionKernel(void *input_ptr)
 
 
                 picture_control_set_ptr->pred_structure = EB_PRED_RANDOM_ACCESS;
+
+#if NEW_PRED
+                picture_control_set_ptr->hierarchical_layers_diff = 0;
+
+                picture_control_set_ptr->init_pred_struct_position_flag = EB_FALSE;
+#endif
                 picture_control_set_ptr->target_bit_rate = sequence_control_set_ptr->static_config.target_bit_rate;
 
                 ReleasePrevPictureFromReorderQueue(
@@ -1028,7 +1831,7 @@ void* PictureDecisionKernel(void *input_ptr)
 
                 // Determine if Pictures can be released from the Pre-Assignment Buffer
                 if ((encode_context_ptr->pre_assignment_buffer_intra_count > 0) ||
-                    (encode_context_ptr->pre_assignment_buffer_count == (uint32_t)(1 << sequence_control_set_ptr->static_config.hierarchical_levels)) ||
+                    (encode_context_ptr->pre_assignment_buffer_count == (uint32_t)(1 << sequence_control_set_ptr->static_config.hierarchical_levels)) || // AMIR to check
                     (encode_context_ptr->pre_assignment_buffer_eos_flag == EB_TRUE) ||
                     (picture_control_set_ptr->pred_structure == EB_PRED_LOW_DELAY_P) ||
                     (picture_control_set_ptr->pred_structure == EB_PRED_LOW_DELAY_B))
@@ -1039,15 +1842,77 @@ void* PictureDecisionKernel(void *input_ptr)
                     context_ptr->miniGopEndIndex[0] = encode_context_ptr->pre_assignment_buffer_count - 1;
                     context_ptr->miniGopLenght[0] = encode_context_ptr->pre_assignment_buffer_count;
 
-                    context_ptr->miniGopHierarchicalLevels[0] = sequence_control_set_ptr->static_config.hierarchical_levels;
+                    context_ptr->miniGopHierarchicalLevels[0] = sequence_control_set_ptr->static_config.hierarchical_levels; // AMIR to check
                     context_ptr->miniGopIntraCount[0] = encode_context_ptr->pre_assignment_buffer_intra_count;
                     context_ptr->miniGopIdrCount[0] = encode_context_ptr->pre_assignment_buffer_idr_count;
                     context_ptr->totalNumberOfMiniGops = 1;
 
                     encode_context_ptr->previous_mini_gop_hierarchical_levels = (picture_control_set_ptr->picture_number == 0) ?
-                        sequence_control_set_ptr->static_config.hierarchical_levels :
+                        sequence_control_set_ptr->static_config.hierarchical_levels : // AMIR to check
                         encode_context_ptr->previous_mini_gop_hierarchical_levels;
 
+#if NEW_PRED
+                    if (1/* sequence_control_set_ptr->static_config.dynamicGopFlag*/) {
+
+                        if (encode_context_ptr->pre_assignment_buffer_count > 1)
+                        {
+                            InitializeMiniGopActivityArray(
+                                context_ptr);
+                            //InterLayerDecision(
+                            //    sequence_control_set_ptr,
+                            //    context_ptr,
+                            //    encode_context_ptr);
+
+#if 1 // Dynamic GOP testing - fixed prediction structure
+                            context_ptr->miniGopActivityArray[L4_0_INDEX] = EB_FALSE;
+                            if (encode_context_ptr->pre_assignment_buffer_count == 16) {
+
+
+                                    context_ptr->miniGopActivityArray[L5_0_INDEX] = EB_FALSE;
+                                    //context_ptr->miniGopActivityArray[L5_1_INDEX] = EB_FALSE;
+
+                                    //context_ptr->miniGopActivityArray[L4_0_INDEX] = EB_FALSE;
+                                    //context_ptr->miniGopActivityArray[L4_1_INDEX] = EB_FALSE;
+                                    //context_ptr->miniGopActivityArray[L4_2_INDEX] = EB_FALSE;
+                                    //context_ptr->miniGopActivityArray[L4_3_INDEX] = EB_FALSE;
+                             
+                            }
+#endif
+
+                            GeneratePictureWindowSplit(
+                                context_ptr,
+                                encode_context_ptr);
+
+                            HandleIncompletePictureWindowMap(
+                                context_ptr,
+                                encode_context_ptr);
+                        }
+                    }
+#if 0
+                    if (encode_context_ptr->pre_assignment_buffer_eos_flag == EB_TRUE && sequence_control_set_ptr->static_config.hierarchical_levels == 4) {
+                        if (encode_context_ptr->pre_assignment_buffer_count > 7) {
+                            context_ptr->miniGopStartIndex[0] = 0;
+                            context_ptr->miniGopEndIndex[0] = 8 - 1;
+                            context_ptr->miniGopLenght[0] = 8;
+
+                            context_ptr->miniGopHierarchicalLevels[0] = 3;//
+                            context_ptr->miniGopIntraCount[0] = encode_context_ptr->pre_assignment_buffer_intra_count;
+                            context_ptr->miniGopIdrCount[0] = encode_context_ptr->pre_assignment_buffer_idr_count;
+
+                            context_ptr->miniGopStartIndex[1] = 8;
+                            context_ptr->miniGopEndIndex[1] = encode_context_ptr->pre_assignment_buffer_count - 1;
+                            context_ptr->miniGopLenght[1] = encode_context_ptr->pre_assignment_buffer_count - 8;
+
+                            context_ptr->miniGopHierarchicalLevels[1] = 3;
+                            context_ptr->miniGopIntraCount[1] = encode_context_ptr->pre_assignment_buffer_intra_count;
+                            context_ptr->miniGopIdrCount[1] = encode_context_ptr->pre_assignment_buffer_idr_count;
+                            context_ptr->totalNumberOfMiniGops = 2;
+
+                            encode_context_ptr->previous_mini_gop_hierarchical_levels = 3;
+                        }
+                    }
+#endif
+#endif
                     GenerateMiniGopRps(
                         context_ptr,
                         encode_context_ptr);
@@ -1057,7 +1922,21 @@ void* PictureDecisionKernel(void *input_ptr)
                     for (miniGopIndex = 0; miniGopIndex < context_ptr->totalNumberOfMiniGops; ++miniGopIndex) {
 
                         preAssignmentBufferFirstPassFlag = EB_TRUE;
+#if NEW_PRED
+                        if (1/*sequence_control_set_ptr->static_config.dynamicGopFlag*/) {
 
+                            // 
+                            UpdateBaseLayerReferenceQueueDependentCount(
+                                context_ptr,
+                                encode_context_ptr,
+                                sequence_control_set_ptr,
+                                miniGopIndex);
+
+                            // Keep track of the number of hierarchical levels of the latest implemented mini GOP
+                            encode_context_ptr->previous_mini_gop_hierarchical_levels = context_ptr->miniGopHierarchicalLevels[miniGopIndex];
+
+                        }
+#endif
                         // 1st Loop over Pictures in the Pre-Assignment Buffer
                         for (pictureIndex = context_ptr->miniGopStartIndex[miniGopIndex]; pictureIndex <= context_ptr->miniGopEndIndex[miniGopIndex]; ++pictureIndex) {
 
@@ -1120,6 +1999,12 @@ void* PictureDecisionKernel(void *input_ptr)
                                     (encode_context_ptr->pre_assignment_buffer_eos_flag) ? P_SLICE :
                                     B_SLICE;
                             }
+#if NEW_PRED
+                            // If mini GOP switch, reset position
+                            encode_context_ptr->pred_struct_position = (1/* sequence_control_set_ptr->static_config.dynamicGopFlag*/ && picture_control_set_ptr->init_pred_struct_position_flag) ?
+                                picture_control_set_ptr->pred_struct_ptr->initPicIndex :
+                                encode_context_ptr->pred_struct_position;
+#endif
 
                             // If Intra, reset position
                             if (picture_control_set_ptr->idr_flag == EB_TRUE) {
@@ -1270,7 +2155,11 @@ void* PictureDecisionKernel(void *input_ptr)
                                 picture_control_set_ptr,
                                 encode_context_ptr,
                                 context_ptr,
+#if NEW_PRED
+                                pictureIndex - context_ptr->miniGopStartIndex[miniGopIndex]);
+#else
                                 pictureIndex);
+#endif
 
 
 

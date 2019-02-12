@@ -2316,12 +2316,12 @@ static EbErrorType VerifySettings(
         SVT_LOG("Error instance %u: QP must be [0 - %d]\n", channelNumber + 1, MAX_QP_VALUE);
         return_error = EB_ErrorBadParameter;
     }
-
+#if !NEW_PRED
     if (config->hierarchical_levels != 3) {
         SVT_LOG("Error instance %u: Hierarchical Levels supported [3]\n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
-
+#endif
     if (config->intra_period_length < -2 || config->intra_period_length > 255) {
         SVT_LOG("Error Instance %u: The intra period must be [-2 - 255] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
