@@ -1570,8 +1570,10 @@ void* PictureDecisionKernel(void *input_ptr)
 
                             if (encode_context_ptr->pre_assignment_buffer_count == 16) 
                                 context_ptr->miniGopActivityArray[L5_0_INDEX] = EB_FALSE;
-                            else
+                            else {
                                 context_ptr->miniGopActivityArray[L4_0_INDEX] = EB_FALSE;
+                                context_ptr->miniGopActivityArray[L4_1_INDEX] = EB_FALSE;
+                            }
 
                             generate_picture_window_split(
                                 context_ptr,
