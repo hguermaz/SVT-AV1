@@ -2316,8 +2316,13 @@ static EbErrorType VerifySettings(
         SVT_LOG("Error instance %u: QP must be [0 - %d]\n", channelNumber + 1, MAX_QP_VALUE);
         return_error = EB_ErrorBadParameter;
     }
-#if !NEW_PRED
-    if (config->hierarchical_levels != 3) {
+#if NEW_PRED_STRUCT
+    if (config->hierarchical_levels != 3 && config->hierarchical_levels != 4) {
+        SVT_LOG("Error instance %u: Hierarchical Levels supported [3-4]\n", channelNumber + 1);
+        return_error = EB_ErrorBadParameter;
+    }
+#else
+    if (config->hierarchical_levels != 3 ) {
         SVT_LOG("Error instance %u: Hierarchical Levels supported [3]\n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
@@ -2577,7 +2582,11 @@ EbErrorType eb_svt_enc_init_parameter(
     config_ptr->enc_mode = 3;
     config_ptr->intra_period_length = 30;
     config_ptr->intra_refresh_type = 1;
+#if NEW_PRED_STRUCT
+    config_ptr->hierarchical_levels = 4;
+#else
     config_ptr->hierarchical_levels = 3;
+#endif    
     config_ptr->pred_structure = EB_PRED_RANDOM_ACCESS;
     config_ptr->disable_dlf_flag = EB_FALSE;
     config_ptr->enable_warped_motion = EB_FALSE;

@@ -35,10 +35,7 @@
 extern "C" {
 #endif
 
-#define NEW_PRED                                    0
-
-#define RUN_SIM                                     1
-     //Mode definition : Only one mode should be ON at a time
+    //Mode definition : Only one mode should be ON at a time
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
@@ -48,6 +45,7 @@ extern "C" {
 #define CDEF_M        1 // multi-threaded cdef
 #define REST_M        1 // multi-threaded restoration
 #define REST_NEED_B   1 // use boundary update in restoration
+#define NEW_PRED_STRUCT                                 1 // Ability to run 5-layer prediction structure. By Default 5L is used
 
 #define    DLF_TEST2                                       1
 #define    DLF_TEST3                                       0
@@ -2820,7 +2818,7 @@ static const uint8_t INTRA_AREA_TH_CLASS_1[MAX_HIERARCHICAL_LEVEL][MAX_TEMPORAL_
 };
 
 
-#if NEW_PRED
+#if NEW_PRED_STRUCT
 #define NON_MOVING_SCORE_0     0
 #define NON_MOVING_SCORE_1    10
 #define NON_MOVING_SCORE_2    20

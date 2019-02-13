@@ -181,7 +181,7 @@ void* PictureManagerKernel(void *input_ptr)
                 picture_control_set_ptr = (PictureParentControlSet_t*)queueEntryPtr->parentPcsWrapperPtr->objectPtr;
 
                 predPositionPtr = picture_control_set_ptr->pred_struct_ptr->predStructEntryPtrArray[picture_control_set_ptr->pred_struct_index];
-#if NEW_PRED
+#if NEW_PRED_STRUCT
                 // If there was a change in the number of temporal layers, then cleanup the Reference Queue's Dependent Counts
                 if (picture_control_set_ptr->hierarchical_layers_diff != 0) {
 
