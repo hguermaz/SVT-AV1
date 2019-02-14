@@ -349,7 +349,7 @@ EbErrorType generate_picture_window_split(
 
             context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(mini_gop_index)->startIndex;
             context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(mini_gop_index)->endIndex;
-            context_ptr->miniGopLenght[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(mini_gop_index)->lenght;
+            context_ptr->miniGopLength[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(mini_gop_index)->lenght;
             context_ptr->miniGopHierarchicalLevels[context_ptr->totalNumberOfMiniGops] = GetMiniGopStats(mini_gop_index)->hierarchical_levels;
             context_ptr->miniGopIntraCount[context_ptr->totalNumberOfMiniGops] = 0;
             context_ptr->miniGopIdrCount[context_ptr->totalNumberOfMiniGops] = 0;
@@ -387,7 +387,7 @@ EbErrorType handle_incomplete_picture_window_map(
 
         context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops] = 0;
         context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - 1;
-        context_ptr->miniGopLenght[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops];
+        context_ptr->miniGopLength[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops];
         context_ptr->miniGopHierarchicalLevels[context_ptr->totalNumberOfMiniGops] = 3;// MIN_HIERARCHICAL_LEVEL; // AMIR to be updated after other predictions are supported
 
         context_ptr->totalNumberOfMiniGops++;
@@ -397,7 +397,7 @@ EbErrorType handle_incomplete_picture_window_map(
 
         context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops] = context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops - 1] + 1;
         context_ptr->miniGopEndIndex[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - 1;
-        context_ptr->miniGopLenght[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops];
+        context_ptr->miniGopLength[context_ptr->totalNumberOfMiniGops] = encode_context_ptr->pre_assignment_buffer_count - context_ptr->miniGopStartIndex[context_ptr->totalNumberOfMiniGops];
         context_ptr->miniGopHierarchicalLevels[context_ptr->totalNumberOfMiniGops] = 3;// MIN_HIERARCHICAL_LEVEL;// AMIR
         context_ptr->miniGopIntraCount[context_ptr->totalNumberOfMiniGops - 1] = 0;
         context_ptr->miniGopIdrCount[context_ptr->totalNumberOfMiniGops - 1] = 0;
@@ -419,27 +419,30 @@ EbErrorType update_base_layer_reference_queue_dependent_count(
     PictureDecisionContext_t        *context_ptr,
     EncodeContext_t                 *encode_context_ptr,
     SequenceControlSet_t            *sequence_control_set_ptr,
-    uint32_t                           miniGopIndex) {
+    uint32_t                         mini_gop_index) {
+
+    if (!context_ptr || !encode_context_ptr || !sequence_control_set_ptr)
+        return EB_ErrorBadParameter;
 
     EbErrorType return_error = EB_ErrorNone;
 
-    PaReferenceQueueEntry_t         *inputEntryPtr;
-    uint32_t                           inputQueueIndex;
+    PaReferenceQueueEntry_t         *input_entry_ptr;
+    uint32_t                         input_queue_index;
 
-    PredictionStructure_t           *nextPredStructPtr;
-    PredictionStructureEntry_t      *nextBaseLayerPredPositionPtr;
+    PredictionStructure_t           *next_pred_struct_ptr;
+    PredictionStructureEntry_t      *next_base_layer_pred_position_ptr;
 
-    uint32_t                           dependantListPositiveEntries;
-    uint32_t                           dependantListRemovedEntries;
-    uint32_t                           depListCount;
+    uint32_t                         dependant_list_positive_entries;
+    uint32_t                         dependant_list_removed_entries;
+    uint32_t                         dep_list_count;
 
-    uint32_t                           depIdx;
-    uint64_t                           depPoc;
+    uint32_t                         dep_idx;
+    uint64_t                         dep_poc;
 
     PictureParentControlSet_t       *picture_control_set_ptr;
 
     // Get the 1st PCS mini GOP
-    picture_control_set_ptr = (PictureParentControlSet_t*)encode_context_ptr->pre_assignment_buffer[context_ptr->miniGopStartIndex[miniGopIndex]]->objectPtr;
+    picture_control_set_ptr = (PictureParentControlSet_t*)encode_context_ptr->pre_assignment_buffer[context_ptr->miniGopStartIndex[mini_gop_index]]->objectPtr;
 
     // Derive the temporal layer difference between the current mini GOP and the previous mini GOP 
     picture_control_set_ptr->hierarchical_layers_diff = (uint8_t)(encode_context_ptr->previous_mini_gop_hierarchical_levels - picture_control_set_ptr->hierarchical_levels);
@@ -452,123 +455,112 @@ EbErrorType update_base_layer_reference_queue_dependent_count(
     // If the current mini GOP is different than the previous mini GOP update then update the positive dependant counts of the reference entry separating the 2 mini GOPs
     if (picture_control_set_ptr->hierarchical_layers_diff != 0) {
 
-        inputQueueIndex = encode_context_ptr->picture_decision_pa_reference_queue_head_index;
+        input_queue_index = encode_context_ptr->picture_decision_pa_reference_queue_head_index;
 
-        while (inputQueueIndex != encode_context_ptr->picture_decision_pa_reference_queue_tail_index) {
+        while (input_queue_index != encode_context_ptr->picture_decision_pa_reference_queue_tail_index) {
 
-            inputEntryPtr = encode_context_ptr->picture_decision_pa_reference_queue[inputQueueIndex];
+            input_entry_ptr = encode_context_ptr->picture_decision_pa_reference_queue[input_queue_index];
 
             // Find the reference entry separating the 2 mini GOPs  (picture_control_set_ptr->picture_number is the POC of the first isput in the mini GOP)
-            if (inputEntryPtr->picture_number == (picture_control_set_ptr->picture_number - 1)) {
+            if (input_entry_ptr->picture_number == (picture_control_set_ptr->picture_number - 1)) {
 
                 // Update the positive dependant counts
 
                 // 1st step: remove all positive entries from the dependant list0 and dependant list1
-                dependantListPositiveEntries = 0;
-                for (depIdx = 0; depIdx < inputEntryPtr->list0.listCount; ++depIdx) {
-                    if (inputEntryPtr->list0.list[depIdx] >= 0) {
-                        dependantListPositiveEntries++;
+                dependant_list_positive_entries = 0;
+                for (dep_idx = 0; dep_idx < input_entry_ptr->list0.listCount; ++dep_idx) {
+                    if (input_entry_ptr->list0.list[dep_idx] >= 0) {
+                        dependant_list_positive_entries++;
                     }
                 }
-                inputEntryPtr->list0.listCount = inputEntryPtr->list0.listCount - dependantListPositiveEntries;
-                dependantListPositiveEntries = 0;
-                for (depIdx = 0; depIdx < inputEntryPtr->list1.listCount; ++depIdx) {
-                    if (inputEntryPtr->list1.list[depIdx] >= 0) {
-                        dependantListPositiveEntries++;
+                input_entry_ptr->list0.listCount = input_entry_ptr->list0.listCount - dependant_list_positive_entries;
+                dependant_list_positive_entries = 0;
+                for (dep_idx = 0; dep_idx < input_entry_ptr->list1.listCount; ++dep_idx) {
+                    if (input_entry_ptr->list1.list[dep_idx] >= 0) {
+                        dependant_list_positive_entries++;
                     }
                 }
-                inputEntryPtr->list1.listCount = inputEntryPtr->list1.listCount - dependantListPositiveEntries;
+                input_entry_ptr->list1.listCount = input_entry_ptr->list1.listCount - dependant_list_positive_entries;
 
                 // 2nd step: inherit the positive dependant counts of the current mini GOP
                 // Get the RPS set of the current mini GOP
-                nextPredStructPtr = GetPredictionStructure(
+                next_pred_struct_ptr = GetPredictionStructure(
                     encode_context_ptr->prediction_structure_group_ptr,
                     picture_control_set_ptr->pred_structure,
                     1,
                     picture_control_set_ptr->hierarchical_levels);			// Number of temporal layer in the current mini GOP  
 
                 // Get the RPS of a base layer input
-                nextBaseLayerPredPositionPtr = nextPredStructPtr->predStructEntryPtrArray[nextPredStructPtr->predStructEntryCount - 1];
+                next_base_layer_pred_position_ptr = next_pred_struct_ptr->predStructEntryPtrArray[next_pred_struct_ptr->predStructEntryCount - 1];
 
-                for (depIdx = 0; depIdx < nextBaseLayerPredPositionPtr->depList0.listCount; ++depIdx) {
-                    if (nextBaseLayerPredPositionPtr->depList0.list[depIdx] >= 0) {
-                        inputEntryPtr->list0.list[inputEntryPtr->list0.listCount++] = nextBaseLayerPredPositionPtr->depList0.list[depIdx];
+                for (dep_idx = 0; dep_idx < next_base_layer_pred_position_ptr->depList0.listCount; ++dep_idx) {
+                    if (next_base_layer_pred_position_ptr->depList0.list[dep_idx] >= 0) {
+                        input_entry_ptr->list0.list[input_entry_ptr->list0.listCount++] = next_base_layer_pred_position_ptr->depList0.list[dep_idx];
                     }
                 }
 
 
-                for (depIdx = 0; depIdx < nextBaseLayerPredPositionPtr->depList1.listCount; ++depIdx) {
-                    if (nextBaseLayerPredPositionPtr->depList1.list[depIdx] >= 0) {
-                        inputEntryPtr->list1.list[inputEntryPtr->list1.listCount++] = nextBaseLayerPredPositionPtr->depList1.list[depIdx];
+                for (dep_idx = 0; dep_idx < next_base_layer_pred_position_ptr->depList1.listCount; ++dep_idx) {
+                    if (next_base_layer_pred_position_ptr->depList1.list[dep_idx] >= 0) {
+                        input_entry_ptr->list1.list[input_entry_ptr->list1.listCount++] = next_base_layer_pred_position_ptr->depList1.list[dep_idx];
                     }
                 }
 
                 // 3rd step: update the dependant count
-                dependantListRemovedEntries = inputEntryPtr->depList0Count + inputEntryPtr->depList1Count - inputEntryPtr->dependentCount;
-                inputEntryPtr->depList0Count = inputEntryPtr->list0.listCount;
-                inputEntryPtr->depList1Count = inputEntryPtr->list1.listCount;
-                inputEntryPtr->dependentCount = inputEntryPtr->depList0Count + inputEntryPtr->depList1Count - dependantListRemovedEntries;
+                dependant_list_removed_entries = input_entry_ptr->depList0Count + input_entry_ptr->depList1Count - input_entry_ptr->dependentCount;
+                input_entry_ptr->depList0Count = input_entry_ptr->list0.listCount;
+                input_entry_ptr->depList1Count = input_entry_ptr->list1.listCount;
+                input_entry_ptr->dependentCount = input_entry_ptr->depList0Count + input_entry_ptr->depList1Count - dependant_list_removed_entries;
 
             }
             else {
-
                 // Modify Dependent List0
-                depListCount = inputEntryPtr->list0.listCount;
-                for (depIdx = 0; depIdx < depListCount; ++depIdx) {
-
-
+                dep_list_count = input_entry_ptr->list0.listCount;
+                for (dep_idx = 0; dep_idx < dep_list_count; ++dep_idx) {
                     // Adjust the latest currentInputPoc in case we're in a POC rollover scenario 
-                    // currentInputPoc += (currentInputPoc < inputEntryPtr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
-
-                    depPoc = POC_CIRCULAR_ADD(
-                        inputEntryPtr->picture_number, // can't use a value that gets reset
-                        inputEntryPtr->list0.list[depIdx]/*,
+                    // currentInputPoc += (currentInputPoc < input_entry_ptr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
+                    dep_poc = POC_CIRCULAR_ADD(
+                        input_entry_ptr->picture_number, // can't use a value that gets reset
+                        input_entry_ptr->list0.list[dep_idx]/*,
                                                          sequence_control_set_ptr->bitsForPictureOrderCount*/);
 
                                                          // If Dependent POC is greater or equal to the IDR POC
-                    if (depPoc >= picture_control_set_ptr->picture_number && inputEntryPtr->list0.list[depIdx]) {
-
-                        inputEntryPtr->list0.list[depIdx] = 0;
+                    if (dep_poc >= picture_control_set_ptr->picture_number && input_entry_ptr->list0.list[dep_idx]) {
+                        input_entry_ptr->list0.list[dep_idx] = 0;
 
                         // Decrement the Reference's reference_count
-                        --inputEntryPtr->dependentCount;
-
+                        --input_entry_ptr->dependentCount;
                         CHECK_REPORT_ERROR(
-                            (inputEntryPtr->dependentCount != ~0u),
+                            (input_entry_ptr->dependentCount != ~0u),
                             encode_context_ptr->app_callback_ptr,
                             EB_ENC_PD_ERROR3);
                     }
                 }
-
                 // Modify Dependent List1
-                depListCount = inputEntryPtr->list1.listCount;
-                for (depIdx = 0; depIdx < depListCount; ++depIdx) {
-
+                dep_list_count = input_entry_ptr->list1.listCount;
+                for (dep_idx = 0; dep_idx < dep_list_count; ++dep_idx) {
                     // Adjust the latest currentInputPoc in case we're in a POC rollover scenario 
-                    // currentInputPoc += (currentInputPoc < inputEntryPtr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
-
-                    depPoc = POC_CIRCULAR_ADD(
-                        inputEntryPtr->picture_number,
-                        inputEntryPtr->list1.list[depIdx]/*,
+                    // currentInputPoc += (currentInputPoc < input_entry_ptr->pocNumber) ? (1 << sequence_control_set_ptr->bitsForPictureOrderCount) : 0;
+                    dep_poc = POC_CIRCULAR_ADD(
+                        input_entry_ptr->picture_number,
+                        input_entry_ptr->list1.list[dep_idx]/*,
                                                          sequence_control_set_ptr->bitsForPictureOrderCount*/);
 
-                                                         // If Dependent POC is greater or equal to the IDR POC
-                    if ((depPoc >= picture_control_set_ptr->picture_number) && inputEntryPtr->list1.list[depIdx]) {
-                        inputEntryPtr->list1.list[depIdx] = 0;
-
+                    // If Dependent POC is greater or equal to the IDR POC
+                    if ((dep_poc >= picture_control_set_ptr->picture_number) && input_entry_ptr->list1.list[dep_idx]) {
+                        input_entry_ptr->list1.list[dep_idx] = 0;
                         // Decrement the Reference's reference_count
-                        --inputEntryPtr->dependentCount;
+                        --input_entry_ptr->dependentCount;
 
                         CHECK_REPORT_ERROR(
-                            (inputEntryPtr->dependentCount != ~0u),
+                            (input_entry_ptr->dependentCount != ~0u),
                             encode_context_ptr->app_callback_ptr,
                             EB_ENC_PD_ERROR3);
                     }
                 }
             }
-
-            // Increment the inputQueueIndex Iterator
-            inputQueueIndex = (inputQueueIndex == PICTURE_DECISION_PA_REFERENCE_QUEUE_MAX_DEPTH - 1) ? 0 : inputQueueIndex + 1;
+            // Increment the input_queue_index Iterator
+            input_queue_index = (input_queue_index == PICTURE_DECISION_PA_REFERENCE_QUEUE_MAX_DEPTH - 1) ? 0 : input_queue_index + 1;
         }
     }
 
@@ -580,8 +572,8 @@ EbBool is_supposedly_4L_reference_frame(
     uint32_t                         mini_gop_index,
     uint32_t				        picture_index) {
 
-    if ((context_ptr->miniGopHierarchicalLevels[mini_gop_index] == 4 && context_ptr->miniGopLenght[mini_gop_index] == 16 && (picture_index == 7 || picture_index == 23)) ||	// supposedly a 4L reference frame for 5L prediction structure 
-        (context_ptr->miniGopHierarchicalLevels[mini_gop_index] == 5 && context_ptr->miniGopLenght[mini_gop_index] == 32 && (picture_index == 7 || picture_index == 23))) { // supposedly a 4L reference frame for 6L prediction structure
+    if ((context_ptr->miniGopHierarchicalLevels[mini_gop_index] == 4 && context_ptr->miniGopLength[mini_gop_index] == 16 && (picture_index == 7 || picture_index == 23)) ||	// supposedly a 4L reference frame for 5L prediction structure 
+        (context_ptr->miniGopHierarchicalLevels[mini_gop_index] == 5 && context_ptr->miniGopLength[mini_gop_index] == 32 && (picture_index == 7 || picture_index == 23))) { // supposedly a 4L reference frame for 6L prediction structure
         return(EB_TRUE);
     }
     else {
@@ -860,34 +852,34 @@ void  Av1GenerateRpsInfo(
         //            2          6
         //                 4
         //base0:0                      base1:8
-        const uint8_t  base0Idx = context_ptr->miniGopToggle ? 0 : 3; //Base layer for prediction from past
-        const uint8_t  base1Idx = context_ptr->miniGopToggle ? 3 : 0; //Base layer for prediction from future
-        const uint8_t  layer1Idx = 1;
-        const uint8_t  layer2Idx = 2;
+        const uint8_t  base0_idx = context_ptr->miniGopToggle ? 0 : 3; //Base layer for prediction from past
+        const uint8_t  base1_idx = context_ptr->miniGopToggle ? 3 : 0; //Base layer for prediction from future
+        const uint8_t  layer1_idx = 1;
+        const uint8_t  layer2_idx = 2;
 
 
         switch (picture_control_set_ptr->temporal_layer_index) {
 
         case 0:
 
-            av1Rps->refDpbIndex[0] = base0Idx;
-            av1Rps->refDpbIndex[6] = base0Idx;
+            av1Rps->refDpbIndex[0] = base0_idx;
+            av1Rps->refDpbIndex[6] = base0_idx;
             av1Rps->refreshFrameMask = context_ptr->miniGopToggle ? 248 : 1;
             break;
         case 1:
-            av1Rps->refDpbIndex[0] = base0Idx;
-            av1Rps->refDpbIndex[6] = base1Idx;
+            av1Rps->refDpbIndex[0] = base0_idx;
+            av1Rps->refDpbIndex[6] = base1_idx;
             av1Rps->refreshFrameMask = 2;
             break;
         case 2:
 
             if (pictureIndex == 1) {
-                av1Rps->refDpbIndex[0] = base0Idx;
-                av1Rps->refDpbIndex[6] = layer1Idx;
+                av1Rps->refDpbIndex[0] = base0_idx;
+                av1Rps->refDpbIndex[6] = layer1_idx;
             }
             else if (pictureIndex == 5) {
-                av1Rps->refDpbIndex[0] = layer1Idx;
-                av1Rps->refDpbIndex[6] = base1Idx;
+                av1Rps->refDpbIndex[0] = layer1_idx;
+                av1Rps->refDpbIndex[6] = base1_idx;
             }
             else {
                 printf("Error in GOp indexing\n");
@@ -896,20 +888,20 @@ void  Av1GenerateRpsInfo(
             break;
         case 3:
             if (pictureIndex == 0) {
-                av1Rps->refDpbIndex[0] = base0Idx;
-                av1Rps->refDpbIndex[6] = layer2Idx;
+                av1Rps->refDpbIndex[0] = base0_idx;
+                av1Rps->refDpbIndex[6] = layer2_idx;
             }
             else if (pictureIndex == 2) {
-                av1Rps->refDpbIndex[0] = layer2Idx;
-                av1Rps->refDpbIndex[6] = layer1Idx;
+                av1Rps->refDpbIndex[0] = layer2_idx;
+                av1Rps->refDpbIndex[6] = layer1_idx;
             }
             else if (pictureIndex == 4) {
-                av1Rps->refDpbIndex[0] = layer1Idx;
-                av1Rps->refDpbIndex[6] = layer2Idx;
+                av1Rps->refDpbIndex[0] = layer1_idx;
+                av1Rps->refDpbIndex[6] = layer2_idx;
             }
             else if (pictureIndex == 6) {
-                av1Rps->refDpbIndex[0] = layer2Idx;
-                av1Rps->refDpbIndex[6] = base1Idx;
+                av1Rps->refDpbIndex[0] = layer2_idx;
+                av1Rps->refDpbIndex[6] = base1_idx;
             }
             else {
                 printf("Error in GOp indexing\n");
@@ -938,7 +930,7 @@ void  Av1GenerateRpsInfo(
             if (picture_control_set_ptr->slice_type == I_SLICE)
             {
                 //3 cases for I slice:  1:Key Frame treated above.  2: broken MiniGop due to sc or intra refresh  3: complete miniGop due to sc or intra refresh
-                if (context_ptr->miniGopLenght[0] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
+                if (context_ptr->miniGopLength[0] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
                 {
                     //Scene Change that breaks the mini gop and switch to LDP (if I scene change happens to be aligned with a complete miniGop, then we do not break the pred structure)
                     picture_control_set_ptr->showFrame = EB_TRUE;
@@ -952,7 +944,7 @@ void  Av1GenerateRpsInfo(
             }
             else//B pic
             {
-                if (context_ptr->miniGopLenght[0] != picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
+                if (context_ptr->miniGopLength[0] != picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
                     printf("Error in GOp indexing3\n");
 
                 if (picture_control_set_ptr->is_used_as_reference_flag)
@@ -966,16 +958,16 @@ void  Av1GenerateRpsInfo(
                     picture_control_set_ptr->hasShowExisting = EB_TRUE;
 
                     if (pictureIndex == 0) {
-                        picture_control_set_ptr->showExistingLoc = layer2Idx;
+                        picture_control_set_ptr->showExistingLoc = layer2_idx;
                     }
                     else if (pictureIndex == 2) {
-                        picture_control_set_ptr->showExistingLoc = layer1Idx;
+                        picture_control_set_ptr->showExistingLoc = layer1_idx;
                     }
                     else if (pictureIndex == 4) {
-                        picture_control_set_ptr->showExistingLoc = layer2Idx;
+                        picture_control_set_ptr->showExistingLoc = layer2_idx;
                     }
                     else if (pictureIndex == 6) {
-                        picture_control_set_ptr->showExistingLoc = base1Idx;
+                        picture_control_set_ptr->showExistingLoc = base1_idx;
                     }
                     else {
                         printf("Error in GOp indexing2\n");
@@ -996,8 +988,6 @@ void  Av1GenerateRpsInfo(
         //a regular I keeps the toggling process and does not reset the toggle.  K-0-1-0-1-0-K-0-1-0-1-K-0-1.....
         if (pictureIndex == context_ptr->miniGopEndIndex[0])
             context_ptr->miniGopToggle = 1 - context_ptr->miniGopToggle;
-
-
     }
 #if NEW_PRED_STRUCT
     else if (picture_control_set_ptr->hierarchical_levels == 4)//RPS for 4L GOP
@@ -1029,58 +1019,58 @@ void  Av1GenerateRpsInfo(
     //                 4                        12
     //                              8
     //base0:0                                               base1:16
-    const uint8_t  base0Idx = context_ptr->miniGopToggle ? 0 : 3; //Base layer for prediction from past
-    const uint8_t  base1Idx = context_ptr->miniGopToggle ? 3 : 0; //Base layer for prediction from future
-    const uint8_t  layer1Idx = 1;
-    const uint8_t  layer2Idx = 2;
-    const uint8_t  layer3Idx1 = 4;
-    const uint8_t  layer3Idx2 = 5;
+    const uint8_t  base0_idx = context_ptr->miniGopToggle ? 0 : 3; //Base layer for prediction from past
+    const uint8_t  base1_idx = context_ptr->miniGopToggle ? 3 : 0; //Base layer for prediction from future
+    const uint8_t  layer1_idx = 1;
+    const uint8_t  layer2_idx = 2;
+    const uint8_t  layer3_idx1 = 4;
+    const uint8_t  layer3_idx2 = 5;
 
     switch (picture_control_set_ptr->temporal_layer_index) {
 
     case 0:
 
-        av1Rps->refDpbIndex[0] = base0Idx;
-        av1Rps->refDpbIndex[6] = base0Idx;
+        av1Rps->refDpbIndex[0] = base0_idx;
+        av1Rps->refDpbIndex[6] = base0_idx;
         av1Rps->refreshFrameMask = context_ptr->miniGopToggle ? 200 : 1;
         break;
     case 1:
-        av1Rps->refDpbIndex[0] = base0Idx;
-        av1Rps->refDpbIndex[6] = base1Idx;
+        av1Rps->refDpbIndex[0] = base0_idx;
+        av1Rps->refDpbIndex[6] = base1_idx;
         av1Rps->refreshFrameMask = 2;
         break;
     case 2:
 
         if (pictureIndex == 3) {
-            av1Rps->refDpbIndex[0] = base0Idx;
-            av1Rps->refDpbIndex[6] = layer1Idx;
+            av1Rps->refDpbIndex[0] = base0_idx;
+            av1Rps->refDpbIndex[6] = layer1_idx;
         }
         else if (pictureIndex == 11) {
-            av1Rps->refDpbIndex[0] = layer1Idx;
-            av1Rps->refDpbIndex[6] = base1Idx;
+            av1Rps->refDpbIndex[0] = layer1_idx;
+            av1Rps->refDpbIndex[6] = base1_idx;
         }
         av1Rps->refreshFrameMask = 4;
         break;
     case 3:
 
         if (pictureIndex == 1) {
-            av1Rps->refDpbIndex[0] = base0Idx;
-            av1Rps->refDpbIndex[6] = layer2Idx;
+            av1Rps->refDpbIndex[0] = base0_idx;
+            av1Rps->refDpbIndex[6] = layer2_idx;
             av1Rps->refreshFrameMask = 16;
         }
         else if (pictureIndex == 5) {
-            av1Rps->refDpbIndex[0] = layer2Idx;
-            av1Rps->refDpbIndex[6] = layer1Idx;
+            av1Rps->refDpbIndex[0] = layer2_idx;
+            av1Rps->refDpbIndex[6] = layer1_idx;
             av1Rps->refreshFrameMask = 32;
         }
         else if (pictureIndex == 9) {
-            av1Rps->refDpbIndex[0] = layer1Idx;
-            av1Rps->refDpbIndex[6] = layer2Idx;
+            av1Rps->refDpbIndex[0] = layer1_idx;
+            av1Rps->refDpbIndex[6] = layer2_idx;
             av1Rps->refreshFrameMask = 16;
         }
         else if (pictureIndex == 13) {
-            av1Rps->refDpbIndex[0] = layer2Idx;
-            av1Rps->refDpbIndex[6] = base1Idx;
+            av1Rps->refDpbIndex[0] = layer2_idx;
+            av1Rps->refDpbIndex[6] = base1_idx;
             av1Rps->refreshFrameMask = 32;
         }
         else {
@@ -1089,36 +1079,36 @@ void  Av1GenerateRpsInfo(
         break;
     case 4:
         if (pictureIndex == 0) {
-            av1Rps->refDpbIndex[0] = base0Idx;
-            av1Rps->refDpbIndex[6] = layer3Idx1;
+            av1Rps->refDpbIndex[0] = base0_idx;
+            av1Rps->refDpbIndex[6] = layer3_idx1;
         }
         else if (pictureIndex == 2) {
-            av1Rps->refDpbIndex[0] = layer3Idx1;
-            av1Rps->refDpbIndex[6] = layer2Idx;
+            av1Rps->refDpbIndex[0] = layer3_idx1;
+            av1Rps->refDpbIndex[6] = layer2_idx;
         }
         else if (pictureIndex == 4) {
-            av1Rps->refDpbIndex[0] = layer2Idx;
-            av1Rps->refDpbIndex[6] = layer3Idx2;
+            av1Rps->refDpbIndex[0] = layer2_idx;
+            av1Rps->refDpbIndex[6] = layer3_idx2;
         }
         else if (pictureIndex == 6) {
-            av1Rps->refDpbIndex[0] = layer3Idx2;
-            av1Rps->refDpbIndex[6] = layer1Idx;
+            av1Rps->refDpbIndex[0] = layer3_idx2;
+            av1Rps->refDpbIndex[6] = layer1_idx;
         }
         else if (pictureIndex == 8) {
-            av1Rps->refDpbIndex[0] = layer1Idx;
-            av1Rps->refDpbIndex[6] = layer3Idx1;
+            av1Rps->refDpbIndex[0] = layer1_idx;
+            av1Rps->refDpbIndex[6] = layer3_idx1;
         }
         else if (pictureIndex == 10) {
-            av1Rps->refDpbIndex[0] = layer3Idx1;
-            av1Rps->refDpbIndex[6] = layer2Idx;
+            av1Rps->refDpbIndex[0] = layer3_idx1;
+            av1Rps->refDpbIndex[6] = layer2_idx;
         }
         else if (pictureIndex == 12) {
-            av1Rps->refDpbIndex[0] = layer2Idx;
-            av1Rps->refDpbIndex[6] = layer3Idx2;
+            av1Rps->refDpbIndex[0] = layer2_idx;
+            av1Rps->refDpbIndex[6] = layer3_idx2;
         }
         else if (pictureIndex == 14) {
-            av1Rps->refDpbIndex[0] = layer3Idx2;
-            av1Rps->refDpbIndex[6] = base1Idx;
+            av1Rps->refDpbIndex[0] = layer3_idx2;
+            av1Rps->refDpbIndex[6] = base1_idx;
         }
         else {
             printf("Error in GOp indexing\n");
@@ -1147,7 +1137,7 @@ void  Av1GenerateRpsInfo(
         if (picture_control_set_ptr->slice_type == I_SLICE)
         {
             //3 cases for I slice:  1:Key Frame treated above.  2: broken MiniGop due to sc or intra refresh  3: complete miniGop due to sc or intra refresh
-            if (context_ptr->miniGopLenght[0] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
+            if (context_ptr->miniGopLength[0] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
             {
                 //Scene Change that breaks the mini gop and switch to LDP (if I scene change happens to be aligned with a complete miniGop, then we do not break the pred structure)
                 picture_control_set_ptr->showFrame = EB_TRUE;
@@ -1161,7 +1151,7 @@ void  Av1GenerateRpsInfo(
         }
         else//B pic
         {
-            if (context_ptr->miniGopLenght[0] != picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
+            if (context_ptr->miniGopLength[0] != picture_control_set_ptr->pred_struct_ptr->predStructPeriod)
                 printf("Error in GOp indexing3\n");
 
             if (picture_control_set_ptr->is_used_as_reference_flag)
@@ -1175,28 +1165,28 @@ void  Av1GenerateRpsInfo(
                 picture_control_set_ptr->hasShowExisting = EB_TRUE;
 
                 if (pictureIndex == 0) {
-                    picture_control_set_ptr->showExistingLoc = layer3Idx1;
+                    picture_control_set_ptr->showExistingLoc = layer3_idx1;
                 }
                 else if (pictureIndex == 2) {
-                    picture_control_set_ptr->showExistingLoc = layer2Idx;
+                    picture_control_set_ptr->showExistingLoc = layer2_idx;
                 }
                 else if (pictureIndex == 4) {
-                    picture_control_set_ptr->showExistingLoc = layer3Idx2;
+                    picture_control_set_ptr->showExistingLoc = layer3_idx2;
                 }
                 else if (pictureIndex == 6) {
-                    picture_control_set_ptr->showExistingLoc = layer1Idx;
+                    picture_control_set_ptr->showExistingLoc = layer1_idx;
                 }
                 else if (pictureIndex == 8) {
-                    picture_control_set_ptr->showExistingLoc = layer3Idx1;
+                    picture_control_set_ptr->showExistingLoc = layer3_idx1;
                 }
                 else if (pictureIndex == 10) {
-                    picture_control_set_ptr->showExistingLoc = layer2Idx;
+                    picture_control_set_ptr->showExistingLoc = layer2_idx;
                 }
                 else if (pictureIndex == 12) {
-                    picture_control_set_ptr->showExistingLoc = layer3Idx2;
+                    picture_control_set_ptr->showExistingLoc = layer3_idx2;
                 }
                 else if (pictureIndex == 14) {
-                    picture_control_set_ptr->showExistingLoc = base1Idx;
+                    picture_control_set_ptr->showExistingLoc = base1_idx;
                 }
                 else {
                     printf("Error in GOp indexing2\n");
@@ -1550,7 +1540,7 @@ void* PictureDecisionKernel(void *input_ptr)
                     // Initialize Picture Block Params
                     context_ptr->miniGopStartIndex[0] = 0;
                     context_ptr->miniGopEndIndex[0] = encode_context_ptr->pre_assignment_buffer_count - 1;
-                    context_ptr->miniGopLenght[0] = encode_context_ptr->pre_assignment_buffer_count;
+                    context_ptr->miniGopLength[0] = encode_context_ptr->pre_assignment_buffer_count;
 
                     context_ptr->miniGopHierarchicalLevels[0] = sequence_control_set_ptr->static_config.hierarchical_levels; 
                     context_ptr->miniGopIntraCount[0] = encode_context_ptr->pre_assignment_buffer_intra_count;
@@ -1613,10 +1603,10 @@ void* PictureDecisionKernel(void *input_ptr)
                             sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->objectPtr;
 
                             // Keep track of the mini GOP size to which the input picture belongs - needed @ PictureManagerProcess()
-                            picture_control_set_ptr->pre_assignment_buffer_count = context_ptr->miniGopLenght[miniGopIndex];
+                            picture_control_set_ptr->pre_assignment_buffer_count = context_ptr->miniGopLength[miniGopIndex];
 
                             // Update the Pred Structure if cutting short a Random Access period
-                            if ((context_ptr->miniGopLenght[miniGopIndex] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod || context_ptr->miniGopIdrCount[miniGopIndex] > 0) &&
+                            if ((context_ptr->miniGopLength[miniGopIndex] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod || context_ptr->miniGopIdrCount[miniGopIndex] > 0) &&
 
                                 picture_control_set_ptr->pred_struct_ptr->predType == EB_PRED_RANDOM_ACCESS &&
                                 picture_control_set_ptr->idr_flag == EB_FALSE &&
@@ -1641,7 +1631,7 @@ void* PictureDecisionKernel(void *input_ptr)
 
                             }
                             // Open GOP CRA - adjust the RPS
-                            else if ((context_ptr->miniGopLenght[miniGopIndex] == picture_control_set_ptr->pred_struct_ptr->predStructPeriod) &&
+                            else if ((context_ptr->miniGopLength[miniGopIndex] == picture_control_set_ptr->pred_struct_ptr->predStructPeriod) &&
 
                                 (picture_control_set_ptr->pred_struct_ptr->predType == EB_PRED_RANDOM_ACCESS || picture_control_set_ptr->pred_struct_ptr->temporalLayerCount == 1) &&
                                 picture_control_set_ptr->idr_flag == EB_FALSE &&
@@ -1680,7 +1670,7 @@ void* PictureDecisionKernel(void *input_ptr)
                                 encode_context_ptr->pred_struct_position = picture_control_set_ptr->pred_struct_ptr->initPicIndex;
                             }
 
-                            else if (picture_control_set_ptr->cra_flag == EB_TRUE && context_ptr->miniGopLenght[miniGopIndex] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod) {
+                            else if (picture_control_set_ptr->cra_flag == EB_TRUE && context_ptr->miniGopLength[miniGopIndex] < picture_control_set_ptr->pred_struct_ptr->predStructPeriod) {
 
                                 encode_context_ptr->pred_struct_position = picture_control_set_ptr->pred_struct_ptr->initPicIndex;
                             }
@@ -1792,7 +1782,7 @@ void* PictureDecisionKernel(void *input_ptr)
 
                             // Set the Decode Order
                             if ((context_ptr->miniGopIdrCount[miniGopIndex] == 0) &&
-                                (context_ptr->miniGopLenght[miniGopIndex] == picture_control_set_ptr->pred_struct_ptr->predStructPeriod))
+                                (context_ptr->miniGopLength[miniGopIndex] == picture_control_set_ptr->pred_struct_ptr->predStructPeriod))
 
                             {
                                 picture_control_set_ptr->decode_order = encode_context_ptr->decode_base_number + predPositionPtr->decode_order;
@@ -2230,7 +2220,7 @@ void* PictureDecisionKernel(void *input_ptr)
                             if (pictureIndex == context_ptr->miniGopEndIndex[miniGopIndex]) {
 
                                 // Increment the Decode Base Number
-                                encode_context_ptr->decode_base_number += context_ptr->miniGopLenght[miniGopIndex];
+                                encode_context_ptr->decode_base_number += context_ptr->miniGopLength[miniGopIndex];
                             }
 
                             if (pictureIndex == encode_context_ptr->pre_assignment_buffer_count - 1) {
