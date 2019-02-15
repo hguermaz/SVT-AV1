@@ -284,16 +284,16 @@ one more than the minimum. */
 #define SUBPEL_MASK ((1 << SUBPEL_BITS) - 1)
 #define SUBPEL_SHIFTS (1 << SUBPEL_BITS)
 #define SUBPEL_TAPS 8
-    typedef int16_t InterpKernel[SUBPEL_TAPS];
+typedef int16_t InterpKernel[SUBPEL_TAPS];
 
-    /***************************************************/
-    /****************** Helper Macros ******************/
-    /***************************************************/
-    void aom_reset_mmx_state(void);
-    extern void RunEmms();
+/***************************************************/
+/****************** Helper Macros ******************/
+/***************************************************/
+void aom_reset_mmx_state(void);
+extern void RunEmms();
 #define aom_clear_system_state() RunEmms() //aom_reset_mmx_state()
 
-    /* Shift down with rounding for use when n >= 0, value >= 0 */
+/* Shift down with rounding for use when n >= 0, value >= 0 */
 #define ROUND_POWER_OF_TWO(value, n) (((value)+(((1 << (n)) >> 1))) >> (n))
 
 /* Shift down with rounding for signed integers, for use when n >= 0 */
@@ -330,7 +330,7 @@ one more than the minimum. */
 #elif defined(_MSC_VER)
 #define DECLARE_ALIGNED(n, typ, val) __declspec(align(n)) typ val
 #else
-    #warning No alignment directives known for this compiler.
+#warning No alignment directives known for this compiler.
 #define DECLARE_ALIGNED(n, typ, val) typ val
 #endif
 
@@ -347,7 +347,7 @@ one more than the minimum. */
 #define AOM_INLINE __inline
 #else
 #define AOM_FORCE_INLINE __inline__ __attribute__((always_inline))
-        // TODO(jbb): Allow a way to force inline off for older compilers.
+    // TODO(jbb): Allow a way to force inline off for older compilers.
 #define AOM_INLINE inline
 #endif
     //*********************************************************************************************************************//
@@ -377,73 +377,73 @@ one more than the minimum. */
 #undef MEM_VALUE_T_SZ_BITS
 #define MEM_VALUE_T_SZ_BITS (sizeof(MEM_VALUE_T) << 3)
 
-        static __inline void mem_put_le16(void *vmem, MEM_VALUE_T val) {
-        MAU_T *mem = (MAU_T *)vmem;
+static __inline void mem_put_le16(void *vmem, MEM_VALUE_T val) {
+    MAU_T *mem = (MAU_T *)vmem;
 
-        mem[0] = (MAU_T)((val >> 0) & 0xff);
-        mem[1] = (MAU_T)((val >> 8) & 0xff);
+    mem[0] = (MAU_T)((val >> 0) & 0xff);
+    mem[1] = (MAU_T)((val >> 8) & 0xff);
+}
+
+static __inline void mem_put_le32(void *vmem, MEM_VALUE_T val) {
+    MAU_T *mem = (MAU_T *)vmem;
+
+    mem[0] = (MAU_T)((val >> 0) & 0xff);
+    mem[1] = (MAU_T)((val >> 8) & 0xff);
+    mem[2] = (MAU_T)((val >> 16) & 0xff);
+    mem[3] = (MAU_T)((val >> 24) & 0xff);
+}
+/* clang-format on */
+//#endif  // AOM_PORTS_MEM_OPS_H_
+
+typedef uint16_t CONV_BUF_TYPE;
+typedef struct ConvolveParams {
+    int32_t ref;
+    int32_t do_average;
+    CONV_BUF_TYPE *dst;
+    int32_t dst_stride;
+    int32_t round_0;
+    int32_t round_1;
+    int32_t plane;
+    int32_t is_compound;
+    int32_t use_jnt_comp_avg;
+    int32_t fwd_offset;
+    int32_t bck_offset;
+} ConvolveParams;
+
+// texture component type
+typedef enum ATTRIBUTE_PACKED
+{
+    COMPONENT_LUMA = 0,            // luma
+    COMPONENT_CHROMA = 1,            // chroma (Cb+Cr)
+    COMPONENT_CHROMA_CB = 2,            // chroma Cb
+    COMPONENT_CHROMA_CR = 3,            // chroma Cr
+    COMPONENT_ALL = 4,            // Y+Cb+Cr
+    COMPONENT_NONE = 15
+}COMPONENT_TYPE;
+
+static int32_t clamp(int32_t value, int32_t low, int32_t high) {
+    return value < low ? low : (value > high ? high : value);
+}
+
+static INLINE int64_t clamp64(int64_t value, int64_t low, int64_t high) {
+    return value < low ? low : (value > high ? high : value);
+}
+
+static INLINE uint8_t clip_pixel(int32_t val) {
+    return (uint8_t)((val > 255) ? 255 : (val < 0) ? 0 : val);
+}
+
+static INLINE uint16_t clip_pixel_highbd(int32_t val, int32_t bd) {
+    switch (bd) {
+    case 8:
+    default: return (uint16_t)clamp(val, 0, 255);
+    case 10: return (uint16_t)clamp(val, 0, 1023);
+    case 12: return (uint16_t)clamp(val, 0, 4095);
     }
-
-    static __inline void mem_put_le32(void *vmem, MEM_VALUE_T val) {
-        MAU_T *mem = (MAU_T *)vmem;
-
-        mem[0] = (MAU_T)((val >> 0) & 0xff);
-        mem[1] = (MAU_T)((val >> 8) & 0xff);
-        mem[2] = (MAU_T)((val >> 16) & 0xff);
-        mem[3] = (MAU_T)((val >> 24) & 0xff);
-    }
-    /* clang-format on */
-    //#endif  // AOM_PORTS_MEM_OPS_H_
-
-    typedef uint16_t CONV_BUF_TYPE;
-    typedef struct ConvolveParams {
-        int32_t ref;
-        int32_t do_average;
-        CONV_BUF_TYPE *dst;
-        int32_t dst_stride;
-        int32_t round_0;
-        int32_t round_1;
-        int32_t plane;
-        int32_t is_compound;
-        int32_t use_jnt_comp_avg;
-        int32_t fwd_offset;
-        int32_t bck_offset;
-    } ConvolveParams;
-
-    // texture component type
-    typedef enum ATTRIBUTE_PACKED
-    {
-        COMPONENT_LUMA = 0,            // luma
-        COMPONENT_CHROMA = 1,            // chroma (Cb+Cr)
-        COMPONENT_CHROMA_CB = 2,            // chroma Cb
-        COMPONENT_CHROMA_CR = 3,            // chroma Cr
-        COMPONENT_ALL = 4,            // Y+Cb+Cr
-        COMPONENT_NONE = 15
-    }COMPONENT_TYPE;
-
-    static int32_t clamp(int32_t value, int32_t low, int32_t high) {
-        return value < low ? low : (value > high ? high : value);
-    }
-
-    static INLINE int64_t clamp64(int64_t value, int64_t low, int64_t high) {
-        return value < low ? low : (value > high ? high : value);
-    }
-
-    static INLINE uint8_t clip_pixel(int32_t val) {
-        return (uint8_t)((val > 255) ? 255 : (val < 0) ? 0 : val);
-    }
-
-    static INLINE uint16_t clip_pixel_highbd(int32_t val, int32_t bd) {
-        switch (bd) {
-        case 8:
-        default: return (uint16_t)clamp(val, 0, 255);
-        case 10: return (uint16_t)clamp(val, 0, 1023);
-        case 12: return (uint16_t)clamp(val, 0, 4095);
-        }
-    }
-    //*********************************************************************************************************************//
-    // enums.h
-    /*!\brief Decorator indicating that given struct/union/enum is packed */
+}
+//*********************************************************************************************************************//
+// enums.h
+/*!\brief Decorator indicating that given struct/union/enum is packed */
 #ifndef ATTRIBUTE_PACKED
 #if defined(__GNUC__) && __GNUC__
 #define ATTRIBUTE_PACKED __attribute__((packed))
@@ -454,201 +454,201 @@ one more than the minimum. */
 #endif
 #endif /* ATTRIBUTE_PACKED */
 
-    typedef enum ATTRIBUTE_PACKED
-    {
-        EIGHTTAP_REGULAR,
-        EIGHTTAP_SMOOTH,
-        MULTITAP_SHARP,
-        BILINEAR,
-        INTERP_FILTERS_ALL,
-        SWITCHABLE_FILTERS = BILINEAR,
-        SWITCHABLE = SWITCHABLE_FILTERS + 1, /* the last switchable one */
-        EXTRA_FILTERS = INTERP_FILTERS_ALL - SWITCHABLE_FILTERS,
-    }InterpFilter;
+typedef enum ATTRIBUTE_PACKED
+{
+    EIGHTTAP_REGULAR,
+    EIGHTTAP_SMOOTH,
+    MULTITAP_SHARP,
+    BILINEAR,
+    INTERP_FILTERS_ALL,
+    SWITCHABLE_FILTERS = BILINEAR,
+    SWITCHABLE = SWITCHABLE_FILTERS + 1, /* the last switchable one */
+    EXTRA_FILTERS = INTERP_FILTERS_ALL - SWITCHABLE_FILTERS,
+}InterpFilter;
 
 
-    typedef struct InterpFilterParams {
-        const int16_t *filter_ptr;
-        uint16_t taps;
-        uint16_t subpel_shifts;
-        InterpFilter interp_filter;
-    } InterpFilterParams;
-
-
-
-
-    typedef enum COMPOUND_DIST_WEIGHT_MODE {
-        DIST,
-    } COMPOUND_DIST_WEIGHT_MODE;
-
-
-    // Profile 0.  8-bit and 10-bit 4:2:0 and 4:0:0 only.
-    // Profile 1.  8-bit and 10-bit 4:4:4
-    // Profile 2.  8-bit and 10-bit 4:2:2
-    //            12 bit  4:0:0, 4:2:2 and 4:4:4
-    typedef enum BITSTREAM_PROFILE {
-        PROFILE_0,
-        PROFILE_1,
-        PROFILE_2,
-        MAX_PROFILES
-    } BITSTREAM_PROFILE;
-    // Note: Some enums use the attribute 'packed' to use smallest possible integer
-    // type, so that we can save memory when they are used in structs/arrays.
+typedef struct InterpFilterParams {
+    const int16_t *filter_ptr;
+    uint16_t taps;
+    uint16_t subpel_shifts;
+    InterpFilter interp_filter;
+} InterpFilterParams;
 
 
 
-    typedef enum ATTRIBUTE_PACKED {
-        BLOCK_4X4,
-        BLOCK_4X8,
-        BLOCK_8X4,
-        BLOCK_8X8,
-        BLOCK_8X16,
-        BLOCK_16X8,
-        BLOCK_16X16,
-        BLOCK_16X32,
-        BLOCK_32X16,
-        BLOCK_32X32,
-        BLOCK_32X64,
-        BLOCK_64X32,
-        BLOCK_64X64,
-        BLOCK_64X128,
-        BLOCK_128X64,
-        BLOCK_128X128,
-        BLOCK_4X16,
-        BLOCK_16X4,
-        BLOCK_8X32,
-        BLOCK_32X8,
-        BLOCK_16X64,
-        BLOCK_64X16,
-        BlockSizeS_ALL,
-        BlockSizeS = BLOCK_4X16,
-        BLOCK_INVALID = 255,
-        BLOCK_LARGEST = (BlockSizeS - 1)
-    } BlockSize;
 
-    typedef enum ATTRIBUTE_PACKED {
-        PARTITION_NONE,
-        PARTITION_HORZ,
-        PARTITION_VERT,
-        PARTITION_SPLIT,
-        PARTITION_HORZ_A,  // HORZ split and the top partition is split again
-        PARTITION_HORZ_B,  // HORZ split and the bottom partition is split again
-        PARTITION_VERT_A,  // VERT split and the left partition is split again
-        PARTITION_VERT_B,  // VERT split and the right partition is split again
-        PARTITION_HORZ_4,  // 4:1 horizontal partition
-        PARTITION_VERT_4,  // 4:1 vertical partition
-        EXT_PARTITION_TYPES,
-        PARTITION_TYPES = PARTITION_SPLIT + 1,
-        PARTITION_INVALID = 255
-    } PartitionType;
+typedef enum COMPOUND_DIST_WEIGHT_MODE {
+    DIST,
+} COMPOUND_DIST_WEIGHT_MODE;
+
+
+// Profile 0.  8-bit and 10-bit 4:2:0 and 4:0:0 only.
+// Profile 1.  8-bit and 10-bit 4:4:4
+// Profile 2.  8-bit and 10-bit 4:2:2
+//            12 bit  4:0:0, 4:2:2 and 4:4:4
+typedef enum BITSTREAM_PROFILE {
+    PROFILE_0,
+    PROFILE_1,
+    PROFILE_2,
+    MAX_PROFILES
+} BITSTREAM_PROFILE;
+// Note: Some enums use the attribute 'packed' to use smallest possible integer
+// type, so that we can save memory when they are used in structs/arrays.
+
+
+
+typedef enum ATTRIBUTE_PACKED {
+    BLOCK_4X4,
+    BLOCK_4X8,
+    BLOCK_8X4,
+    BLOCK_8X8,
+    BLOCK_8X16,
+    BLOCK_16X8,
+    BLOCK_16X16,
+    BLOCK_16X32,
+    BLOCK_32X16,
+    BLOCK_32X32,
+    BLOCK_32X64,
+    BLOCK_64X32,
+    BLOCK_64X64,
+    BLOCK_64X128,
+    BLOCK_128X64,
+    BLOCK_128X128,
+    BLOCK_4X16,
+    BLOCK_16X4,
+    BLOCK_8X32,
+    BLOCK_32X8,
+    BLOCK_16X64,
+    BLOCK_64X16,
+    BlockSizeS_ALL,
+    BlockSizeS = BLOCK_4X16,
+    BLOCK_INVALID = 255,
+    BLOCK_LARGEST = (BlockSizeS - 1)
+} BlockSize;
+
+typedef enum ATTRIBUTE_PACKED {
+    PARTITION_NONE,
+    PARTITION_HORZ,
+    PARTITION_VERT,
+    PARTITION_SPLIT,
+    PARTITION_HORZ_A,  // HORZ split and the top partition is split again
+    PARTITION_HORZ_B,  // HORZ split and the bottom partition is split again
+    PARTITION_VERT_A,  // VERT split and the left partition is split again
+    PARTITION_VERT_B,  // VERT split and the right partition is split again
+    PARTITION_HORZ_4,  // 4:1 horizontal partition
+    PARTITION_VERT_4,  // 4:1 vertical partition
+    EXT_PARTITION_TYPES,
+    PARTITION_TYPES = PARTITION_SPLIT + 1,
+    PARTITION_INVALID = 255
+} PartitionType;
 
 
 #define MAX_NUM_BLOCKS_ALLOC  7493  //max number of blocks assuming 128x128-4x4 all partitions.
 
-    typedef enum ATTRIBUTE_PACKED {
-        PART_N,
-        PART_H,
-        PART_V,
-        PART_HA,
-        PART_HB,
-        PART_VA,
-        PART_VB,
-        PART_H4,
-        PART_V4,
-        PART_S
-    } PART;
+typedef enum ATTRIBUTE_PACKED {
+    PART_N,
+    PART_H,
+    PART_V,
+    PART_HA,
+    PART_HB,
+    PART_VA,
+    PART_VB,
+    PART_H4,
+    PART_V4,
+    PART_S
+} PART;
 
 
 
-    static const uint8_t mi_size_wide[BlockSizeS_ALL] = {
-        1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 16, 32, 32, 1, 4, 2, 8, 4, 16
-    };
-    static const uint8_t mi_size_high[BlockSizeS_ALL] = {
-        1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 4, 1, 8, 2, 16, 4
-    };
+static const uint8_t mi_size_wide[BlockSizeS_ALL] = {
+    1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 16, 32, 32, 1, 4, 2, 8, 4, 16
+};
+static const uint8_t mi_size_high[BlockSizeS_ALL] = {
+    1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 4, 1, 8, 2, 16, 4
+};
 
-    typedef char PARTITION_CONTEXT;
+typedef char PARTITION_CONTEXT;
 #define PARTITION_PLOFFSET 4  // number of probability models per block size
 #define PARTITION_BlockSizeS 5
 #define PARTITION_CONTEXTS (PARTITION_BlockSizeS * PARTITION_PLOFFSET)
 
-    // block transform size
+// block transform size
 #if defined(_MSC_VER)
-    typedef uint8_t TxSize;
-    enum ATTRIBUTE_PACKED {
+typedef uint8_t TxSize;
+enum ATTRIBUTE_PACKED {
 #else
-    typedef enum ATTRIBUTE_PACKED {
+typedef enum ATTRIBUTE_PACKED {
 #endif
-        TX_4X4,             // 4x4 transform
-        TX_8X8,             // 8x8 transform
-        TX_16X16,           // 16x16 transform
-        TX_32X32,           // 32x32 transform
-        TX_64X64,           // 64x64 transform
-        TX_4X8,             // 4x8 transform
-        TX_8X4,             // 8x4 transform
-        TX_8X16,            // 8x16 transform
-        TX_16X8,            // 16x8 transform
-        TX_16X32,           // 16x32 transform
-        TX_32X16,           // 32x16 transform
-        TX_32X64,           // 32x64 transform
-        TX_64X32,           // 64x32 transform
-        TX_4X16,            // 4x16 transform
-        TX_16X4,            // 16x4 transform
-        TX_8X32,            // 8x32 transform
-        TX_32X8,            // 32x8 transform
-        TX_16X64,           // 16x64 transform
-        TX_64X16,           // 64x16 transform
-        TX_SIZES_ALL,       // Includes rectangular transforms
-        TX_SIZES = TX_4X8,  // Does NOT include rectangular transforms
-        TX_SIZES_LARGEST = TX_64X64,
-        TX_INVALID = 255  // Invalid transform size
+    TX_4X4,             // 4x4 transform
+    TX_8X8,             // 8x8 transform
+    TX_16X16,           // 16x16 transform
+    TX_32X32,           // 32x32 transform
+    TX_64X64,           // 64x64 transform
+    TX_4X8,             // 4x8 transform
+    TX_8X4,             // 8x4 transform
+    TX_8X16,            // 8x16 transform
+    TX_16X8,            // 16x8 transform
+    TX_16X32,           // 16x32 transform
+    TX_32X16,           // 32x16 transform
+    TX_32X64,           // 32x64 transform
+    TX_64X32,           // 64x32 transform
+    TX_4X16,            // 4x16 transform
+    TX_16X4,            // 16x4 transform
+    TX_8X32,            // 8x32 transform
+    TX_32X8,            // 32x8 transform
+    TX_16X64,           // 16x64 transform
+    TX_64X16,           // 64x16 transform
+    TX_SIZES_ALL,       // Includes rectangular transforms
+    TX_SIZES = TX_4X8,  // Does NOT include rectangular transforms
+    TX_SIZES_LARGEST = TX_64X64,
+    TX_INVALID = 255  // Invalid transform size
 
 #if defined(_MSC_VER)
-    };
+};
 #else
-    } TxSize;
+} TxSize;
 #endif
 
-    static const int32_t tx_size_wide[TX_SIZES_ALL] = {
-        4, 8, 16, 32, 64, 4, 8, 8, 16, 16, 32, 32, 64, 4, 16, 8, 32, 16, 64,
-    };
-    // Transform block height in pixels
-    static const int32_t tx_size_high[TX_SIZES_ALL] = {
-        4, 8, 16, 32, 64, 8, 4, 16, 8, 32, 16, 64, 32, 16, 4, 32, 8, 64, 16,
-    };
+static const int32_t tx_size_wide[TX_SIZES_ALL] = {
+    4, 8, 16, 32, 64, 4, 8, 8, 16, 16, 32, 32, 64, 4, 16, 8, 32, 16, 64,
+};
+// Transform block height in pixels
+static const int32_t tx_size_high[TX_SIZES_ALL] = {
+    4, 8, 16, 32, 64, 8, 4, 16, 8, 32, 16, 64, 32, 16, 4, 32, 8, 64, 16,
+};
 
-    // tran_low_t  is the datatype used for final transform coefficients.
-    typedef int32_t tran_low_t;
-    typedef uint8_t qm_val_t;
+ // tran_low_t  is the datatype used for final transform coefficients.
+typedef int32_t tran_low_t;
+typedef uint8_t qm_val_t;
 
-    typedef enum TX_CLASS {
-        TX_CLASS_2D = 0,
-        TX_CLASS_HORIZ = 1,
-        TX_CLASS_VERT = 2,
-        TX_CLASSES = 3,
-    } TX_CLASS;
+typedef enum TX_CLASS {
+    TX_CLASS_2D = 0,
+    TX_CLASS_HORIZ = 1,
+    TX_CLASS_VERT = 2,
+    TX_CLASSES = 3,
+} TX_CLASS;
 
 
-    static INLINE TxSize av1_get_adjusted_tx_size(TxSize tx_size) {
-        switch (tx_size) {
-        case TX_64X64:
-        case TX_64X32:
-        case TX_32X64: return TX_32X32;
-        case TX_64X16: return TX_32X16;
-        case TX_16X64: return TX_16X32;
-        default: return tx_size;
-        }
+static INLINE TxSize av1_get_adjusted_tx_size(TxSize tx_size) {
+    switch (tx_size) {
+    case TX_64X64:
+    case TX_64X32:
+    case TX_32X64: return TX_32X32;
+    case TX_64X16: return TX_32X16;
+    case TX_16X64: return TX_16X32;
+    default: return tx_size;
     }
+}
 
-    // Transform block width in log2
-    static const int32_t tx_size_wide_log2[TX_SIZES_ALL] = {
-        2, 3, 4, 5, 6, 2, 3, 3, 4, 4, 5, 5, 6, 2, 4, 3, 5, 4, 6,
-    };
+// Transform block width in log2
+static const int32_t tx_size_wide_log2[TX_SIZES_ALL] = {
+    2, 3, 4, 5, 6, 2, 3, 3, 4, 4, 5, 5, 6, 2, 4, 3, 5, 4, 6,
+};
 
-    // Transform block height in log2
-    static const int32_t tx_size_high_log2[TX_SIZES_ALL] = {
-        2, 3, 4, 5, 6, 3, 2, 4, 3, 5, 4, 6, 5, 4, 2, 5, 3, 6, 4,
-    };
+// Transform block height in log2
+static const int32_t tx_size_high_log2[TX_SIZES_ALL] = {
+    2, 3, 4, 5, 6, 3, 2, 4, 3, 5, 4, 6, 5, 4, 2, 5, 3, 6, 4,
+};
 #define ALIGN_POWER_OF_TWO(value, n) \
 (((value) + ((1 << (n)) - 1)) & ~((1 << (n)) - 1))
 #define AOM_PLANE_Y 0       /**< Y (Luminance) plane */
@@ -665,90 +665,90 @@ one more than the minimum. */
 #define AOMMAX(x, y) (((x) > (y)) ? (x) : (y))
 
 
-    // frame transform mode
-    typedef enum ATTRIBUTE_PACKED {
-        ONLY_4X4,         // use only 4x4 transform
-        TX_MODE_LARGEST,  // transform size is the largest possible for pu size
-        TX_MODE_SELECT,   // transform specified for each block
-        TX_MODES,
-    } TX_MODE;
+// frame transform mode
+typedef enum ATTRIBUTE_PACKED {
+    ONLY_4X4,         // use only 4x4 transform
+    TX_MODE_LARGEST,  // transform size is the largest possible for pu size
+    TX_MODE_SELECT,   // transform specified for each block
+    TX_MODES,
+} TX_MODE;
 
-    // 1D tx types
-    typedef enum ATTRIBUTE_PACKED {
-        DCT_1D,
-        ADST_1D,
-        FLIPADST_1D,
-        IDTX_1D,
-        // TODO(sarahparker) need to eventually put something here for the
-        // mrc experiment to make this work with the ext-tx pruning functions
-        TX_TYPES_1D,
-    } TX_TYPE_1D;
+// 1D tx types
+typedef enum ATTRIBUTE_PACKED {
+    DCT_1D,
+    ADST_1D,
+    FLIPADST_1D,
+    IDTX_1D,
+    // TODO(sarahparker) need to eventually put something here for the
+    // mrc experiment to make this work with the ext-tx pruning functions
+    TX_TYPES_1D,
+} TX_TYPE_1D;
 
-    typedef enum ATTRIBUTE_PACKED {
-        DCT_DCT,    // DCT  in both horizontal and vertical
-        ADST_DCT,   // ADST in vertical, DCT in horizontal
-        DCT_ADST,   // DCT  in vertical, ADST in horizontal
-        ADST_ADST,  // ADST in both directions
-        FLIPADST_DCT,
-        DCT_FLIPADST,
-        FLIPADST_FLIPADST,
-        ADST_FLIPADST,
-        FLIPADST_ADST,
-        IDTX,
-        V_DCT,
-        H_DCT,
-        V_ADST,
-        H_ADST,
-        V_FLIPADST,
-        H_FLIPADST,
-        TX_TYPES,
-    } TxType;
+typedef enum ATTRIBUTE_PACKED {
+    DCT_DCT,    // DCT  in both horizontal and vertical
+    ADST_DCT,   // ADST in vertical, DCT in horizontal
+    DCT_ADST,   // DCT  in vertical, ADST in horizontal
+    ADST_ADST,  // ADST in both directions
+    FLIPADST_DCT,
+    DCT_FLIPADST,
+    FLIPADST_FLIPADST,
+    ADST_FLIPADST,
+    FLIPADST_ADST,
+    IDTX,
+    V_DCT,
+    H_DCT,
+    V_ADST,
+    H_ADST,
+    V_FLIPADST,
+    H_FLIPADST,
+    TX_TYPES,
+} TxType;
 
-    typedef enum ATTRIBUTE_PACKED {
-        // DCT only
-        EXT_TX_SET_DCTONLY,
-        // DCT + Identity only
-        EXT_TX_SET_DCT_IDTX,
-        // Discrete Trig transforms w/o flip (4) + Identity (1)
-        EXT_TX_SET_DTT4_IDTX,
-        // Discrete Trig transforms w/o flip (4) + Identity (1) + 1D Hor/vert DCT (2)
-        EXT_TX_SET_DTT4_IDTX_1DDCT,
-        // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver DCT (2)
-        EXT_TX_SET_DTT9_IDTX_1DDCT,
-        // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver (6)
-        EXT_TX_SET_ALL16,
-        EXT_TX_SET_TYPES
-    } TxSetType;
+typedef enum ATTRIBUTE_PACKED {
+    // DCT only
+    EXT_TX_SET_DCTONLY,
+    // DCT + Identity only
+    EXT_TX_SET_DCT_IDTX,
+    // Discrete Trig transforms w/o flip (4) + Identity (1)
+    EXT_TX_SET_DTT4_IDTX,
+    // Discrete Trig transforms w/o flip (4) + Identity (1) + 1D Hor/vert DCT (2)
+    EXT_TX_SET_DTT4_IDTX_1DDCT,
+    // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver DCT (2)
+    EXT_TX_SET_DTT9_IDTX_1DDCT,
+    // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver (6)
+    EXT_TX_SET_ALL16,
+    EXT_TX_SET_TYPES
+} TxSetType;
 
-    typedef struct txfm_param {
-        // for both forward and inverse transforms
-        TxType tx_type;
-        TxSize tx_size;
-        int32_t lossless;
-        int32_t bd;
-        // are the pixel buffers octets or shorts?  This should collapse to
-        // bd==8 implies !is_hbd, but that's not certain right now.
-        int32_t is_hbd;
-        TxSetType tx_set_type;
-        // for inverse transforms only
-        int32_t eob;
-    } TxfmParam;
+typedef struct txfm_param {
+    // for both forward and inverse transforms
+    TxType tx_type;
+    TxSize tx_size;
+    int32_t lossless;
+    int32_t bd;
+    // are the pixel buffers octets or shorts?  This should collapse to
+    // bd==8 implies !is_hbd, but that's not certain right now.
+    int32_t is_hbd;
+    TxSetType tx_set_type;
+    // for inverse transforms only
+    int32_t eob;
+} TxfmParam;
 #define IS_2D_TRANSFORM(tx_type) (tx_type < IDTX)
 #define EXT_TX_SIZES 4       // number of sizes that use extended transforms
 #define EXT_TX_SETS_INTER 4  // Sets of transform selections for INTER
 #define EXT_TX_SETS_INTRA 3  // Sets of transform selections for INTRA
 
-    typedef enum ATTRIBUTE_PACKED {
-        UNIDIR_COMP_REFERENCE,
-        BIDIR_COMP_REFERENCE,
-        COMP_REFERENCE_TYPES,
-    } COMP_REFERENCE_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+    UNIDIR_COMP_REFERENCE,
+    BIDIR_COMP_REFERENCE,
+    COMP_REFERENCE_TYPES,
+} COMP_REFERENCE_TYPE;
 
-    typedef enum ATTRIBUTE_PACKED {
-        PLANE_TYPE_Y,
-        PLANE_TYPE_UV,
-        PLANE_TYPES
-    } PLANE_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+    PLANE_TYPE_Y,
+    PLANE_TYPE_UV,
+    PLANE_TYPES
+} PLANE_TYPE;
 
 #define CFL_ALPHABET_SIZE_LOG2 4
 #define CFL_ALPHABET_SIZE (1 << CFL_ALPHABET_SIZE_LOG2)
@@ -756,26 +756,26 @@ one more than the minimum. */
 #define CFL_IDX_U(idx) (idx >> CFL_ALPHABET_SIZE_LOG2)
 #define CFL_IDX_V(idx) (idx & (CFL_ALPHABET_SIZE - 1))
 
-    typedef enum ATTRIBUTE_PACKED {
-        CFL_PRED_U,
-        CFL_PRED_V,
-        CFL_PRED_PLANES
-    } CFL_PRED_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+    CFL_PRED_U,
+    CFL_PRED_V,
+    CFL_PRED_PLANES
+} CFL_PRED_TYPE;
 
-    typedef enum ATTRIBUTE_PACKED {
-        CFL_SIGN_ZERO,
-        CFL_SIGN_NEG,
-        CFL_SIGN_POS,
-        CFL_SIGNS
-    } CFL_SIGN_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+    CFL_SIGN_ZERO,
+    CFL_SIGN_NEG,
+    CFL_SIGN_POS,
+    CFL_SIGNS
+} CFL_SIGN_TYPE;
 
-    typedef enum ATTRIBUTE_PACKED {
-        CFL_DISALLOWED,
-        CFL_ALLOWED,
-        CFL_ALLOWED_TYPES
-    } CFL_ALLOWED_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+    CFL_DISALLOWED,
+    CFL_ALLOWED,
+    CFL_ALLOWED_TYPES
+} CFL_ALLOWED_TYPE;
 
-    // CFL_SIGN_ZERO,CFL_SIGN_ZERO is invalid
+// CFL_SIGN_ZERO,CFL_SIGN_ZERO is invalid
 #define CFL_JOINT_SIGNS (CFL_SIGNS * CFL_SIGNS - 1)
 // CFL_SIGN_U is equivalent to (js + 1) / 3 for js in 0 to 8
 #define CFL_SIGN_U(js) (((js + 1) * 11) >> 5)
@@ -790,132 +790,132 @@ one more than the minimum. */
 #define CFL_CONTEXT_V(js) \
 (CFL_SIGN_V(js) * CFL_SIGNS + CFL_SIGN_U(js) - CFL_SIGNS)
 
-    typedef enum ATTRIBUTE_PACKED {
-        PALETTE_MAP,
-        COLOR_MAP_TYPES,
-    } COLOR_MAP_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+    PALETTE_MAP,
+    COLOR_MAP_TYPES,
+} COLOR_MAP_TYPE;
 
-    typedef enum ATTRIBUTE_PACKED {
-        TWO_COLORS,
-        THREE_COLORS,
-        FOUR_COLORS,
-        FIVE_COLORS,
-        SIX_COLORS,
-        SEVEN_COLORS,
-        EIGHT_COLORS,
-        PALETTE_SIZES
-    } PALETTE_SIZE;
+typedef enum ATTRIBUTE_PACKED {
+    TWO_COLORS,
+    THREE_COLORS,
+    FOUR_COLORS,
+    FIVE_COLORS,
+    SIX_COLORS,
+    SEVEN_COLORS,
+    EIGHT_COLORS,
+    PALETTE_SIZES
+} PALETTE_SIZE;
 
-    typedef enum ATTRIBUTE_PACKED {
-        PALETTE_COLOR_ONE,
-        PALETTE_COLOR_TWO,
-        PALETTE_COLOR_THREE,
-        PALETTE_COLOR_FOUR,
-        PALETTE_COLOR_FIVE,
-        PALETTE_COLOR_SIX,
-        PALETTE_COLOR_SEVEN,
-        PALETTE_COLOR_EIGHT,
-        PALETTE_COLORS
-    } PALETTE_COLOR;
+typedef enum ATTRIBUTE_PACKED {
+    PALETTE_COLOR_ONE,
+    PALETTE_COLOR_TWO,
+    PALETTE_COLOR_THREE,
+    PALETTE_COLOR_FOUR,
+    PALETTE_COLOR_FIVE,
+    PALETTE_COLOR_SIX,
+    PALETTE_COLOR_SEVEN,
+    PALETTE_COLOR_EIGHT,
+    PALETTE_COLORS
+} PALETTE_COLOR;
 
-    // Note: All directional predictors must be between V_PRED and D67_PRED (both
-    // inclusive).
-    typedef enum ATTRIBUTE_PACKED {
-        DC_PRED,        // Average of above and left pixels
-        V_PRED,         // Vertical
-        H_PRED,         // Horizontal
-        D45_PRED,       // Directional 45  degree
-        D135_PRED,      // Directional 135 degree
-        D113_PRED,      // Directional 113 degree
-        D157_PRED,      // Directional 157 degree
-        D203_PRED,      // Directional 203 degree
-        D67_PRED,       // Directional 67  degree
-        SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
-        SMOOTH_V_PRED,  // Vertical interpolation
-        SMOOTH_H_PRED,  // Horizontal interpolation
-        PAETH_PRED,     // Predict from the direction of smallest gradient
-        NEARESTMV,
-        NEARMV,
-        GLOBALMV,
-        NEWMV,
-        // Compound ref compound modes
-        NEAREST_NEARESTMV,
-        NEAR_NEARMV,
-        NEAREST_NEWMV,
-        NEW_NEARESTMV,
-        NEAR_NEWMV,
-        NEW_NEARMV,
-        GLOBAL_GLOBALMV,
-        NEW_NEWMV,
-        MB_MODE_COUNT,
+// Note: All directional predictors must be between V_PRED and D67_PRED (both
+// inclusive).
+typedef enum ATTRIBUTE_PACKED {
+    DC_PRED,        // Average of above and left pixels
+    V_PRED,         // Vertical
+    H_PRED,         // Horizontal
+    D45_PRED,       // Directional 45  degree
+    D135_PRED,      // Directional 135 degree
+    D113_PRED,      // Directional 113 degree
+    D157_PRED,      // Directional 157 degree
+    D203_PRED,      // Directional 203 degree
+    D67_PRED,       // Directional 67  degree
+    SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
+    SMOOTH_V_PRED,  // Vertical interpolation
+    SMOOTH_H_PRED,  // Horizontal interpolation
+    PAETH_PRED,     // Predict from the direction of smallest gradient
+    NEARESTMV,
+    NEARMV,
+    GLOBALMV,
+    NEWMV,
+    // Compound ref compound modes
+    NEAREST_NEARESTMV,
+    NEAR_NEARMV,
+    NEAREST_NEWMV,
+    NEW_NEARESTMV,
+    NEAR_NEWMV,
+    NEW_NEARMV,
+    GLOBAL_GLOBALMV,
+    NEW_NEWMV,
+    MB_MODE_COUNT,
 
-        INTRA_MODE_START = DC_PRED,
-        INTRA_MODE_END = NEARESTMV,
-        INTRA_MODE_NUM = INTRA_MODE_END - INTRA_MODE_START,
-        SINGLE_INTER_MODE_START = NEARESTMV,
-        SINGLE_INTER_MODE_END = NEAREST_NEARESTMV,
-        SINGLE_INTER_MODE_NUM = SINGLE_INTER_MODE_END - SINGLE_INTER_MODE_START,
-        COMP_INTER_MODE_START = NEAREST_NEARESTMV,
-        COMP_INTER_MODE_END = MB_MODE_COUNT,
-        COMP_INTER_MODE_NUM = COMP_INTER_MODE_END - COMP_INTER_MODE_START,
+    INTRA_MODE_START = DC_PRED,
+    INTRA_MODE_END = NEARESTMV,
+    INTRA_MODE_NUM = INTRA_MODE_END - INTRA_MODE_START,
+    SINGLE_INTER_MODE_START = NEARESTMV,
+    SINGLE_INTER_MODE_END = NEAREST_NEARESTMV,
+    SINGLE_INTER_MODE_NUM = SINGLE_INTER_MODE_END - SINGLE_INTER_MODE_START,
+    COMP_INTER_MODE_START = NEAREST_NEARESTMV,
+    COMP_INTER_MODE_END = MB_MODE_COUNT,
+    COMP_INTER_MODE_NUM = COMP_INTER_MODE_END - COMP_INTER_MODE_START,
 
 
-        INTRA_MODES = PAETH_PRED + 1,  // PAETH_PRED has to be the last intra mode.
-        INTRA_INVALID = MB_MODE_COUNT,  // For uv_mode in inter blocks
-        INTRA_MODE_4x4
-    } PredictionMode;
+    INTRA_MODES = PAETH_PRED + 1,  // PAETH_PRED has to be the last intra mode.
+    INTRA_INVALID = MB_MODE_COUNT,  // For uv_mode in inter blocks
+    INTRA_MODE_4x4
+} PredictionMode;
 
-    // TODO(ltrudeau) Do we really want to pack this?
-    // TODO(ltrudeau) Do we match with PredictionMode?
-    typedef enum ATTRIBUTE_PACKED {
-        UV_DC_PRED,        // Average of above and left pixels
-        UV_V_PRED,         // Vertical
-        UV_H_PRED,         // Horizontal
-        UV_D45_PRED,       // Directional 45  degree
-        UV_D135_PRED,      // Directional 135 degree
-        UV_D113_PRED,      // Directional 113 degree
-        UV_D157_PRED,      // Directional 157 degree
-        UV_D203_PRED,      // Directional 203 degree
-        UV_D67_PRED,       // Directional 67  degree
-        UV_SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
-        UV_SMOOTH_V_PRED,  // Vertical interpolation
-        UV_SMOOTH_H_PRED,  // Horizontal interpolation
-        UV_PAETH_PRED,     // Predict from the direction of smallest gradient
-        UV_CFL_PRED,       // Chroma-from-Luma
-        UV_INTRA_MODES,
-        UV_MODE_INVALID,  // For uv_mode in inter blocks
-    } UV_PredictionMode;
+// TODO(ltrudeau) Do we really want to pack this?
+// TODO(ltrudeau) Do we match with PredictionMode?
+typedef enum ATTRIBUTE_PACKED {
+    UV_DC_PRED,        // Average of above and left pixels
+    UV_V_PRED,         // Vertical
+    UV_H_PRED,         // Horizontal
+    UV_D45_PRED,       // Directional 45  degree
+    UV_D135_PRED,      // Directional 135 degree
+    UV_D113_PRED,      // Directional 113 degree
+    UV_D157_PRED,      // Directional 157 degree
+    UV_D203_PRED,      // Directional 203 degree
+    UV_D67_PRED,       // Directional 67  degree
+    UV_SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
+    UV_SMOOTH_V_PRED,  // Vertical interpolation
+    UV_SMOOTH_H_PRED,  // Horizontal interpolation
+    UV_PAETH_PRED,     // Predict from the direction of smallest gradient
+    UV_CFL_PRED,       // Chroma-from-Luma
+    UV_INTRA_MODES,
+    UV_MODE_INVALID,  // For uv_mode in inter blocks
+} UV_PredictionMode;
 
-    typedef enum ATTRIBUTE_PACKED {
-        SIMPLE_TRANSLATION,
-        OBMC_CAUSAL,    // 2-sided OBMC
-        WARPED_CAUSAL,  // 2-sided WARPED
-        MOTION_MODES
-    } MOTION_MODE;
+typedef enum ATTRIBUTE_PACKED {
+    SIMPLE_TRANSLATION,
+    OBMC_CAUSAL,    // 2-sided OBMC
+    WARPED_CAUSAL,  // 2-sided WARPED
+    MOTION_MODES
+} MOTION_MODE;
 
-    typedef enum ATTRIBUTE_PACKED {
-        II_DC_PRED,
-        II_V_PRED,
-        II_H_PRED,
-        II_SMOOTH_PRED,
-        INTERINTRA_MODES
-    } INTERINTRA_MODE;
+typedef enum ATTRIBUTE_PACKED {
+    II_DC_PRED,
+    II_V_PRED,
+    II_H_PRED,
+    II_SMOOTH_PRED,
+    INTERINTRA_MODES
+} INTERINTRA_MODE;
 
-    typedef enum {
-        COMPOUND_AVERAGE,
-        COMPOUND_WEDGE,
-        COMPOUND_DIFFWTD,
-        COMPOUND_TYPES,
-    } COMPOUND_TYPE;
+typedef enum {
+    COMPOUND_AVERAGE,
+    COMPOUND_WEDGE,
+    COMPOUND_DIFFWTD,
+    COMPOUND_TYPES,
+} COMPOUND_TYPE;
 
-    typedef enum ATTRIBUTE_PACKED {
-        FILTER_DC_PRED,
-        FILTER_V_PRED,
-        FILTER_H_PRED,
-        FILTER_D157_PRED,
-        FILTER_PAETH_PRED,
-        FILTER_INTRA_MODES,
-    } FILTER_INTRA_MODE;
+typedef enum ATTRIBUTE_PACKED {
+    FILTER_DC_PRED,
+    FILTER_V_PRED,
+    FILTER_H_PRED,
+    FILTER_D157_PRED,
+    FILTER_PAETH_PRED,
+    FILTER_INTRA_MODES,
+} FILTER_INTRA_MODE;
 
 #define DIRECTIONAL_MODES 8
 #define MAX_ANGLE_DELTA 3
@@ -955,7 +955,7 @@ one more than the minimum. */
 #define DELTA_LF_PROBS (DELTA_LF_SMALL)
 #define DEFAULT_DELTA_LF_RES 2
 
-    /* Segment Feature Masks */
+/* Segment Feature Masks */
 #define MAX_MV_REF_CANDIDATES 2
 
 #define MAX_REF_MV_STACK_SIZE 8
@@ -969,7 +969,7 @@ one more than the minimum. */
 #define UNI_COMP_REF_CONTEXTS 3
 
 #define TXFM_PARTITION_CONTEXTS ((TX_SIZES - TX_8X8) * 6 - 3)
-    typedef uint8_t TXFM_CONTEXT;
+typedef uint8_t TXFM_CONTEXT;
 
 #define NONE_FRAME -1
 #define INTRA_FRAME 0
@@ -993,45 +993,45 @@ one more than the minimum. */
 
 #define SINGLE_REFS (FWD_REFS + BWD_REFS)
 
-    typedef enum ATTRIBUTE_PACKED {
-        LAST_LAST2_FRAMES,      // { LAST_FRAME, LAST2_FRAME }
-        LAST_LAST3_FRAMES,      // { LAST_FRAME, LAST3_FRAME }
-        LAST_GOLDEN_FRAMES,     // { LAST_FRAME, GOLDEN_FRAME }
-        BWDREF_ALTREF_FRAMES,   // { BWDREF_FRAME, ALTREF_FRAME }
-        LAST2_LAST3_FRAMES,     // { LAST2_FRAME, LAST3_FRAME }
-        LAST2_GOLDEN_FRAMES,    // { LAST2_FRAME, GOLDEN_FRAME }
-        LAST3_GOLDEN_FRAMES,    // { LAST3_FRAME, GOLDEN_FRAME }
-        BWDREF_ALTREF2_FRAMES,  // { BWDREF_FRAME, ALTREF2_FRAME }
-        ALTREF2_ALTREF_FRAMES,  // { ALTREF2_FRAME, ALTREF_FRAME }
-        TOTAL_UNIDIR_COMP_REFS,
-        // NOTE: UNIDIR_COMP_REFS is the number of uni-directional reference pairs
-        //       that are explicitly signaled.
-        UNIDIR_COMP_REFS = BWDREF_ALTREF_FRAMES + 1,
-    } UNIDIR_COMP_REF;
+typedef enum ATTRIBUTE_PACKED {
+    LAST_LAST2_FRAMES,      // { LAST_FRAME, LAST2_FRAME }
+    LAST_LAST3_FRAMES,      // { LAST_FRAME, LAST3_FRAME }
+    LAST_GOLDEN_FRAMES,     // { LAST_FRAME, GOLDEN_FRAME }
+    BWDREF_ALTREF_FRAMES,   // { BWDREF_FRAME, ALTREF_FRAME }
+    LAST2_LAST3_FRAMES,     // { LAST2_FRAME, LAST3_FRAME }
+    LAST2_GOLDEN_FRAMES,    // { LAST2_FRAME, GOLDEN_FRAME }
+    LAST3_GOLDEN_FRAMES,    // { LAST3_FRAME, GOLDEN_FRAME }
+    BWDREF_ALTREF2_FRAMES,  // { BWDREF_FRAME, ALTREF2_FRAME }
+    ALTREF2_ALTREF_FRAMES,  // { ALTREF2_FRAME, ALTREF_FRAME }
+    TOTAL_UNIDIR_COMP_REFS,
+    // NOTE: UNIDIR_COMP_REFS is the number of uni-directional reference pairs
+    //       that are explicitly signaled.
+    UNIDIR_COMP_REFS = BWDREF_ALTREF_FRAMES + 1,
+} UNIDIR_COMP_REF;
 
 #define TOTAL_COMP_REFS (FWD_REFS * BWD_REFS + TOTAL_UNIDIR_COMP_REFS)
 
 #define COMP_REFS (FWD_REFS * BWD_REFS + UNIDIR_COMP_REFS)
 
-    // NOTE: A limited number of unidirectional reference pairs can be signalled for
-    //       compound prediction. The use of skip mode, on the other hand, makes it
-    //       possible to have a reference pair not listed for explicit signaling.
+// NOTE: A limited number of unidirectional reference pairs can be signalled for
+//       compound prediction. The use of skip mode, on the other hand, makes it
+//       possible to have a reference pair not listed for explicit signaling.
 #define MODE_CTX_REF_FRAMES (TOTAL_REFS_PER_FRAME + TOTAL_COMP_REFS)
 
-    typedef enum ATTRIBUTE_PACKED {
-        RESTORE_NONE,
-        RESTORE_WIENER,
-        RESTORE_SGRPROJ,
-        RESTORE_SWITCHABLE,
-        RESTORE_SWITCHABLE_TYPES = RESTORE_SWITCHABLE,
-        RESTORE_TYPES = 4,
-    } RestorationType;
+typedef enum ATTRIBUTE_PACKED {
+    RESTORE_NONE,
+    RESTORE_WIENER,
+    RESTORE_SGRPROJ,
+    RESTORE_SWITCHABLE,
+    RESTORE_SWITCHABLE_TYPES = RESTORE_SWITCHABLE,
+    RESTORE_TYPES = 4,
+} RestorationType;
 
 #define SUPERRES_SCALE_BITS 3
 #define SUPERRES_SCALE_DENOMINATOR_MIN (SCALE_NUMERATOR + 1)
 
-    //*********************************************************************************************************************//
-    // assert.h
+//*********************************************************************************************************************//
+// assert.h
 #undef assert
 
 #ifdef NDEBUG
@@ -1077,431 +1077,431 @@ one more than the minimum. */
 #define MAX_NUM_OPERATING_POINTS \
 MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
 
-    static INLINE int32_t is_valid_seq_level_idx(uint8_t seq_level_idx) {
-        return seq_level_idx < 24 || seq_level_idx == 31;
-    }
-    typedef struct BitstreamLevel {
-        uint8_t major;
-        uint8_t minor;
-    } BitstreamLevel;
+static INLINE int32_t is_valid_seq_level_idx(uint8_t seq_level_idx) {
+    return seq_level_idx < 24 || seq_level_idx == 31;
+}
+typedef struct BitstreamLevel {
+    uint8_t major;
+    uint8_t minor;
+} BitstreamLevel;
 
-    // TODO(jingning): Turning this on to set up transform coefficient
-    // processing timer.
+// TODO(jingning): Turning this on to set up transform coefficient
+// processing timer.
 #define TXCOEFF_TIMER 0
 #define TXCOEFF_COST_TIMER 0
 
-    typedef enum {
-        SINGLE_REFERENCE = 0,
-        COMPOUND_REFERENCE = 1,
-        REFERENCE_MODE_SELECT = 2,
-        REFERENCE_MODES = 3,
-    } ReferenceMode;
+typedef enum {
+    SINGLE_REFERENCE = 0,
+    COMPOUND_REFERENCE = 1,
+    REFERENCE_MODE_SELECT = 2,
+    REFERENCE_MODES = 3,
+} ReferenceMode;
 
-    typedef enum {
-        /**
-        * Frame context updates are disabled
-        */
-        REFRESH_FRAME_CONTEXT_DISABLED,
-        /**
-        * Update frame context to values resulting from backward probability
-        * updates based on entropy/counts in the decoded frame
-        */
-        REFRESH_FRAME_CONTEXT_BACKWARD,
-    } RefreshFrameContextMode;
-
-
-    //**********************************************************************************************************************//
-    // aom_codec.h
-    /*!\brief Algorithm return codes */
-    typedef enum {
-        /*!\brief Operation completed without error */
-        AOM_CODEC_OK,
-
-        /*!\brief Unspecified error */
-        AOM_CODEC_ERROR,
-
-        /*!\brief Memory operation failed */
-        AOM_CODEC_MEM_ERROR,
-
-        /*!\brief ABI version mismatch */
-        AOM_CODEC_ABI_MISMATCH,
-
-        /*!\brief Algorithm does not have required capability */
-        AOM_CODEC_INCAPABLE,
-
-        /*!\brief The given bitstream is not supported.
-        *
-        * The bitstream was unable to be parsed at the highest level. The decoder
-        * is unable to proceed. This error \ref SHOULD be treated as fatal to the
-        * stream. */
-        AOM_CODEC_UNSUP_BITSTREAM,
-
-        /*!\brief Encoded bitstream uses an unsupported feature
-        *
-        * The decoder does not implement a feature required by the encoder. This
-        * return code should only be used for features that prevent future
-        * pictures from being properly decoded. This error \ref MAY be treated as
-        * fatal to the stream or \ref MAY be treated as fatal to the current GOP.
-        */
-        AOM_CODEC_UNSUP_FEATURE,
-
-        /*!\brief The coded data for this stream is corrupt or incomplete
-        *
-        * There was a problem decoding the current frame.  This return code
-        * should only be used for failures that prevent future pictures from
-        * being properly decoded. This error \ref MAY be treated as fatal to the
-        * stream or \ref MAY be treated as fatal to the current GOP. If decoding
-        * is continued for the current GOP, artifacts may be present.
-        */
-        AOM_CODEC_CORRUPT_FRAME,
-
-        /*!\brief An application-supplied parameter is not valid.
-        *
-        */
-        AOM_CODEC_INVALID_PARAM,
-
-        /*!\brief An iterator reached the end of list.
-        *
-        */
-        AOM_CODEC_LIST_END
-
-    } aom_codec_err_t;
-
-    //**********************************************************************************************************************//
-    // Common_data.h
-    static const int32_t intra_mode_context[INTRA_MODES] = {
-        0, 1, 2, 3, 4, 4, 4, 4, 3, 0, 1, 2, 0,
-    };
-
-    static const TxSize txsize_sqr_map[TX_SIZES_ALL] = {
-        TX_4X4,    // TX_4X4
-        TX_8X8,    // TX_8X8
-        TX_16X16,  // TX_16X16
-        TX_32X32,  // TX_32X32
-        TX_64X64,  // TX_64X64
-        TX_4X4,    // TX_4X8
-        TX_4X4,    // TX_8X4
-        TX_8X8,    // TX_8X16
-        TX_8X8,    // TX_16X8
-        TX_16X16,  // TX_16X32
-        TX_16X16,  // TX_32X16
-        TX_32X32,  // TX_32X64
-        TX_32X32,  // TX_64X32
-        TX_4X4,    // TX_4X16
-        TX_4X4,    // TX_16X4
-        TX_8X8,    // TX_8X32
-        TX_8X8,    // TX_32X8
-        TX_16X16,  // TX_16X64
-        TX_16X16,  // TX_64X16
-    };
-    static const TxSize txsize_sqr_up_map[TX_SIZES_ALL] = {
-        TX_4X4,    // TX_4X4
-        TX_8X8,    // TX_8X8
-        TX_16X16,  // TX_16X16
-        TX_32X32,  // TX_32X32
-        TX_64X64,  // TX_64X64
-        TX_8X8,    // TX_4X8
-        TX_8X8,    // TX_8X4
-        TX_16X16,  // TX_8X16
-        TX_16X16,  // TX_16X8
-        TX_32X32,  // TX_16X32
-        TX_32X32,  // TX_32X16
-        TX_64X64,  // TX_32X64
-        TX_64X64,  // TX_64X32
-        TX_16X16,  // TX_4X16
-        TX_16X16,  // TX_16X4
-        TX_32X32,  // TX_8X32
-        TX_32X32,  // TX_32X8
-        TX_64X64,  // TX_16X64
-        TX_64X64,  // TX_64X16
-    };
-
-    // above and left partition
-    typedef struct PartitionContext {
-        PARTITION_CONTEXT above;
-        PARTITION_CONTEXT left;
-    }PartitionContext;
-    // Generates 5 bit field in which each bit set to 1 represents
-    // a blocksize partition  11111 means we split 128x128, 64x64, 32x32, 16x16
-    // and 8x8.  10000 means we just split the 128x128 to 64x64
-    /* clang-format off */
-    static const struct {
-        PARTITION_CONTEXT above;
-        PARTITION_CONTEXT left;
-    } partition_context_lookup[BlockSizeS_ALL] = {
-        { 31, 31 },  // 4X4   - {0b11111, 0b11111}
-    { 31, 30 },  // 4X8   - {0b11111, 0b11110}
-    { 30, 31 },  // 8X4   - {0b11110, 0b11111}
-    { 30, 30 },  // 8X8   - {0b11110, 0b11110}
-    { 30, 28 },  // 8X16  - {0b11110, 0b11100}
-    { 28, 30 },  // 16X8  - {0b11100, 0b11110}
-    { 28, 28 },  // 16X16 - {0b11100, 0b11100}
-    { 28, 24 },  // 16X32 - {0b11100, 0b11000}
-    { 24, 28 },  // 32X16 - {0b11000, 0b11100}
-    { 24, 24 },  // 32X32 - {0b11000, 0b11000}
-    { 24, 16 },  // 32X64 - {0b11000, 0b10000}
-    { 16, 24 },  // 64X32 - {0b10000, 0b11000}
-    { 16, 16 },  // 64X64 - {0b10000, 0b10000}
-    { 16, 0 },   // 64X128- {0b10000, 0b00000}
-    { 0, 16 },   // 128X64- {0b00000, 0b10000}
-    { 0, 0 },    // 128X128-{0b00000, 0b00000}
-    { 31, 28 },  // 4X16  - {0b11111, 0b11100}
-    { 28, 31 },  // 16X4  - {0b11100, 0b11111}
-    { 30, 24 },  // 8X32  - {0b11110, 0b11000}
-    { 24, 30 },  // 32X8  - {0b11000, 0b11110}
-    { 28, 16 },  // 16X64 - {0b11100, 0b10000}
-    { 16, 28 },  // 64X16 - {0b10000, 0b11100}
-    };
-    /* clang-format on */
+typedef enum {
+    /**
+    * Frame context updates are disabled
+    */
+    REFRESH_FRAME_CONTEXT_DISABLED,
+    /**
+    * Update frame context to values resulting from backward probability
+    * updates based on entropy/counts in the decoded frame
+    */
+    REFRESH_FRAME_CONTEXT_BACKWARD,
+} RefreshFrameContextMode;
 
 
-    // Width/height lookup tables in units of various block sizes
-    static const uint8_t block_size_wide[BlockSizeS_ALL] = {
-        4, 4, 8, 8, 8, 16, 16, 16, 32, 32, 32,
-        64, 64, 64, 128, 128, 4, 16, 8, 32, 16, 64
-    };
+//**********************************************************************************************************************//
+// aom_codec.h
+/*!\brief Algorithm return codes */
+typedef enum {
+    /*!\brief Operation completed without error */
+    AOM_CODEC_OK,
 
-    static const uint8_t block_size_high[BlockSizeS_ALL] = {
-        4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 64,
-        32, 64, 128, 64, 128, 16, 4, 32, 8, 64, 16
-    };
+    /*!\brief Unspecified error */
+    AOM_CODEC_ERROR,
 
-    // AOMMIN(3, AOMMIN(b_width_log2(bsize), b_height_log2(bsize)))
-    static const uint8_t size_group_lookup[BlockSizeS_ALL] = {
-        0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 1, 2, 2
-    };
+    /*!\brief Memory operation failed */
+    AOM_CODEC_MEM_ERROR,
 
-    static const uint8_t num_pels_log2_lookup[BlockSizeS_ALL] = {
-        4, 5, 5, 6, 7, 7, 8, 9, 9, 10, 11, 11, 12, 13, 13, 14, 6, 6, 8, 8, 10, 10
-    };
-    static const TxSize max_txsize_lookup[BlockSizeS_ALL] = {
-        //                   4X4
-        TX_4X4,
-        // 4X8,    8X4,      8X8
-        TX_4X4, TX_4X4, TX_8X8,
-        // 8X16,   16X8,     16X16
-        TX_8X8, TX_8X8, TX_16X16,
-        // 16X32,  32X16,    32X32
-        TX_16X16, TX_16X16, TX_32X32,
-        // 32X64,  64X32,
-        TX_32X32, TX_32X32,
-        // 64X64
-        TX_64X64,
-        // 64x128, 128x64,   128x128
-        TX_64X64, TX_64X64, TX_64X64,
-        // 4x16,   16x4,     8x32
-        TX_4X4, TX_4X4, TX_8X8,
-        // 32x8,   16x64     64x16
-        TX_8X8, TX_16X16, TX_16X16
-    };
+    /*!\brief ABI version mismatch */
+    AOM_CODEC_ABI_MISMATCH,
 
-    static const TxSize max_txsize_rect_lookup[BlockSizeS_ALL] = {
-        // 4X4
-        TX_4X4,
-        // 4X8,    8X4,      8X8
-        TX_4X8, TX_8X4, TX_8X8,
-        // 8X16,   16X8,     16X16
-        TX_8X16, TX_16X8, TX_16X16,
-        // 16X32,  32X16,    32X32
-        TX_16X32, TX_32X16, TX_32X32,
-        // 32X64,  64X32,
-        TX_32X64, TX_64X32,
-        // 64X64
-        TX_64X64,
-        // 64x128, 128x64,   128x128
-        TX_64X64, TX_64X64, TX_64X64,
-        // 4x16,   16x4,
-        TX_4X16, TX_16X4,
-        // 8x32,   32x8
-        TX_8X32, TX_32X8,
-        // 16x64,  64x16
-        TX_16X64, TX_64X16
-    };
+    /*!\brief Algorithm does not have required capability */
+    AOM_CODEC_INCAPABLE,
 
-    // Transform block width in unit
-    static const int32_t tx_size_wide_unit[TX_SIZES_ALL] = {
-        1, 2, 4, 8, 16, 1, 2, 2, 4, 4, 8, 8, 16, 1, 4, 2, 8, 4, 16,
-    };
-    // Transform block height in unit
-    static const int32_t tx_size_high_unit[TX_SIZES_ALL] = {
-        1, 2, 4, 8, 16, 2, 1, 4, 2, 8, 4, 16, 8, 4, 1, 8, 2, 16, 4,
-    };
+    /*!\brief The given bitstream is not supported.
+    *
+    * The bitstream was unable to be parsed at the highest level. The decoder
+    * is unable to proceed. This error \ref SHOULD be treated as fatal to the
+    * stream. */
+    AOM_CODEC_UNSUP_BITSTREAM,
 
+    /*!\brief Encoded bitstream uses an unsupported feature
+    *
+    * The decoder does not implement a feature required by the encoder. This
+    * return code should only be used for features that prevent future
+    * pictures from being properly decoded. This error \ref MAY be treated as
+    * fatal to the stream or \ref MAY be treated as fatal to the current GOP.
+    */
+    AOM_CODEC_UNSUP_FEATURE,
 
-    static const TxSize sub_tx_size_map[TX_SIZES_ALL] = {
-        TX_4X4,    // TX_4X4
-        TX_4X4,    // TX_8X8
-        TX_8X8,    // TX_16X16
-        TX_16X16,  // TX_32X32
-        TX_32X32,  // TX_64X64
-        TX_4X4,    // TX_4X8
-        TX_4X4,    // TX_8X4
-        TX_8X8,    // TX_8X16
-        TX_8X8,    // TX_16X8
-        TX_16X16,  // TX_16X32
-        TX_16X16,  // TX_32X16
-        TX_32X32,  // TX_32X64
-        TX_32X32,  // TX_64X32
-        TX_4X8,    // TX_4X16
-        TX_8X4,    // TX_16X4
-        TX_8X16,   // TX_8X32
-        TX_16X8,   // TX_32X8
-        TX_16X32,  // TX_16X64
-        TX_32X16,  // TX_64X16
-    };
-    static const TxSize txsize_horz_map[TX_SIZES_ALL] = {
-        TX_4X4,    // TX_4X4
-        TX_8X8,    // TX_8X8
-        TX_16X16,  // TX_16X16
-        TX_32X32,  // TX_32X32
-        TX_64X64,  // TX_64X64
-        TX_4X4,    // TX_4X8
-        TX_8X8,    // TX_8X4
-        TX_8X8,    // TX_8X16
-        TX_16X16,  // TX_16X8
-        TX_16X16,  // TX_16X32
-        TX_32X32,  // TX_32X16
-        TX_32X32,  // TX_32X64
-        TX_64X64,  // TX_64X32
-        TX_4X4,    // TX_4X16
-        TX_16X16,  // TX_16X4
-        TX_8X8,    // TX_8X32
-        TX_32X32,  // TX_32X8
-        TX_16X16,  // TX_16X64
-        TX_64X64,  // TX_64X16
-    };
+    /*!\brief The coded data for this stream is corrupt or incomplete
+    *
+    * There was a problem decoding the current frame.  This return code
+    * should only be used for failures that prevent future pictures from
+    * being properly decoded. This error \ref MAY be treated as fatal to the
+    * stream or \ref MAY be treated as fatal to the current GOP. If decoding
+    * is continued for the current GOP, artifacts may be present.
+    */
+    AOM_CODEC_CORRUPT_FRAME,
 
-    static const TxSize txsize_vert_map[TX_SIZES_ALL] = {
-        TX_4X4,    // TX_4X4
-        TX_8X8,    // TX_8X8
-        TX_16X16,  // TX_16X16
-        TX_32X32,  // TX_32X32
-        TX_64X64,  // TX_64X64
-        TX_8X8,    // TX_4X8
-        TX_4X4,    // TX_8X4
-        TX_16X16,  // TX_8X16
-        TX_8X8,    // TX_16X8
-        TX_32X32,  // TX_16X32
-        TX_16X16,  // TX_32X16
-        TX_64X64,  // TX_32X64
-        TX_32X32,  // TX_64X32
-        TX_16X16,  // TX_4X16
-        TX_4X4,    // TX_16X4
-        TX_32X32,  // TX_8X32
-        TX_8X8,    // TX_32X8
-        TX_64X64,  // TX_16X64
-        TX_16X16,  // TX_64X16
-    };
-    static const uint8_t mi_size_wide_log2[BlockSizeS_ALL] = {
-        0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 0, 2, 1, 3, 2, 4
-    };
-    static const uint8_t mi_size_high_log2[BlockSizeS_ALL] = {
-        0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 2, 0, 3, 1, 4, 2
-    };
+    /*!\brief An application-supplied parameter is not valid.
+    *
+    */
+    AOM_CODEC_INVALID_PARAM,
 
-    typedef enum aom_bit_depth {
-        AOM_BITS_8 = 8,   /**<  8 bits */
-        AOM_BITS_10 = 10, /**< 10 bits */
-        AOM_BITS_12 = 12, /**< 12 bits */
-    } aom_bit_depth_t;
+    /*!\brief An iterator reached the end of list.
+    *
+    */
+    AOM_CODEC_LIST_END
 
-    typedef struct {
-        int32_t r[2];  // radii
-        int32_t s[2];  // sgr parameters for r[0] and r[1], based on GenSgrprojVtable()
-    } sgr_params_type;
+} aom_codec_err_t;
 
-    //**********************************************************************************************************************//
-    // blockd.h
-    typedef enum {
-        KEY_FRAME = 0,
-        INTER_FRAME = 1,
-        INTRA_ONLY_FRAME = 2,  // replaces intra-only
-        S_FRAME = 3,
-        FRAME_TYPES,
-    } FRAME_TYPE;
+//**********************************************************************************************************************//
+// Common_data.h
+static const int32_t intra_mode_context[INTRA_MODES] = {
+    0, 1, 2, 3, 4, 4, 4, 4, 3, 0, 1, 2, 0,
+};
 
-    typedef int8_t MvReferenceFrame;
+static const TxSize txsize_sqr_map[TX_SIZES_ALL] = {
+    TX_4X4,    // TX_4X4
+    TX_8X8,    // TX_8X8
+    TX_16X16,  // TX_16X16
+    TX_32X32,  // TX_32X32
+    TX_64X64,  // TX_64X64
+    TX_4X4,    // TX_4X8
+    TX_4X4,    // TX_8X4
+    TX_8X8,    // TX_8X16
+    TX_8X8,    // TX_16X8
+    TX_16X16,  // TX_16X32
+    TX_16X16,  // TX_32X16
+    TX_32X32,  // TX_32X64
+    TX_32X32,  // TX_64X32
+    TX_4X4,    // TX_4X16
+    TX_4X4,    // TX_16X4
+    TX_8X8,    // TX_8X32
+    TX_8X8,    // TX_32X8
+    TX_16X16,  // TX_16X64
+    TX_16X16,  // TX_64X16
+};
+static const TxSize txsize_sqr_up_map[TX_SIZES_ALL] = {
+    TX_4X4,    // TX_4X4
+    TX_8X8,    // TX_8X8
+    TX_16X16,  // TX_16X16
+    TX_32X32,  // TX_32X32
+    TX_64X64,  // TX_64X64
+    TX_8X8,    // TX_4X8
+    TX_8X8,    // TX_8X4
+    TX_16X16,  // TX_8X16
+    TX_16X16,  // TX_16X8
+    TX_32X32,  // TX_16X32
+    TX_32X32,  // TX_32X16
+    TX_64X64,  // TX_32X64
+    TX_64X64,  // TX_64X32
+    TX_16X16,  // TX_4X16
+    TX_16X16,  // TX_16X4
+    TX_32X32,  // TX_8X32
+    TX_32X32,  // TX_32X8
+    TX_64X64,  // TX_16X64
+    TX_64X64,  // TX_64X16
+};
 
-    // Number of transform types in each set type
-
-    static const int32_t av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
-        1, 2, 5, 7, 12, 16,
-    };
-
-    static const int32_t av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
-        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
-    { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
-    { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-    };
-
-    static INLINE TxSetType get_ext_tx_set_type(TxSize tx_size, int32_t is_inter,
-        int32_t use_reduced_set) {
-        const TxSize tx_size_sqr_up = txsize_sqr_up_map[tx_size];
+// above and left partition
+typedef struct PartitionContext {
+    PARTITION_CONTEXT above;
+    PARTITION_CONTEXT left;
+}PartitionContext;
+// Generates 5 bit field in which each bit set to 1 represents
+// a blocksize partition  11111 means we split 128x128, 64x64, 32x32, 16x16
+// and 8x8.  10000 means we just split the 128x128 to 64x64
+/* clang-format off */
+static const struct {
+    PARTITION_CONTEXT above;
+    PARTITION_CONTEXT left;
+} partition_context_lookup[BlockSizeS_ALL] = {
+    { 31, 31 },  // 4X4   - {0b11111, 0b11111}
+{ 31, 30 },  // 4X8   - {0b11111, 0b11110}
+{ 30, 31 },  // 8X4   - {0b11110, 0b11111}
+{ 30, 30 },  // 8X8   - {0b11110, 0b11110}
+{ 30, 28 },  // 8X16  - {0b11110, 0b11100}
+{ 28, 30 },  // 16X8  - {0b11100, 0b11110}
+{ 28, 28 },  // 16X16 - {0b11100, 0b11100}
+{ 28, 24 },  // 16X32 - {0b11100, 0b11000}
+{ 24, 28 },  // 32X16 - {0b11000, 0b11100}
+{ 24, 24 },  // 32X32 - {0b11000, 0b11000}
+{ 24, 16 },  // 32X64 - {0b11000, 0b10000}
+{ 16, 24 },  // 64X32 - {0b10000, 0b11000}
+{ 16, 16 },  // 64X64 - {0b10000, 0b10000}
+{ 16, 0 },   // 64X128- {0b10000, 0b00000}
+{ 0, 16 },   // 128X64- {0b00000, 0b10000}
+{ 0, 0 },    // 128X128-{0b00000, 0b00000}
+{ 31, 28 },  // 4X16  - {0b11111, 0b11100}
+{ 28, 31 },  // 16X4  - {0b11100, 0b11111}
+{ 30, 24 },  // 8X32  - {0b11110, 0b11000}
+{ 24, 30 },  // 32X8  - {0b11000, 0b11110}
+{ 28, 16 },  // 16X64 - {0b11100, 0b10000}
+{ 16, 28 },  // 64X16 - {0b10000, 0b11100}
+};
+/* clang-format on */
 
 
-        if (tx_size_sqr_up > TX_32X32) return EXT_TX_SET_DCTONLY;
-        if (tx_size_sqr_up == TX_32X32)
-            return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
-        if (use_reduced_set)
-            return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
-        const TxSize tx_size_sqr = txsize_sqr_map[tx_size];
-        if (is_inter) {
-            return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
-                : EXT_TX_SET_ALL16);
-        }
-        else {
-            return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
-                : EXT_TX_SET_DTT4_IDTX_1DDCT);
-        }
+// Width/height lookup tables in units of various block sizes
+static const uint8_t block_size_wide[BlockSizeS_ALL] = {
+    4, 4, 8, 8, 8, 16, 16, 16, 32, 32, 32,
+    64, 64, 64, 128, 128, 4, 16, 8, 32, 16, 64
+};
+
+static const uint8_t block_size_high[BlockSizeS_ALL] = {
+    4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 64,
+    32, 64, 128, 64, 128, 16, 4, 32, 8, 64, 16
+};
+
+// AOMMIN(3, AOMMIN(b_width_log2(bsize), b_height_log2(bsize)))
+static const uint8_t size_group_lookup[BlockSizeS_ALL] = {
+    0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 1, 2, 2
+};
+
+static const uint8_t num_pels_log2_lookup[BlockSizeS_ALL] = {
+    4, 5, 5, 6, 7, 7, 8, 9, 9, 10, 11, 11, 12, 13, 13, 14, 6, 6, 8, 8, 10, 10
+};
+static const TxSize max_txsize_lookup[BlockSizeS_ALL] = {
+    //                   4X4
+    TX_4X4,
+    // 4X8,    8X4,      8X8
+    TX_4X4, TX_4X4, TX_8X8,
+    // 8X16,   16X8,     16X16
+    TX_8X8, TX_8X8, TX_16X16,
+    // 16X32,  32X16,    32X32
+    TX_16X16, TX_16X16, TX_32X32,
+    // 32X64,  64X32,
+    TX_32X32, TX_32X32,
+    // 64X64
+    TX_64X64,
+    // 64x128, 128x64,   128x128
+    TX_64X64, TX_64X64, TX_64X64,
+    // 4x16,   16x4,     8x32
+    TX_4X4, TX_4X4, TX_8X8,
+    // 32x8,   16x64     64x16
+    TX_8X8, TX_16X16, TX_16X16
+};
+
+static const TxSize max_txsize_rect_lookup[BlockSizeS_ALL] = {
+    // 4X4
+    TX_4X4,
+    // 4X8,    8X4,      8X8
+    TX_4X8, TX_8X4, TX_8X8,
+    // 8X16,   16X8,     16X16
+    TX_8X16, TX_16X8, TX_16X16,
+    // 16X32,  32X16,    32X32
+    TX_16X32, TX_32X16, TX_32X32,
+    // 32X64,  64X32,
+    TX_32X64, TX_64X32,
+    // 64X64
+    TX_64X64,
+    // 64x128, 128x64,   128x128
+    TX_64X64, TX_64X64, TX_64X64,
+    // 4x16,   16x4,
+    TX_4X16, TX_16X4,
+    // 8x32,   32x8
+    TX_8X32, TX_32X8,
+    // 16x64,  64x16
+    TX_16X64, TX_64X16
+};
+
+// Transform block width in unit
+static const int32_t tx_size_wide_unit[TX_SIZES_ALL] = {
+    1, 2, 4, 8, 16, 1, 2, 2, 4, 4, 8, 8, 16, 1, 4, 2, 8, 4, 16,
+};
+// Transform block height in unit
+static const int32_t tx_size_high_unit[TX_SIZES_ALL] = {
+    1, 2, 4, 8, 16, 2, 1, 4, 2, 8, 4, 16, 8, 4, 1, 8, 2, 16, 4,
+};
+
+
+static const TxSize sub_tx_size_map[TX_SIZES_ALL] = {
+    TX_4X4,    // TX_4X4
+    TX_4X4,    // TX_8X8
+    TX_8X8,    // TX_16X16
+    TX_16X16,  // TX_32X32
+    TX_32X32,  // TX_64X64
+    TX_4X4,    // TX_4X8
+    TX_4X4,    // TX_8X4
+    TX_8X8,    // TX_8X16
+    TX_8X8,    // TX_16X8
+    TX_16X16,  // TX_16X32
+    TX_16X16,  // TX_32X16
+    TX_32X32,  // TX_32X64
+    TX_32X32,  // TX_64X32
+    TX_4X8,    // TX_4X16
+    TX_8X4,    // TX_16X4
+    TX_8X16,   // TX_8X32
+    TX_16X8,   // TX_32X8
+    TX_16X32,  // TX_16X64
+    TX_32X16,  // TX_64X16
+};
+static const TxSize txsize_horz_map[TX_SIZES_ALL] = {
+    TX_4X4,    // TX_4X4
+    TX_8X8,    // TX_8X8
+    TX_16X16,  // TX_16X16
+    TX_32X32,  // TX_32X32
+    TX_64X64,  // TX_64X64
+    TX_4X4,    // TX_4X8
+    TX_8X8,    // TX_8X4
+    TX_8X8,    // TX_8X16
+    TX_16X16,  // TX_16X8
+    TX_16X16,  // TX_16X32
+    TX_32X32,  // TX_32X16
+    TX_32X32,  // TX_32X64
+    TX_64X64,  // TX_64X32
+    TX_4X4,    // TX_4X16
+    TX_16X16,  // TX_16X4
+    TX_8X8,    // TX_8X32
+    TX_32X32,  // TX_32X8
+    TX_16X16,  // TX_16X64
+    TX_64X64,  // TX_64X16
+};
+
+static const TxSize txsize_vert_map[TX_SIZES_ALL] = {
+    TX_4X4,    // TX_4X4
+    TX_8X8,    // TX_8X8
+    TX_16X16,  // TX_16X16
+    TX_32X32,  // TX_32X32
+    TX_64X64,  // TX_64X64
+    TX_8X8,    // TX_4X8
+    TX_4X4,    // TX_8X4
+    TX_16X16,  // TX_8X16
+    TX_8X8,    // TX_16X8
+    TX_32X32,  // TX_16X32
+    TX_16X16,  // TX_32X16
+    TX_64X64,  // TX_32X64
+    TX_32X32,  // TX_64X32
+    TX_16X16,  // TX_4X16
+    TX_4X4,    // TX_16X4
+    TX_32X32,  // TX_8X32
+    TX_8X8,    // TX_32X8
+    TX_64X64,  // TX_16X64
+    TX_16X16,  // TX_64X16
+};
+static const uint8_t mi_size_wide_log2[BlockSizeS_ALL] = {
+    0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 0, 2, 1, 3, 2, 4
+};
+static const uint8_t mi_size_high_log2[BlockSizeS_ALL] = {
+    0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 2, 0, 3, 1, 4, 2
+};
+
+typedef enum aom_bit_depth {
+    AOM_BITS_8 = 8,   /**<  8 bits */
+    AOM_BITS_10 = 10, /**< 10 bits */
+    AOM_BITS_12 = 12, /**< 12 bits */
+} aom_bit_depth_t;
+
+typedef struct {
+    int32_t r[2];  // radii
+    int32_t s[2];  // sgr parameters for r[0] and r[1], based on GenSgrprojVtable()
+} sgr_params_type;
+
+//**********************************************************************************************************************//
+// blockd.h
+typedef enum {
+    KEY_FRAME = 0,
+    INTER_FRAME = 1,
+    INTRA_ONLY_FRAME = 2,  // replaces intra-only
+    S_FRAME = 3,
+    FRAME_TYPES,
+} FRAME_TYPE;
+
+typedef int8_t MvReferenceFrame;
+
+// Number of transform types in each set type
+
+static const int32_t av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
+    1, 2, 5, 7, 12, 16,
+};
+
+static const int32_t av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
+    { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
+{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
+{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+};
+
+static INLINE TxSetType get_ext_tx_set_type(TxSize tx_size, int32_t is_inter,
+    int32_t use_reduced_set) {
+    const TxSize tx_size_sqr_up = txsize_sqr_up_map[tx_size];
+
+
+    if (tx_size_sqr_up > TX_32X32) return EXT_TX_SET_DCTONLY;
+    if (tx_size_sqr_up == TX_32X32)
+        return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
+    if (use_reduced_set)
+        return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
+    const TxSize tx_size_sqr = txsize_sqr_map[tx_size];
+    if (is_inter) {
+        return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
+            : EXT_TX_SET_ALL16);
     }
-    static INLINE int32_t get_ext_tx_types(TxSize tx_size, int32_t is_inter,
-        int32_t use_reduced_set) {
-        const int32_t set_type = get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
-        return av1_num_ext_tx_set[set_type];
+    else {
+        return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
+            : EXT_TX_SET_DTT4_IDTX_1DDCT);
     }
-    // Maps tx set types to the indices.
-    static const int32_t ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
-        { // Intra
-            0, -1, 2, 1, -1, -1 },
-            { // Inter
-                0, 3, -1, -1, 2, 1 },
-    };
+}
+static INLINE int32_t get_ext_tx_types(TxSize tx_size, int32_t is_inter,
+    int32_t use_reduced_set) {
+    const int32_t set_type = get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
+    return av1_num_ext_tx_set[set_type];
+}
+// Maps tx set types to the indices.
+static const int32_t ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
+    { // Intra
+        0, -1, 2, 1, -1, -1 },
+        { // Inter
+            0, 3, -1, -1, 2, 1 },
+};
 
-    static INLINE int32_t get_ext_tx_set(TxSize tx_size, int32_t is_inter,
-        int32_t use_reduced_set) {
-        const TxSetType set_type =
-            get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
-        return ext_tx_set_index[is_inter][set_type];
-    }
+static INLINE int32_t get_ext_tx_set(TxSize tx_size, int32_t is_inter,
+    int32_t use_reduced_set) {
+    const TxSetType set_type =
+        get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
+    return ext_tx_set_index[is_inter][set_type];
+}
 
-    static INLINE int32_t is_inter_compound_mode(PredictionMode mode) {
-        return mode >= NEAREST_NEARESTMV && mode <= NEW_NEWMV;
-    }
+static INLINE int32_t is_inter_compound_mode(PredictionMode mode) {
+    return mode >= NEAREST_NEARESTMV && mode <= NEW_NEWMV;
+}
 
 
-    //**********************************************************************************************************************//
-    // encoder.h
-    typedef enum {
-        // regular inter frame
-        REGULAR_FRAME = 0,
-        // alternate reference frame
-        ARF_FRAME = 1,
-        // overlay frame
-        OVERLAY_FRAME = 2,
-        // golden frame
-        GLD_FRAME = 3,
-        // backward reference frame
-        BRF_FRAME = 4,
-        // extra alternate reference frame
-        EXT_ARF_FRAME = 5,
-        FRAME_CONTEXT_INDEXES
-    } FRAME_CONTEXT_INDEX;
+//**********************************************************************************************************************//
+// encoder.h
+typedef enum {
+    // regular inter frame
+    REGULAR_FRAME = 0,
+    // alternate reference frame
+    ARF_FRAME = 1,
+    // overlay frame
+    OVERLAY_FRAME = 2,
+    // golden frame
+    GLD_FRAME = 3,
+    // backward reference frame
+    BRF_FRAME = 4,
+    // extra alternate reference frame
+    EXT_ARF_FRAME = 5,
+    FRAME_CONTEXT_INDEXES
+} FRAME_CONTEXT_INDEX;
 
-    //**********************************************************************************************************************//
-    // common.h
+//**********************************************************************************************************************//
+// common.h
 #define av1_zero(dest) memset(&(dest), 0, sizeof(dest))
 //**********************************************************************************************************************//
 // alloccommon.h
@@ -1533,24 +1533,24 @@ MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
 #define MAX_SHARPNESS 7
 #define SIMD_WIDTH 16
 
-    struct loopfilter {
-        int32_t filter_level[2];
-        int32_t filter_level_u;
-        int32_t filter_level_v;
+struct loopfilter {
+    int32_t filter_level[2];
+    int32_t filter_level_u;
+    int32_t filter_level_v;
 
-        int32_t sharpness_level;
+    int32_t sharpness_level;
 
-        uint8_t mode_ref_delta_enabled;
-        uint8_t mode_ref_delta_update;
+    uint8_t mode_ref_delta_enabled;
+    uint8_t mode_ref_delta_update;
 
-        // 0 = Intra, Last, Last2+Last3,
-        // GF, BRF, ARF2, ARF
-        int8_t ref_deltas[REF_FRAMES];
+    // 0 = Intra, Last, Last2+Last3,
+    // GF, BRF, ARF2, ARF
+    int8_t ref_deltas[REF_FRAMES];
 
-        // 0 = ZERO_MV, MV
-        int8_t mode_deltas[MAX_MODE_LF_DELTAS];
-        int32_t combine_vert_horz_lf;
-    };
+    // 0 = ZERO_MV, MV
+    int8_t mode_deltas[MAX_MODE_LF_DELTAS];
+    int32_t combine_vert_horz_lf;
+};
 
 #define MAX_SEGMENTS 8
 #define MAX_MB_PLANE 3
@@ -1559,21 +1559,21 @@ MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
 #define MAX_SHARPNESS 7
 
 #define SIMD_WIDTH 16
-    // Need to align this structure so when it is declared and
-    // passed it can be loaded into vector registers.
-    typedef struct {
-        DECLARE_ALIGNED(SIMD_WIDTH, uint8_t, mblim[SIMD_WIDTH]);
-        DECLARE_ALIGNED(SIMD_WIDTH, uint8_t, lim[SIMD_WIDTH]);
-        DECLARE_ALIGNED(SIMD_WIDTH, uint8_t, hev_thr[SIMD_WIDTH]);
-    } loop_filter_thresh;
+// Need to align this structure so when it is declared and
+// passed it can be loaded into vector registers.
+typedef struct {
+    DECLARE_ALIGNED(SIMD_WIDTH, uint8_t, mblim[SIMD_WIDTH]);
+    DECLARE_ALIGNED(SIMD_WIDTH, uint8_t, lim[SIMD_WIDTH]);
+    DECLARE_ALIGNED(SIMD_WIDTH, uint8_t, hev_thr[SIMD_WIDTH]);
+} loop_filter_thresh;
 
-    typedef struct {
-        loop_filter_thresh lfthr[MAX_LOOP_FILTER + 1];
-        uint8_t lvl[MAX_MB_PLANE][MAX_SEGMENTS][2][REF_FRAMES][MAX_MODE_LF_DELTAS];
-    } loop_filter_info_n;
+typedef struct {
+    loop_filter_thresh lfthr[MAX_LOOP_FILTER + 1];
+    uint8_t lvl[MAX_MB_PLANE][MAX_SEGMENTS][2][REF_FRAMES][MAX_MODE_LF_DELTAS];
+} loop_filter_info_n;
 
-    //**********************************************************************************************************************//
-    // cdef.h
+//**********************************************************************************************************************//
+// cdef.h
 #define CDEF_STRENGTH_BITS 6
 
 #define CDEF_PRI_STRENGTHS 16
@@ -1637,41 +1637,41 @@ MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
 #define GM_ALPHA_MIN -GM_ALPHA_MAX
 #define GM_ROW3HOMO_MIN -GM_ROW3HOMO_MAX
 /* clang-format off */
-    typedef enum {
-        IDENTITY = 0,      // identity transformation, 0-parameter
-        TRANSLATION = 1,   // translational motion 2-parameter
-        ROTZOOM = 2,       // simplified affine with rotation + zoom only, 4-parameter
-        AFFINE = 3,        // affine, 6-parameter
-        TRANS_TYPES,
-    } TransformationType;
-    // The order of values in the wmmat matrix below is best described
-    // by the homography:
-    //      [x'     (m2 m3 m0   [x
-    //  z .  y'  =   m4 m5 m1 *  y
-    //       1]      m6 m7 1)    1]
-    typedef struct {
-        TransformationType wmtype;
-        int32_t wmmat[8];
-        int16_t alpha, beta, gamma, delta;
-        int8_t invalid;
-    } EbWarpedMotionParams;
+typedef enum {
+    IDENTITY = 0,      // identity transformation, 0-parameter
+    TRANSLATION = 1,   // translational motion 2-parameter
+    ROTZOOM = 2,       // simplified affine with rotation + zoom only, 4-parameter
+    AFFINE = 3,        // affine, 6-parameter
+    TRANS_TYPES,
+} TransformationType;
+// The order of values in the wmmat matrix below is best described
+// by the homography:
+//      [x'     (m2 m3 m0   [x
+//  z .  y'  =   m4 m5 m1 *  y
+//       1]      m6 m7 1)    1]
+typedef struct {
+    TransformationType wmtype;
+    int32_t wmmat[8];
+    int16_t alpha, beta, gamma, delta;
+    int8_t invalid;
+} EbWarpedMotionParams;
 
-    /* clang-format off */
-    static const EbWarpedMotionParams default_warp_params = {
-        IDENTITY,
-    { 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0,
-    0 },
-    0, 0, 0, 0,
-    0,
-    };
-
-
+/* clang-format off */
+static const EbWarpedMotionParams default_warp_params = {
+    IDENTITY,
+{ 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0,
+0 },
+0, 0, 0, 0,
+0,
+};
 
 
-    /***********************************    AV1_OBU     ********************************/
 
-    //**********************************************************************************************************************//
-    //**********************************************************************************************************************//
+
+/***********************************    AV1_OBU     ********************************/
+
+//**********************************************************************************************************************//
+//**********************************************************************************************************************//
 
 
 #define YBITS_THSHLD                        50
@@ -1693,15 +1693,15 @@ MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
 #define EB_SRC_LINE             __FILE__ "(" $Line ") : message "
 
 
-    typedef enum eb_memcpy_mode
-    {
-        e_nt_store = 1,
-        e_nt_load = 2,
-        e_nt_avx = 4
-    }
-    eb_memcpy_mode;
+typedef enum eb_memcpy_mode
+{
+    e_nt_store = 1,
+    e_nt_load = 2,
+    e_nt_avx = 4
+}
+eb_memcpy_mode;
 
-    // ***************************** Definitions *****************************
+// ***************************** Definitions *****************************
 #define PM_DC_TRSHLD1                       10 // The threshold for DC to disable masking for DC
 
 #define MAX_BITS_PER_FRAME            8000000
@@ -1742,14 +1742,14 @@ MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
 #define EB_NORMAL_LATENCY        0
 #define EB_LOW_LATENCY           1
 
-    typedef enum EB_BITFIELD_MASKS {
-        BITMASK_0 = 1,
-        BITMASK_1 = 2,
-        BITMASK_2 = 4,
-        BITMASK_3 = 8
-    } EB_BITFIELD_MASKS;
+typedef enum EB_BITFIELD_MASKS {
+    BITMASK_0 = 1,
+    BITMASK_1 = 2,
+    BITMASK_2 = 4,
+    BITMASK_3 = 8
+} EB_BITFIELD_MASKS;
 
-    // CLEAN_BASIS_FUNCTIONS
+// CLEAN_BASIS_FUNCTIONS
 #define CLEAN_BASIS_FUNCTIONS_VAR_TRSHLD 10
 #define CLEAN_BASIS_FUNCTIONS_NZCOEF_TRSHLD0 10
 #define CLEAN_BASIS_FUNCTIONS_NZCOEF_TRSHLD1 15
@@ -1868,40 +1868,40 @@ MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
 /** The EbPtr type is intended to be used to pass pointers to and from the eBrisk
 API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 */
-    typedef void *EbPtr;
+typedef void *EbPtr;
 
-    /** The EB_STRING type is intended to be used to pass "C" type strings to and
-    from the eBrisk API.  The EB_STRING type is a 32 bit pointer to a zero terminated
-    string.  The pointer is word aligned and the string is byte aligned.
-    */
-    typedef char * EB_STRING;
+/** The EB_STRING type is intended to be used to pass "C" type strings to and
+from the eBrisk API.  The EB_STRING type is a 32 bit pointer to a zero terminated
+string.  The pointer is word aligned and the string is byte aligned.
+*/
+typedef char * EB_STRING;
 
-    /** The EbByte type is intended to be used to pass arrays of bytes such as
-    buffers to and from the eBrisk API.  The EbByte type is a 32 bit pointer.
-    The pointer is word aligned and the buffer is byte aligned.
-    */
-    typedef uint8_t * EbByte;
+/** The EbByte type is intended to be used to pass arrays of bytes such as
+buffers to and from the eBrisk API.  The EbByte type is a 32 bit pointer.
+The pointer is word aligned and the buffer is byte aligned.
+*/
+typedef uint8_t * EbByte;
 
-    /** The EB_SAMPLE type is intended to be used to pass arrays of bytes such as
-    buffers to and from the eBrisk API.  The EbByte type is a 32 bit pointer.
-    The pointer is word aligned and the buffer is byte aligned.
-    */
+/** The EB_SAMPLE type is intended to be used to pass arrays of bytes such as
+buffers to and from the eBrisk API.  The EbByte type is a 32 bit pointer.
+The pointer is word aligned and the buffer is byte aligned.
+*/
 
-    /** The EB_BITDEPTH type is used to describe the bitdepth of video data.
-    */
-    typedef enum EB_BITDEPTH {
-        EB_8BIT = 8,
-        EB_10BIT = 10,
-        EB_12BIT = 12,
-        EB_14BIT = 14,
-        EB_16BIT = 16,
-        EB_32BIT = 32
+/** The EB_BITDEPTH type is used to describe the bitdepth of video data.
+*/
+typedef enum EB_BITDEPTH {
+    EB_8BIT = 8,
+    EB_10BIT = 10,
+    EB_12BIT = 12,
+    EB_14BIT = 14,
+    EB_16BIT = 16,
+    EB_32BIT = 32
 
-    } EB_BITDEPTH;
+} EB_BITDEPTH;
 
-    /** The EB_GOP type is used to describe the hierarchical coding structure of
-    Groups of Pictures (GOP) units.
-    */
+/** The EB_GOP type is used to describe the hierarchical coding structure of
+Groups of Pictures (GOP) units.
+*/
 #define EbPred                 uint8_t
 #define EB_PRED_LOW_DELAY_P     0
 #define EB_PRED_LOW_DELAY_B     1
@@ -1910,8 +1910,8 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define EB_PRED_INVALID         0xFF
 
 
-    /** The EB_SLICE type is used to describe the slice prediction type.
-    */
+/** The EB_SLICE type is used to describe the slice prediction type.
+*/
 
 #define EB_SLICE        uint8_t
 #define B_SLICE         0
@@ -1921,31 +1921,31 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define INVALID_SLICE   0xFF
 
 
-    /** The EbPictStruct type is used to describe the picture structure.
-    */
+/** The EbPictStruct type is used to describe the picture structure.
+*/
 #define EbPictStruct           uint8_t
 #define PROGRESSIVE_PICT_STRUCT  0
 #define TOP_FIELD_PICT_STRUCT    1
 #define BOTTOM_FIELD_PICT_STRUCT 2
 
 
-    /** The EB_MODETYPE type is used to describe the PU type.
-    */
-    typedef uint8_t EB_MODETYPE;
+/** The EB_MODETYPE type is used to describe the PU type.
+*/
+typedef uint8_t EB_MODETYPE;
 #define INTER_MODE 1
 #define INTRA_MODE 2
 
 #define INVALID_MODE 0xFFu
 
-    /** INTRA_4x4 offsets
-    */
-    static const uint8_t INTRA_4x4_OFFSET_X[4] = { 0, 4, 0, 4 };
-    static const uint8_t INTRA_4x4_OFFSET_Y[4] = { 0, 0, 4, 4 };
+/** INTRA_4x4 offsets
+*/
+static const uint8_t INTRA_4x4_OFFSET_X[4] = { 0, 4, 0, 4 };
+static const uint8_t INTRA_4x4_OFFSET_Y[4] = { 0, 0, 4, 4 };
 
 
-    /** The EB_PART_MODE type is used to describe the CU partition size.
-    */
-    typedef uint8_t EB_PART_MODE;
+/** The EB_PART_MODE type is used to describe the CU partition size.
+*/
+typedef uint8_t EB_PART_MODE;
 #define SIZE_2Nx2N 0
 #define SIZE_2NxN  1
 #define SIZE_Nx2N  2
@@ -1956,13 +1956,13 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define SIZE_nRx2N 7
 #define SIZE_PART_MODE 8
 
-    /** The EB_INTRA_REFRESH_TYPE is used to describe the intra refresh type.
-    */
-    typedef enum EB_INTRA_REFRESH_TYPE {
-        NO_REFRESH = 0,
-        CRA_REFRESH = 1,
-        IDR_REFRESH = 2
-    }EB_INTRA_REFRESH_TYPE;
+/** The EB_INTRA_REFRESH_TYPE is used to describe the intra refresh type.
+*/
+typedef enum EB_INTRA_REFRESH_TYPE {
+    NO_REFRESH = 0,
+    CRA_REFRESH = 1,
+    IDR_REFRESH = 2
+}EB_INTRA_REFRESH_TYPE;
 
 #define SIZE_2Nx2N_PARTITION_MASK   (1 << SIZE_2Nx2N)
 #define SIZE_2NxN_PARTITION_MASK    (1 << SIZE_2NxN)
@@ -1973,8 +1973,8 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define SIZE_nLx2N_PARTITION_MASK   (1 << SIZE_nLx2N)
 #define SIZE_nRx2N_PARTITION_MASK   (1 << SIZE_nRx2N)
 
-    /** The EbEncMode type is used to describe the encoder mode .
-    */
+/** The EbEncMode type is used to describe the encoder mode .
+*/
 
 #define EbEncMode     uint8_t
 #define ENC_M0          0
@@ -1988,20 +1988,20 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define MAX_SUPPORTED_MODES 8
 
 #define SPEED_CONTROL_INIT_MOD ENC_M4;
-    /** The EB_TUID type is used to identify a TU within a CU.
-    */
-    typedef enum EB_TUSIZE {
-        TU_2Nx2N = 0,
-        TU_NxN_0 = 1,
-        TU_NxN_1 = 2,
-        TU_NxN_2 = 3,
-        TU_NxN_3 = 4,
-        TU_N2xN2_0 = 5,
-        TU_N2xN2_1 = 6,
-        TU_N2xN2_2 = 7,
-        TU_N2xN2_3 = 8,
-        INVALID_TUSIZE = ~0
-    }EB_TUSIZE;
+/** The EB_TUID type is used to identify a TU within a CU.
+*/
+typedef enum EB_TUSIZE {
+    TU_2Nx2N = 0,
+    TU_NxN_0 = 1,
+    TU_NxN_1 = 2,
+    TU_NxN_2 = 3,
+    TU_NxN_3 = 4,
+    TU_N2xN2_0 = 5,
+    TU_N2xN2_1 = 6,
+    TU_N2xN2_2 = 7,
+    TU_N2xN2_3 = 8,
+    INVALID_TUSIZE = ~0
+}EB_TUSIZE;
 
 #define TU_2Nx2N_PARTITION_MASK     (1 << TU_2Nx2N)
 #define TU_NxN_0_PARTITION_MASK     (1 << TU_NxN_0)
@@ -2034,7 +2034,7 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define BI_PRED_MASK            (1 << BI_PRED)
 
 
-    // The EB_QP_OFFSET_MODE type is used to describe the QP offset
+// The EB_QP_OFFSET_MODE type is used to describe the QP offset
 #define EB_FRAME_CARACTERICTICS uint8_t
 #define EB_FRAME_CARAC_0           0
 #define EB_FRAME_CARAC_1           1
@@ -2042,51 +2042,51 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define EB_FRAME_CARAC_3           3
 #define EB_FRAME_CARAC_4           4
 
-    static const uint8_t QP_OFFSET_WEIGHT[3][4] = { // [Slice Type][QP Offset Weight Level]
-        { 9, 8, 7, 6 },
+static const uint8_t QP_OFFSET_WEIGHT[3][4] = { // [Slice Type][QP Offset Weight Level]
     { 9, 8, 7, 6 },
-    { 10, 9, 8, 7 }
-    };
+{ 9, 8, 7, 6 },
+{ 10, 9, 8, 7 }
+};
 
-    /** Assembly Types
-    */
-    typedef enum EbAsm {
-        ASM_NON_AVX2,
-        ASM_AVX2,
-        ASM_TYPE_TOTAL,
-        ASM_TYPE_INVALID = ~0
-    } EbAsm;
+/** Assembly Types
+*/
+typedef enum EbAsm {
+    ASM_NON_AVX2,
+    ASM_AVX2,
+    ASM_TYPE_TOTAL,
+    ASM_TYPE_INVALID = ~0
+} EbAsm;
 
-    /** The EB_NULL type is used to define the C style NULL pointer.
-    */
+/** The EB_NULL type is used to define the C style NULL pointer.
+*/
 #define EB_NULL ((void*) 0)
 
-    /** The EbHandle type is used to define OS object handles for threads,
-    semaphores, mutexs, etc.
-    */
-    typedef void * EbHandle;
+/** The EbHandle type is used to define OS object handles for threads,
+semaphores, mutexs, etc.
+*/
+typedef void * EbHandle;
 
-    /** The EB_CTOR type is used to define the eBrisk object constructors.
-    objectPtr is a EbPtr to the object being constructed.
-    object_init_data_ptr is a EbPtr to a data structure used to initialize the object.
-    */
-    typedef EbErrorType(*EB_CTOR)(
-        EbPtr *object_dbl_ptr,
-        EbPtr object_init_data_ptr);
+/** The EB_CTOR type is used to define the eBrisk object constructors.
+objectPtr is a EbPtr to the object being constructed.
+object_init_data_ptr is a EbPtr to a data structure used to initialize the object.
+*/
+typedef EbErrorType(*EB_CTOR)(
+    EbPtr *object_dbl_ptr,
+    EbPtr object_init_data_ptr);
 
-    /** The EB_DTOR type is used to define the eBrisk object destructors.
-    objectPtr is a EbPtr to the object being constructed.
-    */
-    typedef void(*EB_DTOR)(
-        EbPtr objectPtr);
+/** The EB_DTOR type is used to define the eBrisk object destructors.
+objectPtr is a EbPtr to the object being constructed.
+*/
+typedef void(*EB_DTOR)(
+    EbPtr objectPtr);
 
 #define INVALID_MV            0xFFFFFFFF
 #define BLKSIZE 64
 
-    /***************************************
-    * Generic linked list data structure for passing data into/out from the library
-    ***************************************/
-    // Reserved types for lib's internal use. Must be less than EB_EXT_TYPE_BASE
+/***************************************
+* Generic linked list data structure for passing data into/out from the library
+***************************************/
+// Reserved types for lib's internal use. Must be less than EB_EXT_TYPE_BASE
 #define       EB_TYPE_PIC_TIMING_SEI         0
 #define       EB_TYPE_BUFFERING_PERIOD_SEI   1
 #define       EB_TYPE_RECOVERY_POINT_SEI     2
@@ -2098,45 +2098,45 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 #define       EB_TYPE_HIERARCHICAL_LEVELS  100
 #define       EB_TYPE_PRED_STRUCTURE       101
 
-    typedef int32_t   EB_LINKED_LIST_TYPE;
+typedef int32_t   EB_LINKED_LIST_TYPE;
 
-    typedef struct EbLinkedListNode
-    {
-        void*                     app;                       // points to an application object this node is associated
-                                                                // with. this is an opaque pointer to the encoder lib, but
-                                                                // releaseCbFncPtr may need to access it.
+typedef struct EbLinkedListNode
+{
+    void*                     app;                       // points to an application object this node is associated
+                                                            // with. this is an opaque pointer to the encoder lib, but
+                                                            // releaseCbFncPtr may need to access it.
 
-        EB_LINKED_LIST_TYPE       type;                      // type of data pointed by "data" member variable
-        uint32_t                    size;                      // size of (data)
-        EbBool                   passthrough;               // whether this is passthrough data from application
-        void(*releaseCbFncPtr)(struct EbLinkedListNode*); // callback to be executed by encoder when picture reaches end of pipeline, or
-                                                            // when aborting. However, at end of pipeline encoder shall
-                                                            // NOT invoke this callback if passthrough is TRUE (but
-                                                            // still needs to do so when aborting)
-        void                     *data;                      // pointer to application's data
-        struct EbLinkedListNode  *next;                      // pointer to next node (null when last)
-    } EbLinkedListNode;
+    EB_LINKED_LIST_TYPE       type;                      // type of data pointed by "data" member variable
+    uint32_t                    size;                      // size of (data)
+    EbBool                   passthrough;               // whether this is passthrough data from application
+    void(*releaseCbFncPtr)(struct EbLinkedListNode*); // callback to be executed by encoder when picture reaches end of pipeline, or
+                                                        // when aborting. However, at end of pipeline encoder shall
+                                                        // NOT invoke this callback if passthrough is TRUE (but
+                                                        // still needs to do so when aborting)
+    void                     *data;                      // pointer to application's data
+    struct EbLinkedListNode  *next;                      // pointer to next node (null when last)
+} EbLinkedListNode;
 
-    typedef enum DIST_CALC_TYPE {
-        DIST_CALC_RESIDUAL = 0,    // SSE(Coefficients - ReconCoefficients)
-        DIST_CALC_PREDICTION = 1,    // SSE(Coefficients) *Note - useful in modes that don't send residual coeff bits
-        DIST_CALC_TOTAL = 2
-    } DIST_CALC_TYPE;
-    typedef enum EbPtrType {
-        EB_N_PTR = 0,                                   // malloc'd pointer
-        EB_A_PTR = 1,                                   // malloc'd pointer aligned
-        EB_MUTEX = 2,                                   // mutex
-        EB_SEMAPHORE = 3,                                   // semaphore
-        EB_THREAD = 4                                    // thread handle
-    } EbPtrType;
+typedef enum DIST_CALC_TYPE {
+    DIST_CALC_RESIDUAL = 0,    // SSE(Coefficients - ReconCoefficients)
+    DIST_CALC_PREDICTION = 1,    // SSE(Coefficients) *Note - useful in modes that don't send residual coeff bits
+    DIST_CALC_TOTAL = 2
+} DIST_CALC_TYPE;
+typedef enum EbPtrType {
+    EB_N_PTR = 0,                                   // malloc'd pointer
+    EB_A_PTR = 1,                                   // malloc'd pointer aligned
+    EB_MUTEX = 2,                                   // mutex
+    EB_SEMAPHORE = 3,                                   // semaphore
+    EB_THREAD = 4                                    // thread handle
+} EbPtrType;
 
-    typedef struct EbMemoryMapEntry
-    {
-        EbPtr                    ptr;                       // points to a memory pointer
-        EbPtrType                ptrType;                   // pointer type
-    } EbMemoryMapEntry;
+typedef struct EbMemoryMapEntry
+{
+    EbPtr                    ptr;                       // points to a memory pointer
+    EbPtrType                ptrType;                   // pointer type
+} EbMemoryMapEntry;
 
-    // Rate Control
+// Rate Control
 #define THRESHOLD1QPINCREASE     0
 #define THRESHOLD2QPINCREASE     1
 
@@ -2151,20 +2151,20 @@ API.  This is a 32 bit pointer and is aligned on a 32 bit word boundary.
 // Display Total Memory at the end of the memory allocations
 #define DISPLAY_MEMORY                                  0
 
-    extern    EbMemoryMapEntry        *appMemoryMap;            // App Memory table
-    extern    uint32_t                  *appMemoryMapIndex;       // App Memory index
-    extern    uint64_t                  *totalAppMemory;          // App Memory malloc'd
+extern    EbMemoryMapEntry        *appMemoryMap;            // App Memory table
+extern    uint32_t                  *appMemoryMapIndex;       // App Memory index
+extern    uint64_t                  *totalAppMemory;          // App Memory malloc'd
 
-    extern    EbMemoryMapEntry        *memoryMap;               // library Memory table
-    extern    uint32_t                  *memoryMapIndex;          // library memory index
-    extern    uint64_t                  *totalLibMemory;          // library Memory malloc'd
+extern    EbMemoryMapEntry        *memoryMap;               // library Memory table
+extern    uint32_t                  *memoryMapIndex;          // library memory index
+extern    uint64_t                  *totalLibMemory;          // library Memory malloc'd
 
-    extern    uint32_t                   libMallocCount;
-    extern    uint32_t                   libThreadCount;
-    extern    uint32_t                   libSemaphoreCount;
-    extern    uint32_t                   libMutexCount;
+extern    uint32_t                   libMallocCount;
+extern    uint32_t                   libThreadCount;
+extern    uint32_t                   libSemaphoreCount;
+extern    uint32_t                   libMutexCount;
 
-    extern    uint32_t                   appMallocCount;
+extern    uint32_t                   appMallocCount;
 
 #define EB_APP_MALLOC(type, pointer, nElements, pointerClass, returnType) \
 pointer = (type)malloc(nElements); \
@@ -2405,52 +2405,52 @@ printf("Total App Memory: %.2lf KB\n\n",*totalAppMemory/(double)1024);
 #endif
 
 #ifndef _RSIZE_T_DEFINED
-    typedef size_t rsize_t;
+typedef size_t rsize_t;
 #define _RSIZE_T_DEFINED
 #endif  /* _RSIZE_T_DEFINED */
 
 #ifndef _ERRNO_T_DEFINED
 #define _ERRNO_T_DEFINED
-    typedef int32_t errno_t;
+typedef int32_t errno_t;
 #endif  /* _ERRNO_T_DEFINED */
 
-    typedef void(*constraint_handler_t) (const char * /* msg */,
-        void *       /* ptr */,
-        errno_t      /* error */);
-    extern void ignore_handler_s(const char *msg, void *ptr, errno_t error);
+typedef void(*constraint_handler_t) (const char * /* msg */,
+    void *       /* ptr */,
+    errno_t      /* error */);
+extern void ignore_handler_s(const char *msg, void *ptr, errno_t error);
 
-    /*
-    * Function used by the libraries to invoke the registered
-    * runtime-constraint handler. Always needed.
-    */
-    extern void invoke_safe_str_constraint_handler(
-        const char *msg,
-        void *ptr,
-        errno_t error);
+/*
+* Function used by the libraries to invoke the registered
+* runtime-constraint handler. Always needed.
+*/
+extern void invoke_safe_str_constraint_handler(
+    const char *msg,
+    void *ptr,
+    errno_t error);
 
-    static inline void handle_error(char *orig_dest, rsize_t orig_dmax,
-        char *err_msg, errno_t err_code)
-    {
-        (void)orig_dmax;
-        *orig_dest = '\0';
+static inline void handle_error(char *orig_dest, rsize_t orig_dmax,
+    char *err_msg, errno_t err_code)
+{
+    (void)orig_dmax;
+    *orig_dest = '\0';
 
-        invoke_safe_str_constraint_handler(err_msg, NULL, err_code);
-        return;
-    }
+    invoke_safe_str_constraint_handler(err_msg, NULL, err_code);
+    return;
+}
 
-    /* string copy */
-    extern errno_t
-        strcpy_ss(char *dest, rsize_t dmax, const char *src);
+/* string copy */
+extern errno_t
+    strcpy_ss(char *dest, rsize_t dmax, const char *src);
 
-    /* fitted string copy */
-    extern errno_t
-        strncpy_ss(char *dest, rsize_t dmax, const char *src, rsize_t slen);
+/* fitted string copy */
+extern errno_t
+    strncpy_ss(char *dest, rsize_t dmax, const char *src, rsize_t slen);
 
-    /* string length */
-    extern rsize_t
-        strnlen_ss(const char *s, rsize_t smax);
+/* string length */
+extern rsize_t
+    strnlen_ss(const char *s, rsize_t smax);
 
-    extern void DRDmemcpy(void  *dstPtr, void *srcPtr, uint32_t  cnt);
+extern void DRDmemcpy(void  *dstPtr, void *srcPtr, uint32_t  cnt);
 #define EB_MEMCPY(dst, src, size) \
 DRDmemcpy(dst, src, size)
 
@@ -2504,10 +2504,10 @@ strnlen_ss(target, max_size)
 
 
 typedef struct EB_PARAM_PORTDEFINITIONTYPE {
-    uint32_t nFrameWidth;
-    uint32_t nFrameHeight;
-    int32_t  nStride;
-    uint32_t size;
+uint32_t nFrameWidth;
+uint32_t nFrameHeight;
+int32_t  nStride;
+uint32_t size;
 } EB_PARAM_PORTDEFINITIONTYPE;
 
 /**************************************
@@ -2515,11 +2515,11 @@ typedef struct EB_PARAM_PORTDEFINITIONTYPE {
 **************************************/
 typedef struct EbCallback_s
 {
-    EbPtr                                 appPrivateData;
-    EbPtr                                 handle;
-    void(*ErrorHandler)(
-        EbPtr handle,
-        uint32_t errorCode);
+EbPtr                                 appPrivateData;
+EbPtr                                 handle;
+void(*ErrorHandler)(
+    EbPtr handle,
+    uint32_t errorCode);
 } EbCallback_t;
 
 // DEBUG MACROS
@@ -2945,14 +2945,14 @@ typedef enum EbCu8x8Mode {
 
 typedef enum EbPictureDepthMode {
 
-    PIC_ALL_DEPTH_MODE = 0, // ALL sq and nsq:  SB size -> 4x4 
-    PIC_ALL_C_DEPTH_MODE = 1, // ALL sq and nsq with control :  SB size -> 4x4 
-    PIC_SQ_DEPTH_MODE = 2, // ALL sq:  SB size -> 4x4 
-    PIC_SQ_NON4_DEPTH_MODE = 3, // SQ:  SB size -> 8x8 
-    PIC_BDP_DEPTH_MODE = 4,
-    PIC_LIGHT_BDP_DEPTH_MODE = 5,
-    PIC_SB_SWITCH_DEPTH_MODE = 6,
-    PIC_OPEN_LOOP_DEPTH_MODE = 7
+    PIC_ALL_DEPTH_MODE          = 0, // ALL sq and nsq:  SB size -> 4x4 
+    PIC_ALL_C_DEPTH_MODE        = 1, // ALL sq and nsq with control :  SB size -> 4x4 
+    PIC_SQ_DEPTH_MODE           = 2, // ALL sq:  SB size -> 4x4 
+    PIC_SQ_NON4_DEPTH_MODE      = 3, // SQ:  SB size -> 8x8 
+    PIC_BDP_DEPTH_MODE          = 4,
+    PIC_LIGHT_BDP_DEPTH_MODE    = 5,
+    PIC_SB_SWITCH_DEPTH_MODE    = 6,
+    PIC_OPEN_LOOP_DEPTH_MODE    = 7
 } EbPictureDepthMode;
 
 typedef enum EbLcuDepthMode {
@@ -3130,7 +3130,7 @@ static const uint32_t RASTER_SCAN_CU_Y[CU_MAX_COUNT] =
 };
 
 static const uint32_t RASTER_SCAN_CU_SIZE[CU_MAX_COUNT] =
-{ 64,
+{   64,
     32, 32,
     32, 32,
     16, 16, 16, 16,
@@ -3148,7 +3148,7 @@ static const uint32_t RASTER_SCAN_CU_SIZE[CU_MAX_COUNT] =
 };
 
 static const uint32_t RASTER_SCAN_CU_DEPTH[CU_MAX_COUNT] =
-{ 0,
+{   0,
     1, 1,
     1, 1,
     2, 2, 2, 2,
@@ -3215,7 +3215,7 @@ static const uint32_t MD_SCAN_TO_RASTER_SCAN[CU_MAX_COUNT] =
 };
 
 static const uint32_t RASTER_SCAN_CU_PARENT_INDEX[CU_MAX_COUNT] =
-{ 0,
+{   0,
     0, 0,
     0, 0,
     1, 1, 2, 2,
