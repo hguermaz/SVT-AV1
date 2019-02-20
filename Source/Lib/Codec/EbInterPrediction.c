@@ -5070,7 +5070,7 @@ EbErrorType inter2_nx2_n_pu_prediction_avc_style(
                     &motionVector_x,
                     &motionVector_y);
             }
-            #
+
             //all the input quantites are in Qpel resolution
             refList0PosX = (uint32_t)CLIP3((int32_t)MVBOUNDLOW,
                 (int32_t)(((ref_pic_list0->width) << 2) + MVBOUNDHIGH),
