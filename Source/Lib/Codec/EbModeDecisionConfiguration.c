@@ -426,7 +426,6 @@ uint8_t DeriveContouringClass(
     return(contouringClass);
 }
 
-
 void RefinementPredictionLoop(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,
@@ -481,15 +480,22 @@ void RefinementPredictionLoop(
                 }
             }
             else {
+#if ADAPTIVE_DEPTH_PARTITIONING
+                if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)) {
+#else
                 if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_PRED_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)) {
+#endif
                     refinementLevel = Pred;
                 }
                 else
 
 
                     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_OPEN_LOOP_DEPTH_MODE ||
+#if ADAPTIVE_DEPTH_PARTITIONING
+                        (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_AVC_DEPTH_MODE)))
+#else
                         (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_AVC_DEPTH_MODE)))
-
+#endif
                         refinementLevel = NdpRefinementControlNREF[temporal_layer_index][depth];
                     else
                         refinementLevel = NdpRefinementControl_FAST[temporal_layer_index][depth];
@@ -1081,7 +1087,11 @@ EbErrorType EarlyModeDecisionLcu(
     uint32_t          tbOriginY = sb_ptr->origin_y;
     EB_SLICE        slice_type = picture_control_set_ptr->slice_type;
 
+#if ADAPTIVE_DEPTH_PARTITIONING
+    uint32_t      startDepth = (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_AVC_DEPTH_MODE) ?
+#else
     uint32_t      startDepth = (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_AVC_DEPTH_MODE) ?
+#endif
         DEPTH_16 :
         DEPTH_64;
 

@@ -638,7 +638,9 @@ void set_nfl(
     // 1                    8
     // 2                    6
     // 3                    4
+#if !ADAPTIVE_DEPTH_PARTITIONING
     // 4                    4/3/2
+#endif
 
     if (context_ptr->nfl_level == 0)
         context_ptr->full_recon_search_count = MAX_NFL;
@@ -646,6 +648,10 @@ void set_nfl(
         context_ptr->full_recon_search_count = 8;
     else if (context_ptr->nfl_level == 2)
         context_ptr->full_recon_search_count = 6;
+#if ADAPTIVE_DEPTH_PARTITIONING
+    else 
+        context_ptr->full_recon_search_count = 4;
+#else
     else if (context_ptr->nfl_level == 3)
         context_ptr->full_recon_search_count = 4;
     else
@@ -655,6 +661,7 @@ void set_nfl(
 
         //if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_ptr->index] == LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
         //    context_ptr->full_recon_search_count = 1;
+#endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
 

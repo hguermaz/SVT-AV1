@@ -57,7 +57,21 @@ extern "C" {
         int8_t                               max_delta_qp[4];
 
 
-
+#if ADAPTIVE_DEPTH_PARTITIONING
+        // Adaptive Depth Partitioning
+        uint32_t                             *sb_score_array;
+        uint8_t                               cost_depth_mode[SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE];
+        uint8_t                              *sb_cost_array;
+        uint32_t                              predicted_cost;
+        uint32_t                              budget;
+        int8_t                                score_th[MAX_SUPPORTED_SEGMENTS];
+        uint8_t                               interval_cost[MAX_SUPPORTED_SEGMENTS];
+        uint8_t                               number_of_segments;
+        uint32_t                              sb_min_score;
+        uint32_t                              sb_max_score;
+        EbAdpDepthSensitivePicClass           adp_depth_sensitive_picture_class;
+        EbAdpRefinementMode                   adp_refinement_mode;
+#else
         // Budgeting
         uint32_t                             *lcuScoreArray;
 
@@ -75,12 +89,14 @@ extern "C" {
         uint32_t                              lcuMaxScore;
         EbBool                             depthSensitivePictureFlag;
         EbBool                             performRefinement;
-
+#endif
 
         uint8_t                               qp_index;
 
-
-
+#if ADAPTIVE_DEPTH_PARTITIONING
+        // Multi - Mode signal(s)
+        uint8_t                               adp_level;
+#endif
     } ModeDecisionConfigurationContext_t;
 
 
