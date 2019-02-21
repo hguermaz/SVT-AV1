@@ -53,10 +53,10 @@ extern "C" {
 
 #define ENABLE_INTRA_4x4                                1 //
 #define DISABLE_NSQ                                     1 //
-#define DISABLE_128X128_SB                              0 //  Hsan - urgent
+#define DISABLE_128X128_SB                              1 //  Hsan - urgent
 #define ENABLE_INTER_4x4                                0 // optional
 #define DISABLE_4xN_Nx4                                 1 //
-#define DISABLE_128x128                                 0 //  Hsan - urgent
+#define DISABLE_128x128                                 1 //  Hsan - urgent
 #define VCI_CANDIDATE_II                                1
 
 #if VCI_CANDIDATE_II
@@ -149,6 +149,7 @@ extern "C" {
 
 
 
+#define OPEN_LOOP_EARLY_PARTITION                       1
 
 #define ADAPTIVE_DEPTH_PARTITIONING                      1 // Added the ability to switch @ SB basis between: (1) all square up to 64x64,  (2) mdc up to 64x64, (3) mdc up to 64x64 only pred, (4) mdc up to 64x64 only pred + 1 NFL
 #if ADAPTIVE_DEPTH_PARTITIONING
