@@ -144,6 +144,7 @@ extern "C" {
 #define INTERPOLATION_SEARCH_LEVELS                     1 
 #define NSQ_SEARCH_LEVELS                               1
 #define TUNED_SETTINGS_FOR_M0                           1
+#define TUNED_SETTINGS_FOR_M1                           1
 /********************************************************/
 /****************** Pre-defined Values ******************/
 /********************************************************/
