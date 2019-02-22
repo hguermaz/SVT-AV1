@@ -667,7 +667,7 @@ EbErrorType signal_derivation_multi_processes_oq(
          if (picture_control_set_ptr->slice_type == I_SLICE)
              picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
          else
-#if OPEN_LOOP_EARLY_PARTITION
+#if 0
              picture_control_set_ptr->pic_depth_mode = PIC_OPEN_LOOP_DEPTH_MODE;
 #else
              picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;

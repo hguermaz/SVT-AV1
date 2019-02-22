@@ -1710,6 +1710,7 @@ void AuraDetection(
 }
 
 #if ADAPTIVE_DEPTH_PARTITIONING
+#if 0 // Hsan: for TUNE_SQ only (to add a cehck after enabling SQ mode)
 /******************************************************
  * is_avc_partitioning_mode()
  * Returns TRUE for LCUs where only Depth2 & Depth3
@@ -1732,42 +1733,39 @@ EbBool is_avc_partitioning_mode(
     uint8_t        stationary_edge_over_time_flag = sb_stat_ptr->stationary_edge_over_time_flag;
     uint8_t        aura_status = sb_ptr->aura_status_iii;
  
-    if(0) { // Hsan: for TUNE_SQ only (to add a cehck after enabling SQ mode)
-
-        // No refinment for sub-1080p
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE)
-            return EB_FALSE;
-
-        // Sharpe Edge
-        if (picture_control_set_ptr->parent_pcs_ptr->high_dark_low_light_area_density_flag && picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index > 0 && picture_control_set_ptr->parent_pcs_ptr->sharp_edge_sb_flag[sb_index] && !picture_control_set_ptr->parent_pcs_ptr->similar_colocated_sb_array_ii[sb_index]) {
-            return EB_TRUE;
-        }
-
-        // Potential Aura/Grass
-        if (picture_control_set_ptr->scene_caracteristic_id == EB_FRAME_CARAC_0) {
-            if (picture_control_set_ptr->parent_pcs_ptr->grass_percentage_in_picture > 60 && aura_status == AURA_STATUS_1) {
-                if (slice_type != I_SLICE && sb_params->is_complete_sb) {
-                    return EB_TRUE;
-                }
+    // No refinment for sub-1080p
+    if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE)
+        return EB_FALSE;
+    
+    // Sharpe Edge
+    if (picture_control_set_ptr->parent_pcs_ptr->high_dark_low_light_area_density_flag && picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index > 0 && picture_control_set_ptr->parent_pcs_ptr->sharp_edge_sb_flag[sb_index] && !picture_control_set_ptr->parent_pcs_ptr->similar_colocated_sb_array_ii[sb_index]) {
+        return EB_TRUE;
+    }
+    
+    // Potential Aura/Grass
+    if (picture_control_set_ptr->scene_caracteristic_id == EB_FRAME_CARAC_0) {
+        if (picture_control_set_ptr->parent_pcs_ptr->grass_percentage_in_picture > 60 && aura_status == AURA_STATUS_1) {
+            if (slice_type != I_SLICE && sb_params->is_complete_sb) {
+                return EB_TRUE;
             }
         }
-
-        // B-Logo
-        if (picture_control_set_ptr->parent_pcs_ptr->logo_pic_flag && edge_block_num)
-            return EB_TRUE;
-
-        // S-Logo           
-        if (stationary_edge_over_time_flag > 0)
-            return EB_TRUE;
-
-        // Potential Blockiness Area
-        if (picture_control_set_ptr->parent_pcs_ptr->complex_sb_array[sb_index] == SB_COMPLEXITY_STATUS_2)
-            return EB_TRUE;
     }
-
+    
+    // B-Logo
+    if (picture_control_set_ptr->parent_pcs_ptr->logo_pic_flag && edge_block_num)
+        return EB_TRUE;
+    
+    // S-Logo           
+    if (stationary_edge_over_time_flag > 0)
+        return EB_TRUE;
+    
+    // Potential Blockiness Area
+    if (picture_control_set_ptr->parent_pcs_ptr->complex_sb_array[sb_index] == SB_COMPLEXITY_STATUS_2)
+        return EB_TRUE;
+    
     return EB_FALSE;
 }
-
+#endif
 /******************************************************
 * Load the cost of the different partitioning method into a local array and derive sensitive picture flag
     Input   : the offline derived cost per search method, detection signals
@@ -1893,10 +1891,9 @@ void set_sb_budget(
 {
     const uint32_t sb_index = sb_ptr->index;
     uint32_t max_to_min_score, score_to_min;
-
+#if 0 // Hsan: for TUNE_SQ only (to add a cehck after enabling SQ mode)
     const EbBool is_avc_partitioning_mode_flag = is_avc_partitioning_mode(sequence_control_set_ptr, picture_control_set_ptr, sb_ptr);
 
-#if 0 // Hsan: to use after enabling SQ mode
     if (context_ptr->adp_refinement_mode == 2 && is_avc_partitioning_mode_flag) {
 
         context_ptr->sb_cost_array[sb_index] = context_ptr->cost_depth_mode[SB_AVC_DEPTH_MODE - 1];
@@ -2056,7 +2053,7 @@ EbErrorType derive_default_segments(
 
     return return_error;
 }
-#if 0 // Hsan: to use after enabling SQ mode
+#if 0 // Hsan: for TUNE_SQ only (to add a cehck after enabling SQ mode)
 /******************************************************
 * Compute the refinment cost
     Input   : budget per picture, and the cost of the refinment
@@ -2117,20 +2114,17 @@ void derive_sb_score(
     context_ptr->sb_max_score = 0u;
 
     for (sb_index = 0; sb_index < sequence_control_set_ptr->sb_tot_cnt; sb_index++) {
-
-        LargestCodingUnit_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
-
+        SbParams_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
         if (picture_control_set_ptr->slice_type == I_SLICE) {
             assert(0);
         }
         else {
-#if 0 // Hsan - to do urgent
-            if (sb_params.raster_scan_cu_validity[RASTER_SCAN_CU_INDEX_64x64] == EB_FALSE) {
+            if (sb_params->raster_scan_cu_validity[RASTER_SCAN_CU_INDEX_64x64]== EB_FALSE) {
                 uint8_t cu8x8Index;
                 uint8_t validCu8x8Count = 0;
                 distortion = 0;
                 for (cu8x8Index = RASTER_SCAN_CU_INDEX_8x8_0; cu8x8Index <= RASTER_SCAN_CU_INDEX_8x8_63; cu8x8Index++) {
-                    if (sb_params.raster_scan_cu_validity[cu8x8Index]) {
+                    if (sb_params->raster_scan_cu_validity[cu8x8Index]) {
                         distortion += picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cu8x8Index].distortionDirection[0].distortion;
                         validCu8x8Count++;
                     }
@@ -2138,15 +2132,13 @@ void derive_sb_score(
                 if (validCu8x8Count > 0)
                     distortion = CLIP3(picture_control_set_ptr->parent_pcs_ptr->inter_complexity_min_pre, picture_control_set_ptr->parent_pcs_ptr->inter_complexity_max_pre, (distortion / validCu8x8Count) * 64);
 
-                // Do not perform LCU score manipulation for incomplete LCUs as not valid signals
+                // Do not perform SB score manipulation for incomplete SBs as not valid signals
                 sb_score = distortion;
 
             }
-            else
-#endif 
-            {
+            else {
                 distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][RASTER_SCAN_CU_INDEX_64x64].distortionDirection[0].distortion;
-
+                // Perform SB score manipulation for incomplete SBs for SQ mode
                 sb_score = distortion;
 
 #if 0 // Hsan: for TUNE_SQ only (to add a cehck after enabling SQ mode)
@@ -2238,11 +2230,9 @@ void perform_outlier_removal(
     // Count # of LCUs at each bin
     for (sb_index = 0; sb_index < sequence_control_set_ptr->sb_tot_cnt; sb_index++) {
 
-        LargestCodingUnit_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
-#if 0 // Hsan - to do urgent
-        if (sb_params->pa_raster_scan_block_validity[PA_RASTER_SCAN_CU_INDEX_64x64]) 
-#endif
-        {
+        SbParams_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+
+        if (sb_params->raster_scan_cu_validity[RASTER_SCAN_CU_INDEX_64x64]) {
 
             processed_sb_count++;
 
@@ -2315,18 +2305,13 @@ void set_target_budget_oq(
 {
     uint32_t budget;
 
-    // if (context_ptr->adp_level <= ENC_M4)  // Hsan: to add adp_level
-    if (1)
-    {
-        if (picture_control_set_ptr->slice_type == I_SLICE)
-            budget = sequence_control_set_ptr->sb_tot_cnt * SQ_BLOCKS_SEARCH_COST;
-        else
-            budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;
-    }
-    else {
-        budget = sequence_control_set_ptr->sb_tot_cnt * SQ_NON4_BLOCKS_SEARCH_COST;
-    }
-
+    if (picture_control_set_ptr->slice_type == I_SLICE)
+        budget = sequence_control_set_ptr->sb_tot_cnt * SQ_BLOCKS_SEARCH_COST;
+    else if (picture_control_set_ptr->temporal_layer_index == 0)
+        budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;// SQ_NON4_BLOCKS_SEARCH_COST;
+    else
+        budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;
+    
     context_ptr->budget = budget;
 }
 
@@ -2376,7 +2361,7 @@ void derive_sb_md_mode(
     derive_default_segments(
         picture_control_set_ptr,
         context_ptr);
-#if 0 // Hsan - to do urgent
+#if 0 // Hsan: to evaluate after enabling SQ mode
     // Compute the cost of the refinements 
     compute_refinement_cost(
         sequence_control_set_ptr,
@@ -2389,11 +2374,13 @@ void derive_sb_md_mode(
         picture_control_set_ptr,
         context_ptr);
 
+#if 0 // Hsan: to evaluate after freezing a 1st adp
     // Remove the outliers 
     perform_outlier_removal(
         sequence_control_set_ptr,
         picture_control_set_ptr->parent_pcs_ptr,
         context_ptr);
+#endif
 
     // Perform Budgetting
     derive_optimal_budget_per_sb(
@@ -3682,8 +3669,9 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
                         picture_control_set_ptr,
                         sb_index);
                 }
-                else if (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_SQ_NON4_BLOCKS_DEPTH_MODE) {
-                    sb_forward_sq_non4_blocks_to_md(
+                else {
+                    PerformEarlyLcuPartitionningLcu(
+                        context_ptr,
                         sequence_control_set_ptr,
                         picture_control_set_ptr,
                         sb_index);
