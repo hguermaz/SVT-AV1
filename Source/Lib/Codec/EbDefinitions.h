@@ -154,10 +154,10 @@ extern "C" {
 
 
 
-#define OPEN_LOOP_EARLY_PARTITION                        1
+#define OPEN_LOOP_EARLY_PARTITION                        0
 #define ADAPTIVE_DEPTH_PARTITIONING                      1 // Added the ability to switch @ SB basis between: (1) all square up to 64x64,  (2) mdc up to 64x64, (3) mdc up to 64x64 only pred, (4) mdc up to 64x64 only pred + 1 NFL
 #if ADAPTIVE_DEPTH_PARTITIONING
-#define ADP_STATS_PER_LAYER                              0
+#define ADP_STATS_PER_LAYER                              1
 #endif
 /********************************************************/
 /****************** Pre-defined Values ******************/
@@ -3013,13 +3013,9 @@ typedef enum EbPictureDepthMode {
 #define EB_SB_DEPTH_MODE              uint8_t
 #define SB_SQ_BLOCKS_DEPTH_MODE             1
 #define SB_SQ_NON4_BLOCKS_DEPTH_MODE        2
-#define SB_LIGHT_BDP_DEPTH_MODE             3
-#define SB_OPEN_LOOP_DEPTH_MODE             4
-#define SB_LIGHT_OPEN_LOOP_DEPTH_MODE       5
-#define SB_AVC_DEPTH_MODE                   6                     
-#define SB_LIGHT_AVC_DEPTH_MODE             7
-#define SB_PRED_OPEN_LOOP_DEPTH_MODE        8
-#define SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE  9
+#define SB_OPEN_LOOP_DEPTH_MODE             3
+#define SB_PRED_OPEN_LOOP_DEPTH_MODE        4
+#define SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE  5
 
 typedef enum EbAdpDepthSensitivePicClass
 {

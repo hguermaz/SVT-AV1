@@ -243,15 +243,12 @@ extern "C" {
         int32_t                                 film_grain_params_present;  // To turn on/off film grain (on a sequence basis)
 
 #if ADP_STATS_PER_LAYER
-        uint64_t                                total_count[4];
-        uint64_t                                fs_count[4];
-        uint64_t                                f_bdp_count[4];
-        uint64_t                                l_bdp_count[4];
-        uint64_t                                f_mdc_count[4];
-        uint64_t                                l_mdc_count[4];
-        uint64_t                                avc_count[4];
-        uint64_t                                pred_count[4];
-        uint64_t                                pred1_nfl_count[4];
+        uint64_t                                total_count[5];
+        uint64_t                                sq_search_count[5];
+        uint64_t                                sq_non4_search_count[5];
+        uint64_t                                mdc_count[5];
+        uint64_t                                pred_count[5];
+        uint64_t                                pred1_nfl_count[5];
 #endif
     } SequenceControlSet_t;
 

@@ -643,6 +643,33 @@ void md_update_all_neighbour_arrays_multiple(
 // Based on the MDStage and the encodeMode
 // the NFL candidates numbers are set
 //*************************//
+#if ADAPTIVE_DEPTH_PARTITIONING
+void set_nfl(
+    ModeDecisionContext_t     *context_ptr,
+    PictureControlSet_t       *picture_control_set_ptr,
+    LargestCodingUnit_t       *sb_ptr) {
+
+    // Set NFL Candidates
+    // NFL Level MD         Settings
+    // 0                    MAX_NFL 12
+    // 1                    8
+    // 2                    6
+    // 3                    4
+    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_ptr->index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
+        context_ptr->full_recon_search_count = 1;
+    else
+        if (context_ptr->nfl_level == 0)
+            context_ptr->full_recon_search_count = MAX_NFL;
+        else if (context_ptr->nfl_level == 1)
+            context_ptr->full_recon_search_count = 8;
+        else if (context_ptr->nfl_level == 2)
+            context_ptr->full_recon_search_count = 6;
+        else
+            context_ptr->full_recon_search_count = 4;
+
+    ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
+}
+#else
 void set_nfl(
     ModeDecisionContext_t     *context_ptr,
     PictureControlSet_t       *picture_control_set_ptr){
@@ -653,9 +680,7 @@ void set_nfl(
     // 1                    8
     // 2                    6
     // 3                    4
-#if !ADAPTIVE_DEPTH_PARTITIONING
     // 4                    4/3/2
-#endif
 
     if (context_ptr->nfl_level == 0)
         context_ptr->full_recon_search_count = MAX_NFL;
@@ -663,10 +688,6 @@ void set_nfl(
         context_ptr->full_recon_search_count = 8;
     else if (context_ptr->nfl_level == 2)
         context_ptr->full_recon_search_count = 6;
-#if ADAPTIVE_DEPTH_PARTITIONING
-    else 
-        context_ptr->full_recon_search_count = 4;
-#else
     else if (context_ptr->nfl_level == 3)
         context_ptr->full_recon_search_count = 4;
     else
@@ -676,10 +697,9 @@ void set_nfl(
 
         //if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_ptr->index] == LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
         //    context_ptr->full_recon_search_count = 1;
-#endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
-
+#endif
 //*************************//
 // SetNmm
 // Based on the MDStage and the encodeMode
@@ -2961,10 +2981,16 @@ void md_encode_block(
             context_ptr->leaf_depth_neighbor_array,
             context_ptr->leaf_partition_neighbor_array);
 
+#if ADAPTIVE_DEPTH_PARTITIONING
+        set_nfl(
+            context_ptr,
+            picture_control_set_ptr,
+            context_ptr->sb_ptr);
+#else
         set_nfl(
             context_ptr,
             picture_control_set_ptr);
-
+#endif
         ProductGenerateMdCandidatesCu(
             context_ptr->sb_ptr,
             context_ptr,

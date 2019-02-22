@@ -70,7 +70,9 @@ extern "C" {
         uint32_t                              sb_min_score;
         uint32_t                              sb_max_score;
         EbAdpDepthSensitivePicClass           adp_depth_sensitive_picture_class;
+#if 0 // Hsan: to use after enabling SQ mode
         EbAdpRefinementMode                   adp_refinement_mode;
+#endif
 #else
         // Budgeting
         uint32_t                             *lcuScoreArray;
