@@ -652,19 +652,28 @@ EbErrorType signal_derivation_multi_processes_oq(
         else
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
-    else {
 #if ADAPTIVE_DEPTH_PARTITIONING
-        if (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)
-            picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
-        else
-            picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
+    else if (picture_control_set_ptr->enc_mode == ENC_M3) {
 #else
+    else {
+#endif
         if (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
         else
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+    }
+#if ADAPTIVE_DEPTH_PARTITIONING
+     else {
+         if (picture_control_set_ptr->slice_type == I_SLICE)
+             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+         else
+#if OPEN_LOOP_EARLY_PARTITION
+             picture_control_set_ptr->pic_depth_mode = PIC_OPEN_LOOP_DEPTH_MODE;
+#else
+             picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
 #endif
     }
+#endif
 
     picture_control_set_ptr->max_number_of_pus_per_sb = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
 #if NSQ_SEARCH_LEVELS
@@ -878,6 +887,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     return return_error;
 }
+
 /***************************************************************************
 * Set the default subPel enble/disable flag for each frame
 ****************************************************************************/
@@ -922,7 +932,7 @@ uint8_t PictureLevelSubPelSettings(
 #endif
     return subPelMode;
 }
-
+#if !CHROMA_BLIND
 /***************************************************************************
 * Set the default chroma mode for each frame
 ****************************************************************************/
@@ -954,7 +964,7 @@ EbChromaMode PictureLevelChromaSettings(
 #endif
     return chroma_mode;
 }
-
+#endif
 
 /*************************************************
 * AV1 Reference Picture Signalling:
@@ -2046,7 +2056,7 @@ void* PictureDecisionKernel(void *input_ptr)
                                 picture_control_set_ptr->enc_mode,
                                 picture_control_set_ptr->temporal_layer_index,
                                 picture_control_set_ptr->is_used_as_reference_flag);
-
+#if !CHROMA_BLIND
                             // Set the default settings of  chroma
                             picture_control_set_ptr->chroma_mode = PictureLevelChromaSettings(
                                 sequence_control_set_ptr->input_resolution,
@@ -2054,6 +2064,7 @@ void* PictureDecisionKernel(void *input_ptr)
                                 picture_control_set_ptr->slice_type,
                                 picture_control_set_ptr->temporal_layer_index,
                                 picture_control_set_ptr->is_used_as_reference_flag);
+#endif
 
                             picture_control_set_ptr->use_src_ref = EB_FALSE;
 #if DISABLE_IN_LOOP_ME

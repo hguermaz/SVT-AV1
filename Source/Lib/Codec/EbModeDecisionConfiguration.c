@@ -476,6 +476,7 @@ uint8_t DeriveContouringClass(
     return(contouringClass);
 }
 
+
 void RefinementPredictionLoop(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,
