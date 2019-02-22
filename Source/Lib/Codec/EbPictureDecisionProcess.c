@@ -34,7 +34,9 @@
 
 #define WTH 64
 #define OTH 64
-
+#if TUNED_SETTINGS_FOR_M0
+#define FC_SKIP_TX_SR_TH                       125 // Fast cost skip tx search threshold.
+#endif
  /************************************************
   * Picture Analysis Context Constructor
   ************************************************/
@@ -625,7 +627,7 @@ Input   : encoder mode and tune
 Output  : Multi-Processes signal(s)
 ******************************************************/
 EbErrorType signal_derivation_multi_processes_oq(
-    PictureParentControlSet_t   *picture_control_set_ptr){
+    PictureParentControlSet_t   *picture_control_set_ptr) {
 
     EbErrorType return_error = EB_ErrorNone;
 
@@ -658,7 +660,42 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
 
     picture_control_set_ptr->max_number_of_pus_per_sb = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
+#if NSQ_SEARCH_LEVELS
+    // NSQ search Level                               Settings
+    // 0                                              OFF
+    // 1                                              Allow only NSQ Intra-FULL if parent SQ is intra-coded and vice versa.
+    // 2                                              Allow only NSQ Inter-NEAREST/NEAR/GLOBAL if parent SQ has no coeff
+    // 3                                              Allow only NSQ Intra-FULL and Inter-NEWMV if parent SQ is NEWMV
+    // 4                                              Allow only NSQ Inter-FULL and Intra-Z3 if parent SQ is intra-coded
+    // 5                                              Allow NSQ Intra-FULL and Inter-FULL
+#if TUNED_SETTINGS_FOR_M0
+    if (!MR_MODE)
+    picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_BASE_ON_SQ_COEFF;
+    else
+#endif
+    picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_FULL;
 
+
+    if (picture_control_set_ptr->nsq_search_level == NSQ_SEARCH_OFF) {
+        if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+    }
+    if (picture_control_set_ptr->pic_depth_mode > PIC_SQ_DEPTH_MODE) {
+        assert(picture_control_set_ptr->nsq_search_level != NSQ_SEARCH_OFF);
+    }
+#endif
+#if INTERPOLATION_SEARCH_LEVELS
+    // Interpolation search Level                     Settings
+    // 0                                              OFF
+    // 1                                              Interpolation search at inter-depth
+    // 2                                              Interpolation search at full loop
+    // 3                                              Interpolation search at fast loop
+    if (picture_control_set_ptr->enc_mode == ENC_M0) {
+        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
+    }
+    else {
+        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
+    }
+#else
     // Interpolation filter search Level MD         Settings
     // 0                                            OFF
     // 1                                            FAST
@@ -668,13 +705,15 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
         picture_control_set_ptr->interpolation_filter_search_mode = 0;
 
+#endif
+
     // Loop filter Level                            Settings
     // 0                                            OFF
     // 1                                            CU-BASED
     // 2                                            LIGHT FRAME-BASED
     // 3                                            FULL FRAME-BASED
 
-    if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag){
+    if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag) {
         if (picture_control_set_ptr->enc_mode >= ENC_M2)
             picture_control_set_ptr->loop_filter_mode = 1;
         else  if (picture_control_set_ptr->enc_mode == ENC_M1)
@@ -684,7 +723,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else {
         picture_control_set_ptr->loop_filter_mode = 0;
-    } 
+    }
 #if FAST_CDEF
     // CDEF Level                                   Settings
     // 0                                            OFF
@@ -711,6 +750,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                            0 step refinement
     // 2                                            1 step refinement
     // 3                                            4 step refinement
+    // 4                                            16 step refinement
 
     Av1Common* cm = picture_control_set_ptr->av1_cm;
 
@@ -718,8 +758,16 @@ EbErrorType signal_derivation_multi_processes_oq(
         cm->sg_filter_mode = 1;
     else  if (picture_control_set_ptr->enc_mode == ENC_M2)
         cm->sg_filter_mode = 2;
+#if TUNED_SETTINGS_FOR_M0
+    else  if (picture_control_set_ptr->enc_mode == ENC_M1)
+        cm->sg_filter_mode = 3;
+    else  if (picture_control_set_ptr->enc_mode == ENC_M0)
+        cm->sg_filter_mode = 4;
+#else
     else  if (picture_control_set_ptr->enc_mode <= ENC_M1)
         cm->sg_filter_mode = 3;
+#endif
+
 #endif
 
 #if FAST_WN
@@ -729,24 +777,101 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->enc_mode >= ENC_M1)
         cm->wn_filter_mode = 1;
-    else 
+    else
         cm->wn_filter_mode = 2;
 #endif
 
-    // Intra prediction Level                       Settings
+#if TX_SEARCH_LEVELS
+    // Tx_search Level                                Settings
+    // 0                                              OFF
+    // 1                                              Tx search at encdec
+    // 2                                              Tx search at inter-depth
+    // 3                                              Tx search at full loop
+
+    if (picture_control_set_ptr->enc_mode > ENC_M1) {
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+    }
+    else {
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
+    }
+
+    // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
+#if TUNED_SETTINGS_FOR_M0
+    if (!MR_MODE)
+        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH;
+    else
+#endif
+        picture_control_set_ptr->tx_weight = MAX_MODE_COST;
+
+    // Set tx search reduced set falg (0: full tx set; 1: reduced tx set)
+    if (picture_control_set_ptr->enc_mode == ENC_M1) {
+        picture_control_set_ptr->tx_search_reduced_set = 1;
+    }
+    else {
+        picture_control_set_ptr->tx_search_reduced_set = 0;
+    }
+#endif
+
+    // Intra prediction mode                       Settings
     // 0                                            OFF : disable_angle_prediction
     // 1                                            OFF per block : disable_angle_prediction for 64/32/4
     // 2                                            LIGHT: disable_z2_prediction && disable_angle_refinement
     // 3                                            LIGHT per block : disable_z2_prediction && disable_angle_refinement  for 64/32/4
-    // 4                                            FULL   
-  
-    if (picture_control_set_ptr->temporal_layer_index == 0)
-        picture_control_set_ptr->intra_pred_mode = 3;
-    else
-        picture_control_set_ptr->intra_pred_mode = 0;
+    // 4                                            FULL  
+
+    // The intra prediction level is a combination of the intra prediction modes.
+
+    // Intra prediction levels                      Settings
+    // 0                                            OFF : disable_angle_prediction
+    // 1                                            Disable_angle_prediction for 64/32/4 (mode 1) @ BASE AND OFF (mode 0) Otherwise
+    // 2                                            Disable_z2_prediction && disable_angle_refinement for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
+    // 3                                            Full (mode 4) @ BASE AND Disable_z2_prediction && disable_angle_refinement (mode 2) Otherwise
+    // 4                                            FULL 
+
+    uint8_t intra_pred_level = 4;
+
+    switch (picture_control_set_ptr->enc_mode) {
+    case 0:
+        intra_pred_level = 3; //ENC_M0
+        break;
+    case 1:
+        intra_pred_level = 2; //ENC_M1
+        break;
+    case 2:
+        intra_pred_level = 2; //ENC_M2
+        break;
+    case 3:
+        intra_pred_level = 2; //ENC_M3
+        break;
+    default:
+        intra_pred_level = 4; //MR_MODE
+        break;
+    }
+
+    if (intra_pred_level == 4) {
+        picture_control_set_ptr->intra_pred_mode = 4;
+
+    }else if (intra_pred_level == 3) { 
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->intra_pred_mode = 4;
+        else
+            picture_control_set_ptr->intra_pred_mode = 2;
+    }else if (intra_pred_level == 2) {  
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->intra_pred_mode = 3;
+        else
+            picture_control_set_ptr->intra_pred_mode = 0;
+    }
+    else if (intra_pred_level == 1) { 
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->intra_pred_mode = 1;
+        else
+            picture_control_set_ptr->intra_pred_mode = 0;
+    }
 
     return return_error;
 }
+
 /***************************************************************************
 * Set the default subPel enble/disable flag for each frame
 ****************************************************************************/
@@ -791,7 +916,7 @@ uint8_t PictureLevelSubPelSettings(
 #endif
     return subPelMode;
 }
-
+#if !CHROMA_BLIND
 /***************************************************************************
 * Set the default chroma mode for each frame
 ****************************************************************************/
@@ -823,7 +948,7 @@ EbChromaMode PictureLevelChromaSettings(
 #endif
     return chroma_mode;
 }
-
+#endif
 
 /*************************************************
 * AV1 Reference Picture Signalling:
@@ -1096,7 +1221,7 @@ void  Av1GenerateRpsInfo(
         if (pictureIndex == 3) {
             av1Rps->refDpbIndex[0] = base0_idx;
             av1Rps->refDpbIndex[6] = layer1_idx;
-        }
+    }
         else if (pictureIndex == 11) {
             av1Rps->refDpbIndex[0] = layer1_idx;
             av1Rps->refDpbIndex[6] = base1_idx;
@@ -1195,8 +1320,8 @@ void  Av1GenerateRpsInfo(
                 picture_control_set_ptr->showFrame = EB_TRUE;
                 picture_control_set_ptr->hasShowExisting = EB_FALSE;
             }
-            else
-            {
+    else
+    {
                 picture_control_set_ptr->showFrame = EB_FALSE;
                 picture_control_set_ptr->hasShowExisting = EB_FALSE;
             }
@@ -1915,7 +2040,7 @@ void* PictureDecisionKernel(void *input_ptr)
                                 picture_control_set_ptr->enc_mode,
                                 picture_control_set_ptr->temporal_layer_index,
                                 picture_control_set_ptr->is_used_as_reference_flag);
-
+#if !CHROMA_BLIND
                             // Set the default settings of  chroma
                             picture_control_set_ptr->chroma_mode = PictureLevelChromaSettings(
                                 sequence_control_set_ptr->input_resolution,
@@ -1923,6 +2048,7 @@ void* PictureDecisionKernel(void *input_ptr)
                                 picture_control_set_ptr->slice_type,
                                 picture_control_set_ptr->temporal_layer_index,
                                 picture_control_set_ptr->is_used_as_reference_flag);
+#endif
 
                             picture_control_set_ptr->use_src_ref = EB_FALSE;
 #if DISABLE_IN_LOOP_ME

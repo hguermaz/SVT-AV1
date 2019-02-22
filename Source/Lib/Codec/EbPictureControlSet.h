@@ -13643,7 +13643,7 @@ extern "C" {
         // ME Results
         uint64_t          treeblock_variance;
         uint32_t          leaf_count;
-        EbMdcLeafData_t   leaf_data_array[BLOCK_MAX_COUNT];
+        EbMdcLeafData_t   leaf_data_array[BLOCK_MAX_COUNT_SB_128];
 
     } MdcLcuData_t;
 
@@ -13864,7 +13864,7 @@ extern "C" {
         uint8_t   height;
         uint8_t   is_complete_sb;
         EbBool    raster_scan_cu_validity[CU_MAX_COUNT];
-        EbBool    block_is_inside_md_scan[BLOCK_MAX_COUNT];
+        EbBool    block_is_inside_md_scan[BLOCK_MAX_COUNT_SB_128];
         uint8_t   potential_logo_sb;
         uint8_t   is_edge_sb;
     } SbParams_t;
@@ -13878,7 +13878,7 @@ extern "C" {
         uint8_t    width;
         uint8_t    height;
         uint8_t    is_complete_sb;
-        EbBool     block_is_inside_md_scan[BLOCK_MAX_COUNT];
+        EbBool     block_is_inside_md_scan[BLOCK_MAX_COUNT_SB_128];
     } SbGeom_t;
 
     typedef struct CuStat_s {
@@ -14117,7 +14117,9 @@ extern "C" {
         EbEncMode                             enc_mode;
 
         EbLcuDepthMode                       *sb_md_mode_array;
+#if !CHROMA_BLIND
         EbChromaMode                          chroma_mode;
+#endif
         EbSbComplexityStatus                 *complex_sb_array;
         EbCu8x8Mode                           cu8x8_mode;
         EbBool                                use_src_ref;
@@ -14125,7 +14127,9 @@ extern "C" {
 
         // Multi-modes signal(s) 
         EbPictureDepthMode                    pic_depth_mode;
+#if !INTERPOLATION_SEARCH_LEVELS
         uint8_t                               interpolation_filter_search_mode;
+#endif
         uint8_t                               loop_filter_mode;
         uint8_t                               intra_pred_mode;
         //**********************************************************************************************************//
@@ -14281,6 +14285,17 @@ extern "C" {
         int32_t                               cdef_frame_strength;
         int32_t                               cdf_ref_frame_strenght;
         int32_t                               use_ref_frame_cdef_strength;
+#endif
+#if TX_SEARCH_LEVELS
+        uint8_t                               tx_search_level;
+        uint64_t                              tx_weight;
+        uint8_t                               tx_search_reduced_set;
+#endif
+#if INTERPOLATION_SEARCH_LEVELS
+        uint8_t                               interpolation_search_level;
+#endif
+#if NSQ_SEARCH_LEVELS
+        uint8_t                               nsq_search_level;
 #endif
 
     } PictureParentControlSet_t;
