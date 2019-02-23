@@ -58,7 +58,7 @@ extern "C" {
 #define DISABLE_128X128_SB                              0
 #define ENABLE_INTER_4x4                                0 // optional
 #define DISABLE_4xN_Nx4                                 1 //
-#define DISABLE_128x128                                 0 //
+#define DISABLE_128x128                                 0
 #define VCI_CANDIDATE_II                                1
 
 #if VCI_CANDIDATE_II
@@ -149,7 +149,13 @@ extern "C" {
 #define CHROMA_BLIND                                    1 // Added the ability to switch between three chroma modes: 1. chroma @ MD, 2. chroma blind @ MD + CFL @ EP. 3. chroma blind @ MD + no CFL @ EP
 
 #define TUNED_SETTINGS_FOR_M0                           1
+#define CONTENT_BASED_QPS                               1 // Adaptive QP Scaling (active for I only)
 #define TUNED_SETTINGS_FOR_M1                           1
+#define OPEN_LOOP_EARLY_PARTITION                        1
+#define ADAPTIVE_DEPTH_PARTITIONING                      1 // Added the ability to switch @ SB basis between: (1) all square up to 64x64,  (2) mdc up to 64x64, (3) mdc up to 64x64 only pred, (4) mdc up to 64x64 only pred + 1 NFL
+#if ADAPTIVE_DEPTH_PARTITIONING
+#define ADP_STATS_PER_LAYER                              1
+#endif
 
 /********************************************************/
 /****************** Pre-defined Values ******************/
@@ -2989,6 +2995,7 @@ typedef enum EbCu8x8Mode {
     CU_8x8_MODE_1 = 1   // Perform OIS and only Full_Search for CU_8x8
 } EbCu8x8Mode;
 
+
 typedef enum EbPictureDepthMode {
 
     PIC_ALL_DEPTH_MODE          = 0, // ALL sq and nsq:  SB size -> 4x4 
@@ -3001,6 +3008,28 @@ typedef enum EbPictureDepthMode {
     PIC_OPEN_LOOP_DEPTH_MODE    = 7
 } EbPictureDepthMode;
 
+#if ADAPTIVE_DEPTH_PARTITIONING
+#define EB_SB_DEPTH_MODE              uint8_t
+#define SB_SQ_BLOCKS_DEPTH_MODE             1
+#define SB_SQ_NON4_BLOCKS_DEPTH_MODE        2
+#define SB_OPEN_LOOP_DEPTH_MODE             3
+#define SB_PRED_OPEN_LOOP_DEPTH_MODE        4
+#define SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE  5
+
+typedef enum EbAdpDepthSensitivePicClass
+{
+    DEPTH_SENSITIVE_PIC_CLASS_0 = 0,    // Normal picture
+    DEPTH_SENSITIVE_PIC_CLASS_1 = 1,    // High complex picture
+    DEPTH_SENSITIVE_PIC_CLASS_2 = 2     // Moderate complex picture
+} EbAdpDepthSensitivePicClass;
+
+typedef enum EbAdpRefinementMode
+{
+    ADP_REFINEMENT_OFF = 0,  // Off
+    ADP_MODE_0 = 1,  // Light AVC (only 16x16)
+    ADP_MODE_1 = 2   // AVC (only 8x8 & 16x16 @ the Open Loop Search)
+} EbAdpRefinementMode;
+#else
 typedef enum EbLcuDepthMode {
 
     LCU_FULL85_DEPTH_MODE = 1,
@@ -3013,7 +3042,7 @@ typedef enum EbLcuDepthMode {
     LCU_PRED_OPEN_LOOP_DEPTH_MODE = 8,
     LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE = 9
 } EbLcuDepthMode;
-
+#endif
 typedef enum EB_INTRA4x4_SEARCH_METHOD {
     INTRA4x4_OFF = 0,
     INTRA4x4_INLINE_SEARCH = 1,
@@ -3382,39 +3411,39 @@ static const uint8_t EnableHmeLevel0Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
 };
 static const uint16_t HmeLevel0TotalSearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  48,   48,   48,   48,   48,   48,   48,   48 },
-    { 112,   96,   64,   64,   64,   64,   64,   64 },
-    { 128,  128,   96,   96,   96,   96,   96,   96 },
+    { 112,   96,   96,   64,   64,   64,   64,   64 },
+    { 128,  128,  128,   96,   96,   96,   96,   96 },
     { 128,  128,  128,  128,  128,  128,  128,  128 }
 };
 
 static const uint16_t HmeLevel0SearchAreaInWidthArrayLeft[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  24,   24,   24,   24,   24,   24,   24,   24 },
-    {  56,   48,   32,   32,   32,   32,   32,   32 },
-    {  64,   64,   48,   48,   48,   48,   48,   48 },
+    {  56,   48,   48,   32,   32,   32,   32,   32 },
+    {  64,   64,   64,   48,   48,   48,   48,   48 },
     {  64,   64,   64,   64,   64,   64,   64,   64 }
 };
 static const uint16_t HmeLevel0SearchAreaInWidthArrayRight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  24,   24,   24,   24,   24,   24,   24,   24 },
-    {  56,   48,   32,   32,   32,   32,   32,   32 },
-    {  64,   64,   48,   48,   48,   48,   48,   48 },
+    {  56,   48,   48,   32,   32,   32,   32,   32 },
+    {  64,   64,   64,   48,   48,   48,   48,   48 },
     {  64,   64,   64,   64,   64,   64,   64,   64 }
 };
 static const uint16_t HmeLevel0TotalSearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  40,   40,   40,   40,   40,   40,   40,   40 },
-    {  64,   64,   48,   48,   48,   48,   48,   48 },
-    {  80,   80,   48,   48,   48,   48,   48,   48 },
+    {  64,   64,   64,   48,   48,   48,   48,   48 },
+    {  80,   80,   80,   48,   48,   48,   48,   48 },
     {  80,   80,   80,   80,   80,   80,   80,   80 }
 };
 static const uint16_t HmeLevel0SearchAreaInHeightArrayTop[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  20,   20,   20,   20,   20,   20,   20,   20 },
-    {  32,   32,   24,   24,   24,   24,   24,   24 },
-    {  40,   40,   24,   24,   24,   24,   24,   24 },
+    {  32,   32,   32,   24,   24,   24,   24,   24 },
+    {  40,   40,   40,   24,   24,   24,   24,   24 },
     {  40,   40,   40,   40,   40,   40,   40,   40 }
 };
 static const uint16_t HmeLevel0SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  20,   20,   20,   20,   20,   20,   20,   20 },
-    {  32,   32,   24,   24,   24,   24,   24,   24 },
-    {  40,   40,   24,   24,   24,   24,   24,   24 },
+    {  32,   32,   32,   24,   24,   24,   24,   24 },
+    {  40,   40,   40,   24,   24,   24,   24,   24 },
     {  40,   40,   40,   40,   40,   40,   40,   40 }
 };
 
@@ -3485,17 +3514,17 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][M
 
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   56,   48,   40,   32 },
-    { 112,   96,   64,   64,   56,   48,   40,   32 },
-    { 128,  112,   96,   64,   56,   48,   40,   32 },
-    { 128,  112,   96,   64,   56,   48,   40,   32 } 
+    { 112,   96,   96,   64,   56,   48,   40,   32 },
+    { 128,  112,  112,   64,   56,   48,   40,   32 },
+    { 128,  112,  112,   64,   56,   48,   40,   32 }
 
 };
 
 static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   56,   48,   40,   32 },
-    { 112,   96,   64,   64,   56,   48,   40,   32 },
-    { 128,  112,   96,   64,   56,   48,   40,   32 },
-    { 128,  112,   96,   64,   56,   48,   40,   32 } 
+    { 112,   96,   96,   64,   56,   48,   40,   32 },
+    { 128,  112,  112,   64,   56,   48,   40,   32 },
+    { 128,  112,  112,   64,   56,   48,   40,   32 }
 
 //     M0    M1    M2    M3    M4    M5    M6    M7
 };

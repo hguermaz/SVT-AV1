@@ -1073,8 +1073,11 @@ EbErrorType PictureParentControlSetCtor(
 
     EB_CREATEMUTEX(EbHandle, objectPtr->rc_distortion_histogram_mutex, sizeof(EbHandle), EB_MUTEX);
 
-
+#if ADAPTIVE_DEPTH_PARTITIONING
+    EB_MALLOC(EB_SB_DEPTH_MODE*, objectPtr->sb_depth_mode_array, sizeof(EB_SB_DEPTH_MODE) * objectPtr->sb_total_count, EB_N_PTR);
+#else
     EB_MALLOC(EbLcuDepthMode*, objectPtr->sb_md_mode_array, sizeof(EbLcuDepthMode) * objectPtr->sb_total_count, EB_N_PTR);
+#endif
 
     EB_MALLOC(Av1Common*, objectPtr->av1_cm, sizeof(Av1Common), EB_N_PTR);
 

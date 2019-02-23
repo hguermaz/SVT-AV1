@@ -14115,8 +14115,11 @@ extern "C" {
 #endif
         // MD
         EbEncMode                             enc_mode;
-
+#if ADAPTIVE_DEPTH_PARTITIONING
+        EB_SB_DEPTH_MODE                     *sb_depth_mode_array;
+#else
         EbLcuDepthMode                       *sb_md_mode_array;
+#endif		
 #if !CHROMA_BLIND
         EbChromaMode                          chroma_mode;
 #endif
