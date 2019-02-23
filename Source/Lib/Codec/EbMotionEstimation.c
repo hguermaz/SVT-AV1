@@ -7601,7 +7601,7 @@ void InjectIntraCandidatesBasedOnBestMode(
 
         OisCuPtr[count].distortion = stage1SadArray[1];
 
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
+        if (picture_control_set_ptr->enc_mode <= ENC_M2)
 
             OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         else

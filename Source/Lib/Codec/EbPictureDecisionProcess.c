@@ -654,10 +654,12 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
     }
     else if (picture_control_set_ptr->enc_mode == ENC_M2) {
-        if (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)
-            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
-        else
-            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+        if (picture_control_set_ptr->slice_type != I_SLICE) {
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+        }
+        else {
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+        }
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
     else if (picture_control_set_ptr->enc_mode == ENC_M3) {
@@ -737,9 +739,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 3                                            FULL FRAME-BASED
 
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag) {
-        if (picture_control_set_ptr->enc_mode >= ENC_M2)
+        if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->loop_filter_mode = 1;
-        else  if (picture_control_set_ptr->enc_mode == ENC_M1)
+        else  if (picture_control_set_ptr->enc_mode >= ENC_M1)
 #if TUNED_SETTINGS_FOR_M1
             picture_control_set_ptr->loop_filter_mode = 3;
 #else
@@ -762,9 +764,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (sequence_control_set_ptr->enable_cdef) {
         if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->cdef_filter_mode = 1;
-        else  if (picture_control_set_ptr->enc_mode == ENC_M2)
-            picture_control_set_ptr->cdef_filter_mode = 2;
-        else  if (picture_control_set_ptr->enc_mode <= ENC_M1)
+        else if (picture_control_set_ptr->enc_mode <= ENC_M2)
             picture_control_set_ptr->cdef_filter_mode = 3;
     }
     else {
@@ -784,7 +784,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->enc_mode >= ENC_M3)
         cm->sg_filter_mode = 1;
     else  if (picture_control_set_ptr->enc_mode == ENC_M2)
-        cm->sg_filter_mode = 2;
+        cm->sg_filter_mode = 3;
 #if TUNED_SETTINGS_FOR_M0
     else  if (picture_control_set_ptr->enc_mode == ENC_M1)
         cm->sg_filter_mode = 3;
@@ -817,7 +817,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 
-    if (picture_control_set_ptr->enc_mode > ENC_M1) {
+    if (picture_control_set_ptr->enc_mode > ENC_M2) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
     }
     else {
@@ -831,7 +831,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
 #endif
 #if TUNED_SETTINGS_FOR_M1
-    if (!MR_MODE && picture_control_set_ptr->enc_mode == ENC_M1)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M2)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
     else
 #endif
@@ -839,7 +839,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     // Set tx search reduced set falg (0: full tx set; 1: reduced tx set)
 #if TUNED_SETTINGS_FOR_M1
-    if (picture_control_set_ptr->enc_mode == ENC_M2) {
+    if (picture_control_set_ptr->enc_mode == ENC_M3) {
 #else
     if (picture_control_set_ptr->enc_mode == ENC_M1) {
 #endif
@@ -862,7 +862,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // Intra prediction levels                      Settings
     // 0                                            OFF : disable_angle_prediction
     // 1                                            Disable_angle_prediction for 64/32/4 (mode 1) @ BASE AND OFF (mode 0) Otherwise
-    // 2                                            Disable_z2_prediction && disable_angle_refinement for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
+    // 2                                            Disable_z2_prediction && disable_angle_refinementÂ for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
     // 3                                            Full (mode 4) @ BASE AND Disable_z2_prediction && disable_angle_refinement (mode 2) Otherwise
     // 4                                            FULL 
 
