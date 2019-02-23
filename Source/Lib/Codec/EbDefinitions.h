@@ -55,10 +55,10 @@ extern "C" {
 
 #define ENABLE_INTRA_4x4                                1 //
 #define DISABLE_NSQ                                     1 //
-#define DISABLE_128X128_SB                              1 //  Hsan - urgent
+#define DISABLE_128X128_SB                              0
 #define ENABLE_INTER_4x4                                0 // optional
 #define DISABLE_4xN_Nx4                                 1 //
-#define DISABLE_128x128                                 1 //  Hsan - urgent
+#define DISABLE_128x128                                 0
 #define VCI_CANDIDATE_II                                1
 
 #if VCI_CANDIDATE_II
