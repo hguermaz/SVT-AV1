@@ -1345,16 +1345,16 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 
     // NFL Level MD         Settings
     // 0                    MAX_NFL 12
-    // 1                    8
-    // 2                    6
-    // 3                    4
+    // 1                    10
+    // 2                    8
+    // 3                    6
     // 4                    4/3/2
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->nfl_level = 0;
-    else if (picture_control_set_ptr->enc_mode == ENC_M1)
+    else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         context_ptr->nfl_level = 1;
-    else if (picture_control_set_ptr->enc_mode == ENC_M2)
-        context_ptr->nfl_level = 1;
+    else if (picture_control_set_ptr->enc_mode == ENC_M3)
+        context_ptr->nfl_level = 2;
     else
         context_ptr->nfl_level = 3;
 

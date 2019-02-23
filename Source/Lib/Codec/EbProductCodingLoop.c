@@ -651,20 +651,20 @@ void set_nfl(
     // Set NFL Candidates
     // NFL Level MD         Settings
     // 0                    MAX_NFL 12
-    // 1                    8
-    // 2                    6
-    // 3                    4
+    // 1                    10
+    // 2                    8
+    // 3                    6
     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_ptr->index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
         context_ptr->full_recon_search_count = 1;
     else
         if (context_ptr->nfl_level == 0)
             context_ptr->full_recon_search_count = MAX_NFL;
         else if (context_ptr->nfl_level == 1)
-            context_ptr->full_recon_search_count = 8;
+            context_ptr->full_recon_search_count = 10;
         else if (context_ptr->nfl_level == 2)
-            context_ptr->full_recon_search_count = 6;
+            context_ptr->full_recon_search_count = 8;
         else
-            context_ptr->full_recon_search_count = 4;
+            context_ptr->full_recon_search_count = 6;
 
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
@@ -676,23 +676,19 @@ void set_nfl(
     // Set NFL Candidates
     // NFL Level MD         Settings
     // 0                    MAX_NFL 12
-    // 1                    8
-    // 2                    6
-    // 3                    4
+    // 1                    10
+    // 2                    8
+    // 3                    6
     // 4                    4/3/2
 
     if (context_ptr->nfl_level == 0)
         context_ptr->full_recon_search_count = MAX_NFL;
     else if (context_ptr->nfl_level == 1)
-#if TUNED_SETTINGS_FOR_M1
         context_ptr->full_recon_search_count = 10;
-#else
-        context_ptr->full_recon_search_count = 8;
-#endif
     else if (context_ptr->nfl_level == 2)
-        context_ptr->full_recon_search_count = 6;
+        context_ptr->full_recon_search_count = 8;
     else if (context_ptr->nfl_level == 3)
-        context_ptr->full_recon_search_count = 4;
+        context_ptr->full_recon_search_count = 6;
     else
         context_ptr->full_recon_search_count =
             (picture_control_set_ptr->slice_type == I_SLICE) ? 4 :
@@ -6893,7 +6889,7 @@ EB_EXTERN EbErrorType in_loop_motion_estimation_sblock(
     const uint32_t start_idx_128x64 = 849 * number_of_sb_quad;
 
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
-    context_ptr->fractionalSearchMethod = (picture_control_set_ptr->enc_mode >= ENC_M3) ? FULL_SAD_SEARCH : SSD_SEARCH;
+    context_ptr->fractionalSearchMethod = (picture_control_set_ptr->enc_mode >= ENC_M4) ? FULL_SAD_SEARCH : SSD_SEARCH;
 #else
     context_ptr->fractionalSearchMethod = SUB_SAD_SEARCH;
 #endif
