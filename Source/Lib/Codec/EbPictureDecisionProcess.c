@@ -844,7 +844,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // Intra prediction levels                      Settings
     // 0                                            OFF : disable_angle_prediction
     // 1                                            Disable_angle_prediction for 64/32/4 (mode 1) @ BASE AND OFF (mode 0) Otherwise
-    // 2                                            Disable_z2_prediction && disable_angle_refinement for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
+    // 2                                            Disable_z2_prediction && disable_angle_refinementÂ for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
     // 3                                            Full (mode 4) @ BASE AND Disable_z2_prediction && disable_angle_refinement (mode 2) Otherwise
     // 4                                            FULL 
 
