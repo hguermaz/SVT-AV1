@@ -1068,7 +1068,7 @@ enum {
     GF_ARF_STD = 4,
     KF_STD = 5,
     RATE_FACTOR_LEVELS = 6
-} UENUM1BYTE(RATE_FACTOR_LEVEL);
+} RATE_FACTOR_LEVEL;
 
 enum {
     KF_UPDATE = 0,
@@ -1082,7 +1082,7 @@ enum {
     INTNL_OVERLAY_UPDATE = 8,  // Internal Overlay Frame
     INTNL_ARF_UPDATE = 9,      // Internal Altref Frame (candidate for ALTREF2)
     FRAME_UPDATE_TYPES = 10
-} UENUM1BYTE(FRAME_UPDATE_TYPE);
+} FRAME_UPDATE_TYPE;
 
 // that are not marked as coded with 0,0 motion in the first pass.
 #define STATIC_KF_GROUP_THRESH 99
