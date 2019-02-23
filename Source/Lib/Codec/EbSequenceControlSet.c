@@ -215,6 +215,20 @@ EbErrorType eb_sequence_control_set_ctor(
     sequence_control_set_ptr->monochrome = 0;
     sequence_control_set_ptr->film_grain_params_present = 0;
     sequence_control_set_ptr->film_grain_random_seed = 7391;
+
+
+#if ADP_STATS_PER_LAYER
+    uint8_t temporal_layer_index;
+    for (temporal_layer_index = 0; temporal_layer_index < 5; temporal_layer_index++) {
+        sequence_control_set_ptr->total_count[temporal_layer_index] = 0;
+        sequence_control_set_ptr->sq_search_count[temporal_layer_index] = 0;
+        sequence_control_set_ptr->sq_non4_search_count[temporal_layer_index] = 0;
+        sequence_control_set_ptr->mdc_count[temporal_layer_index] = 0;
+        sequence_control_set_ptr->pred_count[temporal_layer_index] = 0;
+        sequence_control_set_ptr->pred1_nfl_count[temporal_layer_index] = 0;
+    }
+#endif
+
     return EB_ErrorNone;
 }
 

@@ -479,130 +479,6 @@ EbErrorType PreModeDecision(
     return return_error;
 }
 
-
-void Me2Nx2NCandidatesInjectionSwResults(
-    PictureControlSet_t            *picture_control_set_ptr,
-    ModeDecisionContext_t          *context_ptr,
-    const SequenceControlSet_t     *sequence_control_set_ptr,
-    LargestCodingUnit_t            *sb_ptr,
-    const uint32_t                    me2Nx2NTableOffset,
-    uint32_t                         *candidateTotalCnt,
-    int16_t                          firstPuAMVPCandArray_x[MAX_NUM_OF_REF_PIC_LIST][2],
-    int16_t                          firstPuAMVPCandArray_y[MAX_NUM_OF_REF_PIC_LIST][2],
-    uint32_t                          firstPuNumAvailableAMVPCand[MAX_NUM_OF_REF_PIC_LIST]
-)
-{
-    uint32_t                   meCandidateIndex;
-    uint32_t                   canTotalCnt = (*candidateTotalCnt);
-    const uint32_t             lcuAddr = sb_ptr->index;
-    const uint32_t             cu_origin_x = context_ptr->cu_origin_x;
-    const uint32_t             cu_origin_y = context_ptr->cu_origin_y;
-
-    MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[lcuAddr][me2Nx2NTableOffset];
-    ModeDecisionCandidate_t    *candidateArray = context_ptr->fast_candidate_array;
-    const uint32_t             meTotalCnt = mePuResult->totalMeCandidateIndex;
-
-    for (meCandidateIndex = 0; meCandidateIndex < meTotalCnt; ++meCandidateIndex)
-    {
-
-
-
-        const uint32_t interDirection = mePuResult->distortionDirection[meCandidateIndex].direction;
-        if (interDirection == BI_PRED && picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_ptr->index] == LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
-            continue;
-        candidateArray[canTotalCnt].motionVector_x_L0 = mePuResult->xMvL0;
-        candidateArray[canTotalCnt].motionVector_y_L0 = mePuResult->yMvL0;
-        candidateArray[canTotalCnt].motionVector_x_L1 = mePuResult->xMvL1;
-        candidateArray[canTotalCnt].motionVector_y_L1 = mePuResult->yMvL1;
-#if !CHROMA_BLIND
-        if (picture_control_set_ptr->parent_pcs_ptr->use_subpel_flag == 0) {
-            RoundMv(candidateArray,
-                canTotalCnt);
-        }
-#endif
-
-        if (interDirection == UNI_PRED_LIST_0) {
-
-            LimitMvOverBound(
-                &candidateArray[canTotalCnt].motionVector_x_L0,
-                &candidateArray[canTotalCnt].motionVector_y_L0,
-                context_ptr,
-                sequence_control_set_ptr);
-
-        }
-        else if (interDirection == UNI_PRED_LIST_1) {
-            LimitMvOverBound(
-                &candidateArray[canTotalCnt].motionVector_x_L1,
-                &candidateArray[canTotalCnt].motionVector_y_L1,
-                context_ptr,
-                sequence_control_set_ptr);
-
-        }
-        else {
-            LimitMvOverBound(
-                &candidateArray[canTotalCnt].motionVector_x_L0,
-                &candidateArray[canTotalCnt].motionVector_y_L0,
-                context_ptr,
-                sequence_control_set_ptr);
-
-
-            LimitMvOverBound(
-                &candidateArray[canTotalCnt].motionVector_x_L1,
-                &candidateArray[canTotalCnt].motionVector_y_L1,
-                context_ptr,
-                sequence_control_set_ptr);
-
-        }
-
-
-        candidateArray[canTotalCnt].me_distortion = mePuResult->distortionDirection[meCandidateIndex].distortion;
-
-        candidateArray[canTotalCnt].distortion_ready = 1;
-
-        candidateArray[canTotalCnt].prediction_direction[0] = (EbPredDirection)interDirection;
-
-        candidateArray[canTotalCnt].type = INTER_MODE;
-        candidateArray[canTotalCnt].merge_flag = EB_FALSE;
-        if (context_ptr->generate_mvp == EB_FALSE)
-        {
-            // TODO: Clips mvs along with Limit mvs
-            SetMvpClipMVs(
-                &candidateArray[canTotalCnt],
-                cu_origin_x,
-                cu_origin_y,
-                0,
-                sequence_control_set_ptr->sb_sz,
-                picture_control_set_ptr
-            );
-
-        }
-        else
-        {
-            choose_mvp_idx_v2(
-                &candidateArray[canTotalCnt],
-                cu_origin_x,
-                cu_origin_y,
-                0,
-                sequence_control_set_ptr->sb_sz,
-                firstPuAMVPCandArray_x[REF_LIST_0],
-                firstPuAMVPCandArray_y[REF_LIST_0],
-                firstPuNumAvailableAMVPCand[REF_LIST_0],
-                firstPuAMVPCandArray_x[REF_LIST_1],
-                firstPuAMVPCandArray_y[REF_LIST_1],
-                firstPuNumAvailableAMVPCand[REF_LIST_1],
-                picture_control_set_ptr);
-        }
-
-
-        canTotalCnt++;
-    }
-
-    // update the total number of candidates injected
-    (*candidateTotalCnt) = canTotalCnt;
-
-
-    return;
-}
 #if IMPROVED_BIPRED_INJECTION || IMPROVED_UNIPRED_INJECTION
 
 #define BIPRED_3x3_REFINMENT_POSITIONS 8
@@ -1815,7 +1691,11 @@ void  inject_inter_candidates(
             // Bipred2Nx2N
             //----------------------
 #if ENCODER_MODE_CLEANUP
+#if TUNED_SETTINGS_FOR_M1
+            if (picture_control_set_ptr->enc_mode == ENC_M0 || context_ptr->blk_geom->shape == PART_N)
+#else
             if (picture_control_set_ptr->enc_mode <= ENC_M0)
+#endif
 
 #else
             if (picture_control_set_ptr->enc_mode <= ENC_M1 /*&& sequence_control_set_ptr->static_config.tune != TUNE_VQ*/)
@@ -1838,8 +1718,11 @@ void  inject_inter_candidates(
             // Unipred2Nx2N
             //----------------------
 #if ENCODER_MODE_CLEANUP
+#if TUNED_SETTINGS_FOR_M1
+            if (picture_control_set_ptr->enc_mode == ENC_M0 || context_ptr->blk_geom->shape == PART_N)
+#else
             if (picture_control_set_ptr->enc_mode <= ENC_M0)
-
+#endif
 #else
             if (picture_control_set_ptr->enc_mode <= ENC_M1 /*&& sequence_control_set_ptr->static_config.tune != TUNE_VQ*/)
 #endif
@@ -2233,7 +2116,11 @@ EbErrorType ProductGenerateMdCandidatesCu(
     if (slice_type != I_SLICE) {
 #if ENABLE_INTRA_4x4
 #if ENCODER_MODE_CLEANUP
+#if TUNED_SETTINGS_FOR_M1
+        if ( 1 ||
+#else
         if ((picture_control_set_ptr->enc_mode <= ENC_M0) ||
+#endif
             (context_ptr->blk_geom->bwidth != 4 && context_ptr->blk_geom->bheight != 4))
 #else
         if (context_ptr->blk_geom->bwidth != 4 && context_ptr->blk_geom->bheight != 4)

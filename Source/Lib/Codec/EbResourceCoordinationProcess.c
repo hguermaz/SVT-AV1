@@ -797,7 +797,6 @@ void* ResourceCoordinationKernel(void *input_ptr)
                     ConstructPmTransCoeffShaping(sequence_control_set_ptr);
                 }
             }
-
         }
 
         //Get a New ParentPCS where we will hold the new inputPicture
