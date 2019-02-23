@@ -1816,7 +1816,7 @@ void  inject_inter_candidates(
             //----------------------
 #if ENCODER_MODE_CLEANUP
 #if TUNED_SETTINGS_FOR_M1
-            if (picture_control_set_ptr->enc_mode <= ENC_M1 && context_ptr->blk_geom->shape == PART_N)
+            if (picture_control_set_ptr->enc_mode == ENC_M0 || context_ptr->blk_geom->shape == PART_N)
 #else
             if (picture_control_set_ptr->enc_mode <= ENC_M0)
 #endif
@@ -1843,7 +1843,7 @@ void  inject_inter_candidates(
             //----------------------
 #if ENCODER_MODE_CLEANUP
 #if TUNED_SETTINGS_FOR_M1
-            if (picture_control_set_ptr->enc_mode <= ENC_M1 && context_ptr->blk_geom->shape == PART_N)
+            if (picture_control_set_ptr->enc_mode == ENC_M0 || context_ptr->blk_geom->shape == PART_N)
 #else
             if (picture_control_set_ptr->enc_mode <= ENC_M0)
 #endif
@@ -2241,7 +2241,7 @@ EbErrorType ProductGenerateMdCandidatesCu(
 #if ENABLE_INTRA_4x4
 #if ENCODER_MODE_CLEANUP
 #if TUNED_SETTINGS_FOR_M1
-        if ((picture_control_set_ptr->enc_mode <= ENC_M1) ||
+        if ( 1 ||
 #else
         if ((picture_control_set_ptr->enc_mode <= ENC_M0) ||
 #endif

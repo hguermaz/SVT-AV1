@@ -3270,7 +3270,7 @@ EB_EXTERN void AV1EncodePass(
 
 #if ENCDEC_TX_SEARCH
 #if ENCODER_MODE_CLEANUP
-                    if (picture_control_set_ptr->enc_mode > ENC_M1) 
+                    if (picture_control_set_ptr->enc_mode > ENC_M2) 
 #endif
                         context_ptr->is_inter = 0;
 #endif
