@@ -168,6 +168,9 @@ extern "C" {
         uint8_t                         pu_itr;
         uint8_t                         cu_size_log2;
         uint8_t                         best_candidate_index_array[MAX_NFL];
+#if USED_NFL_FEATURE_BASED
+        uint8_t                         sorted_candidate_index_array[MAX_NFL];
+#endif
         uint16_t                        cu_origin_x;
         uint16_t                        cu_origin_y;
         uint64_t                        chroma_weight;

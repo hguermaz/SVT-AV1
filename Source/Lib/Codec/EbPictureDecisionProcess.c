@@ -642,16 +642,8 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
-
     else if (picture_control_set_ptr->enc_mode == ENC_M1) {
-#if TUNED_SETTINGS_FOR_M1
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
-#else
-        if (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)
-            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
-        else
-            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
-#endif
     }
     else if (picture_control_set_ptr->enc_mode == ENC_M2) {
         if (picture_control_set_ptr->slice_type != I_SLICE) {

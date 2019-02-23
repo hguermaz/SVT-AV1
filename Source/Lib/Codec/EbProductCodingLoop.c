@@ -2127,6 +2127,10 @@ void AV1PerformFullLoop(
 
         candidateIndex = context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
 
+#if USED_NFL_FEATURE_BASED
+        uint8_t best_fastLoop_candidate_index = context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex];
+#endif
+
         // initialize TU Split
         y_full_distortion[DIST_CALC_RESIDUAL] = 0;
         y_full_distortion[DIST_CALC_PREDICTION] = 0;
@@ -2158,7 +2162,9 @@ void AV1PerformFullLoop(
 #if INTERPOLATION_SEARCH_LEVELS
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FULL_LOOP) {
             context_ptr->skip_interpolation_search = 0;
-
+#if USED_NFL_FEATURE_BASED
+            context_ptr->skip_interpolation_search = best_fastLoop_candidate_index > NFL_IT_TH ? 1 : context_ptr->skip_interpolation_search;
+#endif
             if (candidate_ptr->type != INTRA_MODE) {
 #else
         if (candidate_ptr->prediction_is_ready_luma == EB_FALSE) {
@@ -2237,6 +2243,10 @@ void AV1PerformFullLoop(
             ref_fast_cost,
             *candidateBuffer->fast_cost_ptr,
             picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
+
+#if USED_NFL_FEATURE_BASED
+        tx_search_skip_fag = best_fastLoop_candidate_index > NFL_TX_TH ? 1 : tx_search_skip_fag;
+#endif
 
         if (!tx_search_skip_fag){
 #else
@@ -3012,6 +3022,9 @@ void md_encode_block(
             candidate_buffer_ptr_array,
             &fullCandidateTotalCount,
             context_ptr->best_candidate_index_array,
+#if USED_NFL_FEATURE_BASED
+            context_ptr->sorted_candidate_index_array,
+#endif
             &disable_merge_index,
 #if TX_SEARCH_LEVELS
             &ref_fast_cost,
