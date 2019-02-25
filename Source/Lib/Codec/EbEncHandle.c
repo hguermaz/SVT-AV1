@@ -2281,13 +2281,9 @@ static EbErrorType VerifySettings(
     EbErrorType return_error = EB_ErrorNone;
     EbSvtAv1EncConfiguration *config = &sequence_control_set_ptr->static_config;
     unsigned int channelNumber = config->channel_id;
-#if ENCODER_MODE_CLEANUP
+
     if (config->enc_mode > MAX_ENC_PRESET) {
         SVT_LOG("Error instance %u: EncoderMode must be in the range of [0-%d]\n", channelNumber + 1, MAX_ENC_PRESET);
-#else
-    if (config->enc_mode != 1) {
-        SVT_LOG("Error instance %u: EncoderMode must be [1]\n", channelNumber + 1);
-#endif
         return_error = EB_ErrorBadParameter;
     }
 

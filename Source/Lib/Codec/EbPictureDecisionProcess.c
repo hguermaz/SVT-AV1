@@ -909,37 +909,11 @@ uint8_t PictureLevelSubPelSettings(
 
     // Set Subpel Flag
     uint8_t subPelMode = 0;
-#if ENCODER_MODE_CLEANUP
     UNUSED(input_resolution);
     UNUSED(enc_mode);
     UNUSED(temporal_layer_index);
     UNUSED(is_used_as_reference_flag);
     subPelMode =  1;
-#else
-    if (input_resolution >= INPUT_SIZE_4K_RANGE) {
-        subPelMode = (enc_mode <= ENC_M1) ? 1 : 0;
-    }
-    else {
-
-        if (enc_mode <= ENC_M2) {
-
-            subPelMode = 1;
-
-        }
-        else if (enc_mode <= ENC_M3) {
-
-            subPelMode = is_used_as_reference_flag ? 1 : 0;
-        }
-
-        else if (enc_mode == ENC_M5) {
-
-            subPelMode = temporal_layer_index == 0 ? 1 : 0;
-        }
-        else {
-            subPelMode = 0;
-        }
-    }
-#endif
     return subPelMode;
 }
 #if !CHROMA_BLIND
@@ -959,19 +933,6 @@ EbChromaMode PictureLevelChromaSettings(
     UNUSED(slice_type);
     UNUSED(temporal_layer_index);
     UNUSED(is_used_as_reference_flag);
-
-#if !ENCODER_MODE_CLEANUP
-    if ((enc_mode >= ENC_M3 && input_resolution >= INPUT_SIZE_4K_RANGE) || enc_mode > ENC_M3)
-    {
-        if (enc_mode == ENC_M6 && input_resolution >= INPUT_SIZE_4K_RANGE)
-            chroma_mode = CHROMA_MODE_BEST;
-        else
-            chroma_mode = (temporal_layer_index > 0 || slice_type == I_SLICE) ? CHROMA_MODE_BEST : CHROMA_MODE_FULL;
-    }
-
-    if (enc_mode == ENC_M3 || enc_mode == ENC_M4)
-        chroma_mode = (is_used_as_reference_flag) ? CHROMA_MODE_FULL : chroma_mode;
-#endif
     return chroma_mode;
 }
 #endif
@@ -2082,28 +2043,8 @@ void* PictureDecisionKernel(void *input_ptr)
 #else
                             picture_control_set_ptr->enable_in_loop_motion_estimation_flag = sequence_control_set_ptr->static_config.in_loop_me_flag && picture_control_set_ptr->slice_type != I_SLICE ? EB_TRUE : EB_FALSE;
 #endif
-#if ENCODER_MODE_CLEANUP
                             picture_control_set_ptr->limit_ois_to_dc_mode_flag = EB_FALSE;
-#else
-                            picture_control_set_ptr->limit_ois_to_dc_mode_flag = picture_control_set_ptr->enc_mode >= ENC_M6 &&
-                                picture_control_set_ptr->slice_type != I_SLICE ? EB_TRUE : EB_FALSE;
-#endif
-#if ENCODER_MODE_CLEANUP
                             picture_control_set_ptr->cu8x8_mode = CU_8x8_MODE_0;
-#else
-                            if ((picture_control_set_ptr->enc_mode > ENC_M1 && sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE) || (picture_control_set_ptr->enc_mode > ENC_M3 && sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE)) {
-
-                                if (picture_control_set_ptr->enc_mode == ENC_M2 && sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE)
-                                    picture_control_set_ptr->cu8x8_mode = (picture_control_set_ptr->is_used_as_reference_flag) ? CU_8x8_MODE_0 : CU_8x8_MODE_1;
-                                else
-                                    picture_control_set_ptr->cu8x8_mode = (picture_control_set_ptr->temporal_layer_index == 0) ? CU_8x8_MODE_0 : CU_8x8_MODE_1;
-
-                            }
-                            else {
-                                picture_control_set_ptr->cu8x8_mode = CU_8x8_MODE_0;
-                            }
-#endif
-
 
                             // Update the Dependant List Count - If there was an I-frame or Scene Change, then cleanup the Picture Decision PA Reference Queue Dependent Counts
                             if (picture_control_set_ptr->slice_type == I_SLICE)

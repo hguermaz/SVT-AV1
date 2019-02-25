@@ -863,13 +863,7 @@ void* ResourceCoordinationKernel(void *input_ptr)
             SCD_MODE_1;
 
         // Set the block mean calculation prec
-#if ENCODER_MODE_CLEANUP
         sequence_control_set_ptr->block_mean_calc_prec = BLOCK_MEAN_PREC_SUB;
-#else
-        sequence_control_set_ptr->block_mean_calc_prec = picture_control_set_ptr->enc_mode == ENC_M0 ?
-            BLOCK_MEAN_PREC_FULL :
-            BLOCK_MEAN_PREC_SUB;
-#endif
 #if ME_HME_OQ
         // Pre-Analysis Signal(s) derivation
         signal_derivation_pre_analysis_oq(

@@ -2414,11 +2414,7 @@ void HalfPelSearch_LCU(
         }
     }
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
-#if ENCODER_MODE_CLEANUP
     if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
-#else
-    if (picture_control_set_ptr->non_square_block_flag) {
-#endif
 #else
     if (sequence_control_set_ptr->static_config.ext_block_flag) {
 #endif
@@ -6240,11 +6236,7 @@ EbErrorType MotionEstimateLcu(
     EbBool                    enableHalfPel16x16 = EB_FALSE;
     EbBool                    enableHalfPel8x8 = EB_FALSE;
     EbBool                    enableQuarterPel = EB_FALSE;
-#if ENCODER_MODE_CLEANUP
     EbBool                 oneQuadrantHME =  EB_FALSE;
-#else
-    EbBool                 oneQuadrantHME = (picture_control_set_ptr->enc_mode >= ENC_M3) ? EB_TRUE : EB_FALSE;
-#endif
 
 #if M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH || M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
@@ -6254,22 +6246,11 @@ EbErrorType MotionEstimateLcu(
 #endif
 #endif
 #if M0_64x64_32x32_HALF_QUARTER_PEL
-#if ENCODER_MODE_CLEANUP
     context_ptr->fractional_search64x64 = EB_TRUE;
-#else
-    context_ptr->fractional_search64x64 = (picture_control_set_ptr->enc_mode <= ENC_M1 /*&& sequence_control_set_ptr->static_config.tune != TUNE_VQ*/) ?
-        EB_TRUE :
-        EB_FALSE;
-#endif
 #endif
     oneQuadrantHME = sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE ? 0 : oneQuadrantHME;
 #if M0_ME_SEARCH_BASE
-#if ENCODER_MODE_CLEANUP
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE ) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-
-#else
-    numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE || (picture_control_set_ptr->temporal_layer_index == 0 && picture_control_set_ptr->enc_mode > ENC_M1)) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#endif
 #else
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) || (picture_control_set_ptr->temporal_layer_index == 0) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
 #endif
@@ -6643,12 +6624,7 @@ EbErrorType MotionEstimateLcu(
             search_area_width = (int16_t)MIN(picture_control_set_ptr->search_area_width, 127);
             search_area_height = (int16_t)MIN(picture_control_set_ptr->search_area_height, 127);
 #endif
-#if ENCODER_MODE_CLEANUP
             if ((xSearchCenter != 0 || ySearchCenter != 0) && (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)) {
-
-#else
-            if ((xSearchCenter != 0 || ySearchCenter != 0) && (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE || picture_control_set_ptr->enc_mode == ENC_M0)) {
-#endif
                 CheckZeroZeroCenter(
                     refPicPtr,
                     context_ptr,
@@ -6737,11 +6713,7 @@ EbErrorType MotionEstimateLcu(
                 {
 
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
-#if ENCODER_MODE_CLEANUP
                     if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
-#else
-                    if (picture_control_set_ptr->non_square_block_flag) {
-#endif
 #else
                     if (sequence_control_set_ptr->static_config.ext_block_flag) {
 #endif
@@ -6851,27 +6823,8 @@ EbErrorType MotionEstimateLcu(
                 enableQuarterPel = EB_TRUE;
 #endif
                 if (picture_control_set_ptr->use_subpel_flag == 1) {
-#if ENCODER_MODE_CLEANUP
-                    if (0) {
-#else
-                    if (picture_control_set_ptr->enc_mode > ENC_M1) {
-#endif
-                        suPelEnable(
-                            context_ptr,
-                            picture_control_set_ptr,
-                            listIndex,
-                            0,
-                            &enableHalfPel32x32,
-                            &enableHalfPel16x16,
-                            &enableHalfPel8x8);
 #if M0_ME_QUARTER_PEL_SEARCH
-                        enableQuarterPel = EB_FALSE;
-#endif
-                    }
-#if M0_ME_QUARTER_PEL_SEARCH
-                    else {
-                        enableQuarterPel = EB_TRUE; // AMIR enable in M1
-                    }
+                    enableQuarterPel = EB_TRUE; // AMIR enable in M1
 #else
                     enableQuarterPel = EB_FALSE;
 #endif
@@ -6949,11 +6902,7 @@ EbErrorType MotionEstimateLcu(
                             picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_1,
                             enableQuarterPel,
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
-#if ENCODER_MODE_CLEANUP
                             picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE);
-#else
-                            picture_control_set_ptr->non_square_block_flag);
-#endif
 #else
                             sequence_control_set_ptr->static_config.ext_block_flag);
 #endif
@@ -7020,11 +6969,7 @@ EbErrorType MotionEstimateLcu(
 
         if (numOfListToSearch) {
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
-#if ENCODER_MODE_CLEANUP
             if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21 || (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE)) {
-#else
-            if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21 || picture_control_set_ptr->non_square_block_flag) {
-#endif
 #else
             if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21 || sequence_control_set_ptr->static_config.ext_block_flag) {
 #endif
@@ -7529,80 +7474,55 @@ void InjectIntraCandidatesBasedOnBestMode(
     switch (bestMode) {
 
     case EB_INTRA_MODE_2:
-        OisCuPtr[count].distortion = stage1SadArray[2];
-#if ENCODER_MODE_CLEANUP
-        if (1) 
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_2;
-        OisCuPtr[count++].intra_mode = EB_INTRA_DC;
-        OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_3;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_4;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_5;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_7;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_8;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_9;
+        OisCuPtr[count].distortion       = stage1SadArray[2];
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_2;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_DC;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_PLANAR;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_3;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_4;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_5;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_7;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_8;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_9;
 
         break;
 
     case EB_INTRA_HORIZONTAL:
 
-        OisCuPtr[count].distortion = stage1SadArray[0];
-
-#if ENCODER_MODE_CLEANUP
-        if (1)
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
-        OisCuPtr[count++].intra_mode = EB_INTRA_HORIZONTAL;
-        OisCuPtr[count++].intra_mode = EB_INTRA_DC;
-        OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_9;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_11;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_8;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_12;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_7;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_13;
-
+        OisCuPtr[count].distortion       = stage1SadArray[0];
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_HORIZONTAL;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_DC;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_PLANAR;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_9;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_11;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_8;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_12;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_7;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_13;
 
         break;
 
     case EB_INTRA_MODE_18:
 
-        OisCuPtr[count].distortion = stage1SadArray[3];
-#if ENCODER_MODE_CLEANUP
-        if (1)
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_18;
-        OisCuPtr[count++].intra_mode = EB_INTRA_DC;
-        OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_17;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_19;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_16;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_20;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_15;
-        OisCuPtr[count++].intra_mode = EB_INTRA_MODE_21;
+        OisCuPtr[count].distortion       = stage1SadArray[3];
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_18;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_DC;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_PLANAR;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_17;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_19;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_16;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_20;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_15;
+        OisCuPtr[count++].intra_mode     = EB_INTRA_MODE_21;
 
         break;
     case EB_INTRA_VERTICAL:
 
         OisCuPtr[count].distortion = stage1SadArray[1];
-
         if (picture_control_set_ptr->enc_mode <= ENC_M5)
-
             OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         else
             OisCuPtr[count].valid_distortion = EB_TRUE;
@@ -7616,21 +7536,12 @@ void InjectIntraCandidatesBasedOnBestMode(
         OisCuPtr[count++].intra_mode = EB_INTRA_MODE_23;
         OisCuPtr[count++].intra_mode = EB_INTRA_MODE_29;
 
-
-
         break;
 
     case EB_INTRA_MODE_34:
 
         OisCuPtr[count].distortion = stage1SadArray[4];
-#if ENCODER_MODE_CLEANUP
-        if (1)
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         OisCuPtr[count++].intra_mode = EB_INTRA_MODE_34;
         OisCuPtr[count++].intra_mode = EB_INTRA_DC;
         OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
@@ -7646,14 +7557,7 @@ void InjectIntraCandidatesBasedOnBestMode(
     case EB_INTRA_MODE_6:
 
         OisCuPtr[count].distortion = stage1SadArray[5];
-#if ENCODER_MODE_CLEANUP
-        if (1)
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         OisCuPtr[count++].intra_mode = EB_INTRA_MODE_6;
         OisCuPtr[count++].intra_mode = EB_INTRA_DC;
         OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
@@ -7669,14 +7573,7 @@ void InjectIntraCandidatesBasedOnBestMode(
     case EB_INTRA_MODE_14:
 
         OisCuPtr[count].distortion = stage1SadArray[6];
-#if ENCODER_MODE_CLEANUP
-        if (1)
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         OisCuPtr[count++].intra_mode = EB_INTRA_MODE_14;
         OisCuPtr[count++].intra_mode = EB_INTRA_DC;
         OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
@@ -7692,14 +7589,7 @@ void InjectIntraCandidatesBasedOnBestMode(
     case EB_INTRA_MODE_22:
 
         OisCuPtr[count].distortion = stage1SadArray[7];
-#if ENCODER_MODE_CLEANUP
-        if (1)
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         OisCuPtr[count++].intra_mode = EB_INTRA_MODE_22;
         OisCuPtr[count++].intra_mode = EB_INTRA_DC;
         OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
@@ -7716,14 +7606,7 @@ void InjectIntraCandidatesBasedOnBestMode(
     default:
 
         OisCuPtr[count].distortion = stage1SadArray[8];
-#if ENCODER_MODE_CLEANUP
-        if (1)
-#else
-        if (picture_control_set_ptr->enc_mode <= ENC_M1)
-#endif
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         OisCuPtr[count++].intra_mode = EB_INTRA_MODE_30;
         OisCuPtr[count++].intra_mode = EB_INTRA_DC;
         OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;
@@ -8152,36 +8035,13 @@ EbErrorType OpenLoopIntraSearchLcu(
         uint8_t oisThSet;
 
         if (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE) {
-#if ENCODER_MODE_CLEANUP
             oisThSet = (  (picture_control_set_ptr->temporal_layer_index == 0 || picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)) ? 2 : 1;
-
-#else
-            oisThSet = (picture_control_set_ptr->enc_mode >= ENC_M2) ?
-                0 : // Light
-                1; // Default
-            oisThSet = ((picture_control_set_ptr->enc_mode <= ENC_M1) && (picture_control_set_ptr->temporal_layer_index == 0 || picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)) ? 2 : oisThSet;
-#endif
         }
         else {
-#if ENCODER_MODE_CLEANUP
             oisThSet = 2;
-
-#else
-            oisThSet = (picture_control_set_ptr->enc_mode <= ENC_M2) ?
-                2 : //Heavy
-                (picture_control_set_ptr->enc_mode == ENC_M3) ? 1 :// Default
-                0; // Light
-#endif
         }
 
-
-
-#if ENCODER_MODE_CLEANUP
-        EbBool  use16x16Stat = EB_FALSE;
-#else
-        EbBool  use16x16Stat = (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE
-            && picture_control_set_ptr->enc_mode >= ENC_M3);
-#endif
+        EbBool  use16x16Stat  = EB_FALSE;
         uint32_t   maxCuIndex = use16x16Stat ? RASTER_SCAN_CU_INDEX_16x16_15 : RASTER_SCAN_CU_INDEX_8x8_63;
 
         for (rasterScanCuIndex = RASTER_SCAN_CU_INDEX_32x32_0; rasterScanCuIndex <= maxCuIndex; rasterScanCuIndex++) {
@@ -8212,12 +8072,7 @@ EbErrorType OpenLoopIntraSearchLcu(
                         cu_origin_y,
                         cu_size);
                 }
-#if ENCODER_MODE_CLEANUP
                 if ((picture_control_set_ptr->temporal_layer_index == 0) && (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE)) {
-
-#else
-                if ((picture_control_set_ptr->temporal_layer_index == 0) && (picture_control_set_ptr->enc_mode <= ENC_M1 && sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE)) {
-#endif
                     for (intraCandidateIndex = 0; intraCandidateIndex < MAX_OPEN_LOOP_INTRA_CANDIDATES; intraCandidateIndex++) {
                         OisCuPtr[intraCandidateIndex].valid_distortion = EB_FALSE;
                     }

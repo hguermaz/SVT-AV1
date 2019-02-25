@@ -1125,17 +1125,7 @@ void PredictionPartitionLoop(
 
                 }
 #if !OPEN_LOOP_EARLY_PARTITION
-#if ENCODER_MODE_CLEANUP
-                if (1){
-#else
-                if (picture_control_set_ptr->enc_mode <= ENC_M3) {
-#endif
-
-                    cu_ptr->earlyCost = picture_control_set_ptr->slice_type == I_SLICE ? cuIntraCost : MIN(cuInterCost, cuIntraCost);
-                }
-                else {
-                    cu_ptr->earlyCost = picture_control_set_ptr->slice_type == I_SLICE ? cuIntraCost : cuInterCost;
-                }
+                cu_ptr->earlyCost = picture_control_set_ptr->slice_type == I_SLICE ? cuIntraCost : MIN(cuInterCost, cuIntraCost);
 #endif
                 if (endDepth == 2) {
                     context_ptr->group_of8x8_blocks_count = depth == 2 ? incrementalCount[cuIndexInRaterScan] : 0;

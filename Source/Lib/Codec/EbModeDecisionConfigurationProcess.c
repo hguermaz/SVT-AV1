@@ -954,12 +954,7 @@ void Forward85CuToModeDecisionLCU(
             case 1:
                 cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
                 cuVar = (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][cuIndexInRaterScan]);
-#if ENCODER_MODE_CLEANUP
                 if (picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40)
-
-#else
-                if (picture_control_set_ptr->enc_mode <= ENC_M2 && picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40)
-#endif
                     split_flag = EB_TRUE;
                 else {
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
@@ -1024,12 +1019,7 @@ void Forward84CuToModeDecisionLCU(
             case 1:
                 cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
                 cuVar = (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][cuIndexInRaterScan]);
-#if ENCODER_MODE_CLEANUP
                 if (picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40)
-
-#else
-                if (picture_control_set_ptr->enc_mode <= ENC_M2 && picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40)
-#endif
                     split_flag = EB_TRUE;
                 else {
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
@@ -1276,12 +1266,7 @@ void Forward85CuToModeDecision(
                     //OMK To revisit : add Varpart flag and move to MD
                     cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
                     cuVar = (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][cuIndexInRaterScan]);
-#if ENCODER_MODE_CLEANUP
                     if ((picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40) || (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE&& picture_control_set_ptr->slice_type == I_SLICE && cuVar>40))
-
-#else
-                    if ((picture_control_set_ptr->enc_mode <= ENC_M2 && picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40) || (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE&& picture_control_set_ptr->slice_type == I_SLICE && cuVar>40))
-#endif
                         split_flag = EB_TRUE;
                     else {
                         resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
@@ -1358,12 +1343,7 @@ void Forward84CuToModeDecision(
                     //OMK To revisit : add Varpart flag and move to MD
                     cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
                     cuVar = (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][cuIndexInRaterScan]);
-#if ENCODER_MODE_CLEANUP
                     if ((picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40) || (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE&& picture_control_set_ptr->slice_type == I_SLICE && cuVar>40))
-
-#else
-                    if ((picture_control_set_ptr->enc_mode <= ENC_M2 && picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40) || (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE&& picture_control_set_ptr->slice_type == I_SLICE && cuVar>40))
-#endif
                         split_flag = EB_TRUE;
                     else {
                         resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
@@ -1505,19 +1485,10 @@ void SetMdSettings(
     // Initialize the homogeneous area threshold
     // Set the MD Open Loop Flag
     // HG - to clean up the intra_md_open_loop_flag derivation
-#if ENCODER_MODE_CLEANUP
-    if (0)
-#else
-    if (picture_control_set_ptr->enc_mode >= ENC_M3)
-#endif
-        picture_control_set_ptr->intra_md_open_loop_flag = picture_control_set_ptr->slice_type == I_SLICE ? EB_FALSE : EB_TRUE;
-    else
-        picture_control_set_ptr->intra_md_open_loop_flag = picture_control_set_ptr->temporal_layer_index == 0 ? EB_FALSE : EB_TRUE;
-#if ENCODER_MODE_CLEANUP
+
+    picture_control_set_ptr->intra_md_open_loop_flag = picture_control_set_ptr->temporal_layer_index == 0 ? EB_FALSE : EB_TRUE;
+
     if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE && sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE)
-#else
-    if (picture_control_set_ptr->enc_mode <= ENC_M1 && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE && sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE)
-#endif
         picture_control_set_ptr->intra_md_open_loop_flag = EB_FALSE;
 
     picture_control_set_ptr->constrained_intra_flag = EB_FALSE;
@@ -1527,13 +1498,7 @@ void SetMdSettings(
     {
         picture_control_set_ptr->constrained_intra_flag = EB_TRUE;
     }
-#if ! ENCODER_MODE_CLEANUP
     picture_control_set_ptr->limit_intra = EB_FALSE;
-    if (picture_control_set_ptr->enc_mode >= ENC_M5 && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE)
-        picture_control_set_ptr->limit_intra = EB_TRUE;
-#endif
-    picture_control_set_ptr->limit_intra = EB_FALSE;
-
     picture_control_set_ptr->intra_md_open_loop_flag = EB_FALSE;
 }
 
@@ -2606,214 +2571,40 @@ void SetTargetBudget(
 {
 
     uint32_t budget;
-#if ENCODER_MODE_CLEANUP
-    if (1) {
-#else
-    if (picture_control_set_ptr->enc_mode == ENC_M1) {
-#endif
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
+    
+    if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
+        else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
+            budget = picture_control_set_ptr->sb_total_count * U_150;
+        else
+            budget = picture_control_set_ptr->sb_total_count * U_145;
+    }
+    else
+
+        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
             else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * U_150;
+                budget = picture_control_set_ptr->sb_total_count * AVC_COST;
             else
-                budget = picture_control_set_ptr->sb_total_count * U_145;
+                budget = picture_control_set_ptr->sb_total_count * U_134;
+
         }
-        else
+        else {
 
-            if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
-                if (picture_control_set_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->sb_total_count * AVC_COST;
-                else
-                    budget = picture_control_set_ptr->sb_total_count * U_134;
-
-            }
-            else {
-
-                if (picture_control_set_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->sb_total_count * U_125;
-                else
-                    budget = picture_control_set_ptr->sb_total_count * U_121;
-
-            }
-
-    }
-#if !ENCODER_MODE_CLEANUP
-    else if (picture_control_set_ptr->enc_mode == ENC_M2) {
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
             else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * U_133;
+                budget = picture_control_set_ptr->sb_total_count * U_125;
             else
-                budget = picture_control_set_ptr->sb_total_count * U_120;
+                budget = picture_control_set_ptr->sb_total_count * U_121;
+
         }
-        else
 
-            if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
-                if (picture_control_set_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * FULL_SEARCH_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->sb_total_count * U_130;
-                else
-                    budget = picture_control_set_ptr->sb_total_count * U_120;
-            }
-            else {
-
-                if (picture_control_set_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * FULL_SEARCH_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-
-                    budget = picture_control_set_ptr->sb_total_count * U_125;
-                else
-                    budget = picture_control_set_ptr->sb_total_count * U_115;
-
-            }
-
-    }
-    else if (picture_control_set_ptr->enc_mode == ENC_M3) {
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * U_115;
-            else
-                budget = picture_control_set_ptr->sb_total_count * U_114;
-        }
-        else
-
-            if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
-
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * FULL_SEARCH_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_117;
-                else
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_114;
-
-            }
-            else {
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * AVC_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * LIGHT_BDP_COST;
-                else
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_111;
-            }
-    }
-    else if (picture_control_set_ptr->enc_mode == ENC_M4) {
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                budget = picture_control_set_ptr->sb_total_count * BDP_COST;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * U_113;
-            else
-                budget = picture_control_set_ptr->sb_total_count * U_112;
-        }
-        else
-
-            if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
-
-
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * BDP_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->sb_total_count * U_116;
-                else
-                    budget = picture_control_set_ptr->sb_total_count * OPEN_LOOP_COST;
-
-            }
-            else {
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_127;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_114;
-                else
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * OPEN_LOOP_COST;
-
-            }
-    }
-    else if (picture_control_set_ptr->enc_mode == ENC_M5) {
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                budget = picture_control_set_ptr->sb_total_count * BDP_COST;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * U_112;
-            else
-                budget = picture_control_set_ptr->sb_total_count * U_111;
-        }
-        else
-
-            if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
-
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * BDP_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->sb_total_count * U_113;
-                else
-                    budget = picture_control_set_ptr->sb_total_count * OPEN_LOOP_COST;
-
-            }
-            else {
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = (context_ptr->depthSensitivePictureFlag) ?
-                    picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_127 :
-                    picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_125;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * OPEN_LOOP_COST;
-                else
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * LIGHT_OPEN_LOOP_COST;
-
-
-            }
-    }
-    else {
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                budget = picture_control_set_ptr->sb_total_count * BDP_COST;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * OPEN_LOOP_COST;
-            else
-                budget = picture_control_set_ptr->sb_total_count * U_109;
-        }
-        else
-
-            if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
-
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * BDP_COST;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                    budget = picture_control_set_ptr->sb_total_count * U_112;
-                else
-                    budget = picture_control_set_ptr->sb_total_count * U_108;
-
-            }
-            else {
-                if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-                    budget = (context_ptr->depthSensitivePictureFlag) ?
-                    picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_127 :
-                    picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_125;
-                else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
-                    budget = (context_ptr->depthSensitivePictureFlag) ?
-                    picture_control_set_ptr->parent_pcs_ptr->sb_total_count * OPEN_LOOP_COST :
-                    picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_108;
-                else
-                    budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_104;
-
-
-            }
-    }
-#endif
+    
     context_ptr->budget = budget;
 }
-
-
-
-
 
 /******************************************************
  * IsAvcPartitioningMode()
@@ -3594,22 +3385,14 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             context_ptr->rateControlInputFifoPtr,
             &rateControlResultsWrapperPtr);
 
-        rateControlResultsPtr = (RateControlResults_t*)rateControlResultsWrapperPtr->objectPtr;
-        picture_control_set_ptr = (PictureControlSet_t*)rateControlResultsPtr->pictureControlSetWrapperPtr->objectPtr;
-        sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->objectPtr;
-      
-        context_ptr->qp = picture_control_set_ptr->picture_qp;
-
+        rateControlResultsPtr                               = (RateControlResults_t*)rateControlResultsWrapperPtr->objectPtr;
+        picture_control_set_ptr                             = (PictureControlSet_t*)rateControlResultsPtr->pictureControlSetWrapperPtr->objectPtr;
+        sequence_control_set_ptr                            = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->objectPtr;
+        context_ptr->qp                                     = picture_control_set_ptr->picture_qp;
         picture_control_set_ptr->parent_pcs_ptr->average_qp = 0;
-
-        picture_control_set_ptr->intra_coded_area = 0;
-
-        picture_control_set_ptr->scene_caracteristic_id = EB_FRAME_CARAC_0;
-#if ENCODER_MODE_CLEANUP
-        EbPicnoiseClass picNoiseClassTH = PIC_NOISE_CLASS_1;
-#else
-        EbPicnoiseClass picNoiseClassTH = (picture_control_set_ptr->enc_mode <= ENC_M3) ? PIC_NOISE_CLASS_1 : PIC_NOISE_CLASS_3;
-#endif
+        picture_control_set_ptr->intra_coded_area           = 0;
+        picture_control_set_ptr->scene_caracteristic_id     = EB_FRAME_CARAC_0;
+        EbPicnoiseClass picNoiseClassTH                     = PIC_NOISE_CLASS_1;
 
         picture_control_set_ptr->scene_caracteristic_id = (
             (!picture_control_set_ptr->parent_pcs_ptr->is_pan) &&

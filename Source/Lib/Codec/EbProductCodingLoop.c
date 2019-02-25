@@ -1528,59 +1528,11 @@ void ProductConfigureChroma(
 void ProductDerivePartialFrequencyN2Flag(
     SequenceControlSet_t               *sequence_control_set_ptr,
     PictureControlSet_t                *picture_control_set_ptr,
-    ModeDecisionContext_t              *context_ptr)
-{
-#if ENCODER_MODE_CLEANUP
-    context_ptr->pf_md_mode = PF_OFF;
+    ModeDecisionContext_t              *context_ptr){
+
     UNUSED(sequence_control_set_ptr);
     UNUSED(picture_control_set_ptr);
-#else
-    if (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE)
-    {
-        if (picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M2)
-        {
-            context_ptr->pf_md_mode = (picture_control_set_ptr->temporal_layer_index > 0) ? PF_N2 : PF_OFF;
-        }
-
-        else if (picture_control_set_ptr->parent_pcs_ptr->enc_mode >= ENC_M3 && picture_control_set_ptr->parent_pcs_ptr->enc_mode < ENC_M6)
-        {
-            context_ptr->pf_md_mode = (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE) ? PF_N2 : (context_ptr->blk_geom->bwidth <= 8 && context_ptr->blk_geom->bheight <= 8) ? PF_N2 : PF_N4;
-        }
-        else if (picture_control_set_ptr->parent_pcs_ptr->enc_mode >= ENC_M6)
-
-        {
-
-            if ((picture_control_set_ptr->slice_type == I_SLICE) || (picture_control_set_ptr->parent_pcs_ptr->uncovered_area_sb_flag[context_ptr->sb_ptr->index])) {
-                context_ptr->pf_md_mode = PF_OFF;
-            }
-
-            else if (((picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE) && (picture_control_set_ptr->parent_pcs_ptr->edge_results_ptr[context_ptr->sb_ptr->index].edge_block_num > 0)) || (context_ptr->blk_geom->bwidth <= 8 && context_ptr->blk_geom->bheight <= 8)) {
-                context_ptr->pf_md_mode = PF_N2;
-            }
-
-            else
-                context_ptr->pf_md_mode = PF_N4;
-
-        }
-        else
-            context_ptr->pf_md_mode = PF_OFF;
-
-    }
-    else
-    {
-        if (picture_control_set_ptr->parent_pcs_ptr->enc_mode <= ENC_M3 && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE)
-            context_ptr->pf_md_mode = PF_N2;
-        else if (picture_control_set_ptr->parent_pcs_ptr->enc_mode < ENC_M6 && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE)
-            context_ptr->pf_md_mode = (context_ptr->blk_geom->bwidth <= 16 && context_ptr->blk_geom->bheight <= 16) ? PF_N2 : PF_N4;
-        else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE)
-            context_ptr->pf_md_mode = (context_ptr->blk_geom->bwidth <= 8 && context_ptr->blk_geom->bheight <= 8) ? PF_N2 : PF_N4;
-        else
-            context_ptr->pf_md_mode = PF_OFF;
-
-    }
-#endif
     context_ptr->pf_md_mode = PF_OFF;
-
 
 }
 
@@ -2248,9 +2200,7 @@ void AV1PerformFullLoop(
 #else
 
 #if TURN_OFF_TX_TYPE_SEARCH
-#if ENCODER_MODE_CLEANUP
         if (picture_control_set_ptr->enc_mode <= ENC_M1) {
-#endif
             if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
 #endif
 #endif
@@ -2267,9 +2217,7 @@ void AV1PerformFullLoop(
 
             //re-init
             candidate_ptr->y_has_coeff = 0;
-#if ENCODER_MODE_CLEANUP
         }
-#endif
 
         ProductFullLoop(
             candidateBuffer,
@@ -2424,11 +2372,7 @@ void AV1PerformFullLoop(
 
 
 #if SHUT_CBF_FL_SKIP
-#if ENCODER_MODE_CLEANUP
         if(0)
-#else
-        if (/*sequence_control_set_ptr->static_config.tune == TUNE_VQ ||*/ picture_control_set_ptr->enc_mode > ENC_M1)
-#endif
 #endif
             if (picture_control_set_ptr->slice_type != I_SLICE) {
                 if (candidate_ptr->type == INTER_MODE) {
@@ -2929,11 +2873,7 @@ void md_encode_block(
 
     if (allowed_ns_cu(
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
-#if ENCODER_MODE_CLEANUP
         context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#else
-        context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#endif
 #else
         context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
 #endif
@@ -6895,11 +6835,7 @@ EB_EXTERN EbErrorType in_loop_motion_estimation_sblock(
 #endif
 
 #if M0_ME_SEARCH_BASE
-#if ENCODER_MODE_CLEANUP
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#else
-    numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE || (picture_control_set_ptr->temporal_layer_index == 0 && picture_control_set_ptr->enc_mode > ENC_M1)) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#endif
 #else
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) || (picture_control_set_ptr->temporal_layer_index == 0) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
 #endif

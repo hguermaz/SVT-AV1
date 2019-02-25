@@ -650,9 +650,7 @@ static void Av1EncodeLoop(
 #else
 
 #if ENCDEC_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
         if (picture_control_set_ptr->enc_mode > ENC_M1) {
-#endif
             if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
 #endif
 #endif
@@ -674,9 +672,7 @@ static void Av1EncodeLoop(
                     eob,
                     candidate_plane);
 
-#if ENCODER_MODE_CLEANUP
         }
-#endif
 
         Av1EstimateTransform(
             ((int16_t*)residual16bit->bufferY) + scratchLumaOffset,
@@ -1140,9 +1136,7 @@ static void Av1EncodeLoop16bit(
             if (!tx_search_skip_fag) {
 #else
 #if ENCDEC_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
             if (picture_control_set_ptr->enc_mode > ENC_M1) {
-#endif
                 if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
 #endif
 #endif
@@ -1163,9 +1157,7 @@ static void Av1EncodeLoop16bit(
                         dZoffset,
                         eob,
                         candidate_plane);
-#if ENCODER_MODE_CLEANUP
             }
-#endif
 
 
             Av1EstimateTransform(
@@ -2546,23 +2538,13 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
     uint8_t                           max_qp_allowed = (uint8_t)sequence_control_set_ptr->static_config.max_qp_allowed;
     uint8_t                           cu_qp;
 
-#if ENCODER_MODE_CLEANUP
     EbBool  use16x16Stat = EB_FALSE;
 
-#else
-    EbBool  use16x16Stat = (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE &&
-        picture_control_set_ptr->enc_mode >= ENC_M3 &&
-        picture_control_set_ptr->slice_type != I_SLICE && cu_size == 8);
-#endif
     uint32_t usedDepth = cu_depth;
     if (use16x16Stat)
         usedDepth = 2;
 
-
-
     uint32_t cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
-
-
 
     EbBool                         acEnergyBasedAntiContouring = picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE;
     uint8_t                           lowerQPClass;

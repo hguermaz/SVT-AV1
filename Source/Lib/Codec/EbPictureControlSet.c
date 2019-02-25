@@ -967,12 +967,8 @@ EbErrorType PictureParentControlSetCtor(
             }
         }
     }
-#if ENCODER_MODE_CLEANUP
     uint32_t maxOisCand = MAX_OPEN_LOOP_INTRA_CANDIDATES ;
 
-#else
-    uint32_t maxOisCand = initDataPtr->enc_mode <= ENC_M1 || initDataPtr->speed_control ? MAX_OPEN_LOOP_INTRA_CANDIDATES : 9;
-#endif
     EB_MALLOC(OisCu32Cu16Results_t**, objectPtr->ois_cu32_cu16_results, sizeof(OisCu32Cu16Results_t*) * objectPtr->sb_total_count, EB_N_PTR);
 
     for (sb_index = 0; sb_index < objectPtr->sb_total_count; ++sb_index) {

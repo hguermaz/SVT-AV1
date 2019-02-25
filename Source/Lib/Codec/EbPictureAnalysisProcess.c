@@ -3251,14 +3251,7 @@ EbErrorType DetectInputPictureNoise(
 
             uint64_t noiseBlkVarTh;
             uint64_t denBlkVarTh = FLAT_MAX_VAR;
-#if ENCODER_MODE_CLEANUP
-            if(0)
-#else
-            if (picture_control_set_ptr->enc_mode > ENC_M3)
-#endif
-                noiseBlkVarTh = NOISE_MIN_LEVEL;
-            else
-                noiseBlkVarTh = NOISE_MIN_LEVEL_M6_M7;
+            noiseBlkVarTh = NOISE_MIN_LEVEL_M6_M7;
 
             picNoiseVariance += (noiseBlkVar >> 16);
 
@@ -3547,14 +3540,7 @@ EbErrorType SubSampleFilterNoise(
 
                 uint64_t noiseBlkVarTh;
                 uint64_t denBlkVarTh = FLAT_MAX_VAR;
-#if ENCODER_MODE_CLEANUP
-                if (0)
-#else
-                if (picture_control_set_ptr->enc_mode > ENC_M3)
-#endif
-                    noiseBlkVarTh = NOISE_MIN_LEVEL;
-                else
-                    noiseBlkVarTh = NOISE_MIN_LEVEL_M6_M7;
+                noiseBlkVarTh = NOISE_MIN_LEVEL_M6_M7;
 
                 if (denBlkVar<denBlkVarTh && noiseBlkVar> noiseBlkVarTh) {
                     picture_control_set_ptr->sb_flat_noise_array[lcuCodingOrder] = 1;
@@ -3698,16 +3684,7 @@ EbErrorType QuarterSampleDetectNoise(
                             asm_type) >> 16;
 
                         uint64_t denBlkVarDecTh;
-#if ENCODER_MODE_CLEANUP
-                        if (0){
-#else
-                        if (picture_control_set_ptr->enc_mode > ENC_M3) {
-#endif
-                            denBlkVarDecTh = NOISE_MIN_LEVEL_DECIM;
-                        }
-                        else {
-                            denBlkVarDecTh = NOISE_MIN_LEVEL_DECIM_M6_M7;
-                        }
+                        denBlkVarDecTh = NOISE_MIN_LEVEL_DECIM_M6_M7;
                         if (denBlkVar < FLAT_MAX_VAR_DECIM && noiseBlkVar> denBlkVarDecTh) {
                             picture_control_set_ptr->sb_flat_noise_array[lcuCodingOrder] = 1;
                         }
@@ -3848,17 +3825,8 @@ EbErrorType SubSampleDetectNoise(
 
                         uint64_t  noiseBlkVarDecTh;
                         uint64_t denBlkVarDecTh = FLAT_MAX_VAR_DECIM;
-#if ENCODER_MODE_CLEANUP
-                        if (0){
-#else
-                        if (picture_control_set_ptr->enc_mode > ENC_M3) {
-#endif
-                            noiseBlkVarDecTh = NOISE_MIN_LEVEL_DECIM;
-                        }
-                        else {
-                            noiseBlkVarDecTh = NOISE_MIN_LEVEL_DECIM_M6_M7;
-                        }
 
+                        noiseBlkVarDecTh = NOISE_MIN_LEVEL_DECIM_M6_M7;
                         if (denBlkVar < denBlkVarDecTh && noiseBlkVar> noiseBlkVarDecTh) {
                             picture_control_set_ptr->sb_flat_noise_array[lcuCodingOrder] = 1;
                         }
@@ -4072,39 +4040,6 @@ void PicturePreProcessingOperations(
         denoise_estimate_film_grain(
             sequence_control_set_ptr,
             picture_control_set_ptr,
-            asm_type);
-    }
-    // Use the decimated based detector for only for 4K.
-    // When the decimated based detector is used and the enable noise flag is false, do not skip the detection since it is not costly
-    // When the decimated based detector is used, turn OFF the de-noiser for Class 2 at QP=29 and lower (for Fixed_QP) and at the target rate of 14Mbps and higher (for RC=ON)
-#if ENCODER_MODE_CLEANUP
-    else if (0){
-#else
-    else if (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE && picture_control_set_ptr->enc_mode > ENC_M3) {
-#endif
-        SubSampleDenoise(
-            context_ptr,
-            sequence_control_set_ptr,
-            picture_control_set_ptr,
-            sixteenthDecimatedPicturePtr,
-            sb_total_count,
-            sequence_control_set_ptr->static_config.enable_denoise_flag,
-            picture_width_in_sb,
-            asm_type);
-    }
-#if ENCODER_MODE_CLEANUP
-    else if (0) {
-#else
-    else if (sequence_control_set_ptr->input_resolution == INPUT_SIZE_1080p_RANGE && picture_control_set_ptr->enc_mode > ENC_M3) {
-#endif
-        QuarterSampleDenoise(
-            context_ptr,
-            sequence_control_set_ptr,
-            picture_control_set_ptr,
-            quarterDecimatedPicturePtr,
-            sb_total_count,
-            sequence_control_set_ptr->static_config.enable_denoise_flag,
-            picture_width_in_sb,
             asm_type);
     }
     else {

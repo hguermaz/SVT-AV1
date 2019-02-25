@@ -50,9 +50,6 @@ extern "C" {
 #define  TILES     1
 
 #define INTRA_CORE_OPT                                  1
-
-#define ENCODER_MODE_CLEANUP                            1                                          
-
 #define ENABLE_INTRA_4x4                                1 //
 #define DISABLE_NSQ                                     1 //
 #define DISABLE_128X128_SB                              0
