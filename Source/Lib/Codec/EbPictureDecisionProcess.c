@@ -867,7 +867,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         intra_pred_level = 2; //ENC_M4
         break;
     case 5:
-        intra_pred_level = 2; //ENC_M5
+        intra_pred_level = 1; //ENC_M5
         break;
     default:
         intra_pred_level = 4; //MR_MODE

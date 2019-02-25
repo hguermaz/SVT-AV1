@@ -42,12 +42,12 @@ extern "C" {
     ////
 #define MEM_RED4                                        1 //  Reduce mem allocation when DISABLE_128X128_SB is ON
 
-#define FILT_PROC      1    // New Filtering processes.
-#define CDEF_M        1 // multi-threaded cdef
-#define REST_M        1 // multi-threaded restoration
-#define REST_NEED_B   1 // use boundary update in restoration
+#define FILT_PROC                                       1    // New Filtering processes.
+#define CDEF_M                                          1 // multi-threaded cdef
+#define REST_M                                          1 // multi-threaded restoration
+#define REST_NEED_B                                     1 // use boundary update in restoration
 #define NEW_PRED_STRUCT                                 1 // Ability to run 5-layer prediction structure. By Default 5L is used
-#define  TILES     1
+#define TILES                                           1
 
 #define INTRA_CORE_OPT                                  1
 #define ENABLE_INTRA_4x4                                1 //
