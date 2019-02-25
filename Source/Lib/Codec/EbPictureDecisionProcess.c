@@ -645,7 +645,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else if (picture_control_set_ptr->enc_mode == ENC_M1) {
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
     }
-    else if (picture_control_set_ptr->enc_mode <= ENC_M4) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M5) {
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
@@ -803,7 +803,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M4) {
+    if (picture_control_set_ptr->enc_mode <= ENC_M5) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
     }
     else {
@@ -817,7 +817,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
 #endif
 #if TUNED_SETTINGS_FOR_M1
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M4)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
     else
 #endif
@@ -865,6 +865,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         break;
     case 4:
         intra_pred_level = 2; //ENC_M4
+        break;
+    case 5:
+        intra_pred_level = 2; //ENC_M5
         break;
     default:
         intra_pred_level = 4; //MR_MODE
