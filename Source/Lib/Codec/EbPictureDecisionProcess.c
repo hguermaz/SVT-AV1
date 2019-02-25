@@ -645,7 +645,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else if (picture_control_set_ptr->enc_mode == ENC_M1) {
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
     }
-    else if (picture_control_set_ptr->enc_mode <= ENC_M3) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M4) {
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
@@ -753,7 +753,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (sequence_control_set_ptr->enable_cdef) {
         if (picture_control_set_ptr->enc_mode <= ENC_M2)
             picture_control_set_ptr->cdef_filter_mode = 3;
-        else if (picture_control_set_ptr->enc_mode == ENC_M3)
+        else if (picture_control_set_ptr->enc_mode <= ENC_M4)
             picture_control_set_ptr->cdef_filter_mode = 2;
         else
             picture_control_set_ptr->cdef_filter_mode = 1;
@@ -776,7 +776,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         cm->sg_filter_mode = 4;
     else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->sg_filter_mode = 3;
-    else if (picture_control_set_ptr->enc_mode == ENC_M3)
+    else if (picture_control_set_ptr->enc_mode <= ENC_M4)
         cm->sg_filter_mode = 2;
     else
         cm->sg_filter_mode = 1;
@@ -803,7 +803,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M3) {
+    if (picture_control_set_ptr->enc_mode <= ENC_M4) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
     }
     else {
@@ -817,7 +817,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
 #endif
 #if TUNED_SETTINGS_FOR_M1
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M3)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M4)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
     else
 #endif
