@@ -3268,13 +3268,7 @@ EB_EXTERN void AV1EncodePass(
 
                 if (cu_ptr->prediction_mode_flag == INTRA_MODE) {
 
-#if ENCDEC_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
-                    if (0)
-#endif
-                        context_ptr->is_inter = 0;
-#endif
-
+                    context_ptr->is_inter = 0;
                     context_ptr->tot_intra_coded_area += blk_geom->bwidth* blk_geom->bheight;
                     if (picture_control_set_ptr->slice_type != I_SLICE) {
                         context_ptr->intra_coded_area_sb[tbAddr] += blk_geom->bwidth* blk_geom->bheight;
