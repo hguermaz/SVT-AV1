@@ -11,6 +11,9 @@
 #include "EbDefinitions.h"
 #include "EbRateControlProcess.h"
 #include "EbSequenceControlSet.h"
+#if MDC_FIX_0
+#include "EbModeDecision.h"
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -92,12 +95,15 @@ extern "C" {
         EbBool                             depthSensitivePictureFlag;
         EbBool                             performRefinement;
 #endif
-
+#if MDC_FIX_0
+        ModeDecisionCandidate_t              *candidate_ptr;
+        const CandidateMv                    *ref_mv_stack;
+#endif
         uint8_t                               qp_index;
 
 #if ADAPTIVE_DEPTH_PARTITIONING
         // Multi - Mode signal(s)
-        uint8_t                               adp_level;
+        uint8_t                               adp_level; // Hsan: to use
 #endif
     } ModeDecisionConfigurationContext_t;
 

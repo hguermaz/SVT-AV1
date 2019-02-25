@@ -272,7 +272,22 @@ extern "C" {
         uint64_t                                 *y_coeff_bits,
         uint32_t                                  transform_size);
 
-
+#if REST_FAST_RATE_EST
+    extern uint64_t Av1IntraFastCost(
+        CodingUnit_t            *cu_ptr,
+        ModeDecisionCandidate_t *candidate_ptr,
+        uint32_t                 qp,
+        uint64_t                 luma_distortion,
+        uint64_t                 chroma_distortion,
+        uint64_t                 lambda,
+        PictureControlSet_t     *picture_control_set_ptr,
+        const CandidateMv       *ref_mv_stack,
+        const BlockGeom         *blk_geom,
+        uint32_t                 miRow,
+        uint32_t                 miCol,
+        uint32_t                 left_neighbor_mode,
+        uint32_t                 top_neighbor_mode);
+#else
     extern EbErrorType Av1IntraFastCost(
         struct ModeDecisionContext_s            *context_ptr,
         CodingUnit_t                            *cu_ptr,
@@ -282,7 +297,25 @@ extern "C" {
         uint64_t                                  chroma_distortion,
         uint64_t                                  lambda,
         PictureControlSet_t                        *picture_control_set_ptr);
+#endif
 
+#if REST_FAST_RATE_EST
+    extern uint64_t Av1InterFastCost(
+        CodingUnit_t            *cu_ptr,
+        ModeDecisionCandidate_t *candidate_ptr,
+        uint32_t                 qp,
+        uint64_t                 luma_distortion,
+        uint64_t                 chroma_distortion,
+        uint64_t                 lambda,
+        PictureControlSet_t     *picture_control_set_ptr,
+        const CandidateMv       *ref_mv_stack,
+        const BlockGeom         *blk_geom,
+        uint32_t                 miRow,
+        uint32_t                 miCol,
+        uint32_t                 left_neighbor_mode,
+        uint32_t                 top_neighbor_mode);
+
+#else
     extern EbErrorType Av1InterFastCost(
         struct ModeDecisionContext_s            *context_ptr,
         CodingUnit_t                            *cu_ptr,
@@ -292,6 +325,7 @@ extern "C" {
         uint64_t                                  chroma_distortion,
         uint64_t                                  lambda,
         PictureControlSet_t                        *picture_control_set_ptr);
+#endif
 
     extern EbErrorType Av1IntraFullCost(
         PictureControlSet_t                    *picture_control_set_ptr,
