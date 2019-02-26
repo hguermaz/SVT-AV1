@@ -24,10 +24,10 @@ typedef struct RestContext_s
     EbFifo_t                       *rest_output_fifo_ptr;
     EbFifo_t                       *picture_demux_fifo_ptr;
 
-    EbPictureBufferDesc_t           *trial_frame_rst;
+    EbPictureBufferDesc_t          *trial_frame_rst;
 
-    EbPictureBufferDesc_t                 *temp_lf_recon_picture_ptr;
-    EbPictureBufferDesc_t                 *temp_lf_recon_picture16bit_ptr;
+    EbPictureBufferDesc_t          *temp_lf_recon_picture_ptr;
+    EbPictureBufferDesc_t          *temp_lf_recon_picture16bit_ptr;
 
 #if REST_M
     EbPictureBufferDesc_t           *org_rec_frame; // while doing the filtering recon gets updated uisng setup/restore processing_stripe_bounadaries

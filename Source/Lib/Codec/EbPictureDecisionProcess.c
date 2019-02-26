@@ -771,13 +771,14 @@ EbErrorType signal_derivation_multi_processes_oq(
 
 #if FAST_WN
     // WN Level                                     Settings
-    // 0                                            3-Tap luma/ 3-Tap chroma
-    // 1                                            5-Tap luma/ 5-Tap chroma
-    // 2                                            7-Tap luma/ 5-Tap chroma
+    // 0                                            OFF
+    // 1                                            3-Tap luma/ 3-Tap chroma
+    // 2                                            5-Tap luma/ 5-Tap chroma
+    // 3                                            7-Tap luma/ 5-Tap chroma
     if (picture_control_set_ptr->enc_mode == ENC_M0)
-        cm->wn_filter_mode = 2;
+        cm->wn_filter_mode = 3;
     else if (picture_control_set_ptr->enc_mode <= ENC_M5)
-        cm->wn_filter_mode = 1;
+        cm->wn_filter_mode = 2;
     else
         cm->wn_filter_mode = 0;
 #endif
