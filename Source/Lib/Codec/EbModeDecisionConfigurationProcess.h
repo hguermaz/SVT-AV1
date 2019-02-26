@@ -72,8 +72,8 @@ extern "C" {
         uint8_t                               number_of_segments;
         uint32_t                              sb_min_score;
         uint32_t                              sb_max_score;
-        EbAdpDepthSensitivePicClass           adp_depth_sensitive_picture_class;
 #if 0 // Hsan: to evaluate after enabling SQ mode
+        EbAdpDepthSensitivePicClass           adp_depth_sensitive_picture_class;
         EbAdpRefinementMode                   adp_refinement_mode;
 #endif
 #else

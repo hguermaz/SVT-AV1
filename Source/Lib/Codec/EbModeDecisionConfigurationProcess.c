@@ -71,7 +71,7 @@
 #define U_152                       152
 #define SQ_NON4_BLOCKS_SEARCH_COST  155
 #define SQ_BLOCKS_SEARCH_COST       190
-
+#if 0 // Hsan: to evaluate after enabling SQ mode
 // ADP LCU score Manipulation
 #define ADP_CLASS_SHIFT_DIST_0    50
 #define ADP_CLASS_SHIFT_DIST_1    75
@@ -97,6 +97,7 @@ static const uint8_t adp_luminosity_change_th_array[MAX_HIERARCHICAL_LEVEL][MAX_
 };
 
 #define VALID_SLOT_TH                        2
+#endif
 #else
 // Shooting states
 #define UNDER_SHOOTING                        0
@@ -1806,7 +1807,7 @@ void configure_adp(
 
     // Initialize the predicted budget
     context_ptr->predicted_cost = (uint32_t)~0;
-
+#if 0 // Hsan: to evaluate after enabling SQ mode
     // Derive the sensitive picture flag 
     context_ptr->adp_depth_sensitive_picture_class = DEPTH_SENSITIVE_PIC_CLASS_0;
 
@@ -1829,6 +1830,7 @@ void configure_adp(
             context_ptr->adp_depth_sensitive_picture_class = DEPTH_SENSITIVE_PIC_CLASS_1;
         }
     }
+#endif
 }
 
 /******************************************************
@@ -2265,7 +2267,7 @@ void derive_sb_score(
         context_ptr->sb_max_score = MAX(context_ptr->sb_score_array[sb_index], context_ptr->sb_max_score);
     }
 }
-
+#if 0 // Hsan: to evaluate after enabling SQ mode
 /******************************************************
 * BudgetingOutlierRemovalLcu
     Input   : LCU score histogram
@@ -2364,7 +2366,7 @@ void perform_outlier_removal(
         }
     }
 }
-
+#endif
 /******************************************************
 * Set the target budget
 Input   : cost per depth
