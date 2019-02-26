@@ -2380,13 +2380,13 @@ void set_target_budget_oq(
 #if ADP_V1
         budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;
 #else
-        budget = sequence_control_set_ptr->sb_tot_cnt * U_120;
+        budget = sequence_control_set_ptr->sb_tot_cnt * U_130;
 #endif
     else
 #if ADP_V1
         budget = sequence_control_set_ptr->sb_tot_cnt * PRED_OPEN_LOOP_COST;
 #else
-        budget = sequence_control_set_ptr->sb_tot_cnt * U_115;
+        budget = sequence_control_set_ptr->sb_tot_cnt * U_120;
 #endif
 #else
     if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
