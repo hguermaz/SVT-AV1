@@ -372,17 +372,17 @@ static void ResetEncDec(
     entropyCodingQp = picture_control_set_ptr->parent_pcs_ptr->base_qindex;
 
     if (segment_index == 0) {
-
+#if !REST_FAST_RATE_EST
         // Reset CABAC Contexts
         ResetEntropyCoder(
             sequence_control_set_ptr->encode_context_ptr,
             picture_control_set_ptr->coeff_est_entropy_coder_ptr,
             entropyCodingQp,
             picture_control_set_ptr->slice_type);
-
+#endif
         ResetEncodePassNeighborArrays(picture_control_set_ptr);
 
-
+#if !REST_FAST_RATE_EST
         // Initial Rate Estimatimation of the syntax elements
         if (!md_rate_estimation_array->initialized)
             av1_estimate_syntax_rate(
@@ -399,6 +399,7 @@ static void ResetEncDec(
         av1_estimate_coefficients_rate(
             md_rate_estimation_array,
             picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
+#endif
     }
 
 

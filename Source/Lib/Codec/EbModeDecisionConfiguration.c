@@ -8,6 +8,7 @@
 #include "EbLambdaRateTables.h"
 #include "EbUtility.h"
 #include "EbModeDecisionProcess.h"
+#include "EbDefinitions.h"
 #if !OPEN_LOOP_EARLY_PARTITION
 static const uint32_t me2Nx2NOffset[4] = { 0, 1, 5, 21 };
 #endif
@@ -15,7 +16,7 @@ static const uint32_t me2Nx2NOffset[4] = { 0, 1, 5, 21 };
  * Constants
  ********************************************/
 #if OPEN_LOOP_EARLY_PARTITION
-int from_85_to_1100[85] = {
+int pa_to_ep_block_index[85] = {
 
     0    ,
 
@@ -727,7 +728,7 @@ void ForwardCuToModeDecision(
                     // Stop
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
 #if OPEN_LOOP_EARLY_PARTITION
-                    resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = from_85_to_1100[cu_index];
+                    resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
 #endif
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_FALSE;
@@ -738,7 +739,7 @@ void ForwardCuToModeDecision(
                     // Go Down + consider the current CU as candidate
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
 #if OPEN_LOOP_EARLY_PARTITION
-                    resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = from_85_to_1100[cu_index];
+                    resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
 #endif
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
@@ -754,7 +755,7 @@ void ForwardCuToModeDecision(
                 default:
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
 #if OPEN_LOOP_EARLY_PARTITION
-                    resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = from_85_to_1100[cu_index];
+                    resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
 #endif
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
@@ -767,13 +768,13 @@ void ForwardCuToModeDecision(
 
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
 #if OPEN_LOOP_EARLY_PARTITION
-                resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = from_85_to_1100[cu_index];
+                resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
 
                 if (enable_blk_4x4) {
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
 
-                    int first_4_index = from_85_to_1100[cu_index] + d1_depth_offset[sequence_control_set_ptr->sb_size == BLOCK_128X128][cuStatsPtr->depth];
+                    int first_4_index = pa_to_ep_block_index[cu_index] + d1_depth_offset[sequence_control_set_ptr->sb_size == BLOCK_128X128][cuStatsPtr->depth];
                     for (int i = 0; i < 4; ++i) {
 
                         resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
@@ -794,7 +795,7 @@ void ForwardCuToModeDecision(
             default:
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
 #if OPEN_LOOP_EARLY_PARTITION
-                resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = from_85_to_1100[cu_index];
+                resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
 #endif
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
@@ -815,12 +816,12 @@ void MdcInterDepthDecision(
     uint32_t                                 origin_x,
     uint32_t                                 origin_y,
     uint32_t                                 endDepth,
+#if !MDC_FIX_1
     uint32_t                                 splitFlagBits0,
     uint32_t                                 splitFlagBits1,
     uint64_t                                 lambda,
-
-    uint32_t                                 cu_index
-)
+#endif
+    uint32_t                                 cu_index)
 {
 
     uint32_t               leftCuIndex;
@@ -852,9 +853,9 @@ void MdcInterDepthDecision(
 
         // Compute depth N cost
         localCuArray[depthTwoCandidateCuIndex].splitContext = 0;
-
+#if !MDC_FIX_1
         depthNRate = (((lambda  * splitFlagBits0) + MD_OFFSET) >> MD_SHIFT);
-
+#endif
         depthNCost = (localCuArray[depthTwoCandidateCuIndex]).earlyCost + depthNRate;
 
         if (endDepth < 3) {
@@ -864,10 +865,10 @@ void MdcInterDepthDecision(
 
         }
         else {
-
+#if !MDC_FIX_1
             // Assign rate
             depthNPlusOneRate = (((lambda  * splitFlagBits1) + MD_OFFSET) >> MD_SHIFT);
-
+#endif
             depthNPlusOneCost = (localCuArray[cu_index]).earlyCost + (localCuArray[leftCuIndex]).earlyCost + (localCuArray[topCuIndex]).earlyCost + (localCuArray[topLeftCuIndex]).earlyCost + depthNPlusOneRate;
 
             if (depthNCost <= depthNPlusOneCost) {
@@ -905,8 +906,9 @@ void MdcInterDepthDecision(
         depthOneCandidateCuIndex = topLeftCuIndex - 1;
 
         if (GetCodedUnitStats(depthOneCandidateCuIndex)->depth == 1) {
+#if !MDC_FIX_1
             depthNRate = (((lambda  *splitFlagBits0) + MD_OFFSET) >> MD_SHIFT);
-
+#endif
             depthNCost = localCuArray[depthOneCandidateCuIndex].earlyCost + depthNRate;
             if (endDepth < 2) {
 
@@ -916,9 +918,10 @@ void MdcInterDepthDecision(
             }
             else {
                 // Compute depth N+1 cost
+#if !MDC_FIX_1
                 // Assign rate
                 depthNPlusOneRate = (((lambda  *splitFlagBits1) + MD_OFFSET) >> MD_SHIFT);
-
+#endif
                 depthNPlusOneCost = localCuArray[depthTwoCandidateCuIndex].earlyCost +
                     localCuArray[leftCuIndex].earlyCost +
                     localCuArray[topCuIndex].earlyCost +
@@ -963,8 +966,9 @@ void MdcInterDepthDecision(
         if (GetCodedUnitStats(depthZeroCandidateCuIndex)->depth == 0) {
 
             // Compute depth N cost
+#if !MDC_FIX_1
             depthNRate = (((lambda  *splitFlagBits0) + MD_OFFSET) >> MD_SHIFT);
-
+#endif
             depthNCost = (&localCuArray[depthZeroCandidateCuIndex])->earlyCost + depthNRate;
             if (endDepth < 1) {
 
@@ -973,10 +977,10 @@ void MdcInterDepthDecision(
             }
             else {
                 // Compute depth N+1 cost
-
+#if !MDC_FIX_1
                 // Assign rate
                 depthNPlusOneRate = (((lambda  *splitFlagBits1) + MD_OFFSET) >> MD_SHIFT);
-
+#endif
                 depthNPlusOneCost = localCuArray[depthOneCandidateCuIndex].earlyCost +
                     localCuArray[leftCuIndex].earlyCost +
                     localCuArray[topCuIndex].earlyCost +
@@ -1115,52 +1119,48 @@ void PredictionPartitionLoop(
                 if (picture_control_set_ptr->slice_type != I_SLICE) {
 
                     MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexInRaterScan];
-#if MDC_FIX_0
-                    context_ptr->candidate_ptr->md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
-                    context_ptr->candidate_ptr->type = INTER_MODE;
-                    context_ptr->candidate_ptr->merge_flag = EB_FALSE;
-                    context_ptr->candidate_ptr->merge_index = 0;
-                    context_ptr->candidate_ptr->prediction_direction[0] = (EbPredDirection)0;
-                    context_ptr->candidate_ptr->is_skip_mode_flag = 0;
-                    context_ptr->candidate_ptr->inter_mode = NEWMV;
-                    context_ptr->candidate_ptr->pred_mode = NEWMV;
-                    context_ptr->candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
+#if MDC_FIX_0                 
+                    context_ptr->mdc_candidate_ptr->md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
+                    context_ptr->mdc_candidate_ptr->type = INTER_MODE;
+                    context_ptr->mdc_candidate_ptr->merge_flag = EB_FALSE;
+                    context_ptr->mdc_candidate_ptr->merge_index = 0;
+                    context_ptr->mdc_candidate_ptr->prediction_direction[0] = (EbPredDirection)0;
+                    context_ptr->mdc_candidate_ptr->is_skip_mode_flag = 0;
+                    context_ptr->mdc_candidate_ptr->inter_mode = NEWMV;
+                    context_ptr->mdc_candidate_ptr->pred_mode = NEWMV;
+                    context_ptr->mdc_candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
+                    context_ptr->mdc_candidate_ptr->is_compound = 0;
+                    context_ptr->mdc_candidate_ptr->is_new_mv = 1;
+                    context_ptr->mdc_candidate_ptr->is_zero_mv = 0;
+                    context_ptr->mdc_candidate_ptr->drl_index = 0;
+                    context_ptr->mdc_candidate_ptr->motionVector_x_L0 = mePuResult->xMvL0 << 1;
+                    context_ptr->mdc_candidate_ptr->motionVector_y_L0 = mePuResult->yMvL0 << 1;
+                    context_ptr->mdc_candidate_ptr->ref_mv_index = 0;
+                    context_ptr->mdc_candidate_ptr->pred_mv_weight = 0;
+                    context_ptr->mdc_candidate_ptr->ref_frame_type = LAST_FRAME;
+                    context_ptr->mdc_candidate_ptr->motion_vector_pred_x[REF_LIST_0] = 0;
+                    context_ptr->mdc_candidate_ptr->motion_vector_pred_y[REF_LIST_0] = 0;
 
-                    context_ptr->candidate_ptr->is_compound = 0;
-                    context_ptr->candidate_ptr->is_new_mv = 1;
-                    context_ptr->candidate_ptr->is_zero_mv = 0;
-
-                    context_ptr->candidate_ptr->drl_index = 0;
-
-                    // Set the MV to ME result
-                    context_ptr->candidate_ptr->motionVector_x_L0 = mePuResult->xMvL0 << 1;
-                    context_ptr->candidate_ptr->motionVector_y_L0 = mePuResult->yMvL0 << 1;
-
-                    // will be needed later by the rate estimation
-                    context_ptr->candidate_ptr->ref_mv_index = 0;
-                    context_ptr->candidate_ptr->pred_mv_weight = 0;
-                    context_ptr->candidate_ptr->ref_frame_type = LAST_FRAME;
-
-                    context_ptr->candidate_ptr->motion_vector_pred_x[REF_LIST_0] = 0;
-                    context_ptr->candidate_ptr->motion_vector_pred_y[REF_LIST_0] = 0;
-
-                    memset(context_ptr->ref_mv_stack,0,sizeof(CandidateMv)));
+                    memset(context_ptr->mdc_ref_mv_stack,0,sizeof(CandidateMv));
+                    context_ptr->blk_geom = Get_blk_geom_mds(pa_to_ep_block_index[cu_index]);
+                    // Initialize mdc cu 
+                    av1_zero(context_ptr->mdc_cu_ptr->av1xd->neighbors_ref_counts);
+                    context_ptr->mdc_cu_ptr->is_inter_ctx = 0;
                     // Fast Cost Calc
                     cu_ptr->earlyCost = Av1InterFastCost(
-                        cu_ptr,
-                        context_ptr->candidate_ptr,
+                        context_ptr->mdc_cu_ptr,
+                        context_ptr->mdc_candidate_ptr,
                         context_ptr->qp,
                         mePuResult->distortionDirection[0].distortion,
                         0,
                         context_ptr->lambda,
                         picture_control_set_ptr,
-                        context_ptr->ref_mv_stack,
+                        context_ptr->mdc_ref_mv_stack,
                         context_ptr->blk_geom,
-                        context_ptr->cu_origin_y >> MI_SIZE_LOG2,
-                        context_ptr->cu_origin_x >> MI_SIZE_LOG2,
-                        DC_PRED,                            // Hsan: neighbor not generated @ open loop partitioning
+                        tbOriginY + context_ptr->blk_geom->origin_y >> MI_SIZE_LOG2,
+                        tbOriginX + context_ptr->blk_geom->origin_x >> MI_SIZE_LOG2,
+                        DC_PRED,        // Hsan: neighbor not generated @ open loop partitioning
                         DC_PRED);       // Hsan: neighbor not generated @ open loop partitioning
-
 #else
                     cuInterRate = MdcInterCuRate(
                         mePuResult->distortionDirection[0].direction,
@@ -1190,9 +1190,11 @@ void PredictionPartitionLoop(
                     cuStatsPtr->origin_x,
                     cuStatsPtr->origin_y,
                     endDepth,
+#if !MDC_FIX_1
                     md_rate_estimation_ptr->splitFlagBits[0],
                     md_rate_estimation_ptr->splitFlagBits[3],
                     context_ptr->lambda,
+#endif
                     cu_index);
             }
             else {

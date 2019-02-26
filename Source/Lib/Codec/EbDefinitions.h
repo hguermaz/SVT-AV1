@@ -151,6 +151,7 @@ extern "C" {
 #if OPEN_LOOP_EARLY_PARTITION
 #define REST_FAST_RATE_EST                              0
 #define MDC_FIX_0                                       0
+#define MDC_FIX_1                                       0
 #endif
 #endif
 

@@ -813,8 +813,10 @@ EbErrorType ModeDecisionConfigurationContextCtor(
 
 #if MDC_FIX_0
     // Open Loop Partitioning 
-    EB_MALLOC(ModeDecisionCandidate_t*, context_ptr->candidate_ptr, sizeof(ModeDecisionCandidate_t), EB_N_PTR);
-    EB_MALLOC(CandidateMv*, context_ptr->ref_mv_stack, sizeof(CandidateMv), EB_N_PTR);
+    EB_MALLOC(ModeDecisionCandidate_t*, context_ptr->mdc_candidate_ptr, sizeof(ModeDecisionCandidate_t), EB_N_PTR);
+    EB_MALLOC(CandidateMv*, context_ptr->mdc_ref_mv_stack, sizeof(CandidateMv), EB_N_PTR);
+    EB_MALLOC(CodingUnit_t*, context_ptr->mdc_cu_ptr, sizeof(CodingUnit_t), EB_N_PTR);
+    EB_MALLOC(MacroBlockD*, context_ptr->mdc_cu_ptr->av1xd, sizeof(MacroBlockD), EB_N_PTR);
 #endif
     return EB_ErrorNone;
 }
@@ -831,7 +833,7 @@ void PerformEarlyLcuPartitionning(
     LargestCodingUnit_t            *sb_ptr;
     uint32_t                         sb_index;
     uint32_t                         slice_type;
-
+#if !REST_FAST_RATE_EST
     // MD Conf Rate Estimation Array from encodeContext
     MdRateEstimationContext_t    *mdConfRateEstimationArray;
     // Hsan: useless lamda generation (1st remove the HEVC lambda tables, 2nd confirm lossless changes)
@@ -885,7 +887,7 @@ void PerformEarlyLcuPartitionning(
 
     // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
     EB_MEMCPY(&(context_ptr->md_rate_estimation_ptr->splitFlagBits[0]), &(mdConfRateEstimationArray->splitFlagBits[0]), sizeof(MdRateEstimationContext_t));
-
+#endif
     picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
 
     // SB Loop : Partitionnig Decision
@@ -1389,50 +1391,7 @@ void Forward84CuToModeDecision(
 
 }
 
-#if ADAPTIVE_DEPTH_PARTITIONING
-void partitioning_initialization(
-    SequenceControlSet_t                   *sequence_control_set_ptr,
-    PictureControlSet_t                    *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t     *context_ptr) {
-
-    uint32_t                         slice_type;
-
-    // MD Conf Rate Estimation Array from encodeContext
-    MdRateEstimationContext_t  *mdConfRateEstimationArray;
-
-    // Lambda Assignement
-#if NEW_QPS
-    context_ptr->qp_index = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->base_qindex;
-#else
-    context_ptr->qp_index = quantizer_to_qindex[context_ptr->qp];
-#endif
-    uint32_t lambdaSse;
-    uint32_t lambdaSad;
-    (*av1_lambda_assignment_function_table[picture_control_set_ptr->parent_pcs_ptr->pred_structure])(
-        &lambdaSad,
-        &lambdaSse,
-        &lambdaSad,
-        &lambdaSse,
-        (uint8_t)picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr->bit_depth,
-        context_ptr->qp_index);
-    context_ptr->lambda = (uint64_t)lambdaSad;
-
-    // Slice Type
-    slice_type =
-        (picture_control_set_ptr->parent_pcs_ptr->idr_flag == EB_TRUE) ? I_SLICE :
-        picture_control_set_ptr->slice_type;
-
-    // Increment the MD Rate Estimation array pointer to point to the right address based on the QP and slice type
-    mdConfRateEstimationArray = (MdRateEstimationContext_t*)sequence_control_set_ptr->encode_context_ptr->md_rate_estimation_array;
-    mdConfRateEstimationArray += slice_type * TOTAL_NUMBER_OF_QP_VALUES + context_ptr->qp;
-
-    // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
-    // Hsan: to upgrade to AV1 tables
-    EB_MEMCPY(&(context_ptr->md_rate_estimation_ptr->splitFlagBits[0]), &(mdConfRateEstimationArray->splitFlagBits[0]), sizeof(MdRateEstimationContext_t));
-
-    picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
-}
-#else
+#if !ADAPTIVE_DEPTH_PARTITIONING
 void PartitioningInitialization(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,
@@ -2455,7 +2414,7 @@ void derive_sb_md_mode(
         picture_control_set_ptr,
         context_ptr);
 #endif
-    // Derive LCU score
+    // Derive SB score
     derive_sb_score(
         sequence_control_set_ptr,
         picture_control_set_ptr,
@@ -3419,6 +3378,7 @@ void forward_all_c_blocks_to_md(
 
     picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
 }
+
 /******************************************************
  * Mode Decision Configuration Kernel
  ******************************************************/
@@ -3539,6 +3499,71 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             dequantsMd);
 #endif
 
+#if REST_FAST_RATE_EST   
+        // Hsan: collapse spare code 
+        MdRateEstimationContext_t   *md_rate_estimation_array;
+        uint32_t                     entropyCodingQp;
+
+        // QP
+        context_ptr->qp = picture_control_set_ptr->picture_qp;
+
+        // QP Index
+        context_ptr->qp_index = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->base_qindex;
+
+        // Lambda Assignement
+        uint32_t lambdaSse;
+        uint32_t lambdaSad;
+        (*av1_lambda_assignment_function_table[picture_control_set_ptr->parent_pcs_ptr->pred_structure])(
+            &lambdaSad,
+            &lambdaSse,
+            &lambdaSad,
+            &lambdaSse,
+            (uint8_t)picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr->bit_depth,
+            context_ptr->qp_index);
+        context_ptr->lambda = (uint64_t)lambdaSad;
+
+        // Slice Type
+        EB_SLICE slice_type =
+            (picture_control_set_ptr->parent_pcs_ptr->idr_flag == EB_TRUE) ? I_SLICE :
+            picture_control_set_ptr->slice_type;
+
+        // Increment the MD Rate Estimation array pointer to point to the right address based on the QP and slice type
+        md_rate_estimation_array = (MdRateEstimationContext_t*)sequence_control_set_ptr->encode_context_ptr->md_rate_estimation_array;
+#if ADD_DELTA_QP_SUPPORT
+        md_rate_estimation_array += slice_type * TOTAL_NUMBER_OF_QP_VALUES + picture_control_set_ptr->parent_pcs_ptr->picture_qp;
+#else
+        md_rate_estimation_array += slice_type * TOTAL_NUMBER_OF_QP_VALUES + context_ptr->qp;
+#endif
+
+        // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
+        context_ptr->md_rate_estimation_ptr = md_rate_estimation_array;
+
+        entropyCodingQp = picture_control_set_ptr->parent_pcs_ptr->base_qindex;
+
+        // Reset CABAC Contexts
+        ResetEntropyCoder(
+            sequence_control_set_ptr->encode_context_ptr,
+            picture_control_set_ptr->coeff_est_entropy_coder_ptr,
+            entropyCodingQp,
+            picture_control_set_ptr->slice_type);
+
+        // Initial Rate Estimatimation of the syntax elements
+        if (!md_rate_estimation_array->initialized)
+            av1_estimate_syntax_rate(
+                md_rate_estimation_array,
+                picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE,
+                picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
+
+        // Initial Rate Estimatimation of the Motion vectors
+        av1_estimate_mv_rate(
+            md_rate_estimation_array,
+            &picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc->nmvc);
+
+        // Initial Rate Estimatimation of the quantized coefficients
+        av1_estimate_coefficients_rate(
+            md_rate_estimation_array,
+            picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
+#endif
         if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE) {
 #if ADAPTIVE_DEPTH_PARTITIONING
             derive_sb_md_mode(
@@ -3553,15 +3578,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 #endif
 #if !ADAPTIVE_DEPTH_PARTITIONING
             uint32_t sb_index;
-#endif
-
             // Rate estimation/QP
-#if ADAPTIVE_DEPTH_PARTITIONING
-            partitioning_initialization(
-                sequence_control_set_ptr,
-                picture_control_set_ptr,
-                context_ptr);
-#else
             PartitioningInitialization(
                 sequence_control_set_ptr,
                 picture_control_set_ptr,

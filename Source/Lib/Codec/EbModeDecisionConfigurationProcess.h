@@ -96,8 +96,10 @@ extern "C" {
         EbBool                             performRefinement;
 #endif
 #if MDC_FIX_0
-        ModeDecisionCandidate_t              *candidate_ptr;
-        CandidateMv                          *ref_mv_stack;
+        const BlockGeom                      *blk_geom;
+        ModeDecisionCandidate_t              *mdc_candidate_ptr;
+        CandidateMv                          *mdc_ref_mv_stack;
+        CodingUnit_t                         *mdc_cu_ptr;
 #endif
         uint8_t                               qp_index;
 

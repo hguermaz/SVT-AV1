@@ -67,8 +67,8 @@ extern "C" {
         };
 
         uint8_t                                skip_flag;
-        EbBool                                 merge_flag;
-        uint8_t                                merge_index;
+        EbBool                                 merge_flag;  // Hsan: to remove
+        uint8_t                                merge_index; // Hsan: to remove
         uint16_t                               count_non_zero_coeffs;
         EbBool                                 prediction_is_ready_luma;
         uint8_t                                type;

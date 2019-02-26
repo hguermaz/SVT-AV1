@@ -1045,7 +1045,6 @@ static INLINE int16_t Av1ModeContextAnalyzer(
     return comp_ctx;
 }
 
-
 #if REST_FAST_RATE_EST
 uint64_t Av1InterFastCost(  
     CodingUnit_t            *cu_ptr,
@@ -1485,7 +1484,6 @@ EbErrorType Av1InterFastCost(
     return return_error;
 #endif
 }
-
 
 EbErrorType Av1TuEstimateCoeffBits(
     PictureControlSet_t                    *picture_control_set_ptr,
