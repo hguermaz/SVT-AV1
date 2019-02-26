@@ -178,26 +178,25 @@ EbErrorType eb_sequence_control_set_ctor(
     // 1 - force to integer
     // 2 - adaptive
 
-    sequence_control_set_ptr->enable_filter_intra = 0;
-    sequence_control_set_ptr->enable_intra_edge_filter = 0;
+    sequence_control_set_ptr->enable_filter_intra        = 0;
+    sequence_control_set_ptr->enable_intra_edge_filter   = 0;
 
     sequence_control_set_ptr->enable_interintra_compound = 0;
-    sequence_control_set_ptr->enable_masked_compound = 0;
+    sequence_control_set_ptr->enable_masked_compound     = 0;
 
-    sequence_control_set_ptr->enable_ref_frame_mvs = 1;
-    sequence_control_set_ptr->enable_superres = 0;
+    sequence_control_set_ptr->enable_ref_frame_mvs       = 1;
+    sequence_control_set_ptr->enable_superres            = 0;
 #if NO_ENCDEC || SHUT_FILTERING
     sequence_control_set_ptr->enable_cdef = 0;
-
     sequence_control_set_ptr->enable_restoration = 0;
 #else
     sequence_control_set_ptr->enable_cdef = 1;
+    sequence_control_set_ptr->enable_restoration = 1;
+#endif
 
     sequence_control_set_ptr->film_grain_params_present = 0;
     sequence_control_set_ptr->film_grain_denoise_strength = 0;
 
-    sequence_control_set_ptr->enable_restoration = 1;
-#endif
     sequence_control_set_ptr->reduced_still_picture_hdr = 0;
     sequence_control_set_ptr->still_picture = 0;
     sequence_control_set_ptr->timing_info_present = 0;

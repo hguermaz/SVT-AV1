@@ -1334,10 +1334,10 @@ void ProductPerformFastLoop(
                         candidateBuffer->candidate_ptr,
                         cu_ptr->qp,
                         lumaFastDistortion,
-                        chromaFastDistortion,
+                        0,
                         context_ptr->fast_lambda,
                         picture_control_set_ptr,
-                        &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds]).ed_ref_mv_stack[candidate_ptr->ref_frame_type],
+                        &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidate_ptr->ref_frame_type]),
                         context_ptr->blk_geom,
                         context_ptr->cu_origin_y >> MI_SIZE_LOG2,
                         context_ptr->cu_origin_x >> MI_SIZE_LOG2,
@@ -6864,11 +6864,7 @@ EB_EXTERN EbErrorType in_loop_motion_estimation_sblock(
     const uint32_t start_idx_32x64 = 847 * number_of_sb_quad;
     const uint32_t start_idx_128x64 = 849 * number_of_sb_quad;
 
-#if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
-    context_ptr->fractionalSearchMethod = (picture_control_set_ptr->enc_mode >= ENC_M3) ? FULL_SAD_SEARCH : SSD_SEARCH;
-#else
-    context_ptr->fractionalSearchMethod = SUB_SAD_SEARCH;
-#endif
+    context_ptr->fractionalSearchMethod = SSD_SEARCH; // all in-loop
 
 #if M0_ME_SEARCH_BASE
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;

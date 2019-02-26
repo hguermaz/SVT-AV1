@@ -153,7 +153,7 @@ extern "C" {
         uint64_t                                chroma_distortion,
         uint64_t                                lambda,
         PictureControlSet_t                    *picture_control_set_ptr,
-        const CandidateMv                      *ref_mv_stack,
+        CandidateMv                            *ref_mv_stack,
         const BlockGeom                        *blk_geom,
         uint32_t                                miRow,
         uint32_t                                miCol,

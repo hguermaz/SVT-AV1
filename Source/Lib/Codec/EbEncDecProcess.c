@@ -1265,6 +1265,7 @@ void CopyStatisticsToRefObject(
     Av1Common* cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;
     ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->objectPtr)->sg_frame_ep = cm->sg_frame_ep;
 #endif
+
 }
 
 
@@ -1355,7 +1356,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->nfl_level = 1;
     else if (picture_control_set_ptr->enc_mode <= ENC_M3)
         context_ptr->nfl_level = 2;
-    else if (picture_control_set_ptr->enc_mode <= ENC_M5)
+    else if (picture_control_set_ptr->enc_mode <= ENC_M6)
         context_ptr->nfl_level = 3;
     else
         context_ptr->nfl_level = 3;

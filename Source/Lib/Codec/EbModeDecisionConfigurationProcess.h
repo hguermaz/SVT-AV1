@@ -97,7 +97,7 @@ extern "C" {
 #endif
 #if MDC_FIX_0
         ModeDecisionCandidate_t              *candidate_ptr;
-        const CandidateMv                    *ref_mv_stack;
+        CandidateMv                          *ref_mv_stack;
 #endif
         uint8_t                               qp_index;
 

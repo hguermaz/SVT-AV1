@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-     //Mode definition : Only one mode should be ON at a time
+//Mode definition : Only one mode should be ON at a time
 
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
@@ -135,19 +135,14 @@ extern "C" {
 #define CDEF_REF_ONLY                                   0 //CDEF for ref frame only
 #define REST_REF_ONLY                                   0 //REST for ref frame only
 #define REDUCE_COPY_CDEF                                1
-
 #define FAST_CDEF                                       1
 #define FAST_SG                                         1
 #define FAST_WN                                         1
 #define TX_SEARCH_LEVELS                                1 
 #define INTERPOLATION_SEARCH_LEVELS                     1 
 #define NSQ_SEARCH_LEVELS                               1
-
 #define CHROMA_BLIND                                    1 // Added the ability to switch between three chroma modes: 1. chroma @ MD, 2. chroma blind @ MD + CFL @ EP. 3. chroma blind @ MD + no CFL @ EP
-
-
 #define CONTENT_BASED_QPS                               1 // Adaptive QP Scaling (active for I only)
-
 #define ADAPTIVE_DEPTH_PARTITIONING                     1 // Added the ability to switch @ SB basis between: (1) all square up to 64x64,  (2) mdc up to 64x64, (3) mdc up to 64x64 only pred, (4) mdc up to 64x64 only pred + 1 NFL
 #if ADAPTIVE_DEPTH_PARTITIONING
 #define ADP_V1                                          0        
@@ -155,7 +150,7 @@ extern "C" {
 #define ADP_STATS_PER_LAYER                             0
 #define OPEN_LOOP_EARLY_PARTITION                       1
 #if OPEN_LOOP_EARLY_PARTITION
-#define REST_FAST_RATE_EST                              1
+#define REST_FAST_RATE_EST                              0
 #define MDC_FIX_0                                       0
 #endif
 #endif
@@ -168,8 +163,6 @@ extern "C" {
 #endif
 
 #define TUNED_SETTINGS_FOR_M0                           1
-#define TUNED_SETTINGS_FOR_M1                           1
-
 
 /********************************************************/
 /****************** Pre-defined Values ******************/
@@ -3527,18 +3520,18 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][M
 };
 
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  64,   64,   64,   64,   64,   48,   40,   32 },
-    { 112,   96,   96,   96,   96,   48,   40,   32 },
-    { 128,  112,  112,  112,  112,   48,   40,   32 },
-    { 128,  112,  112,  112,  112,   48,   40,   32 }
+    {  64,   64,   64,   64,   64,   48,   48,   32 },
+    { 112,   96,   96,   96,   96,   48,   48,   32 },
+    { 128,  112,  112,  112,  112,   48,   48,   32 },
+    { 128,  112,  112,  112,  112,   48,   48,   32 }
 
 };
 
 static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  64,   64,   64,   64,   64,   48,   40,   32 },
-    { 112,   96,   96,   96,   96,   48,   40,   32 },
-    { 128,  112,  112,  112,  112,   48,   40,   32 },
-    { 128,  112,  112,  112,  112,   48,   40,   32 }
+    {  64,   64,   64,   64,   64,   48,   48,   32 },
+    { 112,   96,   96,   96,   96,   48,   48,   32 },
+    { 128,  112,  112,  112,  112,   48,   48,   32 },
+    { 128,  112,  112,  112,  112,   48,   48,   32 }
 
 //     M0    M1    M2    M3    M4    M5    M6    M7
 };

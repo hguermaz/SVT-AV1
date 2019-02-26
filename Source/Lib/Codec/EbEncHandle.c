@@ -2047,29 +2047,29 @@ void CopyApiFromApp(
 
     uint32_t                  hmeRegionIndex = 0;
 
-    sequence_control_set_ptr->max_input_luma_width = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->source_width;
-    sequence_control_set_ptr->max_input_luma_height = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->source_height;
-    sequence_control_set_ptr->frame_rate = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->frame_rate;
+    sequence_control_set_ptr->max_input_luma_width               = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->source_width;
+    sequence_control_set_ptr->max_input_luma_height              = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->source_height;
+    sequence_control_set_ptr->frame_rate                         = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->frame_rate;
 
     sequence_control_set_ptr->general_frame_only_constraint_flag = 0;
-    sequence_control_set_ptr->general_progressive_source_flag = 1;
-    sequence_control_set_ptr->general_interlaced_source_flag = 0;
+    sequence_control_set_ptr->general_progressive_source_flag    = 1;
+    sequence_control_set_ptr->general_interlaced_source_flag     = 0;
 
     // SB Definitions
 #if DISABLE_128X128_SB
-    sequence_control_set_ptr->static_config.super_block_size = 64;
+    sequence_control_set_ptr->static_config.super_block_size       = 64;
 #else
-    sequence_control_set_ptr->static_config.super_block_size = (pComponentParameterStructure->enc_mode <= ENC_M3) ? 128 : 64;
+    sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode <= ENC_M4) ? 128 : 64;
 #endif
-    sequence_control_set_ptr->static_config.pred_structure = 2; // Hardcoded(Cleanup)
+    sequence_control_set_ptr->static_config.pred_structure         = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
 
-    sequence_control_set_ptr->max_cu_size = (uint8_t)64;
-    sequence_control_set_ptr->min_cu_size = (uint8_t)8;
-    sequence_control_set_ptr->max_intra_size = (uint8_t)32;
-    sequence_control_set_ptr->min_intra_size = (uint8_t)8;
-    sequence_control_set_ptr->intra4x4_flag = 1;
-    sequence_control_set_ptr->max_ref_count = 1;
+    sequence_control_set_ptr->max_cu_size                          = (uint8_t)64;
+    sequence_control_set_ptr->min_cu_size                          = (uint8_t)8;
+    sequence_control_set_ptr->max_intra_size                       = (uint8_t)32;
+    sequence_control_set_ptr->min_intra_size                       = (uint8_t)8;
+    sequence_control_set_ptr->intra4x4_flag                        = 1;
+    sequence_control_set_ptr->max_ref_count                        = 1;
 
     // Cropping Definitions - Hardcoded(CleanUp)
     sequence_control_set_ptr->cropping_left_offset = -1;

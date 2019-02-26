@@ -1710,11 +1710,7 @@ void  inject_inter_candidates(
             //----------------------
             // Bipred2Nx2N
             //----------------------
-#if TUNED_SETTINGS_FOR_M1
-            if (picture_control_set_ptr->enc_mode == ENC_M0 || context_ptr->blk_geom->shape == PART_N)
-#else
-            if (picture_control_set_ptr->enc_mode <= ENC_M0)
-#endif
+            if (picture_control_set_ptr->enc_mode == ENC_M0)
 
 
                 if (picture_control_set_ptr->slice_type == B_SLICE)
@@ -1734,11 +1730,7 @@ void  inject_inter_candidates(
             //----------------------
             // Unipred2Nx2N
             //----------------------
-#if TUNED_SETTINGS_FOR_M1
-            if (picture_control_set_ptr->enc_mode == ENC_M0 || context_ptr->blk_geom->shape == PART_N)
-#else
-            if (picture_control_set_ptr->enc_mode <= ENC_M0)
-#endif
+            if (picture_control_set_ptr->enc_mode == ENC_M0)
 
                 if (picture_control_set_ptr->slice_type != I_SLICE)
                     Unipred3x3CandidatesInjection(
@@ -1752,7 +1744,6 @@ void  inject_inter_candidates(
                         me2Nx2NTableOffset,
                         &canTotalCnt);
 #endif
-
         }
 #if NSQ_SEARCH_LEVELS
     }
@@ -2128,25 +2119,17 @@ EbErrorType ProductGenerateMdCandidatesCu(
                 leaf_index);
 
     if (slice_type != I_SLICE) {
-#if ENABLE_INTRA_4x4
-#if TUNED_SETTINGS_FOR_M1
-        if ( 1 ||
-#else
-        if ((picture_control_set_ptr->enc_mode <= ENC_M0) ||
-#endif
-            (context_ptr->blk_geom->bwidth != 4 && context_ptr->blk_geom->bheight != 4))
-#endif
 #if NSQ_SEARCH_LEVELS
             if (inject_inter_candidate)
 #endif
-            inject_inter_candidates(
-                picture_control_set_ptr,
-                context_ptr,
-                ss_mecontext,
-                sequence_control_set_ptr,
-                sb_ptr,
-                &canTotalCnt,
-                leaf_index);
+                inject_inter_candidates(
+                    picture_control_set_ptr,
+                    context_ptr,
+                    ss_mecontext,
+                    sequence_control_set_ptr,
+                    sb_ptr,
+                    &canTotalCnt,
+                    leaf_index);
     }
 
     // Set BufferTotalCount: determines the number of candidates to fully reconstruct

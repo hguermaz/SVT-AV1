@@ -526,7 +526,7 @@ uint64_t Av1IntraFastCost(
     uint64_t                 chroma_distortion,
     uint64_t                 lambda,
     PictureControlSet_t     *picture_control_set_ptr,
-    const CandidateMv       *ref_mv_stack,
+    CandidateMv             *ref_mv_stack,
     const BlockGeom         *blk_geom,
     uint32_t                 miRow,
     uint32_t                 miCol,
@@ -695,7 +695,7 @@ EbErrorType Av1IntraFastCost(
     if (blk_geom->has_uv) {
         if (!isMonochromeFlag && is_chroma_reference(miRow, miCol, blk_geom->bsize, subSamplingX, subSamplingY)) {
 #else
-    if (blk_geom->has_uv) {
+    if (context_ptr->blk_geom->has_uv) {
         if (!isMonochromeFlag && is_chroma_reference(miRow, miCol, cuSizeIndex, subSamplingX, subSamplingY)) {
 #endif
             // Estimate luma nominal intra mode bits
@@ -1055,7 +1055,7 @@ uint64_t Av1InterFastCost(
     uint64_t                 chroma_distortion,
     uint64_t                 lambda,
     PictureControlSet_t     *picture_control_set_ptr,
-    const CandidateMv       *ref_mv_stack,
+    CandidateMv             *ref_mv_stack,
     const BlockGeom         *blk_geom,
     uint32_t                 miRow,
     uint32_t                 miCol,

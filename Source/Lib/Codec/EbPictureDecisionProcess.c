@@ -37,9 +37,7 @@
 #if TUNED_SETTINGS_FOR_M0
 #define FC_SKIP_TX_SR_TH                       125 // Fast cost skip tx search threshold.
 #endif
-#if TUNED_SETTINGS_FOR_M1
 #define FC_SKIP_TX_SR_TH_M1                    110 // Fast cost skip tx search threshold.
-#endif
  /************************************************
   * Picture Analysis Context Constructor
   ************************************************/
@@ -646,7 +644,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
-    else if (picture_control_set_ptr->enc_mode <= ENC_M4) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M6) {
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
     else {
@@ -669,13 +667,10 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 3                                              Allow only NSQ Intra-FULL and Inter-NEWMV if parent SQ is NEWMV
     // 4                                              Allow only NSQ Inter-FULL and Intra-Z3 if parent SQ is intra-coded
     // 5                                              Allow NSQ Intra-FULL and Inter-FULL
-#if TUNED_SETTINGS_FOR_M0 || TUNED_SETTINGS_FOR_M1
     if (!MR_MODE)
-    picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_BASE_ON_SQ_COEFF;
+        picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_BASE_ON_SQ_COEFF;
     else
-#endif
-    picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_FULL;
-
+        picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_FULL;
 
     if (picture_control_set_ptr->nsq_search_level == NSQ_SEARCH_OFF) {
         if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
@@ -720,11 +715,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         else if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->loop_filter_mode = 2;
         else  if (picture_control_set_ptr->enc_mode >= ENC_M1)
-#if TUNED_SETTINGS_FOR_M1
             picture_control_set_ptr->loop_filter_mode = 3;
-#else
-            picture_control_set_ptr->loop_filter_mode = 2;
-#endif
         else  if (picture_control_set_ptr->enc_mode == ENC_M0)
             picture_control_set_ptr->loop_filter_mode = 3;
     }
@@ -792,11 +783,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M4) {
+    if (picture_control_set_ptr->enc_mode <= ENC_M6) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
     }
     else {
-        picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
     }
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
@@ -805,11 +796,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH;
     else
 #endif
-#if TUNED_SETTINGS_FOR_M1
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M6)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
     else
-#endif
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
 
     // Set tx search reduced set falg (0: full tx set; 1: reduced tx set)
@@ -857,6 +846,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         break;
     case 5:
         intra_pred_level = 1; //ENC_M5
+        break;
+    case 6:
+        intra_pred_level = 1; //ENC_M6
         break;
     default:
         intra_pred_level = 4; //MR_MODE
