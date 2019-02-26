@@ -322,7 +322,7 @@ uint32_t SetParentPcs(EbSvtAv1EncConfiguration*   config) {
     uint32_t fps = (uint32_t)((config->frame_rate > 1000) ? config->frame_rate >> 16 : config->frame_rate);
 
     fps = fps > 120 ? 120 : fps;
-    fps = fps < 24 ? 24 : fps;
+    fps = fps < 60 ? 60 : fps;
 
     return ((fps * 3) >> 1); // 1.5 sec worth of internal buffering
 }
