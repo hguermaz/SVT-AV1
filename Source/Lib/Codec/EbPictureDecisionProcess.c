@@ -779,7 +779,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else if (picture_control_set_ptr->enc_mode <= ENC_M5)
         cm->wn_filter_mode = 1;
     else
-        cm->wn_filter_mode = 1;
+        cm->wn_filter_mode = 0;
 #endif
 
 #if TX_SEARCH_LEVELS
