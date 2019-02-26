@@ -1904,6 +1904,8 @@ void set_sb_budget(
 {
     const uint32_t sb_index = sb_ptr->index;
     uint32_t max_to_min_score, score_to_min;
+    UNUSED(sequence_control_set_ptr);
+    UNUSED(picture_control_set_ptr);
 #if 0 // Hsan: for TUNE_SQ only (to add a cehck after enabling SQ mode)
     const EbBool is_avc_partitioning_mode_flag = is_avc_partitioning_mode(sequence_control_set_ptr, picture_control_set_ptr, sb_ptr);
 
@@ -2282,8 +2284,9 @@ void derive_sb_score(
 void perform_outlier_removal(
     SequenceControlSet_t               *sequence_control_set_ptr,
     PictureParentControlSet_t          *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t *context_ptr)
-{
+    ModeDecisionConfigurationContext_t *context_ptr){
+
+    UNUSED(picture_control_set_ptr);
     uint32_t max_interval = 0;
     uint32_t sub_interval = 0;
     uint32_t sb_scoreHistogram[10] = { 0 };
@@ -3546,8 +3549,9 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
                 picture_control_set_ptr,
                 context_ptr);
 #endif
-
+#if !ADAPTIVE_DEPTH_PARTITIONING
             uint32_t sb_index;
+#endif
 
             // Rate estimation/QP
 #if ADAPTIVE_DEPTH_PARTITIONING

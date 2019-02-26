@@ -4033,7 +4033,9 @@ void PicturePreProcessingOperations(
     uint32_t                           picture_width_in_sb,
     EbAsm                           asm_type) {
 
-    (void)inputPicturePtr;
+    UNUSED(quarterDecimatedPicturePtr);
+    UNUSED(sixteenthDecimatedPicturePtr);
+    UNUSED(inputPicturePtr);
 
     if (sequence_control_set_ptr->film_grain_denoise_strength) {
 

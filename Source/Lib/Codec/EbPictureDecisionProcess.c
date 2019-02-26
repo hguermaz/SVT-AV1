@@ -650,7 +650,7 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
-    else if (picture_control_set_ptr->enc_mode <= ENC_M6) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M5) {
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
     else {
@@ -774,11 +774,10 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 0                                            3-Tap luma/ 3-Tap chroma
     // 1                                            5-Tap luma/ 5-Tap chroma
     // 2                                            7-Tap luma/ 5-Tap chroma
-   /* if (picture_control_set_ptr->enc_mode >= ENC_M3)
-        cm->wn_filter_mode = 0;
-     else */
-     if (picture_control_set_ptr->enc_mode == ENC_M0)
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
         cm->wn_filter_mode = 2;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M5)
+        cm->wn_filter_mode = 1;
     else
         cm->wn_filter_mode = 1;
 #endif
@@ -790,12 +789,10 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M6) {
+    if (picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
-    }
-    else {
+    else
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
-    }
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
 #if TUNED_SETTINGS_FOR_M0
@@ -803,7 +800,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH;
     else
 #endif
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M6)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
     else
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
@@ -815,6 +812,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else {
         picture_control_set_ptr->tx_search_reduced_set = 1;
     }
+
 #endif
 
     // Intra prediction mode                       Settings

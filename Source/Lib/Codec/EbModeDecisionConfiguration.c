@@ -8,9 +8,9 @@
 #include "EbLambdaRateTables.h"
 #include "EbUtility.h"
 #include "EbModeDecisionProcess.h"
-
+#if !OPEN_LOOP_EARLY_PARTITION
 static const uint32_t me2Nx2NOffset[4] = { 0, 1, 5, 21 };
-
+#endif
 /********************************************
  * Constants
  ********************************************/
@@ -1017,9 +1017,11 @@ void PredictionPartitionLoop(
     SbParams_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
     uint32_t      cuInterSad = 0;
     uint64_t      cuInterRate = 0;
+#if !OPEN_LOOP_EARLY_PARTITION
     uint32_t      cuIntraSad = 0;
     uint64_t      cuIntraRate = 0;
     uint64_t      cuIntraCost = 0;
+#endif
     uint32_t     cuIndexInRaterScan;
     uint64_t      cuInterCost = 0;
     uint32_t cu_index = 0;
@@ -1042,11 +1044,15 @@ void PredictionPartitionLoop(
         if (sb_params->raster_scan_cu_validity[cuIndexInRaterScan])
         {
             uint32_t depth;
+#if !OPEN_LOOP_EARLY_PARTITION
             uint32_t size;
+#endif
             cuStatsPtr = GetCodedUnitStats(cu_index);
 
             depth = cuStatsPtr->depth;
+#if !OPEN_LOOP_EARLY_PARTITION
             size = cuStatsPtr->size;
+#endif
             cu_ptr->earlySplitFlag = (depth < endDepth) ? EB_TRUE : EB_FALSE;
 
             if (depth >= startDepth && depth <= endDepth) {
@@ -1204,14 +1210,14 @@ EbErrorType EarlyModeDecisionLcu(
     PictureControlSet_t                    *picture_control_set_ptr,
     LargestCodingUnit_t                    *sb_ptr,
     uint32_t                                  sb_index,
-    ModeDecisionConfigurationContext_t     *context_ptr)
-{
+    ModeDecisionConfigurationContext_t     *context_ptr){
 
     EbErrorType    return_error = EB_ErrorNone;
-
-    uint32_t          tbOriginX = sb_ptr->origin_x;
-    uint32_t          tbOriginY = sb_ptr->origin_y;
-    EB_SLICE        slice_type = picture_control_set_ptr->slice_type;
+    uint32_t       tbOriginX    = sb_ptr->origin_x;
+    uint32_t       tbOriginY    = sb_ptr->origin_y;
+#if !OPEN_LOOP_EARLY_PARTITION  
+    EB_SLICE       slice_type   = picture_control_set_ptr->slice_type;
+#endif
 
 #if ADAPTIVE_DEPTH_PARTITIONING
     uint32_t      startDepth = DEPTH_64;
