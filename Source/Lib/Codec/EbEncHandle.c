@@ -2059,7 +2059,7 @@ void CopyApiFromApp(
 #if DISABLE_128X128_SB
     sequence_control_set_ptr->static_config.super_block_size = 64;
 #else
-    sequence_control_set_ptr->static_config.super_block_size = (pComponentParameterStructure->enc_mode <= ENC_M6) ? 128 : 64;
+    sequence_control_set_ptr->static_config.super_block_size = (pComponentParameterStructure->enc_mode <= ENC_M3) ? 128 : 64;
 #endif
     sequence_control_set_ptr->static_config.pred_structure = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
@@ -2111,12 +2111,8 @@ void CopyApiFromApp(
     sequence_control_set_ptr->max_temporal_layers = sequence_control_set_ptr->static_config.hierarchical_levels;
     sequence_control_set_ptr->static_config.use_qp_file = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->use_qp_file;
 
-#if SHUT_FILTERING
-    sequence_control_set_ptr->static_config.disable_dlf_flag = 1;//
-#else
     // Deblock Filter
     sequence_control_set_ptr->static_config.disable_dlf_flag = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->disable_dlf_flag;
-#endif
 
     // Local Warped Motion
     sequence_control_set_ptr->static_config.enable_warped_motion = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->enable_warped_motion;

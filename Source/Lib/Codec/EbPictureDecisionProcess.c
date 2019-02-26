@@ -645,30 +645,19 @@ EbErrorType signal_derivation_multi_processes_oq(
     else if (picture_control_set_ptr->enc_mode == ENC_M1) {
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
     }
-    else if (picture_control_set_ptr->enc_mode <= ENC_M5) {
+#if ADAPTIVE_DEPTH_PARTITIONING
+    else if (picture_control_set_ptr->enc_mode <= ENC_M4) {
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
-#if ADAPTIVE_DEPTH_PARTITIONING
-    else if (picture_control_set_ptr->enc_mode == ENC_M3) {
-#else
     else {
-#endif
-        if (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)
+        if (picture_control_set_ptr->slice_type == I_SLICE)
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
         else
-            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+            picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
     }
-#if ADAPTIVE_DEPTH_PARTITIONING
-     else {
-         if (picture_control_set_ptr->slice_type == I_SLICE)
-             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
-         else
-#if 0
-             picture_control_set_ptr->pic_depth_mode = PIC_OPEN_LOOP_DEPTH_MODE;
 #else
-             picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
-#endif
-    }
+    else 
+        picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
 #endif
 
     picture_control_set_ptr->max_number_of_pus_per_sb = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
@@ -803,11 +792,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M5) {
+    if (picture_control_set_ptr->enc_mode <= ENC_M4) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
     }
     else {
-        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
     }
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
