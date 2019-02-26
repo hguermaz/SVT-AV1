@@ -1108,9 +1108,54 @@ void PredictionPartitionLoop(
 #endif
                 if (picture_control_set_ptr->slice_type != I_SLICE) {
 
-
-
                     MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexInRaterScan];
+#if MDC_FIX_0
+                    context_ptr->candidate_ptr->md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
+                    context_ptr->candidate_ptr->type = INTER_MODE;
+                    context_ptr->candidate_ptr->merge_flag = EB_FALSE;
+                    context_ptr->candidate_ptr->merge_index = 0;
+                    context_ptr->candidate_ptr->prediction_direction[0] = (EbPredDirection)0;
+                    context_ptr->candidate_ptr->is_skip_mode_flag = 0;
+                    context_ptr->candidate_ptr->inter_mode = NEWMV;
+                    context_ptr->candidate_ptr->pred_mode = NEWMV;
+                    context_ptr->candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
+
+                    context_ptr->candidate_ptr->is_compound = 0;
+                    context_ptr->candidate_ptr->is_new_mv = 1;
+                    context_ptr->candidate_ptr->is_zero_mv = 0;
+
+                    context_ptr->candidate_ptr->drl_index = 0;
+
+                    // Set the MV to ME result
+                    context_ptr->candidate_ptr->motionVector_x_L0 = mePuResult->xMvL0 << 1;
+                    context_ptr->candidate_ptr->motionVector_y_L0 = mePuResult->yMvL0 << 1;
+
+                    // will be needed later by the rate estimation
+                    context_ptr->candidate_ptr->ref_mv_index = 0;
+                    context_ptr->candidate_ptr->pred_mv_weight = 0;
+                    context_ptr->candidate_ptr->ref_frame_type = LAST_FRAME;
+
+                    context_ptr->candidate_ptr->motion_vector_pred_x[REF_LIST_0] = 0;
+                    context_ptr->candidate_ptr->motion_vector_pred_y[REF_LIST_0] = 0;
+
+                    memset(context_ptr->ref_mv_stack,0,sizeof(CandidateMv)));
+                    // Fast Cost Calc
+                    cu_ptr->earlyCost = Av1InterFastCost(
+                        cu_ptr,
+                        context_ptr->candidate_ptr,
+                        context_ptr->qp,
+                        mePuResult->distortionDirection[0].distortion,
+                        0,
+                        context_ptr->lambda,
+                        picture_control_set_ptr,
+                        context_ptr->ref_mv_stack,
+                        context_ptr->blk_geom,
+                        context_ptr->cu_origin_y >> MI_SIZE_LOG2,
+                        context_ptr->cu_origin_x >> MI_SIZE_LOG2,
+                        DC_PRED,                            // Hsan: neighbor not generated @ open loop partitioning
+                        DC_PRED);       // Hsan: neighbor not generated @ open loop partitioning
+
+#else
                     cuInterRate = MdcInterCuRate(
                         mePuResult->distortionDirection[0].direction,
                         mePuResult->xMvL0,
@@ -1122,7 +1167,7 @@ void PredictionPartitionLoop(
 
                     cuInterCost = (cuInterSad << COST_PRECISION) + ((context_ptr->lambda * cuInterRate + MD_OFFSET) >> MD_SHIFT);
                     cu_ptr->earlyCost = cuInterCost;
-
+#endif
                 }
 #if !OPEN_LOOP_EARLY_PARTITION
 #if ENCODER_MODE_CLEANUP
