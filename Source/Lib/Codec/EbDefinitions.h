@@ -145,8 +145,7 @@ extern "C" {
 #define CONTENT_BASED_QPS                               1 // Adaptive QP Scaling (active for I only)
 #define ADAPTIVE_DEPTH_PARTITIONING                     1 // Added the ability to switch @ SB basis between: (1) all square up to 64x64,  (2) mdc up to 64x64, (3) mdc up to 64x64 only pred, (4) mdc up to 64x64 only pred + 1 NFL
 #if ADAPTIVE_DEPTH_PARTITIONING
-#define ADP_V1                                          0        
-#define ADP_V2                                          0     
+#define ADP_V1                                          0      
 #define ADP_STATS_PER_LAYER                             0
 #define OPEN_LOOP_EARLY_PARTITION                       1
 #if OPEN_LOOP_EARLY_PARTITION

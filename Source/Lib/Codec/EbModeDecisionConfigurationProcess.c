@@ -2051,30 +2051,30 @@ EbErrorType derive_default_segments(
     EbErrorType return_error = EB_ErrorNone;
 
 #if 1
-#if ADP_V2
+#if 1
     if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) {
+        context_ptr->number_of_segments = 2;
+        context_ptr->score_th[0] = (int8_t)((1 * 100) / context_ptr->number_of_segments);
+        context_ptr->score_th[1] = (int8_t)((2 * 100) / context_ptr->number_of_segments);
+        context_ptr->score_th[2] = (int8_t)((3 * 100) / context_ptr->number_of_segments);
+        context_ptr->score_th[3] = (int8_t)((4 * 100) / context_ptr->number_of_segments);
+        context_ptr->interval_cost[0] = context_ptr->cost_depth_mode[SB_OPEN_LOOP_DEPTH_MODE - 1];
+        context_ptr->interval_cost[1] = context_ptr->cost_depth_mode[SB_SQ_NON4_BLOCKS_DEPTH_MODE - 1];
+    }
+    else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE) {
         context_ptr->number_of_segments = 3;
+
         context_ptr->score_th[0] = (int8_t)((1 * 100) / context_ptr->number_of_segments);
         context_ptr->score_th[1] = (int8_t)((2 * 100) / context_ptr->number_of_segments);
         context_ptr->score_th[2] = (int8_t)((3 * 100) / context_ptr->number_of_segments);
         context_ptr->score_th[3] = (int8_t)((4 * 100) / context_ptr->number_of_segments);
-        context_ptr->interval_cost[0] = context_ptr->cost_depth_mode[SB_OPEN_LOOP_DEPTH_MODE        - 1];
-        context_ptr->interval_cost[1] = context_ptr->cost_depth_mode[SB_SQ_NON4_BLOCKS_DEPTH_MODE   - 1];
-        context_ptr->interval_cost[2] = context_ptr->cost_depth_mode[SB_SQ_BLOCKS_DEPTH_MODE        - 1];
-    } else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag) {
+
+        context_ptr->interval_cost[0] = context_ptr->cost_depth_mode[SB_PRED_OPEN_LOOP_DEPTH_MODE - 1];
+        context_ptr->interval_cost[1] = context_ptr->cost_depth_mode[SB_OPEN_LOOP_DEPTH_MODE - 1];
+        context_ptr->interval_cost[2] = context_ptr->cost_depth_mode[SB_SQ_NON4_BLOCKS_DEPTH_MODE - 1];
+    }
+    else {
         context_ptr->number_of_segments = 4;
-
-        context_ptr->score_th[0] = (int8_t)((1 * 100) / context_ptr->number_of_segments);
-        context_ptr->score_th[1] = (int8_t)((2 * 100) / context_ptr->number_of_segments);
-        context_ptr->score_th[2] = (int8_t)((3 * 100) / context_ptr->number_of_segments);
-        context_ptr->score_th[3] = (int8_t)((4 * 100) / context_ptr->number_of_segments);
-
-        context_ptr->interval_cost[0] = context_ptr->cost_depth_mode[SB_PRED_OPEN_LOOP_DEPTH_MODE   - 1];
-        context_ptr->interval_cost[1] = context_ptr->cost_depth_mode[SB_OPEN_LOOP_DEPTH_MODE        - 1];
-        context_ptr->interval_cost[2] = context_ptr->cost_depth_mode[SB_SQ_NON4_BLOCKS_DEPTH_MODE   - 1];
-        context_ptr->interval_cost[3] = context_ptr->cost_depth_mode[SB_SQ_BLOCKS_DEPTH_MODE        - 1];
-    } else {
-        context_ptr->number_of_segments = 5;
 
         context_ptr->score_th[0] = (int8_t)((1 * 100) / context_ptr->number_of_segments);
         context_ptr->score_th[1] = (int8_t)((2 * 100) / context_ptr->number_of_segments);
@@ -2085,18 +2085,16 @@ EbErrorType derive_default_segments(
         context_ptr->interval_cost[1] = context_ptr->cost_depth_mode[SB_PRED_OPEN_LOOP_DEPTH_MODE       - 1];
         context_ptr->interval_cost[2] = context_ptr->cost_depth_mode[SB_OPEN_LOOP_DEPTH_MODE            - 1];
         context_ptr->interval_cost[3] = context_ptr->cost_depth_mode[SB_SQ_NON4_BLOCKS_DEPTH_MODE       - 1];
-        context_ptr->interval_cost[4] = context_ptr->cost_depth_mode[SB_SQ_BLOCKS_DEPTH_MODE            - 1];
     }
 #else
     if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE) {
-        context_ptr->number_of_segments = 3;
+        context_ptr->number_of_segments = 2;
         context_ptr->score_th[0] = (int8_t)((1 * 100) / context_ptr->number_of_segments);
         context_ptr->score_th[1] = (int8_t)((2 * 100) / context_ptr->number_of_segments);
         context_ptr->score_th[2] = (int8_t)((3 * 100) / context_ptr->number_of_segments);
         context_ptr->score_th[3] = (int8_t)((4 * 100) / context_ptr->number_of_segments);
         context_ptr->interval_cost[0] = context_ptr->cost_depth_mode[SB_OPEN_LOOP_DEPTH_MODE      - 1];
         context_ptr->interval_cost[1] = context_ptr->cost_depth_mode[SB_SQ_NON4_BLOCKS_DEPTH_MODE - 1];
-        context_ptr->interval_cost[2] = context_ptr->cost_depth_mode[SB_SQ_BLOCKS_DEPTH_MODE      - 1];
     }
     else {
         context_ptr->number_of_segments = 2;
@@ -2375,26 +2373,26 @@ void set_target_budget_oq(
     ModeDecisionConfigurationContext_t *context_ptr)
 {
     uint32_t budget;
-#if ADP_V2
-    if (picture_control_set_ptr->slice_type == I_SLICE)
-        budget = sequence_control_set_ptr->sb_tot_cnt * SQ_BLOCKS_SEARCH_COST;
-    else if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
-        budget = sequence_control_set_ptr->sb_tot_cnt * SQ_NON4_BLOCKS_SEARCH_COST;
+#if 1
+    if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
+        budget = sequence_control_set_ptr->sb_tot_cnt * U_150;
     else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
 #if ADP_V1
-        budget = sequence_control_set_ptr->sb_tot_cnt * U_140;
+        budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;
 #else
-        budget = sequence_control_set_ptr->sb_tot_cnt * U_130;
+        budget = sequence_control_set_ptr->sb_tot_cnt * U_120;
 #endif
     else
-        budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;
+#if ADP_V1
+        budget = sequence_control_set_ptr->sb_tot_cnt * PRED_OPEN_LOOP_COST;
 #else
-    if (picture_control_set_ptr->slice_type == I_SLICE)
-        budget = sequence_control_set_ptr->sb_tot_cnt * SQ_BLOCKS_SEARCH_COST;
-    else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
-        budget = sequence_control_set_ptr->sb_tot_cnt * SQ_NON4_BLOCKS_SEARCH_COST;
+        budget = sequence_control_set_ptr->sb_tot_cnt * U_115;
+#endif
+#else
+    if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+        budget = sequence_control_set_ptr->sb_tot_cnt * U_150;
     else
-        budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;
+        budget = sequence_control_set_ptr->sb_tot_cnt * U_130;
 #endif   
     context_ptr->budget = budget;
 }
