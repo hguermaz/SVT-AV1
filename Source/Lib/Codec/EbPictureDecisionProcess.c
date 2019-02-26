@@ -800,7 +800,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH;
     else
 #endif
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M6)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
     else
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
@@ -812,6 +812,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     else {
         picture_control_set_ptr->tx_search_reduced_set = 1;
     }
+
+    if (picture_control_set_ptr->enc_mode >= ENC_M6) // enc-dec tx
+        picture_control_set_ptr->tx_search_reduced_set = 0;
 
 #endif
 
