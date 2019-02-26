@@ -324,7 +324,7 @@ uint32_t SetParentPcs(EbSvtAv1EncConfiguration*   config) {
     fps = fps > 120 ? 120 : fps;
     fps = fps < 24 ? 24 : fps;
 
-    return ((fps*5)>>2); // 1.25 sec worth of internal buffering
+    return ((fps * 3) >> 1); // 1.5 sec worth of internal buffering
 }
 void LoadDefaultBufferConfigurationSettings(
     SequenceControlSet_t       *sequence_control_set_ptr){
@@ -2056,7 +2056,7 @@ void CopyApiFromApp(
     sequence_control_set_ptr->general_interlaced_source_flag     = 0;
 
     // SB Definitions
-#if DISABLE_128X128_SB
+#if 1//DISABLE_128X128_SB
     sequence_control_set_ptr->static_config.super_block_size       = 64;
 #else
     sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode <= ENC_M4) ? 128 : 64;

@@ -800,7 +800,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH;
     else
 #endif
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M6)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
     else
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
