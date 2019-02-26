@@ -4530,8 +4530,7 @@ EbErrorType WriteFrameHeaderAv1(
     int tile_start_and_end_present_flag = 0;
 
    currDataSize += write_tile_group_header(data + currDataSize,0,
-        0, n_log2_tiles, tile_start_and_end_present_flag
-        );
+        0, n_log2_tiles, tile_start_and_end_present_flag);
 #else
     //currDataSize += write_tile_group_header(
     //    data + currDataSize, tile_idx,
@@ -4597,35 +4596,32 @@ EbErrorType EncodeSPSAv1(
     return return_error;
 }
 /**************************************************
-* EncodeTDAv1
+* encode_td_av1
 **************************************************/
-EbErrorType EncodeTDAv1(
-    Bitstream_t *bitstreamPtr)
+EbErrorType encode_td_av1(
+    uint8_t *output_bitstream_ptr)
 {
-    EbErrorType            return_error = EB_ErrorNone;
-    OutputBitstreamUnit_t   *outputBitstreamPtr = (OutputBitstreamUnit_t*)bitstreamPtr->outputBitstreamPtr;
-    uint8_t                 *data = outputBitstreamPtr->bufferAv1;
+    EbErrorType              return_error = EB_ErrorNone;
+    //OutputBitstreamUnit_t   *outputBitstreamPtr = (OutputBitstreamUnit_t*)bitstreamPtr->outputBitstreamPtr;
+    ASSERT(output_bitstream_ptr != NULL);
+
+    uint8_t                 *data = output_bitstream_ptr;
 
     // move data and insert OBU_TD preceded by optional 4 byte size
-    uint32_t obuHeaderSize = 1;
-    const uint32_t obuPayloadSize = 0;
-    const size_t lengthFieldSize =
-        aom_uleb_size_in_bytes(obuPayloadSize);
+    uint32_t obu_header_size = 1;
+    const uint32_t obu_payload_size = 0;
+    const size_t length_field_size = aom_uleb_size_in_bytes(obu_payload_size);
 
-    /*if (ctx->pending_cx_data) {
-    const size_t move_offset = lengthFieldSize + 1;
-    memmove(ctx->pending_cx_data + move_offset, ctx->pending_cx_data,
-    ctx->pending_cx_data_sz);
-    }*/
-    obuHeaderSize = WriteObuHeader(
+    obu_header_size = WriteObuHeader(
         OBU_TEMPORAL_DELIMITER, 0, data);
 
     // OBUs are preceded/succeeded by an unsigned leb128 coded integer.
-    if (WriteUlebObuSize(obuHeaderSize, obuPayloadSize, data) != AOM_CODEC_OK) {
+    if (WriteUlebObuSize(obu_header_size, obu_payload_size, data) != AOM_CODEC_OK) {
         //return AOM_CODEC_ERROR;
     }
-    data += obuHeaderSize + obuPayloadSize + lengthFieldSize;
-    outputBitstreamPtr->bufferAv1 = data;
+    data += obu_header_size + obu_payload_size + length_field_size;
+    output_bitstream_ptr = data;
+
     return return_error;
 }
 

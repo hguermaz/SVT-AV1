@@ -2056,8 +2056,8 @@ void CopyApiFromApp(
     sequence_control_set_ptr->general_interlaced_source_flag     = 0;
 
     // SB Definitions
-#if 1//DISABLE_128X128_SB
-    sequence_control_set_ptr->static_config.super_block_size       = 64;
+#if DISABLE_128X128_SB
+    sequence_control_set_ptr->static_config.super_block_size = 64;
 #else
     sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode <= ENC_M4) ? 128 : 64;
 #endif
@@ -3135,14 +3135,13 @@ EB_API EbErrorType eb_svt_get_packet(
 
         packet = (EbBufferHeaderType*)ebWrapperPtr->objectPtr;
 
-        if (packet->flags != EB_BUFFERFLAG_EOS && 
+        if (packet->flags != EB_BUFFERFLAG_EOS &&
             packet->flags != EB_BUFFERFLAG_SHOW_EXT &&
+            packet->flags != EB_BUFFERFLAG_HAS_TD &&
             packet->flags != (EB_BUFFERFLAG_SHOW_EXT | EB_BUFFERFLAG_EOS) &&
-#if TILES
-            packet->flags != (EB_BUFFERFLAG_TG) &&
-            packet->flags != (EB_BUFFERFLAG_SHOW_EXT | EB_BUFFERFLAG_TG) &&
-            packet->flags != (EB_BUFFERFLAG_SHOW_EXT | EB_BUFFERFLAG_EOS | EB_BUFFERFLAG_TG) &&
-#endif
+            packet->flags != (EB_BUFFERFLAG_SHOW_EXT | EB_BUFFERFLAG_HAS_TD) &&
+            packet->flags != (EB_BUFFERFLAG_SHOW_EXT | EB_BUFFERFLAG_HAS_TD | EB_BUFFERFLAG_EOS) &&
+            packet->flags != (EB_BUFFERFLAG_HAS_TD | EB_BUFFERFLAG_EOS) &&
             packet->flags != 0) {
             return_error = EB_ErrorMax;
         }

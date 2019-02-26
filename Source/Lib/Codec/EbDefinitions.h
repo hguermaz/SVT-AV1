@@ -2096,8 +2096,8 @@ typedef enum EB_TUSIZE {
 
 static const uint8_t QP_OFFSET_WEIGHT[3][4] = { // [Slice Type][QP Offset Weight Level]
     { 9, 8, 7, 6 },
-{ 9, 8, 7, 6 },
-{ 10, 9, 8, 7 }
+    { 9, 8, 7, 6 },
+    { 10, 9, 8, 7 }
 };
 
 /** Assembly Types
