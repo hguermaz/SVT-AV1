@@ -2147,7 +2147,7 @@ void AV1PerformFullLoop(
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FULL_LOOP) {
             context_ptr->skip_interpolation_search = 0;
 #if USED_NFL_FEATURE_BASED
-            context_ptr->skip_interpolation_search = best_fastLoop_candidate_index > NFL_IT_TH ? 1 : context_ptr->skip_interpolation_search;
+            context_ptr->skip_interpolation_search = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M2) && (best_fastLoop_candidate_index > NFL_IT_TH) ? 1 : context_ptr->skip_interpolation_search;
 #endif
             if (candidate_ptr->type != INTRA_MODE) {
 #else
@@ -2229,7 +2229,7 @@ void AV1PerformFullLoop(
             picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
 
 #if USED_NFL_FEATURE_BASED
-        tx_search_skip_fag = best_fastLoop_candidate_index > NFL_TX_TH ? 1 : tx_search_skip_fag;
+        tx_search_skip_fag = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M2) && (best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
 #endif
 
         if (!tx_search_skip_fag){

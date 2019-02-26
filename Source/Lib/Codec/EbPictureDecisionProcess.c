@@ -640,8 +640,14 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
-    else if (picture_control_set_ptr->enc_mode == ENC_M1) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M1) {
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+    }
+    else if (picture_control_set_ptr->enc_mode <= ENC_M2) {
+        if (picture_control_set_ptr->slice_type == I_SLICE)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+        else
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
     else if (picture_control_set_ptr->enc_mode <= ENC_M6) {
@@ -649,13 +655,14 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else {
         if (picture_control_set_ptr->slice_type == I_SLICE)
-            picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
         else
             picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
     }
 #else
-    else 
+    else
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+}
 #endif
 
     picture_control_set_ptr->max_number_of_pus_per_sb = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
@@ -851,8 +858,11 @@ EbErrorType signal_derivation_multi_processes_oq(
         intra_pred_level = 1; //ENC_M6
         break;
     default:
-        intra_pred_level = 4; //MR_MODE
+        intra_pred_level = 1; //> ENC_M6
         break;
+
+    if (MR_MODE)
+        intra_pred_level = 4;
     }
 
     if (intra_pred_level == 4) {
