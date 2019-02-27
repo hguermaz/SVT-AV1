@@ -2162,7 +2162,7 @@ void derive_sb_score(
                     }
                 }
                 if (validCu8x8Count > 0)
-                    distortion = CLIP3(picture_control_set_ptr->parent_pcs_ptr->inter_complexity_min_pre, picture_control_set_ptr->parent_pcs_ptr->inter_complexity_max_pre, (distortion / validCu8x8Count) * 64);
+                    distortion = (distortion / validCu8x8Count) * 64;
 
                 // Do not perform SB score manipulation for incomplete SBs as not valid signals
                 sb_score = distortion;
