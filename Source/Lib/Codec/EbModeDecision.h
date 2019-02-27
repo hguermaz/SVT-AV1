@@ -67,8 +67,8 @@ extern "C" {
         };
 
         uint8_t                                skip_flag;
-        EbBool                                 merge_flag;  // Hsan: to remove
-        uint8_t                                merge_index; // Hsan: to remove
+        EbBool                                 merge_flag;  // Hsan: does not seem to be used why not removed ?
+        uint8_t                                merge_index; // Hsan: does not seem to be used why not removed ?
         uint16_t                               count_non_zero_coeffs;
         EbBool                                 prediction_is_ready_luma;
         uint8_t                                type;
@@ -85,10 +85,10 @@ extern "C" {
 
         EbPtr                                 prediction_context_ptr;
         PictureControlSet_t                   *picture_control_set_ptr;
-        EbPredDirection                        prediction_direction[MAX_NUM_OF_PU_PER_CU]; // 2 bits
+        EbPredDirection                        prediction_direction[MAX_NUM_OF_PU_PER_CU]; // 2 bits // Hsan: does not seem to be used why not removed ?
 
-        int16_t                                motion_vector_pred_x[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits
-        int16_t                                motion_vector_pred_y[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits
+        int16_t                                motion_vector_pred_x[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits // Hsan: does not seem to be used why not removed ?
+        int16_t                                motion_vector_pred_y[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits // Hsan: does not seem to be used why not removed ?
         uint8_t                                motion_vector_pred_idx[MAX_NUM_OF_REF_PIC_LIST]; // 2 bits
         uint8_t                                block_has_coeff;             // ?? bit - determine empirically
         uint8_t                                u_has_coeff;               // ?? bit

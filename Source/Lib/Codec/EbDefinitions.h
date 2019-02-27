@@ -149,9 +149,9 @@ extern "C" {
 #define ADP_STATS_PER_LAYER                             0
 #define OPEN_LOOP_EARLY_PARTITION                       1
 #if OPEN_LOOP_EARLY_PARTITION
-#define REST_FAST_RATE_EST                              0
-#define MDC_FIX_0                                       0
-#define MDC_FIX_1                                       0
+#define REST_FAST_RATE_EST                              1
+#define MDC_FIX_0                                       1
+#define MDC_FIX_1                                       1
 #endif
 #endif
 

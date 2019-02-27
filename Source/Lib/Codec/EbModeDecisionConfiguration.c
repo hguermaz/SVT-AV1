@@ -1119,7 +1119,9 @@ void PredictionPartitionLoop(
                 if (picture_control_set_ptr->slice_type != I_SLICE) {
 
                     MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexInRaterScan];
-#if MDC_FIX_0                 
+#if MDC_FIX_0            
+                    // Initialize the mdc candidate (only av1 rate estimation inputs)
+                    // Hsan: mode, direction, .. could be modified toward better early inter depth decision (e.g. NEARESTMV instead of NEWMV)
                     context_ptr->mdc_candidate_ptr->md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
                     context_ptr->mdc_candidate_ptr->type = INTER_MODE;
                     context_ptr->mdc_candidate_ptr->merge_flag = EB_FALSE;
@@ -1140,12 +1142,14 @@ void PredictionPartitionLoop(
                     context_ptr->mdc_candidate_ptr->ref_frame_type = LAST_FRAME;
                     context_ptr->mdc_candidate_ptr->motion_vector_pred_x[REF_LIST_0] = 0;
                     context_ptr->mdc_candidate_ptr->motion_vector_pred_y[REF_LIST_0] = 0;
-
+                    // Initialize the ref mv
                     memset(context_ptr->mdc_ref_mv_stack,0,sizeof(CandidateMv));
                     context_ptr->blk_geom = Get_blk_geom_mds(pa_to_ep_block_index[cu_index]);
-                    // Initialize mdc cu 
-                    av1_zero(context_ptr->mdc_cu_ptr->av1xd->neighbors_ref_counts);
+                    // Initialize mdc cu (only av1 rate estimation inputs)
                     context_ptr->mdc_cu_ptr->is_inter_ctx = 0;
+                    context_ptr->mdc_cu_ptr->reference_mode_context = 0;
+                    av1_zero(context_ptr->mdc_cu_ptr->av1xd->neighbors_ref_counts); // Hsan: neighbor not generated @ open loop partitioning => assumes always (0,0)
+
                     // Fast Cost Calc
                     cu_ptr->earlyCost = Av1InterFastCost(
                         context_ptr->mdc_cu_ptr,
