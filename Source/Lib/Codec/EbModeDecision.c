@@ -1873,7 +1873,11 @@ void  inject_intra_candidates(
     (void)sequence_control_set_ptr;
     (void)sb_ptr;
     uint8_t                     intra_mode_start = DC_PRED;
+#if ENABLE_PAETH
+    uint8_t                     intra_mode_end   = PAETH_PRED;
+#else    
     uint8_t                     intra_mode_end   = SMOOTH_H_PRED;
+#endif
     uint8_t                     openLoopIntraCandidate;
     uint32_t                    canTotalCnt = 0;
     uint8_t                     angleDeltaCounter = 0;
