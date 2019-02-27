@@ -866,27 +866,32 @@ EbErrorType signal_derivation_multi_processes_oq(
         intra_pred_level = 4;
     }
 
-    if (intra_pred_level == 4) {
-        picture_control_set_ptr->intra_pred_mode = 4;
-
-    }else if (intra_pred_level == 3) { 
-        if (picture_control_set_ptr->temporal_layer_index == 0)
+    if (picture_control_set_ptr->slice_type == I_SLICE) 
+         picture_control_set_ptr->intra_pred_mode = 4;
+    else {
+        if (intra_pred_level == 4) {
             picture_control_set_ptr->intra_pred_mode = 4;
-        else
-            picture_control_set_ptr->intra_pred_mode = 2;
-    }else if (intra_pred_level == 2) {  
-        if (picture_control_set_ptr->temporal_layer_index == 0)
-            picture_control_set_ptr->intra_pred_mode = 3;
-        else
-            picture_control_set_ptr->intra_pred_mode = 0;
-    }
-    else if (intra_pred_level == 1) { 
-        if (picture_control_set_ptr->temporal_layer_index == 0)
-            picture_control_set_ptr->intra_pred_mode = 1;
-        else
-            picture_control_set_ptr->intra_pred_mode = 0;
-    }
 
+        }
+        else if (intra_pred_level == 3) {
+            if (picture_control_set_ptr->temporal_layer_index == 0)
+                picture_control_set_ptr->intra_pred_mode = 4;
+            else
+                picture_control_set_ptr->intra_pred_mode = 2;
+        }
+        else if (intra_pred_level == 2) {
+            if (picture_control_set_ptr->temporal_layer_index == 0)
+                picture_control_set_ptr->intra_pred_mode = 3;
+            else
+                picture_control_set_ptr->intra_pred_mode = 0;
+        }
+        else if (intra_pred_level == 1) {
+            if (picture_control_set_ptr->temporal_layer_index == 0)
+                picture_control_set_ptr->intra_pred_mode = 1;
+            else
+                picture_control_set_ptr->intra_pred_mode = 0;
+        }
+    }
     return return_error;
 }
 
