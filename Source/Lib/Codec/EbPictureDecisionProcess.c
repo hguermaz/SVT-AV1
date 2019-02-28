@@ -35,9 +35,9 @@
 #define WTH 64
 #define OTH 64
 #if TUNED_SETTINGS_FOR_M0
-#define FC_SKIP_TX_SR_TH                       125 // Fast cost skip tx search threshold.
+#define FC_SKIP_TX_SR_TH025                     125 // Fast cost skip tx search threshold.
 #endif
-#define FC_SKIP_TX_SR_TH_M1                    110 // Fast cost skip tx search threshold.
+#define FC_SKIP_TX_SR_TH010                     110 // Fast cost skip tx search threshold.
  /************************************************
   * Picture Analysis Context Constructor
   ************************************************/
@@ -796,12 +796,12 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
 #if TUNED_SETTINGS_FOR_M0
-    if (!MR_MODE && picture_control_set_ptr->enc_mode == ENC_M0)
-        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH;
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M2)
+        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
     else
 #endif
     if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
-        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH_M1;
+        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
     else
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
 
