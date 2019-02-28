@@ -164,6 +164,12 @@ extern "C" {
 
 #define TUNED_SETTINGS_FOR_M0                           1
 
+
+
+#define ENABLE_PAETH                                    1
+#define TWO_FAST_LOOP 		                            1
+#define NEW_INTRA_LEVELS 		                        1
+
 /********************************************************/
 /****************** Pre-defined Values ******************/
 /********************************************************/

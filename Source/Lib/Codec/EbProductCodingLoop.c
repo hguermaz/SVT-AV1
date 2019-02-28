@@ -1311,24 +1311,135 @@ void ProductPerformFastLoop(
             // Set the Candidate Buffer
             candidateBuffer = candidateBufferPtrArrayBase[0];
             ModeDecisionCandidate_t *const candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
+            
+#if TWO_FAST_LOOP 
+            const unsigned enable_two_fast_loops = candidate_ptr->enable_two_fast_loops;
+#else
             const unsigned distortion_ready = candidate_ptr->distortion_ready;
-
-
+#endif
+#if TWO_FAST_LOOP
+            EbPictureBufferDesc_t * const   prediction_ptr = candidateBuffer->prediction_ptr;
+#endif
+#if TWO_FAST_LOOP 
+            if (!!enable_two_fast_loops)
+#else
             // Only check (src - src) candidates (Tier0 candidates)
             if (!!distortion_ready)
+#endif
             {
                 const uint32_t type = candidate_ptr->type;
 
+#if !TWO_FAST_LOOP
                 lumaFastDistortion = candidate_ptr->me_distortion;
+#endif
                 firstFastCandidateTotalCount++;
-                // Visual favor for DC/Planar
-                //if( candidateBuffer->candidate_ptr->type == INTRA_MODE && (candidateBuffer->candidate_ptr->intra_luma_mode == EB_INTRA_PLANAR||candidateBuffer->candidate_ptr->intra_luma_mode == EB_INTRA_DC)){
-                //    lumaFastDistortion = lumaFastDistortion * 90 / 100;
-                //}
 
                 {
                     // Fast Cost Calc
 #if REST_FAST_RATE_EST
+#if TWO_FAST_LOOP        
+                  
+                    candidateBuffer->sub_sampled_pred = EB_FALSE;
+                    candidateBuffer->sub_sampled_pred_chroma = EB_FALSE;
+                    candidate_ptr->prediction_is_ready_luma = EB_FALSE;
+
+                    lumaFastDistortion = 0;
+                    chromaFastDistortion = 0;
+                    // Set the Candidate Buffer
+
+                    ProductMdFastPuPrediction(
+                        picture_control_set_ptr,
+                        candidateBuffer,
+                        context_ptr,
+#if !CHROMA_BLIND
+                        EB_TRUE/*use_chroma_information_in_fast_loop*/,
+#endif
+                        candidate_ptr->type,
+                        candidate_ptr,
+                        fastLoopCandidateIndex,
+                        bestFirstFastCostSearchCandidateIndex,
+                        asm_type);
+
+                    //Distortion
+                    uint8_t * const inputBufferY = inputPicturePtr->bufferY + inputOriginIndex;
+                    const unsigned inputStrideY = inputPicturePtr->strideY;
+                    uint8_t * const predBufferY = prediction_ptr->bufferY + cuOriginIndex;
+                    // Skip distortion computation if the candidate is MPM
+                    
+                    // Y
+                    lumaFastDistortion += (NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 3](
+                        inputBufferY,
+                        inputStrideY << candidateBuffer->sub_sampled_pred,
+                        predBufferY,
+                        prediction_ptr->strideY,
+                        bheight >> candidateBuffer->sub_sampled_pred,
+                        bwidth)) << candidateBuffer->sub_sampled_pred;
+
+#if CHROMA_BLIND
+                    if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
+#else
+                    // Cb
+                    if (context_ptr->blk_geom->has_uv) {
+#endif
+
+                        uint8_t * const inputBufferCb = inputPicturePtr->bufferCb + inputCbOriginIndex;
+                        uint8_t *  const predBufferCb = candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex;
+
+                        chromaFastDistortion += NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 4](
+                            inputBufferCb,
+                            inputPicturePtr->strideCb << candidateBuffer->sub_sampled_pred_chroma,
+                            predBufferCb,
+                            prediction_ptr->strideCb,
+                            bheight_uv >> candidateBuffer->sub_sampled_pred_chroma,
+                            bwidth_uv) << candidateBuffer->sub_sampled_pred_chroma;
+
+
+                        uint8_t * const inputBufferCr = inputPicturePtr->bufferCr + inputCrOriginIndex;
+                        uint8_t * const predBufferCr = candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex;
+
+                        chromaFastDistortion += NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 4](
+                            inputBufferCr,
+                            inputPicturePtr->strideCb << candidateBuffer->sub_sampled_pred_chroma,
+                            predBufferCr,
+                            prediction_ptr->strideCr,
+                            bheight_uv >> candidateBuffer->sub_sampled_pred_chroma,
+                            bwidth_uv) << candidateBuffer->sub_sampled_pred_chroma;
+
+                    }
+                    
+
+                    if (picture_control_set_ptr->parent_pcs_ptr->cmplx_status_sb[sb_ptr->index] == CMPLX_NOISE) {
+
+                        if (bsize == BLOCK_64X64 && candidate_ptr->type == INTER_MODE) { // Nader - to be reviewed for 128x128 sb
+
+                            uint32_t  predDirection = (uint32_t)candidate_ptr->prediction_direction[0];
+                            EbBool list0ZZ = (predDirection & 1) ? EB_TRUE : (EbBool)(candidate_ptr->motionVector_x_L0 == 0 && candidate_ptr->motionVector_y_L0 == 0);
+                            EbBool list1ZZ = (predDirection > 0) ? (EbBool)(candidate_ptr->motionVector_x_L1 == 0 && candidate_ptr->motionVector_y_L1 == 0) : EB_TRUE;
+
+                            isCandzz = (list0ZZ && list1ZZ) ? 1 : 0;
+                            chromaFastDistortion = isCandzz ? chromaFastDistortion >> 2 : chromaFastDistortion;
+                        }
+
+                    }
+                    
+                    // Fast Cost Calc
+                *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type] (
+                    cu_ptr, 
+                    candidateBuffer->candidate_ptr,
+                    cu_ptr->qp,
+                    lumaFastDistortion,
+                    chromaFastDistortion,
+                    context_ptr->fast_lambda,
+                    picture_control_set_ptr,
+                    &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidate_ptr->ref_frame_type][0]),
+                    context_ptr->blk_geom,
+                    context_ptr->cu_origin_y >> MI_SIZE_LOG2,
+                    context_ptr->cu_origin_x >> MI_SIZE_LOG2,
+                    context_ptr->intra_luma_left_mode,
+                    context_ptr->intra_luma_top_mode);
+
+
+#else
                     *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[type](
                         cu_ptr,
                         candidateBuffer->candidate_ptr,
@@ -1343,6 +1454,7 @@ void ProductPerformFastLoop(
                         context_ptr->cu_origin_x >> MI_SIZE_LOG2,
                         context_ptr->intra_luma_left_mode,
                         context_ptr->intra_luma_top_mode);
+#endif
 
 #else
                     Av1ProductFastCostFuncTable[type](
@@ -1378,7 +1490,12 @@ void ProductPerformFastLoop(
     {
         candidateBuffer = candidateBufferPtrArrayBase[highestCostIndex];
         ModeDecisionCandidate_t *const  candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
+                  
+#if TWO_FAST_LOOP 
+        const unsigned                  enable_two_fast_loops = candidate_ptr->enable_two_fast_loops;
+#else
         const unsigned                  distortion_ready = candidate_ptr->distortion_ready;
+#endif
         EbPictureBufferDesc_t * const   prediction_ptr = candidateBuffer->prediction_ptr;
 
         {
@@ -1389,8 +1506,12 @@ void ProductPerformFastLoop(
 
         candidate_ptr->prediction_is_ready_luma = EB_FALSE;
 
-
+                 
+#if TWO_FAST_LOOP 
+        if ((!enable_two_fast_loops) || fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex) {
+#else
         if ((!distortion_ready) || fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex) {
+#endif
 #if !CHROMA_BLIND
             context_ptr->round_mv_to_integer = (candidate_ptr->merge_flag == EB_TRUE) ?
 
@@ -1420,11 +1541,14 @@ void ProductPerformFastLoop(
             uint8_t * const inputBufferY = inputPicturePtr->bufferY + inputOriginIndex;
             const unsigned inputStrideY = inputPicturePtr->strideY;
             uint8_t * const predBufferY = prediction_ptr->bufferY + cuOriginIndex;
+#if !TWO_FAST_LOOP 
+
             // Skip distortion computation if the candidate is MPM
             if (candidateBuffer->candidate_ptr->mpm_flag == EB_FALSE) {
                 if (fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex && candidate_ptr->type == INTRA_MODE)
                     lumaFastDistortion = candidate_ptr->me_distortion;
                 else {
+#endif
                     // Y
                     lumaFastDistortion += (NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 3](
                         inputBufferY,
@@ -1433,7 +1557,9 @@ void ProductPerformFastLoop(
                         prediction_ptr->strideY,
                         bheight >> candidateBuffer->sub_sampled_pred,
                         bwidth)) << candidateBuffer->sub_sampled_pred;
+#if !TWO_FAST_LOOP 
                 }
+#endif
 #if CHROMA_BLIND
                 if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
 #else
@@ -1465,8 +1591,9 @@ void ProductPerformFastLoop(
                         bwidth_uv) << candidateBuffer->sub_sampled_pred_chroma;
 
                 }
+#if !TWO_FAST_LOOP 
             }
-
+#endif
             if (picture_control_set_ptr->parent_pcs_ptr->cmplx_status_sb[lcuAddr] == CMPLX_NOISE) {
 
                 if (bsize == BLOCK_64X64 && candidate_ptr->type == INTER_MODE) { // Nader - to be reviewed for 128x128 sb

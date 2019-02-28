@@ -533,7 +533,11 @@ void Unipred3x3CandidatesInjection(
         NEWMV L0
         ************* */
         candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+        candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
         candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
         candidateArray[canTotalCnt].merge_flag = EB_FALSE;
         candidateArray[canTotalCnt].merge_index = 0;
         candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -589,7 +593,11 @@ void Unipred3x3CandidatesInjection(
             NEWMV L1
             ************* */
             candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+            candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
             candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
             candidateArray[canTotalCnt].merge_index = 0;
             candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -673,7 +681,11 @@ void Bipred3x3CandidatesInjection(
         for (bipredIndex = 0; bipredIndex < BIPRED_3x3_REFINMENT_POSITIONS; ++bipredIndex)
         {
             candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+            candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
             candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
             candidateArray[canTotalCnt].merge_index = 0;
             candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -733,7 +745,11 @@ void Bipred3x3CandidatesInjection(
         {
 
             candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+            candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
             candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
             candidateArray[canTotalCnt].merge_index = 0;
             candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -860,7 +876,11 @@ void InjectAv1MvpCandidates(
     candidateArray[canIdx].pred_mode = NEARESTMV;
     candidateArray[canIdx].motion_mode = SIMPLE_TRANSLATION;
     candidateArray[canIdx].is_compound = 0;
+#if TWO_FAST_LOOP 
+    candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
     candidateArray[canIdx].distortion_ready = 0;
+#endif
     candidateArray[canIdx].merge_flag = EB_FALSE;
     candidateArray[canIdx].merge_index = 0;
     candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -899,7 +919,11 @@ void InjectAv1MvpCandidates(
         candidateArray[canIdx].pred_mode = NEARMV;
         candidateArray[canIdx].motion_mode = SIMPLE_TRANSLATION;
         candidateArray[canIdx].is_compound = 0;
+#if TWO_FAST_LOOP 
+        candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
         candidateArray[canIdx].distortion_ready = 0;
+#endif
         candidateArray[canIdx].merge_flag = EB_FALSE;
         candidateArray[canIdx].merge_index = 0;
         candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -928,7 +952,11 @@ void InjectAv1MvpCandidates(
         candidateArray[canIdx].pred_mode = NEARESTMV;
         candidateArray[canIdx].motion_mode = SIMPLE_TRANSLATION;
         candidateArray[canIdx].is_compound = 0;
+#if TWO_FAST_LOOP 
+        candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
         candidateArray[canIdx].distortion_ready = 0;
+#endif
         candidateArray[canIdx].merge_flag = EB_FALSE;
         candidateArray[canIdx].merge_index = 0;
         candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -967,7 +995,11 @@ void InjectAv1MvpCandidates(
             candidateArray[canIdx].pred_mode = NEARMV;
             candidateArray[canIdx].motion_mode = SIMPLE_TRANSLATION;
             candidateArray[canIdx].is_compound = 0;
+#if TWO_FAST_LOOP 
+            candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
             candidateArray[canIdx].distortion_ready = 0;
+#endif
             candidateArray[canIdx].merge_flag = EB_FALSE;
             candidateArray[canIdx].merge_index = 0;
             candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -992,7 +1024,11 @@ void InjectAv1MvpCandidates(
         candidateArray[canIdx].pred_mode = NEAREST_NEARESTMV;
         candidateArray[canIdx].motion_mode = SIMPLE_TRANSLATION;
         candidateArray[canIdx].is_compound = 1;
+#if TWO_FAST_LOOP 
+        candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
         candidateArray[canIdx].distortion_ready = 0;
+#endif
         candidateArray[canIdx].merge_flag = EB_TRUE;
         candidateArray[canIdx].merge_index = 0;
         candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -1034,7 +1070,11 @@ void InjectAv1MvpCandidates(
                 candidateArray[canIdx].pred_mode = NEAR_NEARMV;
                 candidateArray[canIdx].motion_mode = SIMPLE_TRANSLATION;
                 candidateArray[canIdx].is_compound = 1;
+#if TWO_FAST_LOOP 
+                candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
                 candidateArray[canIdx].distortion_ready = 0;
+#endif
                 candidateArray[canIdx].merge_flag = EB_FALSE;
                 candidateArray[canIdx].merge_index = 0;
                 candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -1083,7 +1123,11 @@ void inject_warped_motion_candidates(
     candidateArray[canIdx].motion_mode = WARPED_CAUSAL;
     candidateArray[canIdx].wm_params.wmtype = AFFINE;
     candidateArray[canIdx].is_compound = 0;
+#if TWO_FAST_LOOP 
+    candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
     candidateArray[canIdx].distortion_ready = 0;
+#endif
     candidateArray[canIdx].merge_flag = EB_FALSE;
     candidateArray[canIdx].merge_index = 0;
     candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -1138,7 +1182,11 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].motion_mode = WARPED_CAUSAL;
         candidateArray[canIdx].wm_params.wmtype = AFFINE;
         candidateArray[canIdx].is_compound = 0;
+#if TWO_FAST_LOOP 
+        candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
         candidateArray[canIdx].distortion_ready = 0;
+#endif
         candidateArray[canIdx].merge_flag = EB_FALSE;
         candidateArray[canIdx].merge_index = 0;
         candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -1181,7 +1229,11 @@ void inject_warped_motion_candidates(
     IntMv  bestPredmv[2] = { {0}, {0} };
     for (int i=0; i<9; i++){
         candidateArray[canIdx].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+        candidateArray[canIdx].enable_two_fast_loops = 0;
+#else
         candidateArray[canIdx].distortion_ready = 0;
+#endif
         candidateArray[canIdx].merge_flag = EB_FALSE;
         candidateArray[canIdx].merge_index = 0;
         candidateArray[canIdx].mpm_flag = EB_FALSE;
@@ -1386,7 +1438,11 @@ void  inject_inter_candidates(
             NEWMV L0
         ************* */
         candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+        candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
         candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
         candidateArray[canTotalCnt].merge_flag = EB_FALSE;
         candidateArray[canTotalCnt].merge_index = 0;
         candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -1439,7 +1495,11 @@ void  inject_inter_candidates(
                NEWMV L1
            ************* */
             candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+            candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
             candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
             candidateArray[canTotalCnt].merge_index = 0;
             candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -1492,7 +1552,11 @@ void  inject_inter_candidates(
             if (allow_bipred) {
 
                 candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+                candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
                 candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
                 candidateArray[canTotalCnt].merge_flag = EB_FALSE;
                 candidateArray[canTotalCnt].merge_index = 0;
                 candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -1554,7 +1618,11 @@ void  inject_inter_candidates(
         ************* */
         if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) {
             candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+            candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
             candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
             candidateArray[canTotalCnt].merge_index = 0;
             candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -1612,7 +1680,11 @@ void  inject_inter_candidates(
     ************* */
     {
         candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+        candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
         candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
         candidateArray[canTotalCnt].merge_flag = EB_FALSE;
         candidateArray[canTotalCnt].merge_index = 0;
         candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -1648,7 +1720,11 @@ void  inject_inter_candidates(
         GLOBAL_GLOBALMV
         ************* */
         candidateArray[canTotalCnt].type = INTER_MODE;
+#if TWO_FAST_LOOP 
+        candidateArray[canTotalCnt].enable_two_fast_loops = 0;
+#else
         candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
         candidateArray[canTotalCnt].merge_flag = EB_FALSE;
         candidateArray[canTotalCnt].merge_index = 0;
         candidateArray[canTotalCnt].mpm_flag = EB_FALSE;
@@ -1873,7 +1949,11 @@ void  inject_intra_candidates(
     (void)sequence_control_set_ptr;
     (void)sb_ptr;
     uint8_t                     intra_mode_start = DC_PRED;
+#if ENABLE_PAETH
+    uint8_t                     intra_mode_end   = PAETH_PRED;
+#else    
     uint8_t                     intra_mode_end   = SMOOTH_H_PRED;
+#endif
     uint8_t                     openLoopIntraCandidate;
     uint32_t                    canTotalCnt = 0;
     uint8_t                     angleDeltaCounter = 0;
@@ -1930,6 +2010,9 @@ void  inject_intra_candidates(
             context_ptr->parent_sq_type[sq_index] == INTRA_MODE ? disable_z2_prediction : 0;
     }
 #endif
+#if TWO_FAST_LOOP 
+    uint8_t enable_two_fast_loops = picture_control_set_ptr->parent_pcs_ptr->enable_two_fast_loops && (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N);          
+#endif
 
     for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate < intra_mode_end + 1; ++openLoopIntraCandidate) {
 
@@ -1942,7 +2025,11 @@ void  inject_intra_candidates(
                     if (!disable_z2_prediction || (p_angle <= 90 || p_angle >= 180)) {
                         candidateArray[canTotalCnt].type = INTRA_MODE;
                         candidateArray[canTotalCnt].intra_luma_mode = openLoopIntraCandidate;
+#if TWO_FAST_LOOP 
+                        candidateArray[canTotalCnt].enable_two_fast_loops = enable_two_fast_loops;
+#else
                         candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
                         candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
                         candidateArray[canTotalCnt].use_angle_delta = use_angle_delta ? candidateArray[canTotalCnt].is_directional_mode_flag : 0;
                         candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
@@ -1989,7 +2076,11 @@ void  inject_intra_candidates(
         else {
             candidateArray[canTotalCnt].type = INTRA_MODE;
             candidateArray[canTotalCnt].intra_luma_mode = openLoopIntraCandidate;
+#if TWO_FAST_LOOP 
+            candidateArray[canTotalCnt].enable_two_fast_loops =  enable_two_fast_loops;
+#else
             candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
             candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
             candidateArray[canTotalCnt].use_angle_delta = candidateArray[canTotalCnt].is_directional_mode_flag;
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
