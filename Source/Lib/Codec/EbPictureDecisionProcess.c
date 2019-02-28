@@ -716,10 +716,8 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 3                                            FULL FRAME-BASED
 
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag) {
-        if (picture_control_set_ptr->enc_mode >= ENC_M4)
+        if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->loop_filter_mode = 1;
-        else if (picture_control_set_ptr->enc_mode >= ENC_M3)
-            picture_control_set_ptr->loop_filter_mode = 2;
         else  if (picture_control_set_ptr->enc_mode >= ENC_M1)
             picture_control_set_ptr->loop_filter_mode = 3;
         else  if (picture_control_set_ptr->enc_mode == ENC_M0)
@@ -739,8 +737,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (sequence_control_set_ptr->enable_cdef) {
         if (picture_control_set_ptr->enc_mode <= ENC_M2)
             picture_control_set_ptr->cdef_filter_mode = 3;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M4)
-            picture_control_set_ptr->cdef_filter_mode = 2;
         else
             picture_control_set_ptr->cdef_filter_mode = 1;
     }
@@ -762,8 +758,6 @@ EbErrorType signal_derivation_multi_processes_oq(
         cm->sg_filter_mode = 4;
     else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->sg_filter_mode = 3;
-    else if (picture_control_set_ptr->enc_mode <= ENC_M4)
-        cm->sg_filter_mode = 2;
     else
         cm->sg_filter_mode = 1;
 #endif
@@ -833,10 +827,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
         else if (picture_control_set_ptr->enc_mode == ENC_M2) 
             picture_control_set_ptr->intra_pred_mode = 3;
-        
-        else if (picture_control_set_ptr->enc_mode <= ENC_M4) 
-            picture_control_set_ptr->intra_pred_mode = 2;  
-        
+
         else 
             picture_control_set_ptr->intra_pred_mode = 1;  
     } 
