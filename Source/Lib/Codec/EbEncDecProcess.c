@@ -1351,7 +1351,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 2                    8
     // 3                    6
     // 4                    4/3/2
-    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->nfl_level = 0;
     else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         context_ptr->nfl_level = 1;

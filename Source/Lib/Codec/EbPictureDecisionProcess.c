@@ -640,6 +640,9 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M1) {
+        picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+    }
     else if (picture_control_set_ptr->enc_mode <= ENC_M2) {
         if (picture_control_set_ptr->slice_type == I_SLICE)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
@@ -688,7 +691,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                              Interpolation search at inter-depth
     // 2                                              Interpolation search at full loop
     // 3                                              Interpolation search at fast loop
-    if (picture_control_set_ptr->enc_mode <= ENC_M1) {
+    if (picture_control_set_ptr->enc_mode == ENC_M0) {
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
     }
     else {
@@ -749,7 +752,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     Av1Common* cm = picture_control_set_ptr->av1_cm;
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
         cm->sg_filter_mode = 4;
     else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->sg_filter_mode = 3;
@@ -763,7 +766,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                            3-Tap luma/ 3-Tap chroma
     // 2                                            5-Tap luma/ 5-Tap chroma
     // 3                                            7-Tap luma/ 5-Tap chroma
-    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
         cm->wn_filter_mode = 3;
     else if (picture_control_set_ptr->enc_mode <= ENC_M5)
         cm->wn_filter_mode = 2;
@@ -817,7 +820,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->slice_type == I_SLICE) 
          picture_control_set_ptr->intra_pred_mode = 4;
     else {
-        if (picture_control_set_ptr->enc_mode  <= ENC_M1) 
+        if (picture_control_set_ptr->enc_mode  == ENC_M0) 
             picture_control_set_ptr->intra_pred_mode = 4;
         else if (picture_control_set_ptr->enc_mode <= ENC_M4) 
             if (picture_control_set_ptr->temporal_layer_index == 0)

@@ -3434,20 +3434,20 @@ static const uint8_t EnableHmeLevel0Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
 };
 static const uint16_t HmeLevel0TotalSearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  48,   48,   48,   48,   48,   48,   48,   48 },
-    { 112,  112,   96,   96,   64,   64,   64,   64 },
+    { 112,   96,   96,   96,   64,   64,   64,   64 },
     { 128,  128,  128,  128,   96,   96,   96,   96 },
     { 128,  128,  128,  128,  128,  128,  128,  128 }
 };
 
 static const uint16_t HmeLevel0SearchAreaInWidthArrayLeft[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  24,   24,   24,   24,   24,   24,   24,   24 },
-    {  56,   56,   48,   48,   32,   32,   32,   32 },
+    {  56,   48,   48,   48,   32,   32,   32,   32 },
     {  64,   64,   64,   64,   48,   48,   48,   48 },
     {  64,   64,   64,   64,   64,   64,   64,   64 }
 };
 static const uint16_t HmeLevel0SearchAreaInWidthArrayRight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  24,   24,   24,   24,   24,   24,   24,   24 },
-    {  56,   56,   48,   48,   32,   32,   32,   32 },
+    {  56,   48,   48,   48,   32,   32,   32,   32 },
     {  64,   64,   64,   64,   48,   48,   48,   48 },
     {  64,   64,   64,   64,   64,   64,   64,   64 }
 };
@@ -3537,17 +3537,17 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][M
 
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   48,   48,   48,   32 },
-    { 112,  112,   96,   96,   48,   48,   48,   32 },
-    { 128,  128,  112,  112,   48,   48,   48,   32 },
-    { 128,  128,  112,  112,   48,   48,   48,   32 }
+    { 112,   96,   96,   96,   48,   48,   48,   32 },
+    { 128,  112,  112,  112,   48,   48,   48,   32 },
+    { 128,  112,  112,  112,   48,   48,   48,   32 }
 
 };
 
 static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   48,   48,   48,   32 },
-    { 112,  112,   96,   96,   48,   48,   48,   32 },
-    { 128,  128,  112,  112,   48,   48,   48,   32 },
-    { 128,  128,  112,  112,   48,   48,   48,   32 }
+    { 112,   96,   96,   96,   48,   48,   48,   32 },
+    { 128,  112,  112,  112,   48,   48,   48,   32 },
+    { 128,  112,  112,  112,   48,   48,   48,   32 }
 
 //     M0    M1    M2    M3    M4    M5    M6    M7
 };
