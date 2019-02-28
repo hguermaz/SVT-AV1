@@ -213,6 +213,21 @@ extern "C" {
         BlockSize  scaled_chroma_bsize;
 #endif
 
+#if REMOVED_DUPLICATE_INTER
+        uint32_t                        injected_mv_x_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint8_t                         injected_mv_count_l0;
+
+        uint32_t                        injected_mv_x_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint8_t                         injected_mv_count_l1;
+
+        uint32_t                        injected_mv_x_bipred_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_bipred_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_x_bipred_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_bipred_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint8_t                         injected_mv_count_bipred;
+#endif
 
         // Multi-modes signal(s) 
         uint8_t                           nfl_level;
