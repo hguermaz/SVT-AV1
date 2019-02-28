@@ -586,6 +586,12 @@ EbErrorType Av1IntraFastCost(
     (void)qp;
     (void)picture_control_set_ptr;
 #endif
+    UNUSED(qp);
+    UNUSED(ref_mv_stack);
+    UNUSED(miRow);
+    UNUSED(miCol);
+    UNUSED(left_neighbor_mode);
+    UNUSED(top_neighbor_mode);
     EbBool isMonochromeFlag = EB_FALSE; // NM - isMonochromeFlag is harcoded to false.
 #if REST_FAST_RATE_EST
     EbBool isCflAllowed = (blk_geom->bwidth <= 32 && blk_geom->bheight <= 32) ? 1 : 0;
@@ -1087,6 +1093,11 @@ EbErrorType Av1InterFastCost(
     PictureControlSet_t                    *picture_control_set_ptr)
 #endif
 {
+    UNUSED(top_neighbor_mode);
+    UNUSED(left_neighbor_mode);
+    UNUSED(miCol);
+    UNUSED(miRow);
+
 #if !REST_FAST_RATE_EST    
     EbErrorType  return_error = EB_ErrorNone;
 

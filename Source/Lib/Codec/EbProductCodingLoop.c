@@ -1327,8 +1327,6 @@ void ProductPerformFastLoop(
             if (!!distortion_ready)
 #endif
             {
-                const uint32_t type = candidate_ptr->type;
-
 #if !TWO_FAST_LOOP
                 lumaFastDistortion = candidate_ptr->me_distortion;
 #endif

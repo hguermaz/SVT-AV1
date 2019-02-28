@@ -5,7 +5,7 @@
 
 
 #include "EbModeDecisionConfiguration.h"
-#include "EbLambdaRateTables.h"
+#include "EbRateDistortionCost.h"
 #include "EbUtility.h"
 #include "EbModeDecisionProcess.h"
 #include "EbDefinitions.h"
@@ -486,12 +486,13 @@ void RefinementPredictionLoop(
     ModeDecisionConfigurationContext_t     *context_ptr)
 {
 
-    MdcpLocalCodingUnit_t  *localCuArray = context_ptr->localCuArray;
-    SbParams_t            *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    MdcpLocalCodingUnit_t    *localCuArray         = context_ptr->localCuArray;
+    SbParams_t               *sb_params            = &sequence_control_set_ptr->sb_params_array[sb_index];
     uint32_t                  temporal_layer_index = picture_control_set_ptr->temporal_layer_index;
-    uint32_t                  cu_index = 0;
+    uint32_t                  cu_index             = 0;
+#if !MDC_FIX_1
     uint8_t                   stationary_edge_over_time_flag = (&(picture_control_set_ptr->parent_pcs_ptr->sb_stat_array[sb_index]))->stationary_edge_over_time_flag;
-
+#endif
     sb_ptr->pred64 = EB_FALSE;
     while (cu_index < CU_MAX_COUNT)
     {
@@ -1009,31 +1010,33 @@ void MdcInterDepthDecision(
 void PredictionPartitionLoop(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,
-    uint32_t                                  sb_index,
-    uint32_t                                  tbOriginX,
-    uint32_t                                  tbOriginY,
-    uint32_t                                  startDepth,
-    uint32_t                                  endDepth,
-    ModeDecisionConfigurationContext_t     *context_ptr
-)
-{
+    uint32_t                                sb_index,
+    uint32_t                                tbOriginX,
+    uint32_t                                tbOriginY,
+    uint32_t                                startDepth,
+    uint32_t                                endDepth,
+    ModeDecisionConfigurationContext_t     *context_ptr){
 
+#if !OPEN_LOOP_EARLY_PARTITION
     MdRateEstimationContext_t *md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
+#endif
     MdcpLocalCodingUnit_t *localCuArray = context_ptr->localCuArray;
     MdcpLocalCodingUnit_t   *cu_ptr;
 
     SbParams_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+#if !MDC_FIX_0
     uint32_t      cuInterSad = 0;
     uint64_t      cuInterRate = 0;
+    uint64_t      cuInterCost = 0;
+#endif
 #if !OPEN_LOOP_EARLY_PARTITION
     uint32_t      cuIntraSad = 0;
     uint64_t      cuIntraRate = 0;
     uint64_t      cuIntraCost = 0;
 #endif
-    uint32_t     cuIndexInRaterScan;
-    uint64_t      cuInterCost = 0;
-    uint32_t cu_index = 0;
-    uint32_t startIndex = 0;
+    uint32_t      cuIndexInRaterScan;
+    uint32_t      cu_index = 0;
+    uint32_t      startIndex = 0;
 
     (void)tbOriginX;
     (void)tbOriginY;
@@ -1212,8 +1215,8 @@ void PredictionPartitionLoop(
                         picture_control_set_ptr,
                         context_ptr->mdc_ref_mv_stack,
                         context_ptr->blk_geom,
-                        tbOriginY + context_ptr->blk_geom->origin_y >> MI_SIZE_LOG2,
-                        tbOriginX + context_ptr->blk_geom->origin_x >> MI_SIZE_LOG2,
+                        (tbOriginY + context_ptr->blk_geom->origin_y) >> MI_SIZE_LOG2,
+                        (tbOriginX + context_ptr->blk_geom->origin_x) >> MI_SIZE_LOG2,
                         DC_PRED,        // Hsan: neighbor not generated @ open loop partitioning
                         DC_PRED);       // Hsan: neighbor not generated @ open loop partitioning
 #else

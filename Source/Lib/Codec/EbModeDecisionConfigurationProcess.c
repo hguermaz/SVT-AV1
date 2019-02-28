@@ -677,7 +677,8 @@ void set_reference_sg_ep(
     // NADER: set cm->sg_ref_frame_ep[0] = cm->sg_ref_frame_ep[1] = -1 to perform all iterations
     switch(picture_control_set_ptr->slice_type){
     case I_SLICE:
-        cm->sg_ref_frame_ep[0] = cm->sg_ref_frame_ep[1] = -1;
+        cm->sg_ref_frame_ep[0] = -1;
+        cm->sg_ref_frame_ep[1] = -1;
         break;
     case B_SLICE:
         refObjL0 = (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->objectPtr;
@@ -688,6 +689,7 @@ void set_reference_sg_ep(
     case P_SLICE:
         refObjL0 = (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->objectPtr;
         cm->sg_ref_frame_ep[0] = refObjL0->sg_frame_ep;
+        cm->sg_ref_frame_ep[1] = 0;
         break;
     default:
         printf("SG: Not supported picture type");
@@ -832,8 +834,8 @@ void PerformEarlyLcuPartitionning(
 
     LargestCodingUnit_t            *sb_ptr;
     uint32_t                         sb_index;
-    uint32_t                         slice_type;
 #if !REST_FAST_RATE_EST
+    uint32_t                         slice_type;
     // MD Conf Rate Estimation Array from encodeContext
     MdRateEstimationContext_t    *mdConfRateEstimationArray;
     // Hsan: useless lamda generation (1st remove the HEVC lambda tables, 2nd confirm lossless changes)
@@ -1746,9 +1748,9 @@ EbBool is_avc_partitioning_mode(
 ******************************************************/
 void configure_adp(
     PictureControlSet_t                *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t *context_ptr)
-{
+    ModeDecisionConfigurationContext_t *context_ptr){
 
+    UNUSED(picture_control_set_ptr);
     context_ptr->cost_depth_mode[SB_SQ_BLOCKS_DEPTH_MODE      - 1]       = SQ_BLOCKS_SEARCH_COST;
     context_ptr->cost_depth_mode[SB_SQ_NON4_BLOCKS_DEPTH_MODE - 1]       = SQ_NON4_BLOCKS_SEARCH_COST;
     context_ptr->cost_depth_mode[SB_OPEN_LOOP_DEPTH_MODE - 1]            = SB_OPEN_LOOP_COST;
