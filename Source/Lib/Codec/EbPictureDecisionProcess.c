@@ -752,9 +752,9 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     Av1Common* cm = picture_control_set_ptr->av1_cm;
 
-    if (picture_control_set_ptr->enc_mode == ENC_M0)
+    if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->sg_filter_mode = 4;
-    else if (picture_control_set_ptr->enc_mode <= ENC_M2)
+    else if (picture_control_set_ptr->enc_mode <= ENC_M3)
         cm->sg_filter_mode = 3;
     else
         cm->sg_filter_mode = 1;
@@ -766,7 +766,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                            3-Tap luma/ 3-Tap chroma
     // 2                                            5-Tap luma/ 5-Tap chroma
     // 3                                            7-Tap luma/ 5-Tap chroma
-    if (picture_control_set_ptr->enc_mode == ENC_M0)
+    if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->wn_filter_mode = 3;
     else if (picture_control_set_ptr->enc_mode <= ENC_M5)
         cm->wn_filter_mode = 2;
