@@ -501,7 +501,7 @@ void RefinementPredictionLoop(
             sb_ptr->pred64 = (cu_index == 0) ? EB_TRUE : sb_ptr->pred64;
             uint32_t depth = GetCodedUnitStats(cu_index)->depth;
             uint8_t refinementLevel;
-
+#if !MDC_FIX_1
             if (sb_ptr->picture_control_set_ptr->slice_type == I_SLICE) {
 
                 {
@@ -531,7 +531,9 @@ void RefinementPredictionLoop(
                         lowestLevel);
                 }
             }
-            else {
+            else 
+#endif    
+            {
 #if ADAPTIVE_DEPTH_PARTITIONING
                 if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)) {
 #else
@@ -541,7 +543,9 @@ void RefinementPredictionLoop(
                 }
                 else
 
-
+#if MDC_FIX_1
+                    refinementLevel = NdpRefinementControl[temporal_layer_index][depth];
+#else
                     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_OPEN_LOOP_DEPTH_MODE ||
 #if ADAPTIVE_DEPTH_PARTITIONING
                         (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_OPEN_LOOP_DEPTH_MODE)))
@@ -551,7 +555,7 @@ void RefinementPredictionLoop(
                         refinementLevel = NdpRefinementControlNREF[temporal_layer_index][depth];
                     else
                         refinementLevel = NdpRefinementControl_FAST[temporal_layer_index][depth];
-
+#endif
                 if (picture_control_set_ptr->parent_pcs_ptr->cu8x8_mode == CU_8x8_MODE_1) {
                     refinementLevel = ((refinementLevel & REFINEMENT_Pp1) && depth == 2) ? refinementLevel - REFINEMENT_Pp1 :
                         ((refinementLevel & REFINEMENT_Pp2) && depth == 1) ? refinementLevel - REFINEMENT_Pp2 :
@@ -1126,20 +1130,53 @@ void PredictionPartitionLoop(
                     context_ptr->mdc_candidate_ptr->type = INTER_MODE;
                     context_ptr->mdc_candidate_ptr->merge_flag = EB_FALSE;
                     context_ptr->mdc_candidate_ptr->merge_index = 0;
-                    context_ptr->mdc_candidate_ptr->prediction_direction[0] = (EbPredDirection)0;
+#if MDC_FIX_1
+                    context_ptr->mdc_candidate_ptr->prediction_direction[0] = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) ?
+                        UNI_PRED_LIST_0 :
+                        mePuResult->distortionDirection[0].direction;
+#else
+                    context_ptr->mdc_candidate_ptr->prediction_direction[0] = UNI_PRED_LIST_0;
+#endif
                     context_ptr->mdc_candidate_ptr->is_skip_mode_flag = 0;
+                    // Hsan: what's the best mode for rate simulation
+#if MDC_FIX_1
+                    context_ptr->mdc_candidate_ptr->inter_mode = NEARESTMV;
+                    context_ptr->mdc_candidate_ptr->pred_mode = NEARESTMV;
+#else
                     context_ptr->mdc_candidate_ptr->inter_mode = NEWMV;
                     context_ptr->mdc_candidate_ptr->pred_mode = NEWMV;
+#endif
                     context_ptr->mdc_candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
+#if !MDC_FIX_1
                     context_ptr->mdc_candidate_ptr->is_compound = 0;
+#endif
                     context_ptr->mdc_candidate_ptr->is_new_mv = 1;
                     context_ptr->mdc_candidate_ptr->is_zero_mv = 0;
                     context_ptr->mdc_candidate_ptr->drl_index = 0;
                     context_ptr->mdc_candidate_ptr->motionVector_x_L0 = mePuResult->xMvL0 << 1;
                     context_ptr->mdc_candidate_ptr->motionVector_y_L0 = mePuResult->yMvL0 << 1;
+#if MDC_FIX_1
+                    context_ptr->mdc_candidate_ptr->motionVector_x_L1 = mePuResult->xMvL1 << 1;
+                    context_ptr->mdc_candidate_ptr->motionVector_y_L1 = mePuResult->yMvL1 << 1;
+#endif
                     context_ptr->mdc_candidate_ptr->ref_mv_index = 0;
                     context_ptr->mdc_candidate_ptr->pred_mv_weight = 0;
+#if MDC_FIX_1
+                    if (context_ptr->mdc_candidate_ptr->prediction_direction[0] == BI_PRED) {
+                        context_ptr->mdc_candidate_ptr->ref_frame_type = LAST_BWD_FRAME;
+                        context_ptr->mdc_candidate_ptr->is_compound = 1;
+                    }
+                    else if (context_ptr->mdc_candidate_ptr->prediction_direction[0] == UNI_PRED_LIST_0) {
+                        context_ptr->mdc_candidate_ptr->ref_frame_type = LAST_FRAME;
+                        context_ptr->mdc_candidate_ptr->is_compound = 0;
+                    }
+                    else { // context_ptr->mdc_candidate_ptr->prediction_direction[0]
+                        context_ptr->mdc_candidate_ptr->ref_frame_type = BWDREF_FRAME;
+                        context_ptr->mdc_candidate_ptr->is_compound = 0;
+                    }
+#else
                     context_ptr->mdc_candidate_ptr->ref_frame_type = LAST_FRAME;
+#endif
                     context_ptr->mdc_candidate_ptr->motion_vector_pred_x[REF_LIST_0] = 0;
                     context_ptr->mdc_candidate_ptr->motion_vector_pred_y[REF_LIST_0] = 0;
                     // Initialize the ref mv
@@ -1147,7 +1184,21 @@ void PredictionPartitionLoop(
                     context_ptr->blk_geom = Get_blk_geom_mds(pa_to_ep_block_index[cu_index]);
                     // Initialize mdc cu (only av1 rate estimation inputs)
                     context_ptr->mdc_cu_ptr->is_inter_ctx = 0;
+                    context_ptr->mdc_cu_ptr->skip_flag_context = 0;
+#if MDC_FIX_1
+                    context_ptr->mdc_cu_ptr->inter_mode_ctx[context_ptr->mdc_candidate_ptr->ref_frame_type] = 0;
                     context_ptr->mdc_cu_ptr->reference_mode_context = 0;
+                    context_ptr->mdc_cu_ptr->compoud_reference_type_context = 0;
+#endif
+#if 0
+                    context_ptr->mdc_cu_ptr->skip_coeff_context     = 0;
+                    context_ptr->mdc_cu_ptr->luma_txb_skip_context  = 0;
+                    context_ptr->mdc_cu_ptr->luma_dc_sign_context   = 0;
+                    context_ptr->mdc_cu_ptr->cb_txb_skip_context    = 0;
+                    context_ptr->mdc_cu_ptr->cb_dc_sign_context     = 0;
+                    context_ptr->mdc_cu_ptr->cr_txb_skip_context    = 0;
+                    context_ptr->mdc_cu_ptr->cr_dc_sign_context     = 0;
+#endif
                     av1_zero(context_ptr->mdc_cu_ptr->av1xd->neighbors_ref_counts); // Hsan: neighbor not generated @ open loop partitioning => assumes always (0,0)
 
                     // Fast Cost Calc
@@ -1156,7 +1207,7 @@ void PredictionPartitionLoop(
                         context_ptr->mdc_candidate_ptr,
                         context_ptr->qp,
                         mePuResult->distortionDirection[0].distortion,
-                        0,
+                        (uint64_t) 0,
                         context_ptr->lambda,
                         picture_control_set_ptr,
                         context_ptr->mdc_ref_mv_stack,
