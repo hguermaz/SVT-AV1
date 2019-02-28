@@ -1067,8 +1067,8 @@ void InjectAv1MvpCandidates(
         candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
         ++canIdx;
 #if REMOVED_DUPLICATE_INTER_L1
-        context_ptr->injected_mv_x_l1_array[context_ptr->injected_mv_count_l0] = to_inject_mv_x;
-        context_ptr->injected_mv_y_l1_array[context_ptr->injected_mv_count_l0] = to_inject_mv_y;
+        context_ptr->injected_mv_x_l1_array[context_ptr->injected_mv_count_l1] = to_inject_mv_x;
+        context_ptr->injected_mv_y_l1_array[context_ptr->injected_mv_count_l1] = to_inject_mv_y;
         ++context_ptr->injected_mv_count_l1;
     }
 #endif
@@ -1124,10 +1124,10 @@ void InjectAv1MvpCandidates(
             candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
             ++canIdx;
 #if REMOVED_DUPLICATE_INTER_L1
-            context_ptr->injected_mv_x_l1_array[context_ptr->injected_mv_count_l0] = to_inject_mv_x;
-            context_ptr->injected_mv_y_l1_array[context_ptr->injected_mv_count_l0] = to_inject_mv_y;
+            context_ptr->injected_mv_x_l1_array[context_ptr->injected_mv_count_l1] = to_inject_mv_x;
+            context_ptr->injected_mv_y_l1_array[context_ptr->injected_mv_count_l1] = to_inject_mv_y;
             ++context_ptr->injected_mv_count_l1;
-        }
+            }
 #endif
         }
 
@@ -1729,7 +1729,7 @@ void  inject_inter_candidates(
             context_ptr->injected_mv_x_l1_array[context_ptr->injected_mv_count_l1] = to_inject_mv_x;
             context_ptr->injected_mv_y_l1_array[context_ptr->injected_mv_count_l1] = to_inject_mv_y;
             ++context_ptr->injected_mv_count_l1;
-        }
+            }
 #endif
             /**************
                NEW_NEWMV
@@ -1992,10 +1992,10 @@ void  inject_inter_candidates(
 
         // Set the MV to frame MV
 #if REMOVED_DUPLICATE_INTER_BIPRED
-        candidateArray[canTotalCnt].motionVector_y_L0 = to_inject_mv_x_l0;
-        candidateArray[canTotalCnt].motionVector_x_L0 = to_inject_mv_y_l0;
-        candidateArray[canTotalCnt].motionVector_y_L1 = to_inject_mv_x_l1;
-        candidateArray[canTotalCnt].motionVector_x_L1 = to_inject_mv_y_l1;
+        candidateArray[canTotalCnt].motionVector_x_L0 = to_inject_mv_x_l0;
+        candidateArray[canTotalCnt].motionVector_y_L0 = to_inject_mv_y_l0;
+        candidateArray[canTotalCnt].motionVector_x_L1 = to_inject_mv_x_l1;
+        candidateArray[canTotalCnt].motionVector_y_L1 = to_inject_mv_y_l1;
 #else
         candidateArray[canTotalCnt].motionVector_y_L0 = (int16_t)(picture_control_set_ptr->parent_pcs_ptr->global_motion[LAST_FRAME].wmmat[0] >> GM_TRANS_ONLY_PREC_DIFF);
         candidateArray[canTotalCnt].motionVector_x_L0 = (int16_t)(picture_control_set_ptr->parent_pcs_ptr->global_motion[LAST_FRAME].wmmat[1] >> GM_TRANS_ONLY_PREC_DIFF);
