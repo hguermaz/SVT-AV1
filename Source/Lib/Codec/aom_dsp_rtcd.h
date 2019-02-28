@@ -1258,7 +1258,66 @@ extern "C" {
     void aom_paeth_predictor_8x8_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     void aom_paeth_predictor_8x8_ssse3(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     RTCD_EXTERN void (*aom_paeth_predictor_8x8)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+    
+    void aom_highbd_paeth_predictor_16x16_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_16x16 aom_highbd_paeth_predictor_16x16_c
 
+    void aom_highbd_paeth_predictor_16x32_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_16x32 aom_highbd_paeth_predictor_16x32_c
+
+    void aom_highbd_paeth_predictor_16x4_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_16x4 aom_highbd_paeth_predictor_16x4_c
+
+    void aom_highbd_paeth_predictor_16x64_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_16x64 aom_highbd_paeth_predictor_16x64_c
+
+    void aom_highbd_paeth_predictor_16x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_16x8 aom_highbd_paeth_predictor_16x8_c
+
+    void aom_highbd_paeth_predictor_2x2_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_2x2 aom_highbd_paeth_predictor_2x2_c
+
+    void aom_highbd_paeth_predictor_32x16_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_32x16 aom_highbd_paeth_predictor_32x16_c
+
+    void aom_highbd_paeth_predictor_32x32_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_32x32 aom_highbd_paeth_predictor_32x32_c
+
+    void aom_highbd_paeth_predictor_32x64_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_32x64 aom_highbd_paeth_predictor_32x64_c
+
+    void aom_highbd_paeth_predictor_32x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_32x8 aom_highbd_paeth_predictor_32x8_c
+
+    void aom_highbd_paeth_predictor_4x16_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_4x16 aom_highbd_paeth_predictor_4x16_c
+
+    void aom_highbd_paeth_predictor_4x4_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_4x4 aom_highbd_paeth_predictor_4x4_c
+
+    void aom_highbd_paeth_predictor_4x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_4x8 aom_highbd_paeth_predictor_4x8_c
+
+    void aom_highbd_paeth_predictor_64x16_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_64x16 aom_highbd_paeth_predictor_64x16_c
+
+    void aom_highbd_paeth_predictor_64x32_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_64x32 aom_highbd_paeth_predictor_64x32_c
+
+    void aom_highbd_paeth_predictor_64x64_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_64x64 aom_highbd_paeth_predictor_64x64_c
+
+    void aom_highbd_paeth_predictor_8x16_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_8x16 aom_highbd_paeth_predictor_8x16_c
+
+    void aom_highbd_paeth_predictor_8x32_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_8x32 aom_highbd_paeth_predictor_8x32_c
+
+    void aom_highbd_paeth_predictor_8x4_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_8x4 aom_highbd_paeth_predictor_8x4_c
+
+    void aom_highbd_paeth_predictor_8x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
+    #define aom_highbd_paeth_predictor_8x8 aom_highbd_paeth_predictor_8x8_c
 #endif
 #endif
 
