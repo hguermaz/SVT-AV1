@@ -718,9 +718,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag) {
         if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->loop_filter_mode = 1;
-        else  if (picture_control_set_ptr->enc_mode >= ENC_M1)
-            picture_control_set_ptr->loop_filter_mode = 3;
-        else  if (picture_control_set_ptr->enc_mode == ENC_M0)
+        else
             picture_control_set_ptr->loop_filter_mode = 3;
     }
     else {
