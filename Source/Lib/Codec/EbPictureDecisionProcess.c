@@ -822,19 +822,22 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->slice_type == I_SLICE) 
          picture_control_set_ptr->intra_pred_mode = 4;
     else {
-        if (picture_control_set_ptr->enc_mode  <= ENC_M1) 
+        if (picture_control_set_ptr->enc_mode  == ENC_M0) 
             picture_control_set_ptr->intra_pred_mode = 4;
-
-        else if (picture_control_set_ptr->enc_mode == ENC_M2) 
-            picture_control_set_ptr->intra_pred_mode = 3;
-
-        else 
-            picture_control_set_ptr->intra_pred_mode = 1;  
+        else if (picture_control_set_ptr->enc_mode <= ENC_M4) 
+            if (picture_control_set_ptr->temporal_layer_index == 0)
+                picture_control_set_ptr->intra_pred_mode = 3;
+            else
+                picture_control_set_ptr->intra_pred_mode = 0;
+        else
+            if (picture_control_set_ptr->temporal_layer_index == 0)
+                picture_control_set_ptr->intra_pred_mode = 1;
+            else
+                picture_control_set_ptr->intra_pred_mode = 0;
     } 
     
     if (MR_MODE)
         picture_control_set_ptr->intra_pred_mode = 4;
-
 
 #else
     // Intra prediction mode                       Settings
