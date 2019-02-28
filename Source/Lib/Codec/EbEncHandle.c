@@ -2038,7 +2038,11 @@ void SetParamBasedOnInput(
     derive_input_resolution(
         sequence_control_set_ptr,
         sequence_control_set_ptr->luma_width*sequence_control_set_ptr->luma_height);
+ #if DISABLE_128_SB_FOR_SUB_720
 
+    sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode == ENC_M0 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
+
+#endif
 }
 
 void CopyApiFromApp(
@@ -2056,10 +2060,12 @@ void CopyApiFromApp(
     sequence_control_set_ptr->general_interlaced_source_flag     = 0;
 
     // SB Definitions
+#if !DISABLE_128_SB_FOR_SUB_720
 #if DISABLE_128X128_SB
     sequence_control_set_ptr->static_config.super_block_size = 64;
 #else
     sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode == ENC_M0) ? 128 : 64;
+#endif
 #endif
     sequence_control_set_ptr->static_config.pred_structure         = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
