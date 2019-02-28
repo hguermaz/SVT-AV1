@@ -2323,7 +2323,7 @@ void  inject_intra_candidates(
     (void)sequence_control_set_ptr;
     (void)sb_ptr;
 #if ENABLE_PAETH
-    EbBool is16bit = (sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
+    uint8_t                     is16bit = (sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
 #endif
     uint8_t                     intra_mode_start = DC_PRED;
 #if ENABLE_PAETH
