@@ -40,7 +40,11 @@ extern "C" {
         union {
             struct {
                 unsigned                        me_distortion : 20;
+#if TWO_FAST_LOOP
+                unsigned                        enable_two_fast_loops : 1;
+#else
                 unsigned                        distortion_ready : 1;
+#endif
                 unsigned : 3;
                 unsigned                        intra_luma_mode : 8; // HEVC mode, use pred_mode for AV1
             };

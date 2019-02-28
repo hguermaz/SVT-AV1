@@ -14135,6 +14135,9 @@ extern "C" {
 #endif
         uint8_t                               loop_filter_mode;
         uint8_t                               intra_pred_mode;
+#if TWO_FAST_LOOP
+        uint8_t                               enable_two_fast_loops;
+#endif
         //**********************************************************************************************************//
         FRAME_TYPE                            av1FrameType;
         Av1RpsNode_t                          av1RefSignal;

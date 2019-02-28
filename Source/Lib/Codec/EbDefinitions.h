@@ -167,6 +167,8 @@ extern "C" {
 
 
 #define ENABLE_PAETH                                    1
+#define TWO_FAST_LOOP 		                            1
+#define NEW_INTRA_LEVELS 		                        1
 
 /********************************************************/
 /****************** Pre-defined Values ******************/

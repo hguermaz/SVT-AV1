@@ -817,7 +817,35 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_reduced_set = 0;
 
 #endif
+#if NEW_INTRA_LEVELS
+    // Intra prediction levels                      Settings
+    // 0                                            OFF : disable_angle_prediction
+    // 1                                            OFF per block : disable_angle_prediction for 64/32/4
+    // 2                                            LIGHT: disable_z2_prediction && disable_angle_refinement
+    // 3                                            LIGHT per block : disable_z2_prediction && disable_angle_refinement  for 64/32/4
+    // 4                                            FULL  
 
+    if (picture_control_set_ptr->slice_type == I_SLICE) 
+         picture_control_set_ptr->intra_pred_mode = 4;
+    else {
+        if (picture_control_set_ptr->enc_mode  <= ENC_M1) 
+            picture_control_set_ptr->intra_pred_mode = 4;
+
+        else if (picture_control_set_ptr->enc_mode == ENC_M2) 
+            picture_control_set_ptr->intra_pred_mode = 3;
+        
+        else if (picture_control_set_ptr->enc_mode <= ENC_M4) 
+            picture_control_set_ptr->intra_pred_mode = 2;  
+        
+        else 
+            picture_control_set_ptr->intra_pred_mode = 1;  
+    } 
+    
+    if (MR_MODE)
+        picture_control_set_ptr->intra_pred_mode = 4;
+
+
+#else
     // Intra prediction mode                       Settings
     // 0                                            OFF : disable_angle_prediction
     // 1                                            OFF per block : disable_angle_prediction for 64/32/4
@@ -830,7 +858,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // Intra prediction levels                      Settings
     // 0                                            OFF : disable_angle_prediction
     // 1                                            Disable_angle_prediction for 64/32/4 (mode 1) @ BASE AND OFF (mode 0) Otherwise
-    // 2                                            Disable_z2_prediction && disable_angle_refinementÂ for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
+    // 2                                            Disable_z2_prediction && disable_angle_refinement for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
     // 3                                            Full (mode 4) @ BASE AND Disable_z2_prediction && disable_angle_refinement (mode 2) Otherwise
     // 4                                            FULL 
 
@@ -866,9 +894,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         intra_pred_level = 4;
     }
 
-    if (picture_control_set_ptr->slice_type == I_SLICE) 
-         picture_control_set_ptr->intra_pred_mode = 4;
-    else {
+
         if (intra_pred_level == 4) {
             picture_control_set_ptr->intra_pred_mode = 4;
 
@@ -891,7 +917,24 @@ EbErrorType signal_derivation_multi_processes_oq(
             else
                 picture_control_set_ptr->intra_pred_mode = 0;
         }
-    }
+#endif
+
+#if TWO_FAST_LOOP
+		// Intra candidates are procsssed in a first fast loop , the best is injected into the second fast loop with Inter candidates.  
+        // two fast loops                       Settings
+        // 0                                    OFF : disable_angle_prediction
+        // 1                                    ON
+        if (picture_control_set_ptr->slice_type == I_SLICE) 
+            picture_control_set_ptr->enable_two_fast_loops = 0;
+        else {
+            if (picture_control_set_ptr->enc_mode <= ENC_M1) 
+                picture_control_set_ptr->enable_two_fast_loops = 1;
+            
+            else 
+                picture_control_set_ptr->enable_two_fast_loops = 0;
+            
+        }
+#endif
     return return_error;
 }
 
