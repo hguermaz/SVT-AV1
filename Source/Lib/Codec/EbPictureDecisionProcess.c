@@ -917,14 +917,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         // 1                                    ON
         if (picture_control_set_ptr->slice_type == I_SLICE) 
             picture_control_set_ptr->enable_two_fast_loops = 0;
-        else {
-            if (picture_control_set_ptr->enc_mode <= ENC_M1) 
-                picture_control_set_ptr->enable_two_fast_loops = 1;
-            
-            else 
-                picture_control_set_ptr->enable_two_fast_loops = 0;
-            
-        }
+        else 
+            picture_control_set_ptr->enable_two_fast_loops = 1;
+          
 #endif
     return return_error;
 }

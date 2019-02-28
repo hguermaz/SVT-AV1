@@ -49,7 +49,7 @@ extern "C" {
 #define NEW_PRED_STRUCT                                 1 // Ability to run 5-layer prediction structure. By Default 5L is used
 #define TILES                                           1
 
-#define INTRA_CORE_OPT                                  1
+#define INTRA_CORE_OPT                                  0
 #define ENABLE_INTRA_4x4                                1 //
 #define DISABLE_NSQ                                     1 //
 #define DISABLE_128X128_SB                              0
@@ -106,7 +106,7 @@ extern "C" {
 
 // NEW MACOS
 #define INTRINSIC_OPT_2                                 1 // Intrinsics opt work phase 2
-#define DIS_EDGE_FIL                                    1 // disable intra edge filter - to be removed after fixing the neigbor array for intra 4xN and Nx4
+#define DIS_EDGE_FIL                                    0 // disable intra edge filter - to be removed after fixing the neigbor array for intra 4xN and Nx4
 #define DISABLE_INTRA_PRED_INTRINSIC                    0 // To be used to switch between intrinsic and C code for intra-pred
 #define USE_INLOOP_ME_FULL_SAD                          0 // To switch between full SAD and subsampled-SAD for in-loop-me subpel.
 #define NO_SUBPEL_FOR_128X128                           1 // Intrinsic is not available for 128x128 Subpel
@@ -169,6 +169,10 @@ extern "C" {
 #define ENABLE_PAETH                                    1
 #define TWO_FAST_LOOP 		                            1
 #define NEW_INTRA_LEVELS 		                        1
+
+#define ENABLE_EOB_ZERO_CHECK                           1
+
+#define DISABLE_128_SB_FOR_SUB_720 		                1
 
 /********************************************************/
 /****************** Pre-defined Values ******************/
