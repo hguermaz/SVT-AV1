@@ -34,9 +34,7 @@
 
 #define WTH 64
 #define OTH 64
-#if TUNED_SETTINGS_FOR_M0
 #define FC_SKIP_TX_SR_TH025                     125 // Fast cost skip tx search threshold.
-#endif
 #define FC_SKIP_TX_SR_TH010                     110 // Fast cost skip tx search threshold.
  /************************************************
   * Picture Analysis Context Constructor
@@ -639,24 +637,20 @@ EbErrorType signal_derivation_multi_processes_oq(
     //  PIC_SQ_NON4_DEPTH_MODE               ONLY sq: SB size -> 8x8  (No 4x4)
 
     if (picture_control_set_ptr->enc_mode == ENC_M0)
-#if M05_AS_M0
-        picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
-#else
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
-#endif
-    else if (picture_control_set_ptr->enc_mode <= ENC_M2) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M1)
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
-    }
-    else if (picture_control_set_ptr->enc_mode <= ENC_M3) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M2)
+        picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M3){
         if (picture_control_set_ptr->slice_type == I_SLICE)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
         else
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
-    else if (picture_control_set_ptr->enc_mode <= ENC_M5) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
-    }
     else {
         if (picture_control_set_ptr->slice_type == I_SLICE)
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
@@ -667,9 +661,8 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
 #endif
-
     picture_control_set_ptr->max_number_of_pus_per_sb = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
-#if NSQ_SEARCH_LEVELS
+
     // NSQ search Level                               Settings
     // 0                                              OFF
     // 1                                              Allow only NSQ Intra-FULL if parent SQ is intra-coded and vice versa.
@@ -688,34 +681,15 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->pic_depth_mode > PIC_SQ_DEPTH_MODE) {
         assert(picture_control_set_ptr->nsq_search_level != NSQ_SEARCH_OFF);
     }
-#endif
-#if INTERPOLATION_SEARCH_LEVELS
     // Interpolation search Level                     Settings
     // 0                                              OFF
     // 1                                              Interpolation search at inter-depth
     // 2                                              Interpolation search at full loop
     // 3                                              Interpolation search at fast loop
-    if (picture_control_set_ptr->enc_mode == ENC_M0) {
-#if M05_AS_M0
-        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
-#else
-        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#endif
-    }
-    else {
-        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
-    }
-#else
-    // Interpolation filter search Level MD         Settings
-    // 0                                            OFF
-    // 1                                            FAST
-    // 2                                            ON
     if (picture_control_set_ptr->enc_mode == ENC_M0)
-        picture_control_set_ptr->interpolation_filter_search_mode = 1;
+        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
     else
-        picture_control_set_ptr->interpolation_filter_search_mode = 0;
-
-#endif
+        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
 
     // Loop filter Level                            Settings
     // 0                                            OFF
@@ -782,42 +756,30 @@ EbErrorType signal_derivation_multi_processes_oq(
         cm->wn_filter_mode = 0;
 #endif
 
-#if TX_SEARCH_LEVELS
     // Tx_search Level                                Settings
     // 0                                              OFF
     // 1                                              Tx search at encdec
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
-
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
     else
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
-#if TUNED_SETTINGS_FOR_M0
     if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M3)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
-    else
-#endif
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
+    else if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
     else
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
 
     // Set tx search reduced set falg (0: full tx set; 1: reduced tx set)
-    if (picture_control_set_ptr->enc_mode <= ENC_M3) {
+    if (picture_control_set_ptr->enc_mode <= ENC_M3 || picture_control_set_ptr->enc_mode >= ENC_M6)
         picture_control_set_ptr->tx_search_reduced_set = 0;
-    }
-    else {
+    else
         picture_control_set_ptr->tx_search_reduced_set = 1;
-    }
 
-    if (picture_control_set_ptr->enc_mode >= ENC_M6) // enc-dec tx
-        picture_control_set_ptr->tx_search_reduced_set = 0;
-
-#endif
-#if NEW_INTRA_LEVELS
     // Intra prediction levels                      Settings
     // 0                                            OFF : disable_angle_prediction
     // 1                                            OFF per block : disable_angle_prediction for 64/32/4
@@ -828,7 +790,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->slice_type == I_SLICE) 
          picture_control_set_ptr->intra_pred_mode = 4;
     else {
-        if (picture_control_set_ptr->enc_mode  == ENC_M0) 
+        if (picture_control_set_ptr->enc_mode  <= ENC_M1) 
             picture_control_set_ptr->intra_pred_mode = 4;
         else if (picture_control_set_ptr->enc_mode <= ENC_M5) 
             if (picture_control_set_ptr->temporal_layer_index == 0)
@@ -845,79 +807,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (MR_MODE)
         picture_control_set_ptr->intra_pred_mode = 4;
 
-#else
-    // Intra prediction mode                       Settings
-    // 0                                            OFF : disable_angle_prediction
-    // 1                                            OFF per block : disable_angle_prediction for 64/32/4
-    // 2                                            LIGHT: disable_z2_prediction && disable_angle_refinement
-    // 3                                            LIGHT per block : disable_z2_prediction && disable_angle_refinement  for 64/32/4
-    // 4                                            FULL  
-
-    // The intra prediction level is a combination of the intra prediction modes.
-
-    // Intra prediction levels                      Settings
-    // 0                                            OFF : disable_angle_prediction
-    // 1                                            Disable_angle_prediction for 64/32/4 (mode 1) @ BASE AND OFF (mode 0) Otherwise
-    // 2                                            Disable_z2_prediction && disable_angle_refinement for 64/32/4 (mode 3) @ BASE AND OFF (mode 0) Otherwise
-    // 3                                            Full (mode 4) @ BASE AND Disable_z2_prediction && disable_angle_refinement (mode 2) Otherwise
-    // 4                                            FULL 
-
-    uint8_t intra_pred_level = 4;
-
-    switch (picture_control_set_ptr->enc_mode) {
-    case 0:
-        intra_pred_level = 3; //ENC_M0
-        break;
-    case 1:
-        intra_pred_level = 2; //ENC_M1
-        break;
-    case 2:
-        intra_pred_level = 2; //ENC_M2
-        break;
-    case 3:
-        intra_pred_level = 2; //ENC_M3
-        break;
-    case 4:
-        intra_pred_level = 2; //ENC_M4
-        break;
-    case 5:
-        intra_pred_level = 1; //ENC_M5
-        break;
-    case 6:
-        intra_pred_level = 1; //ENC_M6
-        break;
-    default:
-        intra_pred_level = 1; //> ENC_M6
-        break;
-
-    if (MR_MODE)
-        intra_pred_level = 4;
-    }
-
-
-        if (intra_pred_level == 4) {
-            picture_control_set_ptr->intra_pred_mode = 4;
-
-        }
-        else if (intra_pred_level == 3) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                picture_control_set_ptr->intra_pred_mode = 4;
-            else
-                picture_control_set_ptr->intra_pred_mode = 2;
-        }
-        else if (intra_pred_level == 2) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                picture_control_set_ptr->intra_pred_mode = 3;
-            else
-                picture_control_set_ptr->intra_pred_mode = 0;
-        }
-        else if (intra_pred_level == 1) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                picture_control_set_ptr->intra_pred_mode = 1;
-            else
-                picture_control_set_ptr->intra_pred_mode = 0;
-        }
-#endif
 
 #if TWO_FAST_LOOP
 		// Intra candidates are procsssed in a first fast loop , the best is injected into the second fast loop with Inter candidates.  

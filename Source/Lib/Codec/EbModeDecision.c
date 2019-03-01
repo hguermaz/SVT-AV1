@@ -454,12 +454,9 @@ EbErrorType PreModeDecision(
     uint8_t                          *sorted_candidate_index_array,
 #endif
     uint8_t                          *disable_merge_index,
-#if TX_SEARCH_LEVELS
     uint64_t                         *ref_fast_cost,
-#endif
-    EbBool                           same_fast_full_candidate
-)
-{
+    EbBool                           same_fast_full_candidate){
+
     UNUSED(cu_ptr);
     EbErrorType return_error = EB_ErrorNone;
     uint32_t fullCandidateIndex;
@@ -516,13 +513,11 @@ EbErrorType PreModeDecision(
             }
         }
     }
-#if TX_SEARCH_LEVELS
     for (i = 0; i < fullReconCandidateCount; i++) {
         if (*(buffer_ptr_array[i]->fast_cost_ptr) < *ref_fast_cost) {
             *ref_fast_cost = *(buffer_ptr_array[i]->fast_cost_ptr);
         }
     }
-#endif
 #if USED_NFL_FEATURE_BASED
     for (i = 0; i < MAX_NFL; ++i) {
         sorted_candidate_index_array[i] = best_candidate_index_array[i];
@@ -1657,8 +1652,6 @@ void  inject_inter_candidates(
     uint32_t close_loop_me_index = use_close_loop_me ? get_in_loop_me_info_index(MAX_SS_ME_PU_COUNT, sequence_control_set_ptr->sb_size == BLOCK_128X128 ? 1 : 0, context_ptr->blk_geom) : 0;
     EbBool allow_bipred = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
     IntMv  bestPredmv[2] = { {0}, {0} };
-
-#if NSQ_SEARCH_LEVELS
     uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
     uint8_t inject_newmv_candidate = 1;
     if (picture_control_set_ptr->parent_pcs_ptr->nsq_search_level == NSQ_INTER_SEARCH_BASE_ON_SQ_MVMODE) {
@@ -1670,7 +1663,6 @@ void  inject_inter_candidates(
         inject_newmv_candidate = context_ptr->blk_geom->shape == PART_N ? 1 :
             context_ptr->parent_sq_has_coeff[sq_index] != 0 ? inject_newmv_candidate : 0;
     }
-#endif
 
     generate_av1_mvp_table(
 #if TILES
@@ -1707,9 +1699,7 @@ void  inject_inter_candidates(
         allow_bipred,
         &canTotalCnt);
 
-#if NSQ_SEARCH_LEVELS
     if (inject_newmv_candidate) {
-#endif
         /**************
             NEWMV L0
         ************* */
@@ -2011,11 +2001,8 @@ void  inject_inter_candidates(
             }
 #endif
         }
-
 #endif
-#if NSQ_SEARCH_LEVELS
     }
-#endif
     /**************
      GLOBALMV L0
     ************* */
@@ -2142,8 +2129,8 @@ void  inject_inter_candidates(
         has_overlappable_candidates(context_ptr->cu_ptr) &&
         context_ptr->blk_geom->bwidth >= 8 &&
         context_ptr->blk_geom->bheight >= 8 &&
-        picture_control_set_ptr->enc_mode <= ENC_M0)
-    {
+        picture_control_set_ptr->enc_mode <= ENC_M1){
+
         inject_warped_motion_candidates(
             picture_control_set_ptr,
             context_ptr,
@@ -2155,18 +2142,14 @@ void  inject_inter_candidates(
             close_loop_me_index);
     }
 
-#if NSQ_SEARCH_LEVELS
     if (inject_newmv_candidate) {
-#endif
         if (allow_bipred) {
 
 #if IMPROVED_BIPRED_INJECTION
             //----------------------
             // Bipred2Nx2N
             //----------------------
-            if (picture_control_set_ptr->enc_mode == ENC_M0)
-
-
+            if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 if (picture_control_set_ptr->slice_type == B_SLICE)
                     Bipred3x3CandidatesInjection(
                         picture_control_set_ptr,
@@ -2184,8 +2167,7 @@ void  inject_inter_candidates(
             //----------------------
             // Unipred2Nx2N
             //----------------------
-            if (picture_control_set_ptr->enc_mode == ENC_M0)
-
+            if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 if (picture_control_set_ptr->slice_type != I_SLICE)
                     Unipred3x3CandidatesInjection(
                         picture_control_set_ptr,
@@ -2199,9 +2181,7 @@ void  inject_inter_candidates(
                         &canTotalCnt);
 #endif
         }
-#if NSQ_SEARCH_LEVELS
     }
-#endif
     // update the total number of candidates injected
     (*candidateTotalCnt) = canTotalCnt;
 
@@ -2384,13 +2364,11 @@ void  inject_intra_candidates(
     disable_angle_prediction    = 0;
 #endif
     angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
-#if NSQ_SEARCH_LEVELS
     uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
     if (picture_control_set_ptr->parent_pcs_ptr->nsq_search_level == NSQ_INTER_SEARCH_BASE_ON_SQ_INTRAMODE) {
         disable_z2_prediction = context_ptr->blk_geom->shape == PART_N ? disable_z2_prediction :
             context_ptr->parent_sq_type[sq_index] == INTRA_MODE ? disable_z2_prediction : 0;
     }
-#endif
 #if TWO_FAST_LOOP 
     uint8_t enable_two_fast_loops = picture_control_set_ptr->parent_pcs_ptr->enable_two_fast_loops && (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N);          
 #endif
@@ -2572,7 +2550,6 @@ EbErrorType ProductGenerateMdCandidatesCu(
         context_ptr,
         &canTotalCnt);
 
-#if NSQ_SEARCH_LEVELS
     uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
     uint8_t inject_intra_candidate = 1;
     uint8_t inject_inter_candidate = 1;
@@ -2589,36 +2566,31 @@ EbErrorType ProductGenerateMdCandidatesCu(
                 context_ptr->parent_sq_has_coeff[sq_index] != 0 ? inject_intra_candidate : 0;
         }
 }
-#endif
     //----------------------
     // Intra
     if (context_ptr->blk_geom->sq_size < 128)
 #if    ENABLE_INTER_4x4
         if (context_ptr->blk_geom->bwidth != 4 && context_ptr->blk_geom->bheight != 4)
 #endif
-#if NSQ_SEARCH_LEVELS
             if (inject_intra_candidate)
-#endif
-            inject_intra_candidates(
-                picture_control_set_ptr,
-                context_ptr,
-                sequence_control_set_ptr,
-                sb_ptr,
-                &canTotalCnt,
-                leaf_index);
-
-    if (slice_type != I_SLICE) {
-#if NSQ_SEARCH_LEVELS
-            if (inject_inter_candidate)
-#endif
-                inject_inter_candidates(
+                inject_intra_candidates(
                     picture_control_set_ptr,
                     context_ptr,
-                    ss_mecontext,
                     sequence_control_set_ptr,
                     sb_ptr,
                     &canTotalCnt,
                     leaf_index);
+
+    if (slice_type != I_SLICE) {
+        if (inject_inter_candidate)
+            inject_inter_candidates(
+                picture_control_set_ptr,
+                context_ptr,
+                ss_mecontext,
+                sequence_control_set_ptr,
+                sb_ptr,
+                &canTotalCnt,
+                leaf_index);
     }
 
     // Set BufferTotalCount: determines the number of candidates to fully reconstruct

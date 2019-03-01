@@ -30,9 +30,7 @@
 #include "EbMotionEstimation.h"
 #include "EbAvcStyleMcp.h"
 #include "aom_dsp_rtcd.h"
-#if TX_SEARCH_LEVELS
 #include "EbCodingLoop.h"
-#endif
 
 #define TH_NFL_BIAS             7
 extern void av1_predict_intra_block_md(
@@ -1228,9 +1226,7 @@ void ProductMdFastPuPrediction(
     enableSubPelFlag = 2;
 #endif
     // Prediction
-#if INTERPOLATION_SEARCH_LEVELS
     context_ptr->skip_interpolation_search = picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FAST_LOOP ? 0 : 1;
-#endif
     candidateBuffer->candidate_ptr->prediction_is_ready_luma = EB_TRUE;
     candidateBuffer->candidate_ptr->interp_filters = 0;
 
@@ -2174,7 +2170,6 @@ static void CflPrediction(
         candidateBuffer->candidate_ptr->intra_chroma_mode = UV_DC_PRED;
     }
 }
-#if TX_SEARCH_LEVELS
 uint8_t get_skip_tx_search_flag(
     int32_t                  sq_size,
     uint64_t                 ref_fast_cost,
@@ -2188,7 +2183,6 @@ uint8_t get_skip_tx_search_flag(
 
     return tx_search_skip_fag;
 }
-#endif
 
 void AV1PerformFullLoop(
     PictureControlSet_t     *picture_control_set_ptr,
@@ -2201,9 +2195,7 @@ void AV1PerformFullLoop(
     uint32_t                 cuOriginIndex,
     uint32_t                 cuChromaOriginIndex,
     uint32_t                 fullCandidateTotalCount,
-#if TX_SEARCH_LEVELS
     uint64_t                 ref_fast_cost,
-#endif
     EbAsm                    asm_type)
 {
 
@@ -2268,16 +2260,12 @@ void AV1PerformFullLoop(
 #endif
         // Set Skip Flag
         candidate_ptr->skip_flag = EB_FALSE;
-#if INTERPOLATION_SEARCH_LEVELS
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FULL_LOOP) {
             context_ptr->skip_interpolation_search = 0;
 #if USED_NFL_FEATURE_BASED
             context_ptr->skip_interpolation_search = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M3) && (best_fastLoop_candidate_index > NFL_IT_TH) ? 1 : context_ptr->skip_interpolation_search;
 #endif
             if (candidate_ptr->type != INTRA_MODE) {
-#else
-        if (candidate_ptr->prediction_is_ready_luma == EB_FALSE) {
-#endif
 
 #if CHROMA_BLIND
             ProductPredictionFunTable[candidate_ptr->type](
@@ -2294,9 +2282,7 @@ void AV1PerformFullLoop(
                 asm_type);
 #endif                
             }
-#if INTERPOLATION_SEARCH_LEVELS
         }
-#endif
 
         //Y Residual
         ResidualKernel(
@@ -2316,7 +2302,6 @@ void AV1PerformFullLoop(
 #else
         if (context_ptr->blk_geom->has_uv) {
 #endif
-
             ResidualKernel(
                 &(inputPicturePtr->bufferCb[inputCbOriginIndex]),
                 inputPicturePtr->strideCb,
@@ -2345,7 +2330,6 @@ void AV1PerformFullLoop(
         candidate_ptr->u_has_coeff = 0;
         candidate_ptr->v_has_coeff = 0;
 
-#if TX_SEARCH_LEVELS
         uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_FULL_LOOP ? get_skip_tx_search_flag(
             context_ptr->blk_geom->sq_size,
             ref_fast_cost,
@@ -2356,12 +2340,7 @@ void AV1PerformFullLoop(
         tx_search_skip_fag = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M3) && (best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
 #endif
         if (!tx_search_skip_fag){
-#else
-#if TURN_OFF_TX_TYPE_SEARCH
-        if (picture_control_set_ptr->enc_mode <= ENC_M1) {
-            if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
-#endif
-#endif
+
                 ProductFullLoopTxSearch(
                     candidateBuffer,
                     context_ptr,
@@ -2679,7 +2658,6 @@ EbBool allowed_ns_cu(
     return ret;
 }
 
-#if TX_SEARCH_LEVELS
 void init_candidate_buffer(
     ModeDecisionCandidate_t        *candidate_ptr,
     uint32_t                        count_non_zero_coeffs[3][MAX_NUM_OF_TU_PER_CU])
@@ -2994,7 +2972,6 @@ void inter_depth_tx_search(
         } while (txb_itr < tuTotalCount);
     }
 }
-#endif
 void md_encode_block(
     SequenceControlSet_t             *sequence_control_set_ptr,
     PictureControlSet_t              *picture_control_set_ptr,
@@ -3106,10 +3083,8 @@ void md_encode_block(
         // -Input is the buffers
         // -Output is list of buffers for full reconstruction
         uint8_t  disable_merge_index = 0;
-
-#if TX_SEARCH_LEVELS
         uint64_t ref_fast_cost = MAX_MODE_COST;
-#endif
+
         PreModeDecision(
             cu_ptr,
             (secondFastCostSearchCandidateTotalCount == buffer_total_count) ? buffer_total_count : maxBuffers,
@@ -3120,9 +3095,7 @@ void md_encode_block(
             context_ptr->sorted_candidate_index_array,
 #endif
             &disable_merge_index,
-#if TX_SEARCH_LEVELS
             &ref_fast_cost,
-#endif
             (EbBool)(secondFastCostSearchCandidateTotalCount == buffer_total_count)); // The fast loop bug fix is now added to 4K only
 
 
@@ -3137,9 +3110,7 @@ void md_encode_block(
             cuOriginIndex,
             cuChromaOriginIndex,
             MIN(fullCandidateTotalCount, buffer_total_count),
-#if TX_SEARCH_LEVELS
             ref_fast_cost,
-#endif
             asm_type); // fullCandidateTotalCount to number of buffers to process
 
         // Full Mode Decision (choose the best mode)
@@ -3157,7 +3128,6 @@ void md_encode_block(
 
         bestCandidateBuffers[0] = candidateBuffer;
 
-#if INTERPOLATION_SEARCH_LEVELS
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_INTER_DEPTH) {
 
             if (candidateBuffer->candidate_ptr->type != INTRA_MODE && candidateBuffer->candidate_ptr->motion_mode == SIMPLE_TRANSLATION) {
@@ -3180,9 +3150,6 @@ void md_encode_block(
                 cu_ptr->interp_filters = candidateBuffer->candidate_ptr->interp_filters;
             }
         }
-#endif
-
-#if TX_SEARCH_LEVELS
         inter_depth_tx_search(
             picture_control_set_ptr,
             candidateBuffer,
@@ -3191,9 +3158,7 @@ void md_encode_block(
             inputPicturePtr,
             ref_fast_cost,
             asm_type);
-#endif
 
-#if NSQ_SEARCH_LEVELS
         uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
         if (context_ptr->blk_geom->shape == PART_N) {
 
@@ -3205,7 +3170,6 @@ void md_encode_block(
 
             context_ptr->parent_sq_pred_mode[sq_index] = candidateBuffer->candidate_ptr->pred_mode;
         }
-#endif
 
         AV1PerformInverseTransformRecon(
             picture_control_set_ptr,

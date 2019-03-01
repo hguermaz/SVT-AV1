@@ -405,9 +405,7 @@ extern "C" {
         uint8_t                        *sorted_candidate_index_array,
 #endif
         uint8_t                        *disable_merge_index,
-#if TX_SEARCH_LEVELS
         uint64_t                       *ref_fast_cost,
-#endif
         EbBool                          same_fast_full_candidate);
 
     typedef EbErrorType(*EB_INTRA_4x4_FAST_LUMA_COST_FUNC)(
