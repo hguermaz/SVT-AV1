@@ -643,6 +643,33 @@ void md_update_all_neighbour_arrays_multiple(
 // Based on the MDStage and the encodeMode
 // the NFL candidates numbers are set
 //*************************//
+#if ADAPTIVE_DEPTH_PARTITIONING
+void set_nfl(
+    ModeDecisionContext_t     *context_ptr,
+    PictureControlSet_t       *picture_control_set_ptr,
+    LargestCodingUnit_t       *sb_ptr) {
+
+    // Set NFL Candidates
+    // NFL Level MD         Settings
+    // 0                    MAX_NFL 12
+    // 1                    10
+    // 2                    8
+    // 3                    6
+    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_ptr->index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
+        context_ptr->full_recon_search_count = 1;
+    else
+        if (context_ptr->nfl_level == 0)
+            context_ptr->full_recon_search_count = MAX_NFL;
+        else if (context_ptr->nfl_level == 1)
+            context_ptr->full_recon_search_count = 10;
+        else if (context_ptr->nfl_level == 2)
+            context_ptr->full_recon_search_count = 8;
+        else
+            context_ptr->full_recon_search_count = 6;
+
+    ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
+}
+#else
 void set_nfl(
     ModeDecisionContext_t     *context_ptr,
     PictureControlSet_t       *picture_control_set_ptr){
@@ -650,23 +677,19 @@ void set_nfl(
     // Set NFL Candidates
     // NFL Level MD         Settings
     // 0                    MAX_NFL 12
-    // 1                    8
-    // 2                    6
-    // 3                    4
+    // 1                    10
+    // 2                    8
+    // 3                    6
     // 4                    4/3/2
 
     if (context_ptr->nfl_level == 0)
         context_ptr->full_recon_search_count = MAX_NFL;
     else if (context_ptr->nfl_level == 1)
-#if TUNED_SETTINGS_FOR_M1
         context_ptr->full_recon_search_count = 10;
-#else
-        context_ptr->full_recon_search_count = 8;
-#endif
     else if (context_ptr->nfl_level == 2)
-        context_ptr->full_recon_search_count = 6;
+        context_ptr->full_recon_search_count = 8;
     else if (context_ptr->nfl_level == 3)
-        context_ptr->full_recon_search_count = 4;
+        context_ptr->full_recon_search_count = 6;
     else
         context_ptr->full_recon_search_count =
             (picture_control_set_ptr->slice_type == I_SLICE) ? 4 :
@@ -676,7 +699,7 @@ void set_nfl(
         //    context_ptr->full_recon_search_count = 1;
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
-
+#endif
 //*************************//
 // SetNmm
 // Based on the MDStage and the encodeMode
@@ -1289,23 +1312,150 @@ void ProductPerformFastLoop(
             // Set the Candidate Buffer
             candidateBuffer = candidateBufferPtrArrayBase[0];
             ModeDecisionCandidate_t *const candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
+            
+#if TWO_FAST_LOOP 
+            const unsigned enable_two_fast_loops = candidate_ptr->enable_two_fast_loops;
+#else
             const unsigned distortion_ready = candidate_ptr->distortion_ready;
-
-
+#endif
+#if TWO_FAST_LOOP
+            EbPictureBufferDesc_t * const   prediction_ptr = candidateBuffer->prediction_ptr;
+#endif
+#if TWO_FAST_LOOP 
+            if (!!enable_two_fast_loops)
+#else
             // Only check (src - src) candidates (Tier0 candidates)
             if (!!distortion_ready)
+#endif
             {
-                const uint32_t type = candidate_ptr->type;
-
+#if !TWO_FAST_LOOP
                 lumaFastDistortion = candidate_ptr->me_distortion;
+#endif
                 firstFastCandidateTotalCount++;
-                // Visual favor for DC/Planar
-                //if( candidateBuffer->candidate_ptr->type == INTRA_MODE && (candidateBuffer->candidate_ptr->intra_luma_mode == EB_INTRA_PLANAR||candidateBuffer->candidate_ptr->intra_luma_mode == EB_INTRA_DC)){
-                //    lumaFastDistortion = lumaFastDistortion * 90 / 100;
-                //}
 
                 {
                     // Fast Cost Calc
+#if REST_FAST_RATE_EST
+#if TWO_FAST_LOOP        
+                  
+                    candidateBuffer->sub_sampled_pred = EB_FALSE;
+                    candidateBuffer->sub_sampled_pred_chroma = EB_FALSE;
+                    candidate_ptr->prediction_is_ready_luma = EB_FALSE;
+
+                    lumaFastDistortion = 0;
+                    chromaFastDistortion = 0;
+                    // Set the Candidate Buffer
+
+                    ProductMdFastPuPrediction(
+                        picture_control_set_ptr,
+                        candidateBuffer,
+                        context_ptr,
+#if !CHROMA_BLIND
+                        EB_TRUE/*use_chroma_information_in_fast_loop*/,
+#endif
+                        candidate_ptr->type,
+                        candidate_ptr,
+                        fastLoopCandidateIndex,
+                        bestFirstFastCostSearchCandidateIndex,
+                        asm_type);
+
+                    //Distortion
+                    uint8_t * const inputBufferY = input_picture_ptr->buffer_y + inputOriginIndex;
+                    const unsigned inputStrideY = input_picture_ptr->stride_y;
+                    uint8_t * const predBufferY = prediction_ptr->buffer_y + cuOriginIndex;
+                    // Skip distortion computation if the candidate is MPM
+                    
+                    // Y
+                    lumaFastDistortion += (NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 3](
+                        inputBufferY,
+                        inputStrideY << candidateBuffer->sub_sampled_pred,
+                        predBufferY,
+                        prediction_ptr->stride_y,
+                        bheight >> candidateBuffer->sub_sampled_pred,
+                        bwidth)) << candidateBuffer->sub_sampled_pred;
+
+#if CHROMA_BLIND
+                    if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
+#else
+                    // Cb
+                    if (context_ptr->blk_geom->has_uv) {
+#endif
+
+                        uint8_t * const inputBufferCb = input_picture_ptr->bufferCb + inputCbOriginIndex;
+                        uint8_t *  const predBufferCb = candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex;
+
+                        chromaFastDistortion += NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 4](
+                            inputBufferCb,
+                            input_picture_ptr->strideCb << candidateBuffer->sub_sampled_pred_chroma,
+                            predBufferCb,
+                            prediction_ptr->strideCb,
+                            bheight_uv >> candidateBuffer->sub_sampled_pred_chroma,
+                            bwidth_uv) << candidateBuffer->sub_sampled_pred_chroma;
+
+
+                        uint8_t * const inputBufferCr = input_picture_ptr->bufferCr + inputCrOriginIndex;
+                        uint8_t * const predBufferCr = candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex;
+
+                        chromaFastDistortion += NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 4](
+                            inputBufferCr,
+                            input_picture_ptr->strideCb << candidateBuffer->sub_sampled_pred_chroma,
+                            predBufferCr,
+                            prediction_ptr->strideCr,
+                            bheight_uv >> candidateBuffer->sub_sampled_pred_chroma,
+                            bwidth_uv) << candidateBuffer->sub_sampled_pred_chroma;
+
+                    }
+                    
+
+                    if (picture_control_set_ptr->parent_pcs_ptr->cmplx_status_sb[sb_ptr->index] == CMPLX_NOISE) {
+
+                        if (bsize == BLOCK_64X64 && candidate_ptr->type == INTER_MODE) { // Nader - to be reviewed for 128x128 sb
+
+                            uint32_t  predDirection = (uint32_t)candidate_ptr->prediction_direction[0];
+                            EbBool list0ZZ = (predDirection & 1) ? EB_TRUE : (EbBool)(candidate_ptr->motionVector_x_L0 == 0 && candidate_ptr->motionVector_y_L0 == 0);
+                            EbBool list1ZZ = (predDirection > 0) ? (EbBool)(candidate_ptr->motionVector_x_L1 == 0 && candidate_ptr->motionVector_y_L1 == 0) : EB_TRUE;
+
+                            isCandzz = (list0ZZ && list1ZZ) ? 1 : 0;
+                            chromaFastDistortion = isCandzz ? chromaFastDistortion >> 2 : chromaFastDistortion;
+                        }
+
+                    }
+                    
+                    // Fast Cost Calc
+                *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type] (
+                    cu_ptr, 
+                    candidateBuffer->candidate_ptr,
+                    cu_ptr->qp,
+                    lumaFastDistortion,
+                    chromaFastDistortion,
+                    context_ptr->fast_lambda,
+                    picture_control_set_ptr,
+                    &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidate_ptr->ref_frame_type][0]),
+                    context_ptr->blk_geom,
+                    context_ptr->cu_origin_y >> MI_SIZE_LOG2,
+                    context_ptr->cu_origin_x >> MI_SIZE_LOG2,
+                    context_ptr->intra_luma_left_mode,
+                    context_ptr->intra_luma_top_mode);
+
+
+#else
+                    *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[type](
+                        cu_ptr,
+                        candidateBuffer->candidate_ptr,
+                        cu_ptr->qp,
+                        lumaFastDistortion,
+                        0,
+                        context_ptr->fast_lambda,
+                        picture_control_set_ptr,
+                        &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidate_ptr->ref_frame_type][0]),
+                        context_ptr->blk_geom,
+                        context_ptr->cu_origin_y >> MI_SIZE_LOG2,
+                        context_ptr->cu_origin_x >> MI_SIZE_LOG2,
+                        context_ptr->intra_luma_left_mode,
+                        context_ptr->intra_luma_top_mode);
+#endif
+
+#else
                     Av1ProductFastCostFuncTable[type](
                         context_ptr,
                         cu_ptr,
@@ -1315,6 +1465,7 @@ void ProductPerformFastLoop(
                         0,
                         context_ptr->fast_lambda,
                         picture_control_set_ptr);
+#endif
 
                     // Keep track of the candidate index of the best  (src - src) candidate
                     if (*(candidateBuffer->fast_cost_ptr) <= bestFirstFastCostSearchCandidateCost) {
@@ -1338,7 +1489,12 @@ void ProductPerformFastLoop(
     {
         candidateBuffer = candidateBufferPtrArrayBase[highestCostIndex];
         ModeDecisionCandidate_t *const  candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
+                  
+#if TWO_FAST_LOOP 
+        const unsigned                  enable_two_fast_loops = candidate_ptr->enable_two_fast_loops;
+#else
         const unsigned                  distortion_ready = candidate_ptr->distortion_ready;
+#endif
         EbPictureBufferDesc_t * const   prediction_ptr = candidateBuffer->prediction_ptr;
 
         {
@@ -1349,8 +1505,12 @@ void ProductPerformFastLoop(
 
         candidate_ptr->prediction_is_ready_luma = EB_FALSE;
 
-
+                 
+#if TWO_FAST_LOOP 
+        if ((!enable_two_fast_loops) || fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex) {
+#else
         if ((!distortion_ready) || fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex) {
+#endif
 #if !CHROMA_BLIND
             context_ptr->round_mv_to_integer = (candidate_ptr->merge_flag == EB_TRUE) ?
 
@@ -1380,11 +1540,14 @@ void ProductPerformFastLoop(
             uint8_t * const inputBufferY = input_picture_ptr->buffer_y + inputOriginIndex;
             const unsigned inputStrideY = input_picture_ptr->stride_y;
             uint8_t * const predBufferY = prediction_ptr->buffer_y + cuOriginIndex;
+#if !TWO_FAST_LOOP 
+
             // Skip distortion computation if the candidate is MPM
             if (candidateBuffer->candidate_ptr->mpm_flag == EB_FALSE) {
                 if (fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex && candidate_ptr->type == INTRA_MODE)
                     lumaFastDistortion = candidate_ptr->me_distortion;
                 else {
+#endif
                     // Y
                     lumaFastDistortion += (NxMSadKernelSubSampled_funcPtrArray[asm_type][bwidth >> 3](
                         inputBufferY,
@@ -1393,7 +1556,9 @@ void ProductPerformFastLoop(
                         prediction_ptr->stride_y,
                         bheight >> candidateBuffer->sub_sampled_pred,
                         bwidth)) << candidateBuffer->sub_sampled_pred;
+#if !TWO_FAST_LOOP 
                 }
+#endif
 #if CHROMA_BLIND
                 if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
 #else
@@ -1425,8 +1590,9 @@ void ProductPerformFastLoop(
                         bwidth_uv) << candidateBuffer->sub_sampled_pred_chroma;
 
                 }
+#if !TWO_FAST_LOOP 
             }
-
+#endif
             if (picture_control_set_ptr->parent_pcs_ptr->cmplx_status_sb[lcuAddr] == CMPLX_NOISE) {
 
                 if (bsize == BLOCK_64X64 && candidate_ptr->type == INTER_MODE) { // Nader - to be reviewed for 128x128 sb
@@ -1442,6 +1608,22 @@ void ProductPerformFastLoop(
             }
 
             // Fast Cost Calc
+#if REST_FAST_RATE_EST
+            *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type] (
+                cu_ptr, 
+                candidateBuffer->candidate_ptr,
+                cu_ptr->qp,
+                lumaFastDistortion,
+                chromaFastDistortion,
+                context_ptr->fast_lambda,
+                picture_control_set_ptr,
+                &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidate_ptr->ref_frame_type][0]),
+                context_ptr->blk_geom,
+                context_ptr->cu_origin_y >> MI_SIZE_LOG2,
+                context_ptr->cu_origin_x >> MI_SIZE_LOG2,
+                context_ptr->intra_luma_left_mode,
+                context_ptr->intra_luma_top_mode);
+#else
             Av1ProductFastCostFuncTable[candidate_ptr->type](
                 context_ptr,
                 cu_ptr,
@@ -1451,6 +1633,8 @@ void ProductPerformFastLoop(
                 chromaFastDistortion,
                 context_ptr->fast_lambda,
                 picture_control_set_ptr);
+#endif
+
             (*secondFastCostSearchCandidateTotalCount)++;
         }
 
@@ -1506,57 +1690,10 @@ void ProductConfigureChroma(
 void ProductDerivePartialFrequencyN2Flag(
     SequenceControlSet_t               *sequence_control_set_ptr,
     PictureControlSet_t                *picture_control_set_ptr,
-    ModeDecisionContext_t              *context_ptr)
-{
-#if ENCODER_MODE_CLEANUP
-    context_ptr->pf_md_mode = PF_OFF;
+    ModeDecisionContext_t              *context_ptr){
+
     UNUSED(sequence_control_set_ptr);
     UNUSED(picture_control_set_ptr);
-#else
-    if (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE)
-    {
-        if (picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M2)
-        {
-            context_ptr->pf_md_mode = (picture_control_set_ptr->temporal_layer_index > 0) ? PF_N2 : PF_OFF;
-        }
-
-        else if (picture_control_set_ptr->parent_pcs_ptr->enc_mode >= ENC_M3 && picture_control_set_ptr->parent_pcs_ptr->enc_mode < ENC_M6)
-        {
-            context_ptr->pf_md_mode = (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE) ? PF_N2 : (context_ptr->blk_geom->bwidth <= 8 && context_ptr->blk_geom->bheight <= 8) ? PF_N2 : PF_N4;
-        }
-        else if (picture_control_set_ptr->parent_pcs_ptr->enc_mode >= ENC_M6)
-
-        {
-
-            if ((picture_control_set_ptr->slice_type == I_SLICE) || (picture_control_set_ptr->parent_pcs_ptr->uncovered_area_sb_flag[context_ptr->sb_ptr->index])) {
-                context_ptr->pf_md_mode = PF_OFF;
-            }
-
-            else if (((picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE) && (picture_control_set_ptr->parent_pcs_ptr->edge_results_ptr[context_ptr->sb_ptr->index].edge_block_num > 0)) || (context_ptr->blk_geom->bwidth <= 8 && context_ptr->blk_geom->bheight <= 8)) {
-                context_ptr->pf_md_mode = PF_N2;
-            }
-
-            else
-                context_ptr->pf_md_mode = PF_N4;
-
-        }
-        else
-            context_ptr->pf_md_mode = PF_OFF;
-
-    }
-    else
-    {
-        if (picture_control_set_ptr->parent_pcs_ptr->enc_mode <= ENC_M3 && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE)
-            context_ptr->pf_md_mode = PF_N2;
-        else if (picture_control_set_ptr->parent_pcs_ptr->enc_mode < ENC_M6 && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE)
-            context_ptr->pf_md_mode = (context_ptr->blk_geom->bwidth <= 16 && context_ptr->blk_geom->bheight <= 16) ? PF_N2 : PF_N4;
-        else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE)
-            context_ptr->pf_md_mode = (context_ptr->blk_geom->bwidth <= 8 && context_ptr->blk_geom->bheight <= 8) ? PF_N2 : PF_N4;
-        else
-            context_ptr->pf_md_mode = PF_OFF;
-
-    }
-#endif
     context_ptr->pf_md_mode = PF_OFF;
 
 
@@ -2101,6 +2238,10 @@ void AV1PerformFullLoop(
 
         candidateIndex = context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
 
+#if USED_NFL_FEATURE_BASED
+        uint8_t best_fastLoop_candidate_index = context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex];
+#endif
+
         // initialize TU Split
         y_full_distortion[DIST_CALC_RESIDUAL] = 0;
         y_full_distortion[DIST_CALC_PREDICTION] = 0;
@@ -2132,7 +2273,9 @@ void AV1PerformFullLoop(
 #if INTERPOLATION_SEARCH_LEVELS
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FULL_LOOP) {
             context_ptr->skip_interpolation_search = 0;
-
+#if USED_NFL_FEATURE_BASED
+            context_ptr->skip_interpolation_search = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M2) && (best_fastLoop_candidate_index > NFL_IT_TH) ? 1 : context_ptr->skip_interpolation_search;
+#endif
             if (candidate_ptr->type != INTRA_MODE) {
 #else
         if (candidate_ptr->prediction_is_ready_luma == EB_FALSE) {
@@ -2212,13 +2355,15 @@ void AV1PerformFullLoop(
             *candidateBuffer->fast_cost_ptr,
             picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
 
+#if USED_NFL_FEATURE_BASED
+        tx_search_skip_fag = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M2) && (best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
+#endif
+
         if (!tx_search_skip_fag){
 #else
 
 #if TURN_OFF_TX_TYPE_SEARCH
-#if ENCODER_MODE_CLEANUP
         if (picture_control_set_ptr->enc_mode <= ENC_M1) {
-#endif
             if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
 #endif
 #endif
@@ -2235,9 +2380,7 @@ void AV1PerformFullLoop(
 
             //re-init
             candidate_ptr->y_has_coeff = 0;
-#if ENCODER_MODE_CLEANUP
         }
-#endif
 
         ProductFullLoop(
             candidateBuffer,
@@ -2392,11 +2535,7 @@ void AV1PerformFullLoop(
 
 
 #if SHUT_CBF_FL_SKIP
-#if ENCODER_MODE_CLEANUP
         if(0)
-#else
-        if (/*sequence_control_set_ptr->static_config.tune == TUNE_VQ ||*/ picture_control_set_ptr->enc_mode > ENC_M1)
-#endif
 #endif
             if (picture_control_set_ptr->slice_type != I_SLICE) {
                 if (candidate_ptr->type == INTER_MODE) {
@@ -2896,11 +3035,7 @@ void md_encode_block(
 
     if (allowed_ns_cu(
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
-#if ENCODER_MODE_CLEANUP
         context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#else
-        context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#endif
 #else
         context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
 #endif
@@ -2926,10 +3061,16 @@ void md_encode_block(
             context_ptr->leaf_depth_neighbor_array,
             context_ptr->leaf_partition_neighbor_array);
 
+#if ADAPTIVE_DEPTH_PARTITIONING
+        set_nfl(
+            context_ptr,
+            picture_control_set_ptr,
+            context_ptr->sb_ptr);
+#else
         set_nfl(
             context_ptr,
             picture_control_set_ptr);
-
+#endif
         ProductGenerateMdCandidatesCu(
             context_ptr->sb_ptr,
             context_ptr,
@@ -2979,6 +3120,9 @@ void md_encode_block(
             candidate_buffer_ptr_array,
             &fullCandidateTotalCount,
             context_ptr->best_candidate_index_array,
+#if USED_NFL_FEATURE_BASED
+            context_ptr->sorted_candidate_index_array,
+#endif
             &disable_merge_index,
 #if TX_SEARCH_LEVELS
             &ref_fast_cost,
@@ -6849,18 +6993,10 @@ EB_EXTERN EbErrorType in_loop_motion_estimation_sblock(
     const uint32_t start_idx_32x64 = 847 * number_of_sb_quad;
     const uint32_t start_idx_128x64 = 849 * number_of_sb_quad;
 
-#if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
-    context_ptr->fractionalSearchMethod = (picture_control_set_ptr->enc_mode >= ENC_M3) ? FULL_SAD_SEARCH : SSD_SEARCH;
-#else
-    context_ptr->fractionalSearchMethod = SUB_SAD_SEARCH;
-#endif
+    context_ptr->fractionalSearchMethod = SSD_SEARCH; // all in-loop
 
 #if M0_ME_SEARCH_BASE
-#if ENCODER_MODE_CLEANUP
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#else
-    numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE || (picture_control_set_ptr->temporal_layer_index == 0 && picture_control_set_ptr->enc_mode > ENC_M1)) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#endif
 #else
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) || (picture_control_set_ptr->temporal_layer_index == 0) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
 #endif

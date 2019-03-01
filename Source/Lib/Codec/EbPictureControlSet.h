@@ -14115,8 +14115,11 @@ extern "C" {
 #endif
         // MD
         EbEncMode                             enc_mode;
-
+#if ADAPTIVE_DEPTH_PARTITIONING
+        EB_SB_DEPTH_MODE                     *sb_depth_mode_array;
+#else
         EbLcuDepthMode                       *sb_md_mode_array;
+#endif		
 #if !CHROMA_BLIND
         EbChromaMode                          chroma_mode;
 #endif
@@ -14132,6 +14135,9 @@ extern "C" {
 #endif
         uint8_t                               loop_filter_mode;
         uint8_t                               intra_pred_mode;
+#if TWO_FAST_LOOP
+        uint8_t                               enable_two_fast_loops;
+#endif
         //**********************************************************************************************************//
         FRAME_TYPE                            av1FrameType;
         Av1RpsNode_t                          av1RefSignal;

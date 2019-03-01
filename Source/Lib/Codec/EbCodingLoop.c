@@ -650,9 +650,7 @@ static void Av1EncodeLoop(
 #else
 
 #if ENCDEC_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
         if (picture_control_set_ptr->enc_mode > ENC_M1) {
-#endif
             if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
 #endif
 #endif
@@ -674,9 +672,7 @@ static void Av1EncodeLoop(
                     eob,
                     candidate_plane);
 
-#if ENCODER_MODE_CLEANUP
         }
-#endif
 
         av1_estimate_transform(
             ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
@@ -1140,9 +1136,7 @@ static void Av1EncodeLoop16bit(
             if (!tx_search_skip_fag) {
 #else
 #if ENCDEC_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
             if (picture_control_set_ptr->enc_mode > ENC_M1) {
-#endif
                 if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
 #endif
 #endif
@@ -1163,9 +1157,7 @@ static void Av1EncodeLoop16bit(
                         dZoffset,
                         eob,
                         candidate_plane);
-#if ENCODER_MODE_CLEANUP
             }
-#endif
 
 
             av1_estimate_transform(
@@ -2547,23 +2539,13 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
     uint8_t                           max_qp_allowed = (uint8_t)sequence_control_set_ptr->static_config.max_qp_allowed;
     uint8_t                           cu_qp;
 
-#if ENCODER_MODE_CLEANUP
     EbBool  use16x16Stat = EB_FALSE;
 
-#else
-    EbBool  use16x16Stat = (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE &&
-        picture_control_set_ptr->enc_mode >= ENC_M3 &&
-        picture_control_set_ptr->slice_type != I_SLICE && cu_size == 8);
-#endif
     uint32_t usedDepth = cu_depth;
     if (use16x16Stat)
         usedDepth = 2;
 
-
-
     uint32_t cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
-
-
 
     EbBool                         acEnergyBasedAntiContouring = picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE;
     uint8_t                           lowerQPClass;
@@ -3269,13 +3251,7 @@ EB_EXTERN void AV1EncodePass(
 
                 if (cu_ptr->prediction_mode_flag == INTRA_MODE) {
 
-#if ENCDEC_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
-                    if (picture_control_set_ptr->enc_mode > ENC_M1) 
-#endif
-                        context_ptr->is_inter = 0;
-#endif
-
+                    context_ptr->is_inter = 0;
                     context_ptr->tot_intra_coded_area += blk_geom->bwidth* blk_geom->bheight;
                     if (picture_control_set_ptr->slice_type != I_SLICE) {
                         context_ptr->intra_coded_area_sb[tbAddr] += blk_geom->bwidth* blk_geom->bheight;

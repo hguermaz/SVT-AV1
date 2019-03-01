@@ -168,6 +168,9 @@ extern "C" {
         uint8_t                         pu_itr;
         uint8_t                         cu_size_log2;
         uint8_t                         best_candidate_index_array[MAX_NFL];
+#if USED_NFL_FEATURE_BASED
+        uint8_t                         sorted_candidate_index_array[MAX_NFL];
+#endif
         uint16_t                        cu_origin_x;
         uint16_t                        cu_origin_y;
         uint64_t                        chroma_weight;
@@ -210,6 +213,21 @@ extern "C" {
         block_size  scaled_chroma_bsize;
 #endif
 
+#if REMOVED_DUPLICATE_INTER
+        uint32_t                        injected_mv_x_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint8_t                         injected_mv_count_l0;
+
+        uint32_t                        injected_mv_x_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint8_t                         injected_mv_count_l1;
+
+        uint32_t                        injected_mv_x_bipred_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_bipred_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_x_bipred_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint32_t                        injected_mv_y_bipred_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
+        uint8_t                         injected_mv_count_bipred;
+#endif
 
         // Multi-modes signal(s) 
         uint8_t                           nfl_level;
@@ -310,7 +328,7 @@ extern "C" {
         ModeDecisionCandidateBuffer_t   *candidateBuffer,
         LargestCodingUnit_t             *sb_ptr,
         ModeDecisionContext_t           *context_ptr,
-        EbPictureBufferDesc_t           *inputPicturePtr,
+        EbPictureBufferDesc_t           *input_picture_ptr,
         uint32_t                         inputCbOriginIndex,
         uint32_t                         cuChromaOriginIndex,
         EbAsm                            asm_type);

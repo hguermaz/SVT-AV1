@@ -2159,7 +2159,11 @@ void SetParamBasedOnInput(
     derive_input_resolution(
         sequence_control_set_ptr,
         sequence_control_set_ptr->luma_width*sequence_control_set_ptr->luma_height);
+ #if DISABLE_128_SB_FOR_SUB_720
 
+    sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode == ENC_M0 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
+
+#endif
 }
 
 void CopyApiFromApp(
@@ -2177,10 +2181,12 @@ void CopyApiFromApp(
     sequence_control_set_ptr->general_interlaced_source_flag = 0;
 
     // SB Definitions
+#if !DISABLE_128_SB_FOR_SUB_720
 #if DISABLE_128X128_SB
     sequence_control_set_ptr->static_config.super_block_size = 64;
 #else
-    sequence_control_set_ptr->static_config.super_block_size = (pComponentParameterStructure->enc_mode <= ENC_M2) ? 128 : 64;
+    sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode == ENC_M0) ? 128 : 64;
+#endif
 #endif
     sequence_control_set_ptr->static_config.pred_structure = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
@@ -2232,12 +2238,8 @@ void CopyApiFromApp(
     sequence_control_set_ptr->max_temporal_layers = sequence_control_set_ptr->static_config.hierarchical_levels;
     sequence_control_set_ptr->static_config.use_qp_file = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->use_qp_file;
 
-#if SHUT_FILTERING
-    sequence_control_set_ptr->static_config.disable_dlf_flag = 1;//
-#else
     // Deblock Filter
     sequence_control_set_ptr->static_config.disable_dlf_flag = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->disable_dlf_flag;
-#endif
 
     // Local Warped Motion
     sequence_control_set_ptr->static_config.enable_warped_motion = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->enable_warped_motion;
@@ -2403,13 +2405,9 @@ static EbErrorType VerifySettings(
     EbErrorType return_error = EB_ErrorNone;
     EbSvtAv1EncConfiguration *config = &sequence_control_set_ptr->static_config;
     unsigned int channelNumber = config->channel_id;
-#if ENCODER_MODE_CLEANUP
+
     if (config->enc_mode > MAX_ENC_PRESET) {
         SVT_LOG("Error instance %u: EncoderMode must be in the range of [0-%d]\n", channelNumber + 1, MAX_ENC_PRESET);
-#else
-    if (config->enc_mode != 1) {
-        SVT_LOG("Error instance %u: EncoderMode must be [1]\n", channelNumber + 1);
-#endif
         return_error = EB_ErrorBadParameter;
     }
 
@@ -2610,7 +2608,6 @@ static EbErrorType VerifySettings(
 
     if (config->look_ahead_distance > MAX_LAD && config->look_ahead_distance != (uint32_t)~0) {
         SVT_LOG("Error Instance %u: The lookahead distance must be [0 - %d] \n", channelNumber + 1, MAX_LAD);
-
         return_error = EB_ErrorBadParameter;
     }
 #if TILES
@@ -2706,11 +2703,6 @@ static EbErrorType VerifySettings(
     if (((int32_t)(config->asm_type) < -1) || ((int32_t)(config->asm_type) != 1)) {
        // SVT_LOG("Error Instance %u: Invalid asm type value [0: C Only, 1: Auto] .\n", channelNumber + 1);
         SVT_LOG("Error Instance %u: Asm 0 is not supported in this build .\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
-
-    if (config->target_socket != -1 && config->target_socket != 0 && config->target_socket != 1) {
-        SVT_LOG("Error instance %u: Invalid TargetSocket. TargetSocket must be [-1 - 1] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
 

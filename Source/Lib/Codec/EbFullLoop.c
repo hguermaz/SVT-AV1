@@ -1196,10 +1196,8 @@ void ProductFullLoopTxSearch(
             if (!allowed_tx_set_a[txSize][tx_type]) continue;
 #else
 #if FAST_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
         if (picture_control_set_ptr->enc_mode == ENC_M1)
-#endif
-         if (!allowed_tx_set_a[txSize][tx_type]) continue;
+            if (!allowed_tx_set_a[txSize][tx_type]) continue;
 #endif
 #endif
         context_ptr->three_quad_energy = 0;
@@ -1412,9 +1410,7 @@ void encode_pass_tx_search(
             if (!allowed_tx_set_a[txSize][tx_type]) continue;
 #else
 #if FAST_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
         if (picture_control_set_ptr->enc_mode == ENC_M1)
-#endif
             if (!allowed_tx_set_a[txSize][tx_type]) continue;
 #endif
 #endif
@@ -1617,9 +1613,7 @@ void encode_pass_tx_search_hbd(
             if (!allowed_tx_set_a[txSize][tx_type]) continue;
 #else
 #if FAST_TX_SEARCH
-#if ENCODER_MODE_CLEANUP
         if (picture_control_set_ptr->enc_mode == ENC_M1 )
-#endif
             if (!allowed_tx_set_a[txSize][tx_type]) continue;
 #endif
 #endif
