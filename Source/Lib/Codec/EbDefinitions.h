@@ -2049,6 +2049,7 @@ typedef enum EB_INTRA_REFRESH_TYPE {
 #define ENC_M4          4
 #define ENC_M5          5
 #define ENC_M6          6
+#define ENC_M7          7
 
 #define MAX_SUPPORTED_MODES 8
 
@@ -3551,18 +3552,18 @@ static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
 };
 #else
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  64,   64,   64,   64,   48,   48,   48,   32 },
-    { 112,   96,   96,   96,   48,   48,   48,   32 },
-    { 128,  112,  112,  112,   48,   48,   48,   32 },
-    { 128,  112,  112,  112,   48,   48,   48,   32 }
+    {  64,   64,   64,   64,   48,   48,   48,   48 },
+    { 112,   96,   96,   96,   48,   48,   48,   48 },
+    { 128,  112,  112,  112,   48,   48,   48,   48 },
+    { 128,  112,  112,  112,   48,   48,   48,   48 }
 
 };
 
 static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  64,   64,   64,   64,   48,   48,   48,   32 },
-    { 112,   96,   96,   96,   48,   48,   48,   32 },
-    { 128,  112,  112,  112,   48,   48,   48,   32 },
-    { 128,  112,  112,  112,   48,   48,   48,   32 }
+    {  64,   64,   64,   64,   48,   48,   48,   48 },
+    { 112,   96,   96,   96,   48,   48,   48,   48 },
+    { 128,  112,  112,  112,   48,   48,   48,   48 },
+    { 128,  112,  112,  112,   48,   48,   48,   48 }
 
 //     M0    M1    M2    M3    M4    M5    M6    M7
 };

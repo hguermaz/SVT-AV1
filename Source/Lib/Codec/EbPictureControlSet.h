@@ -14097,22 +14097,7 @@ extern "C" {
         EbBool                                enable_hme_level0_flag;
         EbBool                                enable_hme_level1_flag;
         EbBool                                enable_hme_level2_flag;
-#if !ME_HME_OQ
-        // ME Parameters
-        uint8_t                               search_area_width;
-        uint8_t                               search_area_height;
-        // HME Parameters
-        uint16_t                              number_hme_search_region_in_width;
-        uint16_t                              number_hme_search_region_in_height;
-        uint16_t                              hme_level0_total_search_area_width;
-        uint16_t                              hme_level0_total_search_area_height;
-        uint16_t                              hme_level0_search_area_in_width_array[EB_HME_SEARCH_AREA_COLUMN_MAX_COUNT];
-        uint16_t                              hme_level0_search_area_in_height_array[EB_HME_SEARCH_AREA_ROW_MAX_COUNT];
-        uint16_t                              hme_level1_search_area_in_width_array[EB_HME_SEARCH_AREA_COLUMN_MAX_COUNT];
-        uint16_t                              hme_level1_search_area_in_height_array[EB_HME_SEARCH_AREA_ROW_MAX_COUNT];
-        uint16_t                              hme_level2_search_area_in_width_array[EB_HME_SEARCH_AREA_COLUMN_MAX_COUNT];
-        uint16_t                              hme_level2_search_area_in_height_array[EB_HME_SEARCH_AREA_ROW_MAX_COUNT];
-#endif
+
         // MD
         EbEncMode                             enc_mode;
 #if ADAPTIVE_DEPTH_PARTITIONING

@@ -776,7 +776,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 3                                            7-Tap luma/ 5-Tap chroma
     if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->wn_filter_mode = 3;
-    else if (picture_control_set_ptr->enc_mode <= ENC_M5)
+    else if (picture_control_set_ptr->enc_mode <= ENC_M6)
         cm->wn_filter_mode = 2;
     else
         cm->wn_filter_mode = 0;

@@ -52,7 +52,6 @@ EbErrorType CheckZeroZeroCenter(
     int16_t                       *ySearchCenter,
     EbAsm                       asm_type);
 
-#if ME_HME_OQ
 /************************************************
  * Set ME/HME Params from Config
  ************************************************/
@@ -163,7 +162,6 @@ EbErrorType signal_derivation_me_kernel_oq(
 
     return return_error;
 };
-#endif
 /************************************************
  * Motion Analysis Context Constructor
  ************************************************/
@@ -445,14 +443,13 @@ void* MotionEstimationKernel(void *input_ptr)
         // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
         EB_MEMCPY(&(context_ptr->me_context_ptr->mvd_bits_array[0]), &(md_rate_estimation_array->mvdBits[0]), sizeof(EB_BitFraction)*NUMBER_OF_MVD_CASES);
         ///context_ptr->me_context_ptr->lambda = lambdaModeDecisionLdSadQpScaling[picture_control_set_ptr->picture_qp];
-#if ME_HME_OQ
-   // ME Kernel Signal(s) derivation
-
+        
+        // ME Kernel Signal(s) derivation
         signal_derivation_me_kernel_oq(
             sequence_control_set_ptr,
             picture_control_set_ptr,
             context_ptr);
-#endif
+
         // Lambda Assignement
         if (sequence_control_set_ptr->static_config.pred_structure == EB_PRED_RANDOM_ACCESS) {
 
