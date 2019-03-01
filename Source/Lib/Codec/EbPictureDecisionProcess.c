@@ -647,7 +647,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else if (picture_control_set_ptr->enc_mode <= ENC_M1) {
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
     }
-    else if (picture_control_set_ptr->enc_mode <= ENC_M2) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M3) {
         if (picture_control_set_ptr->slice_type == I_SLICE)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
         else
@@ -724,7 +724,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 3                                            FULL FRAME-BASED
 
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag) {
-        if (picture_control_set_ptr->enc_mode >= ENC_M3)
+        if (picture_control_set_ptr->enc_mode >= ENC_M4)
             picture_control_set_ptr->loop_filter_mode = 1;
         else
             picture_control_set_ptr->loop_filter_mode = 3;
@@ -741,7 +741,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     SequenceControlSet_t                    *sequence_control_set_ptr;
     sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->objectPtr;
     if (sequence_control_set_ptr->enable_cdef) {
-        if (picture_control_set_ptr->enc_mode <= ENC_M2)
+        if (picture_control_set_ptr->enc_mode <= ENC_M3)
             picture_control_set_ptr->cdef_filter_mode = 3;
         else
             picture_control_set_ptr->cdef_filter_mode = 1;
@@ -760,7 +760,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     Av1Common* cm = picture_control_set_ptr->av1_cm;
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M2)
+    if (picture_control_set_ptr->enc_mode <= ENC_M3)
         cm->sg_filter_mode = 4;
     else if (picture_control_set_ptr->enc_mode <= ENC_M4)
         cm->sg_filter_mode = 3;
@@ -774,7 +774,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                            3-Tap luma/ 3-Tap chroma
     // 2                                            5-Tap luma/ 5-Tap chroma
     // 3                                            7-Tap luma/ 5-Tap chroma
-    if (picture_control_set_ptr->enc_mode <= ENC_M2)
+    if (picture_control_set_ptr->enc_mode <= ENC_M3)
         cm->wn_filter_mode = 3;
     else if (picture_control_set_ptr->enc_mode <= ENC_M6)
         cm->wn_filter_mode = 2;
@@ -796,7 +796,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
 #if TUNED_SETTINGS_FOR_M0
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M2)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M3)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
     else
 #endif
@@ -806,7 +806,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
 
     // Set tx search reduced set falg (0: full tx set; 1: reduced tx set)
-    if (picture_control_set_ptr->enc_mode <= ENC_M2) {
+    if (picture_control_set_ptr->enc_mode <= ENC_M3) {
         picture_control_set_ptr->tx_search_reduced_set = 0;
     }
     else {
