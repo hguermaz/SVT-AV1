@@ -565,15 +565,12 @@ void* MotionEstimationKernel(void *input_ptr)
 
                     sb_index = (uint16_t)(xLcuIndex + yLcuIndex * picture_width_in_sb);
 
-
                     OpenLoopIntraSearchLcu(
                         picture_control_set_ptr,
                         sb_index,
                         context_ptr,
                         inputPicturePtr,
                         asm_type);
-
-
 
                 }
             }
