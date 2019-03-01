@@ -644,7 +644,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #else
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
 #endif
-    else if (picture_control_set_ptr->enc_mode <= ENC_M1) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M2) {
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
     }
     else if (picture_control_set_ptr->enc_mode <= ENC_M3) {

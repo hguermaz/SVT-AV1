@@ -2346,7 +2346,6 @@ void AV1PerformFullLoop(
         candidate_ptr->v_has_coeff = 0;
 
 #if TX_SEARCH_LEVELS
-
         uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_FULL_LOOP ? get_skip_tx_search_flag(
             context_ptr->blk_geom->sq_size,
             ref_fast_cost,
@@ -2358,7 +2357,6 @@ void AV1PerformFullLoop(
 #endif
         if (!tx_search_skip_fag){
 #else
-
 #if TURN_OFF_TX_TYPE_SEARCH
         if (picture_control_set_ptr->enc_mode <= ENC_M1) {
             if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
