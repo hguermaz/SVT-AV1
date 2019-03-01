@@ -7387,6 +7387,8 @@ void InjectIntraCandidatesBasedOnBestMode(
     uint8_t                        temporal_layer_index,
     uint32_t                       bestMode)
 {
+
+    UNUSED(picture_control_set_ptr);
     uint32_t count = 0;
     switch (bestMode) {
 
