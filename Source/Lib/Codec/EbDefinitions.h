@@ -159,17 +159,13 @@ extern "C" {
 #define REMOVED_DUPLICATE_INTER_L1                      1
 #define REMOVED_DUPLICATE_INTER_BIPRED                  1
 
-
 #define USED_NFL_FEATURE_BASED                          1
-
 #if USED_NFL_FEATURE_BASED
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
 #endif
 
 #define TUNED_SETTINGS_FOR_M0                           1
-
-
 
 #define ENABLE_PAETH                                    1
 #define TWO_FAST_LOOP 		                            1
