@@ -1518,11 +1518,15 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].drl_index = 0;
 
         // Set the MV to ME result
+#if REMOVED_DUPLICATE_INTER
+        candidateArray[canIdx].motionVector_x_L0 = to_inject_mv_x;
+        candidateArray[canIdx].motionVector_y_L0 = to_inject_mv_y;
+#else
         candidateArray[canIdx].motionVector_x_L0 = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : mePuResult->xMvL0 << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.col;
         candidateArray[canIdx].motionVector_y_L0 = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : mePuResult->yMvL0 << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.row;
         candidateArray[canIdx].motionVector_x_L0 += neighbors[i].col;
         candidateArray[canIdx].motionVector_y_L0 += neighbors[i].row;
-
+#endif
         candidateArray[canIdx].ref_mv_index = 0;
         candidateArray[canIdx].pred_mv_weight = 0;
         candidateArray[canIdx].ref_frame_type = LAST_FRAME;

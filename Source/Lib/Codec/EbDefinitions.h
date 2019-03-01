@@ -155,9 +155,9 @@ extern "C" {
 #endif
 #endif
 
-#define REMOVED_DUPLICATE_INTER                         0
-#define REMOVED_DUPLICATE_INTER_L1                      0
-#define REMOVED_DUPLICATE_INTER_BIPRED                  0
+#define REMOVED_DUPLICATE_INTER                         1
+#define REMOVED_DUPLICATE_INTER_L1                      1
+#define REMOVED_DUPLICATE_INTER_BIPRED                  1
 
 
 #define USED_NFL_FEATURE_BASED                          1
