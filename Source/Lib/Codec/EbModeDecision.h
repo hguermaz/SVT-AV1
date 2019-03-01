@@ -40,7 +40,11 @@ extern "C" {
         union {
             struct {
                 unsigned                        me_distortion : 20;
+#if TWO_FAST_LOOP
+                unsigned                        enable_two_fast_loops : 1;
+#else
                 unsigned                        distortion_ready : 1;
+#endif
                 unsigned : 3;
                 unsigned                        intra_luma_mode : 8; // HEVC mode, use pred_mode for AV1
             };
@@ -67,8 +71,8 @@ extern "C" {
         };
 
         uint8_t                                skip_flag;
-        EbBool                                 merge_flag;
-        uint8_t                                merge_index;
+        EbBool                                 merge_flag;  // Hsan: does not seem to be used why not removed ?
+        uint8_t                                merge_index; // Hsan: does not seem to be used why not removed ?
         uint16_t                               count_non_zero_coeffs;
         EbBool                                 prediction_is_ready_luma;
         uint8_t                                type;
@@ -85,10 +89,10 @@ extern "C" {
 
         EbPtr                                 prediction_context_ptr;
         PictureControlSet_t                   *picture_control_set_ptr;
-        EbPredDirection                        prediction_direction[MAX_NUM_OF_PU_PER_CU]; // 2 bits
+        EbPredDirection                        prediction_direction[MAX_NUM_OF_PU_PER_CU]; // 2 bits // Hsan: does not seem to be used why not removed ?
 
-        int16_t                                motion_vector_pred_x[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits
-        int16_t                                motion_vector_pred_y[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits
+        int16_t                                motion_vector_pred_x[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits // Hsan: does not seem to be used why not removed ?
+        int16_t                                motion_vector_pred_y[MAX_NUM_OF_REF_PIC_LIST]; // 16 bits // Hsan: does not seem to be used why not removed ?
         uint8_t                                motion_vector_pred_idx[MAX_NUM_OF_REF_PIC_LIST]; // 2 bits
         uint8_t                                block_has_coeff;             // ?? bit - determine empirically
         uint8_t                                u_has_coeff;               // ?? bit
@@ -401,9 +405,7 @@ extern "C" {
         uint8_t                        *sorted_candidate_index_array,
 #endif
         uint8_t                        *disable_merge_index,
-#if TX_SEARCH_LEVELS
         uint64_t                       *ref_fast_cost,
-#endif
         EbBool                          same_fast_full_candidate);
 
     typedef EbErrorType(*EB_INTRA_4x4_FAST_LUMA_COST_FUNC)(

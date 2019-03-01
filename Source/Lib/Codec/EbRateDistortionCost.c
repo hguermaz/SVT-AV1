@@ -586,6 +586,12 @@ EbErrorType Av1IntraFastCost(
     (void)qp;
     (void)picture_control_set_ptr;
 #endif
+    UNUSED(qp);
+    UNUSED(ref_mv_stack);
+    UNUSED(miRow);
+    UNUSED(miCol);
+    UNUSED(left_neighbor_mode);
+    UNUSED(top_neighbor_mode);
     EbBool isMonochromeFlag = EB_FALSE; // NM - isMonochromeFlag is harcoded to false.
 #if REST_FAST_RATE_EST
     EbBool isCflAllowed = (blk_geom->bwidth <= 32 && blk_geom->bheight <= 32) ? 1 : 0;
@@ -1045,7 +1051,6 @@ static INLINE int16_t Av1ModeContextAnalyzer(
     return comp_ctx;
 }
 
-
 #if REST_FAST_RATE_EST
 uint64_t Av1InterFastCost(  
     CodingUnit_t            *cu_ptr,
@@ -1088,6 +1093,11 @@ EbErrorType Av1InterFastCost(
     PictureControlSet_t                    *picture_control_set_ptr)
 #endif
 {
+    UNUSED(top_neighbor_mode);
+    UNUSED(left_neighbor_mode);
+    UNUSED(miCol);
+    UNUSED(miRow);
+
 #if !REST_FAST_RATE_EST    
     EbErrorType  return_error = EB_ErrorNone;
 
@@ -1485,7 +1495,6 @@ EbErrorType Av1InterFastCost(
     return return_error;
 #endif
 }
-
 
 EbErrorType Av1TuEstimateCoeffBits(
     PictureControlSet_t                    *picture_control_set_ptr,
@@ -2584,10 +2593,15 @@ EbErrorType Av1EncodeTuCalcCost(
         yNonZeroCbfRate = *yTuCoeffBits; // yNonZeroCbfLumaFlagBitsNum is already calculated inside yTuCoeffBits
 
         yZeroCbfRate = yZeroCbfLumaFlagBitsNum;
+#if ENABLE_EOB_ZERO_CHECK
+        TransformUnit_t       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
+        if (txb_ptr->transform_type[PLANE_TYPE_Y] != DCT_DCT) {
+#else
 #if CBF_ZERO_OFF || TX_TYPE_FIX
         if (1) {
 #else
         if (cu_ptr->prediction_mode_flag == INTRA_MODE) {
+#endif
 #endif
             yZeroCbfCost = 0xFFFFFFFFFFFFFFFFull;
 

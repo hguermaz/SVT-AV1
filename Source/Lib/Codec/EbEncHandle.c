@@ -2038,7 +2038,9 @@ void SetParamBasedOnInput(
     derive_input_resolution(
         sequence_control_set_ptr,
         sequence_control_set_ptr->luma_width*sequence_control_set_ptr->luma_height);
-
+ #if DISABLE_128_SB_FOR_SUB_720
+    sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode <= ENC_M2 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
+#endif
 }
 
 void CopyApiFromApp(
@@ -2056,10 +2058,12 @@ void CopyApiFromApp(
     sequence_control_set_ptr->general_interlaced_source_flag     = 0;
 
     // SB Definitions
+#if !DISABLE_128_SB_FOR_SUB_720
 #if DISABLE_128X128_SB
     sequence_control_set_ptr->static_config.super_block_size = 64;
 #else
-    sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode <= ENC_M4) ? 128 : 64;
+    sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode == ENC_M0) ? 128 : 64;
+#endif
 #endif
     sequence_control_set_ptr->static_config.pred_structure         = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
@@ -2617,7 +2621,7 @@ EbErrorType eb_svt_enc_init_parameter(
     config_ptr->max_qp_allowed = 63;
     config_ptr->min_qp_allowed = 0;
     config_ptr->base_layer_switch_mode = 0;
-    config_ptr->enc_mode = 3;
+    config_ptr->enc_mode = MAX_ENC_PRESET;
     config_ptr->intra_period_length = 30;
     config_ptr->intra_refresh_type = 1;
 #if NEW_PRED_STRUCT

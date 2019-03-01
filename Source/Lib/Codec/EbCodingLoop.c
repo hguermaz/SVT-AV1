@@ -29,9 +29,7 @@
 #include "EbModeDecisionConfiguration.h"
 #include "EbIntraPrediction.h"
 #include "aom_dsp_rtcd.h"
-#if TX_SEARCH_LEVELS
 #include "EbCodingLoop.h"
-#endif
 
 static const uint32_t me2Nx2NOffset[4] = { 0, 1, 5, 21 };
 extern void av1_predict_intra_block(
@@ -639,7 +637,7 @@ static void Av1EncodeLoop(
             residual16bit->strideY,
             context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
             context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
-#if TX_SEARCH_LEVELS
+        
         uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_ENC_DEC ? get_skip_tx_search_flag(
             context_ptr->blk_geom->sq_size,
             MAX_MODE_COST,
@@ -647,13 +645,7 @@ static void Av1EncodeLoop(
             1) : 1;
 
         if (!tx_search_skip_fag) {
-#else
 
-#if ENCDEC_TX_SEARCH
-        if (picture_control_set_ptr->enc_mode > ENC_M1) {
-            if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
-#endif
-#endif
                 encode_pass_tx_search(
                     picture_control_set_ptr,
                     context_ptr,
@@ -1126,7 +1118,6 @@ static void Av1EncodeLoop16bit(
                 context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
                 context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
 
-#if TX_SEARCH_LEVELS
             uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_ENC_DEC ? get_skip_tx_search_flag(
                 context_ptr->blk_geom->sq_size,
                 MAX_MODE_COST,
@@ -1134,12 +1125,7 @@ static void Av1EncodeLoop16bit(
                 1) : 1;
 
             if (!tx_search_skip_fag) {
-#else
-#if ENCDEC_TX_SEARCH
-            if (picture_control_set_ptr->enc_mode > ENC_M1) {
-                if (context_ptr->blk_geom->sq_size < 128) //no tx search for 128x128 for now
-#endif
-#endif
+
                     encode_pass_tx_search_hbd(
                         picture_control_set_ptr,
                         context_ptr,

@@ -4138,16 +4138,9 @@ void HmeOneQuadrantLevel0(
     int16_t padWidth;
     int16_t padHeight;
 
-
-#if ME_HME_OQ
     (void)picture_control_set_ptr;
     int16_t search_area_width = (int16_t)(((context_ptr->hme_level0_total_search_area_width  * searchAreaMultiplierX) / 100));
     int16_t search_area_height = (int16_t)(((context_ptr->hme_level0_total_search_area_height * searchAreaMultiplierY) / 100));
-#else
-    int16_t search_area_width = (int16_t)(((picture_control_set_ptr->hme_level0_total_search_area_width  * searchAreaMultiplierX) / 100));
-    int16_t search_area_height = (int16_t)(((picture_control_set_ptr->hme_level0_total_search_area_height * searchAreaMultiplierY) / 100));
-
-#endif
     if (context_ptr->hme_search_type == HME_SPARSE)
         search_area_width = ((search_area_width + 4) >> 3) << 3;  //round down/up the width to the nearest multiple of 8.
 
@@ -4332,14 +4325,10 @@ void HmeLevel0(
 
     // Adjust SR size based on the searchAreaShift
 
-#if ME_HME_OQ
     (void)picture_control_set_ptr;
     int16_t search_area_width = (int16_t)(((context_ptr->hme_level0_search_area_in_width_array[searchRegionNumberInWidth] * searchAreaMultiplierX) / 100));
     int16_t search_area_height = (int16_t)(((context_ptr->hme_level0_search_area_in_height_array[searchRegionNumberInHeight] * searchAreaMultiplierY) / 100));
-#else
-    int16_t search_area_width = (int16_t)(((picture_control_set_ptr->hme_level0_search_area_in_width_array[searchRegionNumberInWidth] * searchAreaMultiplierX) / 100));
-    int16_t search_area_height = (int16_t)(((picture_control_set_ptr->hme_level0_search_area_in_height_array[searchRegionNumberInHeight] * searchAreaMultiplierY) / 100));
-#endif
+
     xSearchRegionDistance = xHmeSearchCenter;
     ySearchRegionDistance = yHmeSearchCenter;
     padWidth = (int16_t)(sixteenthRefPicPtr->origin_x) - 1;
@@ -4347,29 +4336,16 @@ void HmeLevel0(
 
     while (searchRegionNumberInWidth) {
         searchRegionNumberInWidth--;
-#if ME_HME_OQ
         xSearchRegionDistance += (int16_t)(((context_ptr->hme_level0_search_area_in_width_array[searchRegionNumberInWidth] * searchAreaMultiplierX) / 100));
-#else
-        xSearchRegionDistance += (int16_t)(((picture_control_set_ptr->hme_level0_search_area_in_width_array[searchRegionNumberInWidth] * searchAreaMultiplierX) / 100));
-#endif
     }
 
     while (searchRegionNumberInHeight) {
         searchRegionNumberInHeight--;
-#if ME_HME_OQ
         ySearchRegionDistance += (int16_t)(((context_ptr->hme_level0_search_area_in_height_array[searchRegionNumberInHeight] * searchAreaMultiplierY) / 100));
-#else
-        ySearchRegionDistance += (int16_t)(((picture_control_set_ptr->hme_level0_search_area_in_height_array[searchRegionNumberInHeight] * searchAreaMultiplierY) / 100));
-#endif
     }
-#if ME_HME_OQ
     x_search_area_origin = -(int16_t)((((context_ptr->hme_level0_total_search_area_width * searchAreaMultiplierX) / 100)) >> 1) + xSearchRegionDistance;
     y_search_area_origin = -(int16_t)((((context_ptr->hme_level0_total_search_area_height * searchAreaMultiplierY) / 100)) >> 1) + ySearchRegionDistance;
-#else
-    x_search_area_origin = -(int16_t)((((picture_control_set_ptr->hme_level0_total_search_area_width * searchAreaMultiplierX) / 100)) >> 1) + xSearchRegionDistance;
-    y_search_area_origin = -(int16_t)((((picture_control_set_ptr->hme_level0_total_search_area_height * searchAreaMultiplierY) / 100)) >> 1) + ySearchRegionDistance;
 
-#endif
     // Correct the left edge of the Search Area if it is not on the reference Picture
     x_search_area_origin = ((origin_x + x_search_area_origin) < -padWidth) ?
         -padWidth - origin_x :
@@ -4645,18 +4621,10 @@ void HmeLevel2(
 
     // round the search region width to nearest multiple of 8 if it is less than 8 or non multiple of 8
     // SAD calculation performance is the same for searchregion width from 1 to 8
-#if ME_HME_OQ
     (void)picture_control_set_ptr;
     int16_t hmeLevel2SearchAreaInWidth = (int16_t)context_ptr->hme_level2_search_area_in_width_array[searchRegionNumberInWidth];
-#else
-    int16_t hmeLevel2SearchAreaInWidth = (int16_t)picture_control_set_ptr->hme_level2_search_area_in_width_array[searchRegionNumberInWidth];
-#endif
     int16_t search_area_width = (hmeLevel2SearchAreaInWidth < 8) ? 8 : (hmeLevel2SearchAreaInWidth & 7) ? hmeLevel2SearchAreaInWidth + (hmeLevel2SearchAreaInWidth - ((hmeLevel2SearchAreaInWidth >> 3) << 3)) : hmeLevel2SearchAreaInWidth;
-#if ME_HME_OQ
     int16_t search_area_height = (int16_t)context_ptr->hme_level2_search_area_in_height_array[searchRegionNumberInHeight];
-#else
-    int16_t search_area_height = (int16_t)picture_control_set_ptr->hme_level2_search_area_in_height_array[searchRegionNumberInHeight];
-#endif
     int16_t x_search_area_origin;
     int16_t y_search_area_origin;
 
@@ -6240,7 +6208,7 @@ EbErrorType MotionEstimateLcu(
 
 #if M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH || M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
-    context_ptr->fractionalSearchMethod = (picture_control_set_ptr->enc_mode > ENC_M6) ? FULL_SAD_SEARCH : SSD_SEARCH;
+    context_ptr->fractionalSearchMethod = (picture_control_set_ptr->enc_mode >= ENC_M7) ? FULL_SAD_SEARCH : SSD_SEARCH;
 #else
     context_ptr->fractionalSearchMethod = SUB_SAD_SEARCH;
 #endif
@@ -6298,13 +6266,8 @@ EbErrorType MotionEstimateLcu(
                 // C - Skip HME
 
                 if (picture_control_set_ptr->enable_hme_flag && /*B*/sb_height == BLOCK_SIZE_64) {//(searchCenterSad > sequence_control_set_ptr->static_config.skipTier0HmeTh)) {
-#if ME_HME_OQ
                     while (searchRegionNumberInHeight < context_ptr->number_hme_search_region_in_height) {
                         while (searchRegionNumberInWidth < context_ptr->number_hme_search_region_in_width) {
-#else
-                    while (searchRegionNumberInHeight < picture_control_set_ptr->number_hme_search_region_in_height) {
-                        while (searchRegionNumberInWidth < picture_control_set_ptr->number_hme_search_region_in_width) {
-#endif
 
                             xHmeLevel0SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] = xSearchCenter;
                             yHmeLevel0SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] = ySearchCenter;
@@ -6357,14 +6320,9 @@ EbErrorType MotionEstimateLcu(
                             searchRegionNumberInHeight = 0;
                             searchRegionNumberInWidth = 0;
                             {
-#if ME_HME_OQ
                                 while (searchRegionNumberInHeight < context_ptr->number_hme_search_region_in_height) {
                                     while (searchRegionNumberInWidth < context_ptr->number_hme_search_region_in_width) {
-#else
-                                while (searchRegionNumberInHeight < picture_control_set_ptr->number_hme_search_region_in_height) {
-                                    while (searchRegionNumberInWidth < picture_control_set_ptr->number_hme_search_region_in_width) {
 
-#endif
                                         HmeLevel0(
                                             picture_control_set_ptr,
                                             context_ptr,
@@ -6400,23 +6358,13 @@ EbErrorType MotionEstimateLcu(
                         searchRegionNumberInWidth = 0;
 
                         {
-#if ME_HME_OQ
                             while (searchRegionNumberInHeight < context_ptr->number_hme_search_region_in_height) {
                                 while (searchRegionNumberInWidth < context_ptr->number_hme_search_region_in_width) {
 
                                     // When HME level 0 has been disabled, increase the search area width and height for level 1 to (32x12) for Gold only
                                     hmeLevel1SearchAreaInWidth = (int16_t)context_ptr->hme_level1_search_area_in_width_array[searchRegionNumberInWidth];
                                     hmeLevel1SearchAreaInHeight = (int16_t)context_ptr->hme_level1_search_area_in_height_array[searchRegionNumberInHeight];
-#else
 
-                            while (searchRegionNumberInHeight < picture_control_set_ptr->number_hme_search_region_in_height) {
-                                while (searchRegionNumberInWidth < picture_control_set_ptr->number_hme_search_region_in_width) {
-
-                                    // When HME level 0 has been disabled, increase the search area width and height for level 1 to (32x12) for Gold only
-                                    hmeLevel1SearchAreaInWidth = (int16_t)picture_control_set_ptr->hme_level1_search_area_in_width_array[searchRegionNumberInWidth];
-                                    hmeLevel1SearchAreaInHeight = (int16_t)picture_control_set_ptr->hme_level1_search_area_in_height_array[searchRegionNumberInHeight];
-
-#endif
                                     HmeLevel1(
                                         context_ptr,
                                         origin_x >> 1,
@@ -6448,14 +6396,8 @@ EbErrorType MotionEstimateLcu(
                         searchRegionNumberInWidth = 0;
 
                         {
-#if ME_HME_OQ
                             while (searchRegionNumberInHeight < context_ptr->number_hme_search_region_in_height) {
                                 while (searchRegionNumberInWidth < context_ptr->number_hme_search_region_in_width) {
-#else
-                            while (searchRegionNumberInHeight < picture_control_set_ptr->number_hme_search_region_in_height) {
-                                while (searchRegionNumberInWidth < picture_control_set_ptr->number_hme_search_region_in_width) {
-
-#endif
 
                                     HmeLevel2(
                                         picture_control_set_ptr,
@@ -6500,14 +6442,9 @@ EbErrorType MotionEstimateLcu(
 
                             searchRegionNumberInWidth = 1;
                             searchRegionNumberInHeight = 0;
-#if ME_HME_OQ
+
                             while (searchRegionNumberInHeight < context_ptr->number_hme_search_region_in_height) {
                                 while (searchRegionNumberInWidth < context_ptr->number_hme_search_region_in_width) {
-#else
-                            while (searchRegionNumberInHeight < picture_control_set_ptr->number_hme_search_region_in_height) {
-                                while (searchRegionNumberInWidth < picture_control_set_ptr->number_hme_search_region_in_width) {
-
-#endif
 
                                     xHmeSearchCenter = (hmeLevel0Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] < hmeMvSad) ? xHmeLevel0SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] : xHmeSearchCenter;
                                     yHmeSearchCenter = (hmeLevel0Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] < hmeMvSad) ? yHmeLevel0SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] : yHmeSearchCenter;
@@ -6528,14 +6465,9 @@ EbErrorType MotionEstimateLcu(
 
                         searchRegionNumberInWidth = 1;
                         searchRegionNumberInHeight = 0;
-#if ME_HME_OQ
+
                         while (searchRegionNumberInHeight < context_ptr->number_hme_search_region_in_height) {
                             while (searchRegionNumberInWidth < context_ptr->number_hme_search_region_in_width) {
-#else
-
-                        while (searchRegionNumberInHeight < picture_control_set_ptr->number_hme_search_region_in_height) {
-                            while (searchRegionNumberInWidth < picture_control_set_ptr->number_hme_search_region_in_width) {
-#endif
 
                                 xHmeSearchCenter = (hmeLevel1Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] < hmeMvSad) ? xHmeLevel1SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] : xHmeSearchCenter;
                                 yHmeSearchCenter = (hmeLevel1Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] < hmeMvSad) ? yHmeLevel1SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] : yHmeSearchCenter;
@@ -6554,15 +6486,9 @@ EbErrorType MotionEstimateLcu(
 
                         searchRegionNumberInWidth = 1;
                         searchRegionNumberInHeight = 0;
-#if ME_HME_OQ
+    
                         while (searchRegionNumberInHeight < context_ptr->number_hme_search_region_in_height) {
                             while (searchRegionNumberInWidth < context_ptr->number_hme_search_region_in_width) {
-#else
-
-                        while (searchRegionNumberInHeight < picture_control_set_ptr->number_hme_search_region_in_height) {
-                            while (searchRegionNumberInWidth < picture_control_set_ptr->number_hme_search_region_in_width) {
-
-#endif
                                 xHmeSearchCenter = (hmeLevel2Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] < hmeMvSad) ? xHmeLevel2SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] : xHmeSearchCenter;
                                 yHmeSearchCenter = (hmeLevel2Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] < hmeMvSad) ? yHmeLevel2SearchCenter[searchRegionNumberInWidth][searchRegionNumberInHeight] : yHmeSearchCenter;
                                 hmeMvSad = (hmeLevel2Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] < hmeMvSad) ? hmeLevel2Sad[searchRegionNumberInWidth][searchRegionNumberInHeight] : hmeMvSad;
@@ -6572,14 +6498,9 @@ EbErrorType MotionEstimateLcu(
                             searchRegionNumberInHeight++;
                         }
 
-#if ME_HME_OQ
                         numQuadInWidth = context_ptr->number_hme_search_region_in_width;
                         totalMeQuad = context_ptr->number_hme_search_region_in_height * context_ptr->number_hme_search_region_in_width;
-#else
-                        numQuadInWidth = picture_control_set_ptr->number_hme_search_region_in_width;
-                        totalMeQuad = picture_control_set_ptr->number_hme_search_region_in_height * picture_control_set_ptr->number_hme_search_region_in_width;
 
-#endif
                         if ((ref0Poc == ref1Poc) && (listIndex == 1) && (totalMeQuad > 1)) {
 
                             for (quadIndex = 0; quadIndex < totalMeQuad - 1; ++quadIndex) {
@@ -6617,13 +6538,9 @@ EbErrorType MotionEstimateLcu(
                 xSearchCenter = 0;
                 ySearchCenter = 0;
             }
-#if ME_HME_OQ
             search_area_width = (int16_t)MIN(context_ptr->search_area_width, 127);
             search_area_height = (int16_t)MIN(context_ptr->search_area_height, 127);
-#else
-            search_area_width = (int16_t)MIN(picture_control_set_ptr->search_area_width, 127);
-            search_area_height = (int16_t)MIN(picture_control_set_ptr->search_area_height, 127);
-#endif
+    
             if ((xSearchCenter != 0 || ySearchCenter != 0) && (picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)) {
                 CheckZeroZeroCenter(
                     refPicPtr,
@@ -7470,6 +7387,8 @@ void InjectIntraCandidatesBasedOnBestMode(
     uint8_t                        temporal_layer_index,
     uint32_t                       bestMode)
 {
+
+    UNUSED(picture_control_set_ptr);
     uint32_t count = 0;
     switch (bestMode) {
 
@@ -7522,10 +7441,7 @@ void InjectIntraCandidatesBasedOnBestMode(
     case EB_INTRA_VERTICAL:
 
         OisCuPtr[count].distortion = stage1SadArray[1];
-        if (picture_control_set_ptr->enc_mode <= ENC_M6)
-            OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
-        else
-            OisCuPtr[count].valid_distortion = EB_TRUE;
+        OisCuPtr[count].valid_distortion = (temporal_layer_index > 1) ? EB_TRUE : EB_FALSE;
         OisCuPtr[count++].intra_mode = EB_INTRA_VERTICAL;
         OisCuPtr[count++].intra_mode = EB_INTRA_DC;
         OisCuPtr[count++].intra_mode = EB_INTRA_PLANAR;

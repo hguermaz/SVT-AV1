@@ -72,8 +72,8 @@ extern "C" {
         uint8_t                               number_of_segments;
         uint32_t                              sb_min_score;
         uint32_t                              sb_max_score;
-        EbAdpDepthSensitivePicClass           adp_depth_sensitive_picture_class;
 #if 0 // Hsan: to evaluate after enabling SQ mode
+        EbAdpDepthSensitivePicClass           adp_depth_sensitive_picture_class;
         EbAdpRefinementMode                   adp_refinement_mode;
 #endif
 #else
@@ -96,8 +96,10 @@ extern "C" {
         EbBool                             performRefinement;
 #endif
 #if MDC_FIX_0
-        ModeDecisionCandidate_t              *candidate_ptr;
-        CandidateMv                          *ref_mv_stack;
+        const BlockGeom                      *blk_geom;
+        ModeDecisionCandidate_t              *mdc_candidate_ptr;
+        CandidateMv                          *mdc_ref_mv_stack;
+        CodingUnit_t                         *mdc_cu_ptr;
 #endif
         uint8_t                               qp_index;
 

@@ -590,12 +590,12 @@ cglobal h_predictor_16x16, 2, 5, 3, dst, stride, line, left
   punpcklbw             m0, m0              ; l1 to l4 each repeated 4 times
   pshufd            m1, m0, 0x0             ; l1 repeated 16 times
   pshufd            m2, m0, 0x55            ; l2 repeated 16 times
-  mova    [dstq          ], m1
-  mova    [dstq+strideq  ], m2
+  movdqu    [dstq          ], m1
+  movdqu    [dstq+strideq  ], m2
   pshufd            m1, m0, 0xaa
   pshufd            m2, m0, 0xff
-  mova    [dstq+strideq*2], m1
-  mova    [dstq+stride3q ], m2
+  movdqu    [dstq+strideq*2], m1
+  movdqu    [dstq+stride3q ], m2
   inc                lineq
   lea                leftq, [leftq+4       ]
   lea                 dstq, [dstq+strideq*4]
