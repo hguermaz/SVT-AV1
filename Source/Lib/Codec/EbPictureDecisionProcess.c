@@ -762,8 +762,6 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->sg_filter_mode = 4;
-    else if (picture_control_set_ptr->enc_mode <= ENC_M3)
-        cm->sg_filter_mode = 3;
     else
         cm->sg_filter_mode = 1;
 #endif
