@@ -1365,7 +1365,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // CHROMA_MODE_0  0     Chroma @ MD
     // CHROMA_MODE_1  1     Chroma blind @ MD + CFL @ EP
     // CHROMA_MODE_2  2     Chroma blind @ MD + no CFL @ EP
-    if (picture_control_set_ptr->enc_mode <= ENC_M3)
+    if (picture_control_set_ptr->enc_mode <= ENC_M4)
         context_ptr->chroma_level = CHROMA_MODE_0;
     else 
         context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?

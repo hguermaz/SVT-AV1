@@ -654,7 +654,7 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
     }
 #if ADAPTIVE_DEPTH_PARTITIONING
-    else if (picture_control_set_ptr->enc_mode <= ENC_M4) {
+    else if (picture_control_set_ptr->enc_mode <= ENC_M5) {
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
     else {
@@ -762,7 +762,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->enc_mode <= ENC_M2)
         cm->sg_filter_mode = 4;
-    else if (picture_control_set_ptr->enc_mode <= ENC_M3)
+    else if (picture_control_set_ptr->enc_mode <= ENC_M4)
         cm->sg_filter_mode = 3;
     else
         cm->sg_filter_mode = 1;
@@ -789,7 +789,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 
-    if (picture_control_set_ptr->enc_mode <= ENC_M4)
+    if (picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
     else
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
@@ -800,7 +800,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
     else
 #endif
-    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M4)
+    if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
     else
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
@@ -813,7 +813,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_reduced_set = 1;
     }
 
-    if (picture_control_set_ptr->enc_mode >= ENC_M5) // enc-dec tx
+    if (picture_control_set_ptr->enc_mode >= ENC_M6) // enc-dec tx
         picture_control_set_ptr->tx_search_reduced_set = 0;
 
 #endif
@@ -830,7 +830,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else {
         if (picture_control_set_ptr->enc_mode  == ENC_M0) 
             picture_control_set_ptr->intra_pred_mode = 4;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M4) 
+        else if (picture_control_set_ptr->enc_mode <= ENC_M5) 
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->intra_pred_mode = 3;
             else
