@@ -639,7 +639,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     //  PIC_SQ_NON4_DEPTH_MODE               ONLY sq: SB size -> 8x8  (No 4x4)
 
     if (picture_control_set_ptr->enc_mode == ENC_M0)
+#if M05_AS_M0
+        picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+#else
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+#endif
     else if (picture_control_set_ptr->enc_mode <= ENC_M1) {
         picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
     }
@@ -692,7 +696,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Interpolation search at full loop
     // 3                                              Interpolation search at fast loop
     if (picture_control_set_ptr->enc_mode == ENC_M0) {
+#if M05_AS_M0
+        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
+#else
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
+#endif
     }
     else {
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;

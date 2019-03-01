@@ -166,6 +166,7 @@ extern "C" {
 #endif
 
 #define TUNED_SETTINGS_FOR_M0                           1
+#define M05_AS_M0                                       0
 
 #define ENABLE_PAETH                                    1
 #define TWO_FAST_LOOP 		                            1
@@ -3531,6 +3532,24 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][M
     {   8,    8,    8,    8,    4,    4,    4,    4 }
 };
 
+#if M05_AS_M0
+static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {  64,   64,   64,   64,   48,   48,   48,   32 },
+    {  96,   96,   96,   96,   48,   48,   48,   32 },
+    { 112,  112,  112,  112,   48,   48,   48,   32 },
+    { 112,  112,  112,  112,   48,   48,   48,   32 }
+
+};
+
+static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {  64,   64,   64,   64,   48,   48,   48,   32 },
+    {  96,   96,   96,   96,   48,   48,   48,   32 },
+    { 112,  112,  112,  112,   48,   48,   48,   32 },
+    { 112,  112,  112,  112,   48,   48,   48,   32 }
+
+	//     M0    M1    M2    M3    M4    M5    M6    M7
+};
+#else
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   48,   48,   48,   32 },
     { 112,   96,   96,   96,   48,   48,   48,   32 },
@@ -3547,6 +3566,7 @@ static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
 
 //     M0    M1    M2    M3    M4    M5    M6    M7
 };
+#endif
 #endif
 
 #ifdef __cplusplus
