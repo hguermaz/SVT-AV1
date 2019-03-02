@@ -2005,7 +2005,6 @@ static void search_norestore_finish(const RestorationTileLimits *limits,
 
     rsc->sse += rusi->sse[RESTORE_NONE];  
 }
-
 static double search_rest_type_finish(RestSearchCtxt *rsc, RestorationType rtype)
 {
 

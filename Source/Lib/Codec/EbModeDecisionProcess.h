@@ -210,7 +210,7 @@ extern "C" {
 #if INTRA_CORE_OPT
         DECLARE_ALIGNED(16, uint8_t, left_data[MAX_MB_PLANE][MAX_TX_SIZE * 2 + 32]);
         DECLARE_ALIGNED(16, uint8_t, above_data[MAX_MB_PLANE][MAX_TX_SIZE * 2 + 32]);
-        BlockSize  scaled_chroma_bsize;
+        block_size  scaled_chroma_bsize;
 #endif
 
 #if REMOVED_DUPLICATE_INTER
@@ -323,7 +323,7 @@ extern "C" {
         ModeDecisionCandidateBuffer_t   *candidateBuffer,
         LargestCodingUnit_t             *sb_ptr,
         ModeDecisionContext_t           *context_ptr,
-        EbPictureBufferDesc_t           *inputPicturePtr,
+        EbPictureBufferDesc_t           *input_picture_ptr,
         uint32_t                         inputCbOriginIndex,
         uint32_t                         cuChromaOriginIndex,
         EbAsm                            asm_type);

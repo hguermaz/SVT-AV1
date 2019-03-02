@@ -178,16 +178,17 @@ EbErrorType eb_sequence_control_set_ctor(
     // 1 - force to integer
     // 2 - adaptive
 
-    sequence_control_set_ptr->enable_filter_intra        = 0;
-    sequence_control_set_ptr->enable_intra_edge_filter   = 0;
+    sequence_control_set_ptr->enable_filter_intra = 0;
+    sequence_control_set_ptr->enable_intra_edge_filter = 0;
 
     sequence_control_set_ptr->enable_interintra_compound = 0;
-    sequence_control_set_ptr->enable_masked_compound     = 0;
+    sequence_control_set_ptr->enable_masked_compound = 0;
 
-    sequence_control_set_ptr->enable_ref_frame_mvs       = 1;
-    sequence_control_set_ptr->enable_superres            = 0;
+    sequence_control_set_ptr->enable_ref_frame_mvs = 1;
+    sequence_control_set_ptr->enable_superres = 0;
 #if NO_ENCDEC || SHUT_FILTERING
     sequence_control_set_ptr->enable_cdef = 0;
+
     sequence_control_set_ptr->enable_restoration = 0;
 #else
     sequence_control_set_ptr->enable_cdef = 1;
@@ -504,10 +505,10 @@ extern EbErrorType sb_params_init(
 
         for (md_scan_block_index = 0; md_scan_block_index < max_block_count; md_scan_block_index++) {
 
-            const BlockGeom * blk_geom = Get_blk_geom_mds(md_scan_block_index);
+            const BlockGeom * blk_geom = get_blk_geom_mds(md_scan_block_index);
 
             if (blk_geom->shape != PART_N)
-                blk_geom = Get_blk_geom_mds(blk_geom->sqi_mds);
+                blk_geom = get_blk_geom_mds(blk_geom->sqi_mds);
 
             sequence_control_set_ptr->sb_params_array[sb_index].block_is_inside_md_scan[md_scan_block_index] =
                 ((sequence_control_set_ptr->sb_params_array[sb_index].origin_x + blk_geom->origin_x + blk_geom->bwidth > sequence_control_set_ptr->luma_width) ||
@@ -560,10 +561,10 @@ EbErrorType sb_geom_init(SequenceControlSet_t * sequence_control_set_ptr)
 
         for (md_scan_block_index = 0; md_scan_block_index < max_block_count ; md_scan_block_index++) {
 
-            const BlockGeom * blk_geom = Get_blk_geom_mds(md_scan_block_index);
+            const BlockGeom * blk_geom = get_blk_geom_mds(md_scan_block_index);
 
             if (blk_geom->shape != PART_N)
-                blk_geom = Get_blk_geom_mds(blk_geom->sqi_mds);
+                blk_geom = get_blk_geom_mds(blk_geom->sqi_mds);
 
             sequence_control_set_ptr->sb_geom[sb_index].block_is_inside_md_scan[md_scan_block_index] =
                 ((sequence_control_set_ptr->sb_geom[sb_index].origin_x + blk_geom->origin_x + blk_geom->bwidth > sequence_control_set_ptr->luma_width) ||

@@ -389,9 +389,9 @@ extern "C" {
 
 #if M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH || M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
-        uint8_t                       fractionalSearchMethod;
+        uint8_t   fractionalSearchMethod;
 #else
-        EbBool                        useSubSadFracBipredSearch;
+        EbBool useSubSadFracBipredSearch;
 #endif
 #endif
 #if M0_64x64_32x32_HALF_QUARTER_PEL
@@ -562,7 +562,7 @@ extern "C" {
         uint8_t                       search_area_width;
         uint8_t                       search_area_height;
                                       
-        BlockSize                     sb_size;
+        block_size                     sb_size;
         uint32_t                      sb_side;
 
     } SsMeContext_t;
@@ -571,7 +571,7 @@ extern "C" {
         uint8_t                     *src,
         uint32_t                     src_stride,
         uint8_t                     *ref,
-        uint32_t                     refStride,
+        uint32_t                     ref_stride,
         uint32_t                     width,
         uint32_t                     height);
 
