@@ -1272,6 +1272,7 @@ void perform_fast_loop_intra(
     CodingUnit_t                        *cu_ptr,
     uint32_t                             cuOriginIndex,
     uint32_t                             cuChromaOriginIndex,
+    uint32_t                             candidate_buffer_start_index,   
     uint32_t                             maxBuffers,
     uint32_t                            *secondFastCostSearchCandidateTotalCount,
     EbAsm                                asm_type) {
@@ -1291,7 +1292,7 @@ void perform_fast_loop_intra(
         do
         {
             // Set the Candidate Buffer
-            ModeDecisionCandidateBuffer_t   *candidateBuffer = candidateBufferPtrArrayBase[0];
+            ModeDecisionCandidateBuffer_t   *candidateBuffer = candidateBufferPtrArrayBase[candidate_buffer_start_index];
             ModeDecisionCandidate_t         *candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
 
             // Only check (src - src) candidates (Tier0 candidates)
@@ -1331,7 +1332,7 @@ void perform_fast_loop_intra(
 
     // 2nd fast loop: src-to-recon
     *secondFastCostSearchCandidateTotalCount = 0;
-    highestCostIndex = 0;
+    highestCostIndex = candidate_buffer_start_index;
     fastLoopCandidateIndex = fastCandidateTotalCount - 1;
     do
     {
@@ -1384,7 +1385,7 @@ void perform_fast_loop_intra(
             }
  
 
-            /// Fast Cost
+            // Fast Cost
             *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type] (
                 cu_ptr, 
                 candidateBuffer->candidate_ptr,
@@ -1413,7 +1414,7 @@ void perform_fast_loop_intra(
             //   but this might require asm.
             volatile uint64_t maxCost = ~0ull;
             const uint64_t *fast_cost_array = context_ptr->fast_cost_array;
-            const uint32_t bufferIndexStart = 0;
+            const uint32_t bufferIndexStart = candidate_buffer_start_index;
             const uint32_t bufferIndexEnd = bufferIndexStart + maxBuffers;
             uint32_t bufferIndex;
 
@@ -3260,6 +3261,7 @@ void md_encode_block(
             cu_ptr,
             cuOriginIndex,
             cuChromaOriginIndex,
+            0,
             maxBuffers,
             &secondFastCostSearchCandidateTotalCount,
             asm_type);
