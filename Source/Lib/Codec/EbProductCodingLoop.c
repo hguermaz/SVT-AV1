@@ -1276,29 +1276,22 @@ void perform_fast_loop_intra(
     uint64_t                            highestCost;
     uint32_t                            isCandzz = 0;
 
-    uint32_t firstFastCandidateTotalCount;
-    uint64_t bestFirstFastCostSearchCandidateCost = 0xFFFFFFFFFFFFFFFFull;
+    uint64_t bestFirstFastCostSearchCandidateCost = MAX_CU_COST;
     int32_t bestFirstFastCostSearchCandidateIndex = INVALID_FAST_CANDIDATE_INDEX;
 
     // 1st fast loop: src-to-src
     {
-        firstFastCandidateTotalCount = 0;
         fastLoopCandidateIndex = fastCandidateTotalCount - 1;
         do
         {
-            lumaFastDistortion = 0;
-
             // Set the Candidate Buffer
             candidateBuffer = candidateBufferPtrArrayBase[0];
             ModeDecisionCandidate_t *const candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
 
             // Only check (src - src) candidates (Tier0 candidates)
-            if (candidate_ptr->distortion_ready)
+            if (candidate_ptr->distortion_ready) {
 
-            {
                 lumaFastDistortion = candidate_ptr->me_distortion;
-
-                firstFastCandidateTotalCount++;
 
                 {
                     // Fast Cost Calc
@@ -1330,7 +1323,7 @@ void perform_fast_loop_intra(
         } while (--fastLoopCandidateIndex >= 0);
     }
 
-    // 1st fast loop: src-to-recon
+    // 2nd fast loop: src-to-recon
     *secondFastCostSearchCandidateTotalCount = 0;
     highestCostIndex = context_ptr->buffer_depth_index_start[0];
     fastLoopCandidateIndex = fastCandidateTotalCount - 1;
@@ -1347,10 +1340,7 @@ void perform_fast_loop_intra(
 
         if ((!distortion_ready) || fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex) {
 
-            lumaFastDistortion = 0;
-            chromaFastDistortion = 0;
             // Set the Candidate Buffer
-
             ProductMdFastPuPrediction(
                 picture_control_set_ptr,
                 candidateBuffer,
@@ -1362,44 +1352,28 @@ void perform_fast_loop_intra(
                 asm_type);
 
             //Distortion
-            uint8_t * const inputBufferY = input_picture_ptr->buffer_y + inputOriginIndex;
-            const unsigned inputStrideY = input_picture_ptr->stride_y;
-            uint8_t * const predBufferY = prediction_ptr->buffer_y + cuOriginIndex;
 
-            if (fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex && candidate_ptr->type == INTRA_MODE)
-                lumaFastDistortion = candidate_ptr->me_distortion;
-            else {
-                // Y
-                lumaFastDistortion += (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
-                    inputBufferY,
-                    inputStrideY,
-                    predBufferY,
-                    prediction_ptr->stride_y,
-                    context_ptr->blk_geom->bheight,
-                    context_ptr->blk_geom->bwidth));
-            }
-
+            lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
+                input_picture_ptr->buffer_y + inputOriginIndex,
+                input_picture_ptr->stride_y,
+                prediction_ptr->buffer_y + cuOriginIndex,
+                prediction_ptr->stride_y,
+                context_ptr->blk_geom->bheight,
+                context_ptr->blk_geom->bwidth));
+            
             if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
-
-                uint8_t * const inputBufferCb = input_picture_ptr->bufferCb + inputCbOriginIndex;
-                uint8_t *  const predBufferCb = candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex;
-
-                chromaFastDistortion += NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
-                    inputBufferCb,
+                chromaFastDistortion = NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
+                    input_picture_ptr->bufferCb + inputCbOriginIndex,
                     input_picture_ptr->strideCb,
-                    predBufferCb,
+                    candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex,
                     prediction_ptr->strideCb,
                     context_ptr->blk_geom->bheight_uv,
                     context_ptr->blk_geom->bwidth_uv);
 
-
-                uint8_t * const inputBufferCr = input_picture_ptr->bufferCr + inputCrOriginIndex;
-                uint8_t * const predBufferCr = candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex;
-
                 chromaFastDistortion += NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
-                    inputBufferCr,
+                    input_picture_ptr->bufferCr + inputCrOriginIndex,
                     input_picture_ptr->strideCb,
-                    predBufferCr,
+                    candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex,
                     prediction_ptr->strideCr,
                     context_ptr->blk_geom->bheight_uv,
                     context_ptr->blk_geom->bwidth_uv);
