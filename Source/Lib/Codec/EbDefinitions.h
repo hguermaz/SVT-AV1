@@ -39,7 +39,7 @@ extern "C" {
 
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
-    ////
+
 #define MEM_RED4                                        1 //  Reduce mem allocation when DISABLE_128X128_SB is ON
 #define FILT_PROC                                       1    // New Filtering processes.
 #define CDEF_M                                          1 // multi-threaded cdef
