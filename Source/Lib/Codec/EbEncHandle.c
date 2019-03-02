@@ -279,8 +279,8 @@ void InitThreadManagmentParams() {
     const char* PHYSICALID = "physical id";
     int processor_id_len = strnlen_ss(PROCESSORID, 128);
     int physical_id_len = strnlen_ss(PHYSICALID, 128);
-    if (processor_id_len < 0 || processor_id_len >= 128) return EB_ErrorInsufficientResources;
-    if (physical_id_len < 0 || physical_id_len >= 128) return EB_ErrorInsufficientResources;
+    if (processor_id_len < 0 || processor_id_len >= 128) return ;
+    if (physical_id_len < 0 || physical_id_len >= 128) return ;
     memset(lp_group, 0, sizeof(lp_group));
 
     int fd = open("/proc/cpuinfo", O_RDONLY | O_NOFOLLOW, "rt");
@@ -304,7 +304,7 @@ void InitThreadManagmentParams() {
                         socket_id = strtol(p, NULL, 0);
                         if (socket_id < 0 || socket_id > 15) {
                             close(fd);
-                            return EB_ErrorInsufficientResources;
+                            return;
                         }
                         if (socket_id + 1 > num_groups)
                             num_groups = socket_id + 1;
