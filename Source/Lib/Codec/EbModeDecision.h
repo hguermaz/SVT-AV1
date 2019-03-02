@@ -72,12 +72,15 @@ extern "C" {
 
         uint8_t                                skip_flag;
         EbBool                                 merge_flag;  // Hsan: does not seem to be used why not removed ?
+#if !INTRA_INTER_FAST_LOOP
         uint8_t                                merge_index; // Hsan: does not seem to be used why not removed ?
+#endif
         uint16_t                               count_non_zero_coeffs;
         EbBool                                 prediction_is_ready_luma;
         uint8_t                                type;
+#if !INTRA_INTER_FAST_LOOP
         EbBool                                 mpm_flag;
-
+#endif
         // MD Rate Estimation Ptr
         MdRateEstimationContext_t             *md_rate_estimation_ptr; // 64 bits
         uint64_t                               fast_luma_rate;
@@ -120,7 +123,9 @@ extern "C" {
         uint32_t                               pred_mv_weight;
         uint8_t                                ref_frame_type;
         uint8_t                                ref_mv_index;
+#if !INTRA_INTER_FAST_LOOP
         EbBool                                 is_skip_mode_flag;
+#endif
         EbBool                                 is_new_mv;
         EbBool                                 is_zero_mv;
         TxType                                 transform_type[PLANE_TYPES];
@@ -365,8 +370,10 @@ extern "C" {
         uint64_t                                cb_distortion[2];
         uint64_t                                cr_coeff_bits;
         uint64_t                                cr_distortion[2];
+#if !INTRA_INTER_FAST_LOOP
         EbBool                                  sub_sampled_pred; //do prediction every other line, duplicate the residual
         EbBool                                  sub_sampled_pred_chroma;
+#endif
         uint64_t                                y_full_distortion[DIST_CALC_TOTAL];
         uint64_t                                y_coeff_bits;
 

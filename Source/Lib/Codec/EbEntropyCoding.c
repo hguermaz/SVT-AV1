@@ -5157,6 +5157,7 @@ EbErrorType write_modes_b(
                 blkOriginY,
                 skip_flag_neighbor_array);
         }
+
         if (!picture_control_set_ptr->parent_pcs_ptr->skip_mode_flag && cu_ptr->skip_flag) {
             printf("ERROR[AN]: SKIP not supported\n");
         }
