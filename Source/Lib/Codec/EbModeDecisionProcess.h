@@ -29,7 +29,9 @@ extern "C" {
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               90//35//20 // 61 Intra & 18 Inter
 #endif
 #if INC_NFL12
+#if !INTRA_INTER_FAST_LOOP
 #define MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT        (MAX_NFL*6) //up to 6 depths
+#endif
 #else
 #define MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT        33
 #endif

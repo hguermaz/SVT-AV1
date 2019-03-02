@@ -57,6 +57,20 @@ EbErrorType mode_decision_context_ctor(
         return EB_ErrorInsufficientResources;
     }
     // Cost Arrays
+#if INTRA_INTER_FAST_LOOP
+    EB_MALLOC(uint64_t*, context_ptr->fast_cost_array, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
+
+    EB_MALLOC(uint64_t*, context_ptr->full_cost_array, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
+
+    EB_MALLOC(uint64_t*, context_ptr->full_cost_skip_ptr, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
+
+    EB_MALLOC(uint64_t*, context_ptr->full_cost_merge_ptr, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
+
+    // Candidate Buffers
+    EB_MALLOC(ModeDecisionCandidateBuffer_t**, context_ptr->candidate_buffer_ptr_array, sizeof(ModeDecisionCandidateBuffer_t*) * MAX_NFL, EB_N_PTR);
+
+    for (bufferIndex = 0; bufferIndex < MAX_NFL; ++bufferIndex) {
+#else
     EB_MALLOC(uint64_t*, context_ptr->fast_cost_array, sizeof(uint64_t) * MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT, EB_N_PTR);
 
     EB_MALLOC(uint64_t*, context_ptr->full_cost_array, sizeof(uint64_t) * MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT, EB_N_PTR);
@@ -69,6 +83,7 @@ EbErrorType mode_decision_context_ctor(
     EB_MALLOC(ModeDecisionCandidateBuffer_t**, context_ptr->candidate_buffer_ptr_array, sizeof(ModeDecisionCandidateBuffer_t*) * MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT, EB_N_PTR);
 
     for (bufferIndex = 0; bufferIndex < MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT; ++bufferIndex) {
+#endif
         return_error = mode_decision_candidate_buffer_ctor(
             &(context_ptr->candidate_buffer_ptr_array[bufferIndex]),
 #if !INTRA_INTER_FAST_LOOP

@@ -1336,8 +1336,8 @@ void perform_fast_loop_intra(
     do
     {
         ModeDecisionCandidateBuffer_t *candidateBuffer = candidateBufferPtrArrayBase[highestCostIndex];
-        ModeDecisionCandidate_t       *candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];               
-        EbPictureBufferDesc_t * const   prediction_ptr = candidateBuffer->prediction_ptr;
+        ModeDecisionCandidate_t       *candidate_ptr   = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];               
+        EbPictureBufferDesc_t         *prediction_ptr  = candidateBuffer->prediction_ptr;
 
         if (!candidate_ptr->distortion_ready || fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex) {
 
@@ -1360,6 +1360,7 @@ void perform_fast_loop_intra(
                 prediction_ptr->stride_y,
                 context_ptr->blk_geom->bheight,
                 context_ptr->blk_geom->bwidth));
+
             
             if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
                 chromaFastDistortion = NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
@@ -1377,6 +1378,9 @@ void perform_fast_loop_intra(
                     prediction_ptr->strideCr,
                     context_ptr->blk_geom->bheight_uv,
                     context_ptr->blk_geom->bwidth_uv);
+            }
+            else {
+                chromaFastDistortion = 0;
             }
  
 
@@ -1407,7 +1411,6 @@ void perform_fast_loop_intra(
             //   clogs the i-cache/intstruction decode. This still reloads the variable from
             //   the stack each pass, so a better solution would be to register the variable,
             //   but this might require asm.
-
             volatile uint64_t maxCost = ~0ull;
             const uint64_t *fast_cost_array = context_ptr->fast_cost_array;
             const uint32_t bufferIndexStart = 0;
@@ -1428,7 +1431,6 @@ void perform_fast_loop_intra(
             } while (++bufferIndex < bufferIndexEnd);
         }
     } while (--fastLoopCandidateIndex >= 0);// End Second FastLoop
-
 }
 #else
 void ProductPerformFastLoop(
