@@ -76,7 +76,9 @@ extern "C" {
         uint8_t                                merge_index; // Hsan: does not seem to be used why not removed ?
 #endif
         uint16_t                               count_non_zero_coeffs;
+#if !INTRA_INTER_FAST_LOOP
         EbBool                                 prediction_is_ready_luma;
+#endif
         uint8_t                                type;
 #if !INTRA_INTER_FAST_LOOP
         EbBool                                 mpm_flag;
@@ -382,6 +384,15 @@ extern "C" {
     /**************************************
     * Extern Function Declarations
     **************************************/
+#if INTRA_INTER_FAST_LOOP
+    extern EbErrorType mode_decision_candidate_buffer_ctor(
+        ModeDecisionCandidateBuffer_t **buffer_dbl_ptr,
+        uint64_t                       *fast_cost_ptr,
+        uint64_t                       *full_cost_ptr,
+        uint64_t                       *full_cost_skip_ptr,
+        uint64_t                       *full_cost_merge_ptr
+    );
+#else
     extern EbErrorType mode_decision_candidate_buffer_ctor(
         ModeDecisionCandidateBuffer_t **buffer_dbl_ptr,
         uint16_t                        sb_max_size,
@@ -391,7 +402,7 @@ extern "C" {
         uint64_t                       *full_cost_skip_ptr,
         uint64_t                       *full_cost_merge_ptr
     );
-
+#endif
     uint8_t product_full_mode_decision(
         struct ModeDecisionContext_s   *context_ptr,
         CodingUnit_t                   *cu_ptr,

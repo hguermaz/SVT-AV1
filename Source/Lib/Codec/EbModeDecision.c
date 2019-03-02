@@ -130,6 +130,14 @@ void ChooseBestAv1MvPred(
 /***************************************
 * Mode Decision Candidate Ctor
 ***************************************/
+#if INTRA_INTER_FAST_LOOP
+EbErrorType mode_decision_candidate_buffer_ctor(
+    ModeDecisionCandidateBuffer_t **buffer_dbl_ptr,
+    uint64_t                       *fast_cost_ptr,
+    uint64_t                       *full_cost_ptr,
+    uint64_t                       *full_cost_skip_ptr,
+    uint64_t                       *full_cost_merge_ptr)
+#else
 EbErrorType mode_decision_candidate_buffer_ctor(
     ModeDecisionCandidateBuffer_t **buffer_dbl_ptr,
     uint16_t                          sb_max_size,
@@ -139,6 +147,7 @@ EbErrorType mode_decision_candidate_buffer_ctor(
     uint64_t                         *full_cost_skip_ptr,
     uint64_t                         *full_cost_merge_ptr
 )
+#endif
 {
     EbPictureBufferDescInitData_t pictureBufferDescInitData;
     EbPictureBufferDescInitData_t doubleWidthPictureBufferDescInitData;
@@ -153,18 +162,28 @@ EbErrorType mode_decision_candidate_buffer_ctor(
     *buffer_dbl_ptr = bufferPtr;
 
     // Init Picture Data
+#if INTRA_INTER_FAST_LOOP
+    pictureBufferDescInitData.maxWidth = MAX_SB_SIZE;
+    pictureBufferDescInitData.maxHeight = MAX_SB_SIZE;
+    pictureBufferDescInitData.bit_depth = EB_8BIT;
+#else
     pictureBufferDescInitData.maxWidth = sb_max_size;
     pictureBufferDescInitData.maxHeight = sb_max_size;
     pictureBufferDescInitData.bit_depth = max_bitdepth;
+#endif
     pictureBufferDescInitData.bufferEnableMask = PICTURE_BUFFER_DESC_FULL_MASK;
     pictureBufferDescInitData.left_padding = 0;
     pictureBufferDescInitData.right_padding = 0;
     pictureBufferDescInitData.top_padding = 0;
     pictureBufferDescInitData.bot_padding = 0;
     pictureBufferDescInitData.splitMode = EB_FALSE;
-
+#if INTRA_INTER_FAST_LOOP
+    doubleWidthPictureBufferDescInitData.maxWidth = MAX_SB_SIZE;
+    doubleWidthPictureBufferDescInitData.maxHeight = MAX_SB_SIZE;
+#else
     doubleWidthPictureBufferDescInitData.maxWidth = sb_max_size;
     doubleWidthPictureBufferDescInitData.maxHeight = sb_max_size;
+#endif
     doubleWidthPictureBufferDescInitData.bit_depth = EB_16BIT;
     doubleWidthPictureBufferDescInitData.bufferEnableMask = PICTURE_BUFFER_DESC_FULL_MASK;
     doubleWidthPictureBufferDescInitData.left_padding = 0;
@@ -173,9 +192,13 @@ EbErrorType mode_decision_candidate_buffer_ctor(
     doubleWidthPictureBufferDescInitData.bot_padding = 0;
     doubleWidthPictureBufferDescInitData.splitMode = EB_FALSE;
 
-
+#if INTRA_INTER_FAST_LOOP
+    ThirtyTwoWidthPictureBufferDescInitData.maxWidth = MAX_SB_SIZE;
+    ThirtyTwoWidthPictureBufferDescInitData.maxHeight = MAX_SB_SIZE;
+#else
     ThirtyTwoWidthPictureBufferDescInitData.maxWidth = sb_max_size;
     ThirtyTwoWidthPictureBufferDescInitData.maxHeight = sb_max_size;
+#endif
     ThirtyTwoWidthPictureBufferDescInitData.bit_depth = EB_32BIT;
     ThirtyTwoWidthPictureBufferDescInitData.bufferEnableMask = PICTURE_BUFFER_DESC_FULL_MASK;
     ThirtyTwoWidthPictureBufferDescInitData.left_padding = 0;

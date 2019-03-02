@@ -132,11 +132,11 @@ extern "C" {
         uint64_t                       *full_cost_array;
         uint64_t                       *full_cost_skip_ptr;
         uint64_t                       *full_cost_merge_ptr;
-
+#if !INTRA_INTER_FAST_LOOP
         // Fast loop buffers
         uint8_t                         buffer_depth_index_start[MAX_LEVEL_COUNT];
         uint8_t                         buffer_depth_index_width[MAX_LEVEL_COUNT];
-
+#endif
         // Lambda
 #if ADD_DELTA_QP_SUPPORT
         uint16_t                        qp;
