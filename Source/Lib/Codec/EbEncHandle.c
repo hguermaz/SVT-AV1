@@ -268,7 +268,7 @@ void InitThreadManagmentParams() {
 void EbSetThreadManagementParameters(EbSvtAv1EncConfiguration   *config_ptr) {
 #ifdef _MSC_VER
     alternateGroups = 0;
-    if (config_ptr->use_round_robin_thread_assignment == EB_TRUE) {
+    if (0) {
         if (numGroups == 2 && config_ptr->active_channel_count > 1) {
             if ((config_ptr->active_channel_count % 2) && (config_ptr->active_channel_count - 1 == config_ptr->channel_id)) {
                 alternateGroups = 1;
@@ -2213,7 +2213,7 @@ void CopyApiFromApp(
 
     sequence_control_set_ptr->static_config.channel_id = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->channel_id;
     sequence_control_set_ptr->static_config.active_channel_count = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->active_channel_count;
-    sequence_control_set_ptr->static_config.use_round_robin_thread_assignment = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->use_round_robin_thread_assignment;
+//    sequence_control_set_ptr->static_config.use_round_robin_thread_assignment = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->use_round_robin_thread_assignment;
     sequence_control_set_ptr->qp = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->qp;
     sequence_control_set_ptr->static_config.recon_enabled = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->recon_enabled;
 

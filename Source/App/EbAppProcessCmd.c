@@ -435,7 +435,7 @@ void LogErrorOutput(
         break;
 
     case EB_ENC_PM_ERROR10:
-        fprintf(errorLogFile, "Error: PictureManagerKernel: referenceEntryPtr should never be null!\n");
+        fprintf(errorLogFile, "Error: picture_manager_kernel: referenceEntryPtr should never be null!\n");
         break;
 
     case EB_ENC_PM_ERROR2:
@@ -543,7 +543,7 @@ void LogErrorOutput(
         break;
 
     case EB_ENC_RD_COST_ERROR3:
-        fprintf(errorLogFile, "Error: Intra2Nx2NFastCostIslice can only support 2Nx2N partition type!\n");
+        fprintf(errorLogFile, "Error: intra2_nx2_n_fast_cost_islice can only support 2Nx2N partition type!\n");
         break;
 
         // EB_ENC_SAO_ERRORS:
@@ -813,6 +813,12 @@ void ReadInputFrames(
                 }
             }
             else {
+
+                /* if input is a y4m file, read next line which contains "FRAME" */
+                if(config->y4mInput==EB_TRUE) {
+                    readY4mFrameDelimiter(config);
+                }
+
                 uint64_t lumaReadSize = (uint64_t)inputPaddedWidth*inputPaddedHeight << is16bit;
                 ebInputPtr = inputPtr->luma;
                 if(config->y4mInput==EB_FALSE && config->processedFrameCount == 0 && config->inputFile == stdin) {
@@ -829,11 +835,6 @@ void ReadInputFrames(
                 headerPtr->n_filled_len += (uint32_t)fread(ebInputPtr, 1, lumaReadSize >> 2, inputFile);
                 ebInputPtr = inputPtr->cr;
                 headerPtr->n_filled_len += (uint32_t)fread(ebInputPtr, 1, lumaReadSize >> 2, inputFile);
-
-                /* if input is a y4m file, read next line with contains "FRAME" */
-                if(config->y4mInput==EB_TRUE) {
-                    readY4mFrameDelimiter(config);
-                }
 
                 inputPtr->luma = inputPtr->luma + ((config->inputPaddedWidth*TOP_INPUT_PADDING + LEFT_INPUT_PADDING) << is16bit);
                 inputPtr->cb   = inputPtr->cb + (((config->inputPaddedWidth >> 1)*(TOP_INPUT_PADDING >> 1) + (LEFT_INPUT_PADDING >> 1)) << is16bit);
@@ -1498,7 +1499,7 @@ APPEXITCONDITIONTYPE ProcessOutputReconBuffer(
     EbConfig_t             *config,
     EbAppContext_t         *appCallBack)
 {
-    EbBufferHeaderType    *headerPtr = appCallBack->reconBuffer; // needs to change for buffered input
+    EbBufferHeaderType    *headerPtr = appCallBack->recon_buffer; // needs to change for buffered input
     EbComponentType       *componentHandle = (EbComponentType*)appCallBack->svtEncoderHandle;
     APPEXITCONDITIONTYPE    return_value = APP_ExitConditionNone;
     EbErrorType            recon_status = EB_ErrorNone;
