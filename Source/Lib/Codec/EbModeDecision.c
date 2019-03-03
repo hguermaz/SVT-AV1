@@ -2650,7 +2650,9 @@ EbErrorType ProductGenerateMdCandidatesCu(
     SsMeContext_t                    *ss_mecontext,
     const uint32_t                      leaf_index,
     const uint32_t                      lcuAddr,
+#if !INTRA_INTER_FAST_LOOP
     uint32_t                           *bufferTotalCountPtr,
+#endif
     uint32_t                           *candidateTotalCountPtr,
     EbPtr                              interPredContextPtr,
     PictureControlSet_t              *picture_control_set_ptr)
@@ -2704,6 +2706,10 @@ EbErrorType ProductGenerateMdCandidatesCu(
                     &canTotalCnt,
                     leaf_index);
 
+#if INTRA_INTER_FAST_LOOP
+    // Track the total number of fast intra candidates
+    context_ptr->fast_candidate_intra_count = canTotalCnt;
+#endif
     if (slice_type != I_SLICE) {
         if (inject_inter_candidate)
             inject_inter_candidates(
@@ -2715,15 +2721,15 @@ EbErrorType ProductGenerateMdCandidatesCu(
                 &canTotalCnt,
                 leaf_index);
     }
-
+#if !INTRA_INTER_FAST_LOOP
     // Set BufferTotalCount: determines the number of candidates to fully reconstruct
     *bufferTotalCountPtr = context_ptr->full_recon_search_count;
-
+#endif
     *candidateTotalCountPtr = canTotalCnt;
-
+#if !INTRA_INTER_FAST_LOOP
     // Make sure buffer_total_count is not larger than the number of fast modes
     *bufferTotalCountPtr = MIN(*candidateTotalCountPtr, *bufferTotalCountPtr);
-
+#endif
     return EB_ErrorNone;
 }
 

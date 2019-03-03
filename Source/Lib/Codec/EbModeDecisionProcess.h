@@ -230,7 +230,9 @@ extern "C" {
         int16_t                           injected_mv_y_bipred_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
         uint8_t                           injected_mv_count_bipred;
 #endif
-
+#if INTRA_INTER_FAST_LOOP
+        uint32_t                          fast_candidate_intra_count;
+#endif
         // Multi-modes signal(s) 
         uint8_t                           nfl_level;
         uint8_t                           skip_interpolation_search;

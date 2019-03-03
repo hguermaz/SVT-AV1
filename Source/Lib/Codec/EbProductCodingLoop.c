@@ -63,7 +63,9 @@ EbErrorType ProductGenerateMdCandidatesCu(
     const uint32_t                    leaf_index,
 
     const uint32_t                    lcuAddr,
+#if !INTRA_INTER_FAST_LOOP
     uint32_t                         *buffer_total_count,
+#endif
     uint32_t                         *fastCandidateTotalCount,
     EbPtr                           interPredContextPtr,
     PictureControlSet_t            *picture_control_set_ptr);
@@ -1258,7 +1260,7 @@ void generate_intra_reference_samples(
     const Av1Common         *cm,
     ModeDecisionContext_t   *md_context_ptr);
 #if INTRA_INTER_FAST_LOOP
-void perform_fast_loop_intra(
+void perform_fast_loop(
     PictureControlSet_t                 *picture_control_set_ptr,
     LargestCodingUnit_t                 *sb_ptr,
     ModeDecisionContext_t               *context_ptr,
@@ -3166,8 +3168,8 @@ void md_encode_block(
     ModeDecisionCandidateBuffer_t    *bestCandidateBuffers[5])
 {
 
-    ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->candidate_buffer_ptr_array;
-    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array;
+    ModeDecisionCandidateBuffer_t          **candidateBufferPtrArrayBase = context_ptr->candidate_buffer_ptr_array;
+    ModeDecisionCandidateBuffer_t          **candidate_buffer_ptr_array;
     const BlockGeom                          *blk_geom = context_ptr->blk_geom;
 
     uint32_t                                  buffer_total_count;
@@ -3177,7 +3179,9 @@ void md_encode_block(
     uint32_t                                  fastCandidateTotalCount;
     uint32_t                                  fullCandidateTotalCount;
     uint32_t                                  maxBuffers;
+#if !INTRA_INTER_FAST_LOOP
     uint32_t                                  secondFastCostSearchCandidateTotalCount;
+#endif
     EbAsm                                     asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
     uint32_t                                  best_intra_mode = EB_INTRA_MODE_INVALID;
 
@@ -3239,22 +3243,26 @@ void md_encode_block(
             ss_mecontext,
             leaf_index,
             lcuAddr,
-            &buffer_total_count,
             &fastCandidateTotalCount,
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
 
-        //if we want to recon N candidate, we would need N+1 buffers
-        maxBuffers = MIN((buffer_total_count + 1), MAX_NFL);
-        // Hsan: perform_fast_loop_intra() assumes intra canidates injected before inter candidates 
-        perform_fast_loop_intra(
+        // Number of full loop candidates should not exceed number of fast loop candidates
+        buffer_total_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
+
+        // If we want to recon N candidate, we would need N+1 buffers
+        maxBuffers = MIN((context_ptr->full_recon_search_count + 1), MAX_NFL);
+
+        // Evaluate intra fast loop candidates
+        uint32_t final_fast_candidate_intra_count = 0;
+        perform_fast_loop(
             picture_control_set_ptr,
             context_ptr->sb_ptr,
             context_ptr,
             candidateBufferPtrArrayBase,
             fast_candidate_array,
-            0,
-            fastCandidateTotalCount - 1,
+            0,  
+            fastCandidateTotalCount -1, //context_ptr->fast_candidate_intra_count - 1,
             input_picture_ptr,
             inputOriginIndex,
             inputCbOriginIndex,
@@ -3264,11 +3272,53 @@ void md_encode_block(
             cuChromaOriginIndex,
             0,
             maxBuffers,
-            &secondFastCostSearchCandidateTotalCount,
+            &final_fast_candidate_intra_count,
             asm_type);
 
+        // Evaluate inter fast loop candidates
+        uint32_t final_fast_candidate_inter_count = 0;
+#if 0
+        perform_fast_loop(
+            picture_control_set_ptr,
+            context_ptr->sb_ptr,
+            context_ptr,
+            candidateBufferPtrArrayBase,
+            fast_candidate_array,
+            0,
+            fastCandidateTotalCount - 1, //context_ptr->fast_candidate_intra_count - 1,
+            input_picture_ptr,
+            inputOriginIndex,
+            inputCbOriginIndex,
+            inputCbOriginIndex,
+            cu_ptr,
+            cuOriginIndex,
+            cuChromaOriginIndex,
+            0,
+            maxBuffers,
+            &final_fast_candidate_intra_count,
+            asm_type);
+#endif
         // Make sure buffer_total_count is not larger than the number of fast modes
-        buffer_total_count = MIN(secondFastCostSearchCandidateTotalCount, buffer_total_count);
+        buffer_total_count = MIN((final_fast_candidate_intra_count + final_fast_candidate_inter_count), buffer_total_count);
+
+        // PreModeDecision
+        // -Input is the buffers
+        // -Output is list of buffers for full reconstruction
+        uint8_t  disable_merge_index = 0;
+        uint64_t ref_fast_cost = MAX_MODE_COST;
+
+        PreModeDecision(
+            cu_ptr,
+            ((final_fast_candidate_intra_count + final_fast_candidate_inter_count) == buffer_total_count) ? buffer_total_count : maxBuffers,
+            candidate_buffer_ptr_array,
+            &fullCandidateTotalCount,
+            context_ptr->best_candidate_index_array,
+#if USED_NFL_FEATURE_BASED
+            context_ptr->sorted_candidate_index_array,
+#endif
+            &disable_merge_index,
+            &ref_fast_cost,
+            (EbBool)((final_fast_candidate_intra_count + final_fast_candidate_inter_count) == buffer_total_count));
 #else
         ProductGenerateMdCandidatesCu(
             context_ptr->sb_ptr,
@@ -3304,7 +3354,7 @@ void md_encode_block(
 
         // Make sure buffer_total_count is not larger than the number of fast modes
         buffer_total_count = MIN(secondFastCostSearchCandidateTotalCount, buffer_total_count);
-#endif
+
         // PreModeDecision
         // -Input is the buffers
         // -Output is list of buffers for full reconstruction
@@ -3323,8 +3373,7 @@ void md_encode_block(
             &disable_merge_index,
             &ref_fast_cost,
             (EbBool)(secondFastCostSearchCandidateTotalCount == buffer_total_count)); // The fast loop bug fix is now added to 4K only
-
-
+#endif
         AV1PerformFullLoop(
             picture_control_set_ptr,
             context_ptr->sb_ptr,
