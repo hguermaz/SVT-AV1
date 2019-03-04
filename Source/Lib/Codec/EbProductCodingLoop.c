@@ -3255,7 +3255,9 @@ void md_encode_block(
         uint32_t full_recon_intra_search_count = (picture_control_set_ptr->slice_type == I_SLICE) ?
             context_ptr->full_recon_search_count :
             MIN(context_ptr->full_recon_search_count >> 1, context_ptr->fast_candidate_intra_count);
-        uint32_t full_recon_inter_search_count = context_ptr->full_recon_search_count - full_recon_intra_search_count;
+        uint32_t full_recon_inter_search_count = MIN(context_ptr->full_recon_search_count - full_recon_intra_search_count, context_ptr->fast_candidate_inter_count);
+        // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates 
+        context_ptr->full_recon_search_count = full_recon_intra_search_count + full_recon_inter_search_count;
         // Derive intra and inter full buffer total count
         uint32_t intra_buffer_count = context_ptr->fast_candidate_intra_count > full_recon_intra_search_count ? (full_recon_intra_search_count + 1) : full_recon_intra_search_count;
         uint32_t inter_buffer_count = context_ptr->fast_candidate_inter_count > full_recon_inter_search_count ? (full_recon_inter_search_count + 1) : full_recon_inter_search_count;
