@@ -421,30 +421,31 @@ void SwitchToRealTime(){
     UNUSED(retValue);
 #endif
 }
-uint32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config) {
+int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config) {
 
     if (config){
         uint32_t fps            = (uint32_t)((config->frame_rate > 1000) ? 
                         config->frame_rate >> 16 : 
                         config->frame_rate);
         uint32_t ppcs_count     = fps;
-        uint32_t min_ppcs_count = (2 << config->hierarchical_levels) + 1;
+        uint32_t min_ppcs_count = (2 << config->hierarchical_levels) + 1; // min picture count to start encoding
 
         fps        = fps > 120 ? 120   : fps;
         fps        = fps < 24  ? 24    : fps; 
         ppcs_count = MAX(min_ppcs_count, fps);
         ppcs_count = ((ppcs_count * 5) >> 2);  // 1.25 sec worth of internal buffering
     
-        return ppcs_count;
+        return (int32_t) ppcs_count;
     }
     else{
         SVT_LOG("SVT[error]: Configuration struct is corrupted\n");
-        return 60;
+        return -1;
     }
 }
-void LoadDefaultBufferConfigurationSettings(
+EbErrorType LoadDefaultBufferConfigurationSettings(
     SequenceControlSet_t       *sequence_control_set_ptr){
 
+    EbErrorType           return_error = EB_ErrorNone;
     uint32_t encDecSegH = (sequence_control_set_ptr->static_config.super_block_size == 128) ?
         ((sequence_control_set_ptr->max_input_luma_height + 64) / 128) :
         ((sequence_control_set_ptr->max_input_luma_height + 32) / 64);
@@ -454,7 +455,10 @@ void LoadDefaultBufferConfigurationSettings(
 
     uint32_t meSegH     = (((sequence_control_set_ptr->max_input_luma_height + 32) / BLOCK_SIZE_64) < 6) ? 1 : 6;
     uint32_t meSegW     = (((sequence_control_set_ptr->max_input_luma_width + 32) / BLOCK_SIZE_64) < 10) ? 1 : 10;
-    uint32_t inputPic   = set_parent_pcs(&sequence_control_set_ptr->static_config);
+    int32_t return_ppcs = set_parent_pcs(&sequence_control_set_ptr->static_config);
+    if (return_ppcs == -1)
+        return EB_ErrorInsufficientResources;
+    uint32_t inputPic = (uint32_t)return_ppcs;
 
     unsigned int lpCount = GetNumProcessors();
     unsigned int coreCount = lpCount;
@@ -582,7 +586,7 @@ void LoadDefaultBufferConfigurationSettings(
     sequence_control_set_ptr->total_process_init_count += 6; // single processes count
     printf("Number of logical cores available: %u\nNumber of PPCS %u\n", coreCount, inputPic);
 
-    return;
+    return return_error;
 
 }
  // Rate Control
@@ -2979,7 +2983,7 @@ EB_API EbErrorType eb_svt_enc_set_parameter(
         pEncCompData->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr->max_ref_count,
         pEncCompData->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr->max_temporal_layers);
 
-    LoadDefaultBufferConfigurationSettings(
+    return_error = LoadDefaultBufferConfigurationSettings(
         pEncCompData->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr);
 
     PrintLibParams(
