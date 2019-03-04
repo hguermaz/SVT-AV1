@@ -232,6 +232,7 @@ extern "C" {
 #endif
 #if INTRA_INTER_FAST_LOOP
         uint32_t                          fast_candidate_intra_count;
+        uint32_t                          fast_candidate_inter_count;
 #endif
         // Multi-modes signal(s) 
         uint8_t                           nfl_level;

@@ -467,6 +467,18 @@ void LimitMvOverBound(
 *   Selects which fast cost modes to
 *   do full reconstruction on.
 ***************************************/
+#if INTRA_INTER_FAST_LOOP
+EbErrorType PreModeDecision(
+    struct ModeDecisionContext_s   *context_ptr,
+    uint32_t                        buffer_total_count,
+    ModeDecisionCandidateBuffer_t **buffer_ptr_array,
+    uint32_t                       *full_candidate_total_count_ptr,
+    uint8_t                        *best_candidate_index_array,
+#if USED_NFL_FEATURE_BASED        
+    uint8_t                        *sorted_candidate_index_array,
+#endif                            
+    uint64_t                       *ref_fast_cost) {
+#else
 EbErrorType PreModeDecision(
     CodingUnit_t                   *cu_ptr,
     uint32_t                          buffer_total_count,
@@ -478,16 +490,21 @@ EbErrorType PreModeDecision(
 #endif
     uint8_t                          *disable_merge_index,
     uint64_t                         *ref_fast_cost,
-    EbBool                           same_fast_full_candidate){
+    EbBool                           same_fast_full_candidate) {
 
     UNUSED(cu_ptr);
+#endif
     EbErrorType return_error = EB_ErrorNone;
     uint32_t fullCandidateIndex;
+#if INTRA_INTER_FAST_LOOP
+    uint32_t fullReconCandidateCount = context_ptr->full_recon_search_count;
+#else
     uint32_t fullReconCandidateCount;
+#endif
     uint32_t                          highestCostIndex;
     uint64_t                          highestCost;
     uint32_t                          candIndx = 0, i, j, index;
-
+#if !INTRA_INTER_FAST_LOOP
     *full_candidate_total_count_ptr = buffer_total_count;
 
     //Second,  We substract one, because with N buffers we can determine the best N-1 candidates.
@@ -496,13 +513,17 @@ EbErrorType PreModeDecision(
         fullReconCandidateCount = MAX(1, (*full_candidate_total_count_ptr));
     else
         fullReconCandidateCount = MAX(1, (*full_candidate_total_count_ptr) - 1);
-
+#endif
     //With N buffers, we get here with the best N-1, plus the last candidate. We need to exclude the worst, and keep the best N-1.
     highestCost = *(buffer_ptr_array[0]->fast_cost_ptr);
     highestCostIndex = 0;
 
     if (buffer_total_count > 1) {
+#if INTRA_INTER_FAST_LOOP
+        if (buffer_total_count == context_ptr->full_recon_search_count) {
+#else
         if (same_fast_full_candidate) {
+#endif
             for (i = 0; i < buffer_total_count; i++) {
                 best_candidate_index_array[candIndx++] = (uint8_t)i;
             }
@@ -557,6 +578,7 @@ EbErrorType PreModeDecision(
     }
 
 #endif
+#if !INTRA_INTER_FAST_LOOP
     // Set (*full_candidate_total_count_ptr) to fullReconCandidateCount
     (*full_candidate_total_count_ptr) = fullReconCandidateCount;
 
@@ -566,7 +588,7 @@ EbErrorType PreModeDecision(
         // Set disable_merge_index
         *disable_merge_index = buffer_ptr_array[fullCandidateIndex]->candidate_ptr->type == INTER_MODE ? 1 : *disable_merge_index;
     }
-
+#endif
     return return_error;
 }
 
