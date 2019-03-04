@@ -3247,22 +3247,16 @@ void md_encode_block(
             &fastCandidateTotalCount,
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
-        // Derive fast inter candidates total count
-        context_ptr->fast_candidate_inter_count = fastCandidateTotalCount - context_ptr->fast_candidate_intra_count;
-        // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
-        context_ptr->full_recon_search_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
-        // Split nfl into intra and inter
-        uint32_t full_recon_intra_search_count = (picture_control_set_ptr->slice_type == I_SLICE) ?
-            context_ptr->full_recon_search_count :
-            MIN(context_ptr->full_recon_search_count >> 1, context_ptr->fast_candidate_intra_count);
-        uint32_t full_recon_inter_search_count = MIN(context_ptr->full_recon_search_count - full_recon_intra_search_count, context_ptr->fast_candidate_inter_count);
-        // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates 
-        context_ptr->full_recon_search_count = full_recon_intra_search_count + full_recon_inter_search_count;
-        // Derive intra and inter full buffer total count
-        uint32_t intra_buffer_count = context_ptr->fast_candidate_intra_count > full_recon_intra_search_count ? (full_recon_intra_search_count + 1) : full_recon_intra_search_count;
-        uint32_t inter_buffer_count = context_ptr->fast_candidate_inter_count > full_recon_inter_search_count ? (full_recon_inter_search_count + 1) : full_recon_inter_search_count;
 
-#if 0 // original
+
+#if 1 // original
+        uint32_t fullCandidateTotalCount;
+        uint32_t maxBuffers;
+        uint32_t secondFastCostSearchCandidateTotalCount;
+
+        uint32_t buffer_total_count = MIN(context_ptr->full_recon_search_count, fastCandidateTotalCount);
+
+
         // Evaluate intra fast loop candidates
         uint32_t final_fast_candidate_intra_count = 0;
         perform_fast_loop(
@@ -3289,7 +3283,7 @@ void md_encode_block(
         uint32_t final_fast_candidate_inter_count = 0;
 
         // If we want to recon N candidate, we would need N+1 buffers
-        maxBuffers = MIN((context_ptr->full_recon_search_count + 1), MAX_NFL);
+        maxBuffers = MIN((context_ptr->full_recon_search_count + 1), MAX_NFL + 1);
 
         // Make sure buffer_total_count is not larger than the number of fast modes
         buffer_total_count = MIN((final_fast_candidate_intra_count + final_fast_candidate_inter_count), buffer_total_count);
@@ -3313,6 +3307,22 @@ void md_encode_block(
             &ref_fast_cost,
             (EbBool)((final_fast_candidate_intra_count + final_fast_candidate_inter_count) == buffer_total_count));
 #else
+
+        // Derive fast inter candidates total count
+        context_ptr->fast_candidate_inter_count = fastCandidateTotalCount - context_ptr->fast_candidate_intra_count;
+        // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
+        context_ptr->full_recon_search_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
+        // Split nfl into intra and inter
+        uint32_t full_recon_intra_search_count = (picture_control_set_ptr->slice_type == I_SLICE) ?
+            context_ptr->full_recon_search_count :
+            1;// MIN(context_ptr->full_recon_search_count >> 1, context_ptr->fast_candidate_intra_count);
+        uint32_t full_recon_inter_search_count = MIN(context_ptr->full_recon_search_count - full_recon_intra_search_count, context_ptr->fast_candidate_inter_count);
+        // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates 
+        context_ptr->full_recon_search_count = full_recon_intra_search_count + full_recon_inter_search_count;
+        // Derive intra and inter full buffer total count
+        uint32_t intra_buffer_count = context_ptr->fast_candidate_intra_count > full_recon_intra_search_count ? (full_recon_intra_search_count + 1) : full_recon_intra_search_count;
+        uint32_t inter_buffer_count = context_ptr->fast_candidate_inter_count > full_recon_inter_search_count ? (full_recon_inter_search_count + 1) : full_recon_inter_search_count;
+
         // Evaluate intra fast loop candidates
         uint32_t final_fast_candidate_intra_count = 0;
         perform_fast_loop(
