@@ -1135,7 +1135,7 @@ void ProductCodingLoopInitFastLoop(
         leaf_partition_neighbor_array);
 
 #if INTRA_INTER_FAST_LOOP
-    for (uint32_t index = 0; index < MAX_NFL + 2; ++index) {
+    for (uint32_t index = 0; index < (MAX_NFL + 1 + 1); ++index) {
         context_ptr->fast_cost_array[index] = MAX_CU_COST;
     }
 #else
@@ -3351,7 +3351,7 @@ void md_encode_block(
                 cu_ptr,
                 cuOriginIndex,
                 cuChromaOriginIndex,
-                intra_buffer_count + 1,
+                intra_buffer_count,
                 inter_buffer_count,
                 &final_fast_candidate_inter_count,
                 asm_type);

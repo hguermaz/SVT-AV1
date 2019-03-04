@@ -58,18 +58,15 @@ EbErrorType mode_decision_context_ctor(
     }
     // Cost Arrays
 #if INTRA_INTER_FAST_LOOP
-    EB_MALLOC(uint64_t*, context_ptr->fast_cost_array, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
-
-    EB_MALLOC(uint64_t*, context_ptr->full_cost_array, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
-
-    EB_MALLOC(uint64_t*, context_ptr->full_cost_skip_ptr, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
-
-    EB_MALLOC(uint64_t*, context_ptr->full_cost_merge_ptr, sizeof(uint64_t) * MAX_NFL, EB_N_PTR);
-
+    // Hsan: MAX_NFL + 1 scratch buffer for intra + 1 scratch buffer for inter
+    EB_MALLOC(uint64_t*, context_ptr->fast_cost_array     , sizeof(uint64_t) * (MAX_NFL + 1 + 1), EB_N_PTR);
+    EB_MALLOC(uint64_t*, context_ptr->full_cost_array     , sizeof(uint64_t) * (MAX_NFL + 1 + 1), EB_N_PTR);
+    EB_MALLOC(uint64_t*, context_ptr->full_cost_skip_ptr  , sizeof(uint64_t) * (MAX_NFL + 1 + 1), EB_N_PTR);
+    EB_MALLOC(uint64_t*, context_ptr->full_cost_merge_ptr , sizeof(uint64_t) * (MAX_NFL + 1 + 1), EB_N_PTR);
     // Candidate Buffers
-    EB_MALLOC(ModeDecisionCandidateBuffer_t**, context_ptr->candidate_buffer_ptr_array, sizeof(ModeDecisionCandidateBuffer_t*) * MAX_NFL, EB_N_PTR);
+    EB_MALLOC(ModeDecisionCandidateBuffer_t**, context_ptr->candidate_buffer_ptr_array, sizeof(ModeDecisionCandidateBuffer_t*) * (MAX_NFL + 1 + 1), EB_N_PTR);
 
-    for (bufferIndex = 0; bufferIndex < MAX_NFL; ++bufferIndex) {
+    for (bufferIndex = 0; bufferIndex < (MAX_NFL + 1 + 1); ++bufferIndex) {
 #else
     EB_MALLOC(uint64_t*, context_ptr->fast_cost_array, sizeof(uint64_t) * MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT, EB_N_PTR);
 
