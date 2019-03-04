@@ -57,7 +57,6 @@
  **************************************/
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdint.h>
 #include <immintrin.h>
 
@@ -422,14 +421,26 @@ void SwitchToRealTime(){
     UNUSED(retValue);
 #endif
 }
-uint32_t SetParentPcs(EbSvtAv1EncConfiguration*   config) {
+uint32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config) {
 
-    uint32_t fps = (uint32_t)((config->frame_rate > 1000) ? config->frame_rate >> 16 : config->frame_rate);
+    if (config){
+        uint32_t fps            = (uint32_t)((config->frame_rate > 1000) ? 
+                        config->frame_rate >> 16 : 
+                        config->frame_rate);
+        uint32_t ppcs_count     = fps;
+        uint32_t min_ppcs_count = (2 << config->hierarchical_levels) + 1;
 
-    fps = fps > 120 ? 120 : fps;
-    fps = fps < 24 ? 24 : fps;
-
-    return ((fps*5)>>2); // 1.25 sec worth of internal buffering
+        fps        = fps > 120 ? 120   : fps;
+        fps        = fps < 24  ? 24    : fps; 
+        ppcs_count = MAX(min_ppcs_count, fps);
+        ppcs_count = ((ppcs_count * 5) >> 2);  // 1.25 sec worth of internal buffering
+    
+        return ppcs_count;
+    }
+    else{
+        SVT_LOG("SVT[error]: Configuration struct is corrupted\n");
+        return 60;
+    }
 }
 void LoadDefaultBufferConfigurationSettings(
     SequenceControlSet_t       *sequence_control_set_ptr){
@@ -443,7 +454,7 @@ void LoadDefaultBufferConfigurationSettings(
 
     uint32_t meSegH     = (((sequence_control_set_ptr->max_input_luma_height + 32) / BLOCK_SIZE_64) < 6) ? 1 : 6;
     uint32_t meSegW     = (((sequence_control_set_ptr->max_input_luma_width + 32) / BLOCK_SIZE_64) < 10) ? 1 : 10;
-    uint32_t inputPic   = SetParentPcs(&sequence_control_set_ptr->static_config);
+    uint32_t inputPic   = set_parent_pcs(&sequence_control_set_ptr->static_config);
 
     unsigned int lpCount = GetNumProcessors();
     unsigned int coreCount = lpCount;
@@ -467,8 +478,11 @@ void LoadDefaultBufferConfigurationSettings(
         coreCount = lpCount;
 #endif
 
-    sequence_control_set_ptr->input_buffer_fifo_init_count = inputPic + SCD_LAD + sequence_control_set_ptr->static_config.look_ahead_distance ;
-    sequence_control_set_ptr->output_stream_buffer_fifo_init_count = sequence_control_set_ptr->input_buffer_fifo_init_count + 4;
+    sequence_control_set_ptr->input_buffer_fifo_init_count         = 
+        inputPic + SCD_LAD + sequence_control_set_ptr->static_config.look_ahead_distance ;
+    sequence_control_set_ptr->output_stream_buffer_fifo_init_count = 
+        sequence_control_set_ptr->input_buffer_fifo_init_count + 4;
+
     // ME segments
     sequence_control_set_ptr->me_segment_row_count_array[0] = meSegH;
     sequence_control_set_ptr->me_segment_row_count_array[1] = meSegH;
@@ -514,7 +528,7 @@ void LoadDefaultBufferConfigurationSettings(
 #endif
     //#====================== Data Structures and Picture Buffers ======================
     sequence_control_set_ptr->picture_control_set_pool_init_count       = inputPic;
-    sequence_control_set_ptr->picture_control_set_pool_init_count_child = MAX(MAX(MIN(2, coreCount/2), coreCount / 6), 1);
+    sequence_control_set_ptr->picture_control_set_pool_init_count_child = MAX(MAX(MIN(3, coreCount/2), coreCount / 6), 1);
     sequence_control_set_ptr->reference_picture_buffer_init_count       = MAX((uint32_t)(inputPic >> 1),
                                                                           (uint32_t)((1 << sequence_control_set_ptr->static_config.hierarchical_levels) + 2)) +
                                                                           sequence_control_set_ptr->static_config.look_ahead_distance + SCD_LAD;
@@ -563,12 +577,6 @@ void LoadDefaultBufferConfigurationSettings(
     sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->dlf_process_init_count                           = MAX(MIN(40, coreCount), coreCount));
     sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->cdef_process_init_count                          = MAX(MIN(40, coreCount), coreCount));
     sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->rest_process_init_count                          = MAX(MIN(40, coreCount), coreCount));
-#endif
-
-#if FILT_PROC
-    sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->dlf_process_init_count  = MAX(40, coreCount));
-    sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->cdef_process_init_count = MAX(40, coreCount));
-    sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->rest_process_init_count = MAX(40, coreCount));   
 #endif
 
     sequence_control_set_ptr->total_process_init_count += 6; // single processes count
@@ -2837,6 +2845,7 @@ EbErrorType eb_svt_enc_init_parameter(
 
     return return_error;
 }
+//#define DEBUG_BUFFERS
 static void PrintLibParams(
     SequenceControlSet_t* scs) {
 
@@ -2906,6 +2915,10 @@ static void PrintLibParams(
         scs->mode_decision_configuration_process_init_count,
         scs->enc_dec_process_init_count,
         scs->entropy_coding_process_init_count);
+    SVT_LOG("\nSVT [config]: DLF_P / CDEF_P / REST_P \t\t\t\t\t\t: %d / %d / %d",
+        scs->dlf_process_init_count,
+        scs->cdef_process_init_count,
+        scs->rest_process_init_count);
 #endif
     SVT_LOG("\n------------------------------------------- ");
     SVT_LOG("\n");
