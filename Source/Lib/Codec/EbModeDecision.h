@@ -413,7 +413,7 @@ extern "C" {
         uint8_t                        *best_candidate_index_array,
         uint32_t                       *best_intra_mode);
 #if INTRA_INTER_FAST_LOOP
-#if 1 // original
+#if 0 // original
     EbErrorType PreModeDecision(
         CodingUnit_t                   *cu_ptr,
         uint32_t                        buffer_total_count,

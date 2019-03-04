@@ -1275,8 +1275,9 @@ void perform_fast_loop(
     CodingUnit_t                        *cu_ptr,
     uint32_t                             cuOriginIndex,
     uint32_t                             cuChromaOriginIndex,
-    uint32_t                             candidate_buffer_start_index,   
+    uint32_t                             candidate_buffer_start_index,
     uint32_t                             maxBuffers,
+    EbBool                               scratch_buffer_pesent_flag,
     uint32_t                            *secondFastCostSearchCandidateTotalCount,
     EbAsm                                asm_type) {
 
@@ -1406,14 +1407,18 @@ void perform_fast_loop(
         }
 
         // Find the buffer with the highest cost
+#if ENHANCE_0
+        if (fastLoopCandidateIndex || scratch_buffer_pesent_flag)
+#else
         if (fastLoopCandidateIndex)
+#endif
         {
             // maxCost is volatile to prevent the compiler from loading 0xFFFFFFFFFFFFFF
             //   as a const at the early-out. Loading a large constant on intel x64 processors
             //   clogs the i-cache/intstruction decode. This still reloads the variable from
             //   the stack each pass, so a better solution would be to register the variable,
             //   but this might require asm.
-            volatile uint64_t maxCost = ~0ull;
+            volatile uint64_t maxCost = MAX_CU_COST;
             const uint64_t *fast_cost_array = context_ptr->fast_cost_array;
             const uint32_t bufferIndexStart = candidate_buffer_start_index;
             const uint32_t bufferIndexEnd = bufferIndexStart + maxBuffers;
@@ -1434,6 +1439,12 @@ void perform_fast_loop(
         }
         --fastLoopCandidateIndex;
     }
+#if ENHANCE_0
+    // Set the cost of the scratch canidate to max to get discarded @ the sorting phase 
+    *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr) = (scratch_buffer_pesent_flag) ?
+        MAX_CU_COST : 
+        *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr);
+#endif
 }
 #else
 void ProductPerformFastLoop(
@@ -3249,10 +3260,13 @@ void md_encode_block(
             picture_control_set_ptr);
 
 
-#if 1 // original
+#if 0 // original
         uint32_t fullCandidateTotalCount;
         uint32_t maxBuffers;
         uint32_t secondFastCostSearchCandidateTotalCount;
+
+
+        context_ptr->full_recon_search_count = MIN(context_ptr->full_recon_search_count, fastCandidateTotalCount);
 
         uint32_t buffer_total_count = MIN(context_ptr->full_recon_search_count, fastCandidateTotalCount);
 
@@ -3342,6 +3356,7 @@ void md_encode_block(
             cuChromaOriginIndex,
             0,
             intra_buffer_count,
+            intra_buffer_count > full_recon_intra_search_count,
             &final_fast_candidate_intra_count,
             asm_type);
 
@@ -3365,6 +3380,7 @@ void md_encode_block(
                 cuChromaOriginIndex,
                 intra_buffer_count,
                 inter_buffer_count,
+                inter_buffer_count > full_recon_inter_search_count,
                 &final_fast_candidate_inter_count,
                 asm_type);
         }

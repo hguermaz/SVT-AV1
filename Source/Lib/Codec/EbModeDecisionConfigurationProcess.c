@@ -1821,7 +1821,7 @@ void derive_search_method(
     }
 
 #if ADP_STATS_PER_LAYER
-    SequenceControlSet_t *sequence_control_set_ptr = (SequenceControlSet_t *)picture_control_set_ptr->sequence_control_set_wrapper_ptr->objectPtr;
+    SequenceControlSet_t *sequence_control_set_ptr = (SequenceControlSet_t *)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
 
     for (sb_index = 0; sb_index < picture_control_set_ptr->parent_pcs_ptr->sequence_control_set_ptr->sb_tot_cnt; sb_index++) {
 

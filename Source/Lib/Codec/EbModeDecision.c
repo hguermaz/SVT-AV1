@@ -467,7 +467,7 @@ void LimitMvOverBound(
 *   Selects which fast cost modes to
 *   do full reconstruction on.
 ***************************************/
-#if 1 // original
+#if 0 // original
 EbErrorType PreModeDecision(
     CodingUnit_t                   *cu_ptr,
     uint32_t                          buffer_total_count,
@@ -574,7 +574,6 @@ EbErrorType PreModeDecision(
     }
 #else
 #if INTRA_INTER_FAST_LOOP
-#else
 EbErrorType PreModeDecision(
     struct ModeDecisionContext_s   *context_ptr,
     uint32_t                        buffer_total_count,
@@ -610,8 +609,21 @@ EbErrorType PreModeDecision(
 #endif
     uint32_t                          highestCostIndex;
     uint64_t                          highestCost;
-    uint32_t                          candIndx = 0, i, j, index;
-#if !INTRA_INTER_FAST_LOOP
+
+#if !NTRA_INTER_FAST_LOOP
+    // Build the initial best candidate index array; scratch candidates @ the last spots if any 
+    uint32_t best_candidate_start_index = 0;
+    uint32_t best_candidate_end_index   = buffer_total_count - 1;
+    for (uint8_t full_buffer_index = 0; full_buffer_index < buffer_total_count; full_buffer_index++) {
+        if (*(buffer_ptr_array[full_buffer_index]->fast_cost_ptr) == MAX_CU_COST) {
+            best_candidate_index_array[best_candidate_end_index --] = full_buffer_index;
+        }
+        else {
+            best_candidate_index_array[best_candidate_start_index++] = full_buffer_index;
+        }
+    }
+#else
+
     *full_candidate_total_count_ptr = buffer_total_count;
 
     //Second,  We substract one, because with N buffers we can determine the best N-1 candidates.
@@ -620,7 +632,7 @@ EbErrorType PreModeDecision(
         fullReconCandidateCount = MAX(1, (*full_candidate_total_count_ptr));
     else
         fullReconCandidateCount = MAX(1, (*full_candidate_total_count_ptr) - 1);
-#endif
+
     //With N buffers, we get here with the best N-1, plus the last candidate. We need to exclude the worst, and keep the best N-1.
     highestCost = *(buffer_ptr_array[0]->fast_cost_ptr);
     highestCostIndex = 0;
@@ -654,6 +666,8 @@ EbErrorType PreModeDecision(
     }
     else
         best_candidate_index_array[0] = 0;
+#endif
+    uint32_t                          candIndx = 0, i, j, index;
     for (i = 0; i < fullReconCandidateCount - 1; ++i) {
         for (j = i + 1; j < fullReconCandidateCount; ++j) {
             if ((buffer_ptr_array[best_candidate_index_array[i]]->candidate_ptr->type == INTRA_MODE) &&
