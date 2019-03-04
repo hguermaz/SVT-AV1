@@ -3250,9 +3250,12 @@ void md_encode_block(
         // Number of full loop candidates should not exceed number of fast loop candidates
         buffer_total_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
 
-        // If we want to recon N candidate, we would need N+1 buffers
-        maxBuffers = MIN((context_ptr->full_recon_search_count + 1), MAX_NFL);
-
+        // Split nfl into intra and inter
+        uint32_t intra_buffer_total_count = (picture_control_set_ptr->slice_type == I_SLICE) ?
+            buffer_total_count :
+            buffer_total_count >> 1;
+        uint32_t inter_buffer_total_count = buffer_total_count - intra_buffer_total_count;
+#if 1 // original
         // Evaluate intra fast loop candidates
         uint32_t final_fast_candidate_intra_count = 0;
         perform_fast_loop(
@@ -3262,7 +3265,7 @@ void md_encode_block(
             candidateBufferPtrArrayBase,
             fast_candidate_array,
             0,  
-            fastCandidateTotalCount -1, //context_ptr->fast_candidate_intra_count - 1,
+            fastCandidateTotalCount - 1, //context_ptr->fast_candidate_intra_count - 1,
             input_picture_ptr,
             inputOriginIndex,
             inputCbOriginIndex,
@@ -3271,13 +3274,21 @@ void md_encode_block(
             cuOriginIndex,
             cuChromaOriginIndex,
             0,
-            maxBuffers,
+            MIN((buffer_total_count + 1), MAX_NFL), //MIN((intra_buffer_total_count + 1), MAX_NFL),
             &final_fast_candidate_intra_count,
             asm_type);
 
         // Evaluate inter fast loop candidates
         uint32_t final_fast_candidate_inter_count = 0;
-#if 0
+
+        // If we want to recon N candidate, we would need N+1 buffers
+        maxBuffers = MIN((context_ptr->full_recon_search_count + 1), MAX_NFL);
+
+        // Make sure buffer_total_count is not larger than the number of fast modes
+        buffer_total_count = MIN((final_fast_candidate_intra_count + final_fast_candidate_inter_count), buffer_total_count);
+#else
+        // Evaluate intra fast loop candidates
+        uint32_t final_fast_candidate_intra_count = 0;
         perform_fast_loop(
             picture_control_set_ptr,
             context_ptr->sb_ptr,
@@ -3294,13 +3305,40 @@ void md_encode_block(
             cuOriginIndex,
             cuChromaOriginIndex,
             0,
-            maxBuffers,
+            MIN((buffer_total_count + 1), MAX_NFL), //MIN((intra_buffer_total_count + 1), MAX_NFL),
             &final_fast_candidate_intra_count,
             asm_type);
-#endif
+
+        // Evaluate inter fast loop candidates
+        uint32_t final_fast_candidate_inter_count = 0;
+        //if (picture_control_set_ptr->slice_type != I_SLICE) {
+        //    perform_fast_loop(
+        //        picture_control_set_ptr,
+        //        context_ptr->sb_ptr,
+        //        context_ptr,
+        //        candidateBufferPtrArrayBase,
+        //        fast_candidate_array,
+        //        context_ptr->fast_candidate_intra_count,
+        //        fastCandidateTotalCount - 1,
+        //        input_picture_ptr,
+        //        inputOriginIndex,
+        //        inputCbOriginIndex,
+        //        inputCbOriginIndex,
+        //        cu_ptr,
+        //        cuOriginIndex,
+        //        cuChromaOriginIndex,
+        //        intra_buffer_total_count,
+        //        MIN((buffer_total_count + 1), MAX_NFL),
+        //        &final_fast_candidate_inter_count,
+        //        asm_type);
+        //}
+
+        // If we want to recon N candidate, we would need N+1 buffers
+        maxBuffers = MIN((context_ptr->full_recon_search_count + 1), MAX_NFL);
+
         // Make sure buffer_total_count is not larger than the number of fast modes
         buffer_total_count = MIN((final_fast_candidate_intra_count + final_fast_candidate_inter_count), buffer_total_count);
-
+#endif
         // PreModeDecision
         // -Input is the buffers
         // -Output is list of buffers for full reconstruction
