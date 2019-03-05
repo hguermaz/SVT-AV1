@@ -467,112 +467,6 @@ void LimitMvOverBound(
 *   Selects which fast cost modes to
 *   do full reconstruction on.
 ***************************************/
-#if 0 // original
-EbErrorType PreModeDecision(
-    CodingUnit_t                   *cu_ptr,
-    uint32_t                          buffer_total_count,
-    ModeDecisionCandidateBuffer_t **buffer_ptr_array,
-    uint32_t                         *full_candidate_total_count_ptr,
-    uint8_t                          *best_candidate_index_array,
-#if USED_NFL_FEATURE_BASED
-    uint8_t                          *sorted_candidate_index_array,
-#endif
-    uint8_t                          *disable_merge_index,
-    uint64_t                         *ref_fast_cost,
-    EbBool                           same_fast_full_candidate) {
-
-    UNUSED(cu_ptr);
-
-    EbErrorType return_error = EB_ErrorNone;
-    uint32_t fullCandidateIndex;
-    uint32_t fullReconCandidateCount;
-    uint32_t                          highestCostIndex;
-    uint64_t                          highestCost;
-    uint32_t                          candIndx = 0, i, j, index;
-
-    *full_candidate_total_count_ptr = buffer_total_count;
-
-    //Second,  We substract one, because with N buffers we can determine the best N-1 candidates.
-    //Note/TODO: in the case number of fast candidate is less or equal to the number of buffers, N buffers would be enough
-    if (same_fast_full_candidate)
-        fullReconCandidateCount = MAX(1, (*full_candidate_total_count_ptr));
-    else
-        fullReconCandidateCount = MAX(1, (*full_candidate_total_count_ptr) - 1);
-
-    //With N buffers, we get here with the best N-1, plus the last candidate. We need to exclude the worst, and keep the best N-1.
-    highestCost = *(buffer_ptr_array[0]->fast_cost_ptr);
-    highestCostIndex = 0;
-
-    if (buffer_total_count > 1) {
-        if (same_fast_full_candidate) {
-            for (i = 0; i < buffer_total_count; i++) {
-                best_candidate_index_array[candIndx++] = (uint8_t)i;
-            }
-        }
-        else {
-            for (i = 1; i < buffer_total_count; i++) {
-
-                if (*(buffer_ptr_array[i]->fast_cost_ptr) >= highestCost) {
-                    highestCost = *(buffer_ptr_array[i]->fast_cost_ptr);
-                    highestCostIndex = i;
-                }
-            }
-            for (i = 0; i < buffer_total_count; i++) {
-
-                if (i != highestCostIndex) {
-                    best_candidate_index_array[candIndx++] = (uint8_t)i;
-                }
-            }
-        }
-
-        }
-    else
-        best_candidate_index_array[0] = 0;
-    for (i = 0; i < fullReconCandidateCount - 1; ++i) {
-        for (j = i + 1; j < fullReconCandidateCount; ++j) {
-            if ((buffer_ptr_array[best_candidate_index_array[i]]->candidate_ptr->type == INTRA_MODE) &&
-                (buffer_ptr_array[best_candidate_index_array[j]]->candidate_ptr->type == INTER_MODE)) {
-                index = best_candidate_index_array[i];
-                best_candidate_index_array[i] = (uint8_t)best_candidate_index_array[j];
-                best_candidate_index_array[j] = (uint8_t)index;
-            }
-        }
-    }
-    for (i = 0; i < fullReconCandidateCount; i++) {
-        if (*(buffer_ptr_array[i]->fast_cost_ptr) < *ref_fast_cost) {
-            *ref_fast_cost = *(buffer_ptr_array[i]->fast_cost_ptr);
-        }
-    }
-#if USED_NFL_FEATURE_BASED
-    for (i = 0; i < MAX_NFL; ++i) {
-        sorted_candidate_index_array[i] = best_candidate_index_array[i];
-    }
-
-    for (i = 0; i < fullReconCandidateCount - 1; ++i) {
-        for (j = i + 1; j < fullReconCandidateCount; ++j) {
-            if (*(buffer_ptr_array[j]->fast_cost_ptr) < *(buffer_ptr_array[i]->fast_cost_ptr)) {
-                index = sorted_candidate_index_array[i];
-                sorted_candidate_index_array[i] = (uint8_t)sorted_candidate_index_array[j];
-                sorted_candidate_index_array[j] = (uint8_t)index;
-            }
-        }
-    }
-
-#endif
-#if !INTRA_INTER_FAST_LOOP
-    // Set (*full_candidate_total_count_ptr) to fullReconCandidateCount
-    (*full_candidate_total_count_ptr) = fullReconCandidateCount;
-
-    for (i = 0; i < fullReconCandidateCount; ++i) {
-        fullCandidateIndex = best_candidate_index_array[i];
-
-        // Set disable_merge_index
-        *disable_merge_index = buffer_ptr_array[fullCandidateIndex]->candidate_ptr->type == INTER_MODE ? 1 : *disable_merge_index;
-    }
-#endif
-    return return_error;
-    }
-#else
 #if INTRA_INTER_FAST_LOOP
 EbErrorType PreModeDecision(
     struct ModeDecisionContext_s   *context_ptr,
@@ -712,7 +606,7 @@ EbErrorType PreModeDecision(
 #endif
     return return_error;
 }
-#endif
+
 #if IMPROVED_BIPRED_INJECTION || IMPROVED_UNIPRED_INJECTION
 
 #define BIPRED_3x3_REFINMENT_POSITIONS 8

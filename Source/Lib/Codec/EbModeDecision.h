@@ -413,20 +413,6 @@ extern "C" {
         uint8_t                        *best_candidate_index_array,
         uint32_t                       *best_intra_mode);
 #if INTRA_INTER_FAST_LOOP
-#if 0 // original
-    EbErrorType PreModeDecision(
-        CodingUnit_t                   *cu_ptr,
-        uint32_t                        buffer_total_count,
-        ModeDecisionCandidateBuffer_t **buffer_ptr_array,
-        uint32_t                       *full_candidate_total_count_ptr,
-        uint8_t                        *best_candidate_index_array,
-#if USED_NFL_FEATURE_BASED
-        uint8_t                        *sorted_candidate_index_array,
-#endif
-        uint8_t                        *disable_merge_index,
-        uint64_t                       *ref_fast_cost,
-        EbBool                          same_fast_full_candidate);
-#else
     EbErrorType PreModeDecision(
         struct ModeDecisionContext_s   *context_ptr,
         uint32_t                        buffer_total_count,
@@ -437,7 +423,7 @@ extern "C" {
         uint8_t                        *sorted_candidate_index_array,
 #endif
         uint64_t                       *ref_fast_cost);
-#endif
+
 #else
     EbErrorType PreModeDecision(
         CodingUnit_t                   *cu_ptr,

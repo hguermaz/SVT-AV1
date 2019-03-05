@@ -3259,69 +3259,6 @@ void md_encode_block(
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
 
-
-#if 0 // original
-        uint32_t fullCandidateTotalCount;
-        uint32_t maxBuffers;
-        uint32_t secondFastCostSearchCandidateTotalCount;
-
-
-        context_ptr->full_recon_search_count = MIN(context_ptr->full_recon_search_count, fastCandidateTotalCount);
-
-        uint32_t buffer_total_count = MIN(context_ptr->full_recon_search_count, fastCandidateTotalCount);
-
-
-        // Evaluate intra fast loop candidates
-        uint32_t final_fast_candidate_intra_count = 0;
-        perform_fast_loop(
-            picture_control_set_ptr,
-            context_ptr->sb_ptr,
-            context_ptr,
-            candidateBufferPtrArrayBase,
-            fast_candidate_array,
-            0,  
-            fastCandidateTotalCount - 1, //context_ptr->fast_candidate_intra_count - 1,
-            input_picture_ptr,
-            inputOriginIndex,
-            inputCbOriginIndex,
-            inputCbOriginIndex,
-            cu_ptr,
-            cuOriginIndex,
-            cuChromaOriginIndex,
-            0,
-            MIN((buffer_total_count + 1), MAX_NFL), //MIN((intra_buffer_total_count + 1), MAX_NFL),
-            &final_fast_candidate_intra_count,
-            asm_type);
-
-        // Evaluate inter fast loop candidates
-        uint32_t final_fast_candidate_inter_count = 0;
-
-        // If we want to recon N candidate, we would need N+1 buffers
-        maxBuffers = MIN((context_ptr->full_recon_search_count + 1), MAX_NFL + 1);
-
-        // Make sure buffer_total_count is not larger than the number of fast modes
-        buffer_total_count = MIN((final_fast_candidate_intra_count + final_fast_candidate_inter_count), buffer_total_count);
-
-        // PreModeDecision
-        // -Input is the buffers
-        // -Output is list of buffers for full reconstruction
-        uint8_t  disable_merge_index = 0;
-        uint64_t ref_fast_cost = MAX_MODE_COST;
-
-        PreModeDecision(
-            cu_ptr,
-            ((final_fast_candidate_intra_count + final_fast_candidate_inter_count) == buffer_total_count) ? buffer_total_count : maxBuffers,
-            candidate_buffer_ptr_array,
-            &fullCandidateTotalCount,
-            context_ptr->best_candidate_index_array,
-#if USED_NFL_FEATURE_BASED
-            context_ptr->sorted_candidate_index_array,
-#endif
-            &disable_merge_index,
-            &ref_fast_cost,
-            (EbBool)((final_fast_candidate_intra_count + final_fast_candidate_inter_count) == buffer_total_count));
-#else
-
         // Derive fast inter candidates total count
         context_ptr->fast_candidate_inter_count = fastCandidateTotalCount - context_ptr->fast_candidate_intra_count;
         // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
@@ -3398,7 +3335,7 @@ void md_encode_block(
             context_ptr->best_candidate_index_array,
             context_ptr->sorted_candidate_index_array,
             &ref_fast_cost);
-#endif
+
 
 #else
         ProductGenerateMdCandidatesCu(
