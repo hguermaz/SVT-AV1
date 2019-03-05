@@ -1278,7 +1278,6 @@ void perform_fast_loop(
     uint32_t                             candidate_buffer_start_index,
     uint32_t                             maxBuffers,
     EbBool                               scratch_buffer_pesent_flag,
-    uint32_t                            *secondFastCostSearchCandidateTotalCount,
     EbAsm                                asm_type) {
 
     int32_t  fastLoopCandidateIndex;
@@ -1333,7 +1332,6 @@ void perform_fast_loop(
     }
 
     // 2nd fast loop: src-to-recon
-    *secondFastCostSearchCandidateTotalCount = 0;
     highestCostIndex = candidate_buffer_start_index;
     fastLoopCandidateIndex = fast_candidate_end_index;
     while (fastLoopCandidateIndex >= fast_candidate_start_index)
@@ -1402,16 +1400,10 @@ void perform_fast_loop(
                 context_ptr->cu_origin_x >> MI_SIZE_LOG2,
                 context_ptr->intra_luma_left_mode,
                 context_ptr->intra_luma_top_mode);
-
-            (*secondFastCostSearchCandidateTotalCount)++;
         }
 
         // Find the buffer with the highest cost
-#if ENHANCE_0
         if (fastLoopCandidateIndex || scratch_buffer_pesent_flag)
-#else
-        if (fastLoopCandidateIndex)
-#endif
         {
             // maxCost is volatile to prevent the compiler from loading 0xFFFFFFFFFFFFFF
             //   as a const at the early-out. Loading a large constant on intel x64 processors
@@ -1439,12 +1431,12 @@ void perform_fast_loop(
         }
         --fastLoopCandidateIndex;
     }
-#if ENHANCE_0
+
     // Set the cost of the scratch canidate to max to get discarded @ the sorting phase 
     *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr) = (scratch_buffer_pesent_flag) ?
         MAX_CU_COST : 
         *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr);
-#endif
+
 }
 #else
 void ProductPerformFastLoop(
@@ -3259,54 +3251,86 @@ void md_encode_block(
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
 
-        // Derive fast inter candidates total count
-        context_ptr->fast_candidate_inter_count = fastCandidateTotalCount - context_ptr->fast_candidate_intra_count;
-        // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
-        context_ptr->full_recon_search_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
-        // Split nfl into intra and inter
-        uint32_t full_recon_intra_search_count = (picture_control_set_ptr->slice_type == I_SLICE) ?
-            context_ptr->full_recon_search_count :
-            1;// MIN(context_ptr->full_recon_search_count >> 1, context_ptr->fast_candidate_intra_count);
-        uint32_t full_recon_inter_search_count = MIN(context_ptr->full_recon_search_count - full_recon_intra_search_count, context_ptr->fast_candidate_inter_count);
-        // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates 
-        context_ptr->full_recon_search_count = full_recon_intra_search_count + full_recon_inter_search_count;
-        // Derive intra and inter full buffer total count
-        uint32_t intra_buffer_count = context_ptr->fast_candidate_intra_count > full_recon_intra_search_count ? (full_recon_intra_search_count + 1) : full_recon_intra_search_count;
-        uint32_t inter_buffer_count = context_ptr->fast_candidate_inter_count > full_recon_inter_search_count ? (full_recon_inter_search_count + 1) : full_recon_inter_search_count;
+        EbBool intra_inter_fast_loop = (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N);
+        uint32_t buffer_total_count;
+        if (intra_inter_fast_loop) {
+            // Derive fast inter candidates total count
+            context_ptr->fast_candidate_inter_count = fastCandidateTotalCount - context_ptr->fast_candidate_intra_count;
+            // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
+            context_ptr->full_recon_search_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
+            // Split nfl into intra and inter
+            uint32_t full_recon_intra_search_count = (picture_control_set_ptr->slice_type == I_SLICE) ?
+                context_ptr->full_recon_search_count :
+                1;// MIN(context_ptr->full_recon_search_count >> 1, context_ptr->fast_candidate_intra_count);
+            uint32_t full_recon_inter_search_count = MIN(context_ptr->full_recon_search_count - full_recon_intra_search_count, context_ptr->fast_candidate_inter_count);
+            // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates 
+            context_ptr->full_recon_search_count = full_recon_intra_search_count + full_recon_inter_search_count;
+            // Derive intra and inter full buffer total count
+            uint32_t intra_buffer_count = context_ptr->fast_candidate_intra_count > full_recon_intra_search_count ? (full_recon_intra_search_count + 1) : full_recon_intra_search_count;
+            uint32_t inter_buffer_count = context_ptr->fast_candidate_inter_count > full_recon_inter_search_count ? (full_recon_inter_search_count + 1) : full_recon_inter_search_count;
+            buffer_total_count = intra_buffer_count + inter_buffer_count;
 
-        // Evaluate intra fast loop candidates
-        uint32_t final_fast_candidate_intra_count = 0;
-        perform_fast_loop(
-            picture_control_set_ptr,
-            context_ptr->sb_ptr,
-            context_ptr,
-            candidateBufferPtrArrayBase,
-            fast_candidate_array,
-            0,
-            context_ptr->fast_candidate_intra_count - 1,
-            input_picture_ptr,
-            inputOriginIndex,
-            inputCbOriginIndex,
-            inputCbOriginIndex,
-            cu_ptr,
-            cuOriginIndex,
-            cuChromaOriginIndex,
-            0,
-            intra_buffer_count,
-            intra_buffer_count > full_recon_intra_search_count,
-            &final_fast_candidate_intra_count,
-            asm_type);
-
-        // Evaluate inter fast loop candidates
-        uint32_t final_fast_candidate_inter_count = 0;
-        if (picture_control_set_ptr->slice_type != I_SLICE) {
+            // Evaluate intra fast loop candidates
+            uint32_t final_fast_candidate_intra_count = 0;
             perform_fast_loop(
                 picture_control_set_ptr,
                 context_ptr->sb_ptr,
                 context_ptr,
                 candidateBufferPtrArrayBase,
                 fast_candidate_array,
-                context_ptr->fast_candidate_intra_count,
+                0,
+                context_ptr->fast_candidate_intra_count - 1,
+                input_picture_ptr,
+                inputOriginIndex,
+                inputCbOriginIndex,
+                inputCbOriginIndex,
+                cu_ptr,
+                cuOriginIndex,
+                cuChromaOriginIndex,
+                0,
+                intra_buffer_count,
+                intra_buffer_count > full_recon_intra_search_count,
+                asm_type);
+
+            // Evaluate inter fast loop candidates
+            uint32_t final_fast_candidate_inter_count = 0;
+            if (picture_control_set_ptr->slice_type != I_SLICE) {
+                perform_fast_loop(
+                    picture_control_set_ptr,
+                    context_ptr->sb_ptr,
+                    context_ptr,
+                    candidateBufferPtrArrayBase,
+                    fast_candidate_array,
+                    context_ptr->fast_candidate_intra_count,
+                    fastCandidateTotalCount - 1,
+                    input_picture_ptr,
+                    inputOriginIndex,
+                    inputCbOriginIndex,
+                    inputCbOriginIndex,
+                    cu_ptr,
+                    cuOriginIndex,
+                    cuChromaOriginIndex,
+                    intra_buffer_count,
+                    inter_buffer_count,
+                    inter_buffer_count > full_recon_inter_search_count,
+                    asm_type);
+            }
+        }
+        else {
+            // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
+            context_ptr->full_recon_search_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
+
+            // Derive intra and inter full buffer total count
+            buffer_total_count = fastCandidateTotalCount > context_ptr->full_recon_search_count ? (context_ptr->full_recon_search_count + 1) : context_ptr->full_recon_search_count;
+
+            // Evaluate intra and inter fast loop candidates
+            perform_fast_loop(
+                picture_control_set_ptr,
+                context_ptr->sb_ptr,
+                context_ptr,
+                candidateBufferPtrArrayBase,
+                fast_candidate_array,
+                0,
                 fastCandidateTotalCount - 1,
                 input_picture_ptr,
                 inputOriginIndex,
@@ -3315,13 +3339,12 @@ void md_encode_block(
                 cu_ptr,
                 cuOriginIndex,
                 cuChromaOriginIndex,
-                intra_buffer_count,
-                inter_buffer_count,
-                inter_buffer_count > full_recon_inter_search_count,
-                &final_fast_candidate_inter_count,
+                0,
+                buffer_total_count,
+                fastCandidateTotalCount > context_ptr->full_recon_search_count,
                 asm_type);
-        }
 
+        }
         // PreModeDecision
         // -Input is the buffers
         // -Output is list of buffers for full reconstruction
@@ -3329,7 +3352,7 @@ void md_encode_block(
 
         PreModeDecision(
             context_ptr,
-            intra_buffer_count + inter_buffer_count,
+            buffer_total_count,
             candidate_buffer_ptr_array,
             &context_ptr->full_recon_search_count,
             context_ptr->best_candidate_index_array,

@@ -154,9 +154,6 @@ extern "C" {
 #define REMOVED_DUPLICATE_INTER_L1                      1
 #define REMOVED_DUPLICATE_INTER_BIPRED                  1
 #define INTRA_INTER_FAST_LOOP                           1
-#if INTRA_INTER_FAST_LOOP
-#define ENHANCE_0                                       1
-#endif
 
 #define USED_NFL_FEATURE_BASED                          1
 #if USED_NFL_FEATURE_BASED

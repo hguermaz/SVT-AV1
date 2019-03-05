@@ -504,7 +504,7 @@ EbErrorType PreModeDecision(
     uint32_t                          highestCostIndex;
     uint64_t                          highestCost;
 
-#if !NTRA_INTER_FAST_LOOP
+#if INTRA_INTER_FAST_LOOP
     // Build the initial best candidate index array; scratch candidates @ the last spots if any 
     uint32_t best_candidate_start_index = 0;
     uint32_t best_candidate_end_index   = buffer_total_count - 1;

@@ -169,7 +169,11 @@ extern "C" {
         uint8_t                         group_of16x16_blocks_count;
         uint8_t                         pu_itr;
         uint8_t                         cu_size_log2;
+#if INTRA_INTER_FAST_LOOP
+        uint8_t                         best_candidate_index_array[MAX_NFL + 2];
+#else
         uint8_t                         best_candidate_index_array[MAX_NFL];
+#endif
 #if USED_NFL_FEATURE_BASED
         uint8_t                         sorted_candidate_index_array[MAX_NFL];
 #endif
