@@ -1193,15 +1193,6 @@ void PredictionPartitionLoop(
                     context_ptr->mdc_cu_ptr->reference_mode_context = 0;
                     context_ptr->mdc_cu_ptr->compoud_reference_type_context = 0;
 #endif
-#if 0
-                    context_ptr->mdc_cu_ptr->skip_coeff_context     = 0;
-                    context_ptr->mdc_cu_ptr->luma_txb_skip_context  = 0;
-                    context_ptr->mdc_cu_ptr->luma_dc_sign_context   = 0;
-                    context_ptr->mdc_cu_ptr->cb_txb_skip_context    = 0;
-                    context_ptr->mdc_cu_ptr->cb_dc_sign_context     = 0;
-                    context_ptr->mdc_cu_ptr->cr_txb_skip_context    = 0;
-                    context_ptr->mdc_cu_ptr->cr_dc_sign_context     = 0;
-#endif
                     av1_zero(context_ptr->mdc_cu_ptr->av1xd->neighbors_ref_counts); // Hsan: neighbor not generated @ open loop partitioning => assumes always (0,0)
 
                     // Fast Cost Calc

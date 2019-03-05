@@ -3015,21 +3015,6 @@ typedef enum EbPictureDepthMode {
 #define SB_OPEN_LOOP_DEPTH_MODE             3
 #define SB_PRED_OPEN_LOOP_DEPTH_MODE        4
 #define SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE  5
-#if 0 // Hsan: to evaluate after enabling SQ mode
-typedef enum EbAdpDepthSensitivePicClass
-{
-    DEPTH_SENSITIVE_PIC_CLASS_0 = 0,    // Normal picture
-    DEPTH_SENSITIVE_PIC_CLASS_1 = 1,    // High complex picture
-    DEPTH_SENSITIVE_PIC_CLASS_2 = 2     // Moderate complex picture
-} EbAdpDepthSensitivePicClass;
-
-typedef enum EbAdpRefinementMode
-{
-    ADP_REFINEMENT_OFF = 0,  // Off
-    ADP_MODE_0 = 1,  // Light AVC (only 16x16)
-    ADP_MODE_1 = 2   // AVC (only 8x8 & 16x16 @ the Open Loop Search)
-} EbAdpRefinementMode;
-#endif
 #else
 typedef enum EbLcuDepthMode {
 
