@@ -1216,6 +1216,9 @@ void PredictionPartitionLoop(
                         mePuResult->distortionDirection[0].distortion,
                         (uint64_t) 0,
                         context_ptr->lambda,
+#if USE_SSE_FL
+                        0,
+#endif
                         picture_control_set_ptr,
                         context_ptr->mdc_ref_mv_stack,
                         context_ptr->blk_geom,
