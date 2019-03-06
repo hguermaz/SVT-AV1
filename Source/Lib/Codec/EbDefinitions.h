@@ -178,6 +178,8 @@ extern "C" {
 #define MAX_FRAMES_TO_REF_I                             64
 #endif
 
+#define ICOPY       0 //Intra Block Copy
+
 /********************************************************/
 /****************** Pre-defined Values ******************/
 /********************************************************/
@@ -2140,7 +2142,7 @@ object_ptr is a EbPtr to the object being constructed.
 typedef void(*EB_DTOR)(
     EbPtr object_ptr);
 
-#define INVALID_MV            0xFFFFFFFF
+#define INVALID_MV            0xFFFFFFFF    //ICOPY They changed this to 0x80008000
 #define BLKSIZE 64
 
 /***************************************

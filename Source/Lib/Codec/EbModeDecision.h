@@ -101,7 +101,9 @@ extern "C" {
 
         PredictionMode                         pred_mode; // AV1 mode, no need to convert
         uint8_t                                drl_index;
-
+#if ICOPY
+        uint8_t                                use_intrabc;
+#endif
         // Intra Mode
         int32_t                                angle_delta[PLANE_TYPES];
         EbBool                                 is_directional_mode_flag;

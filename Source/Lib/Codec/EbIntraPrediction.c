@@ -163,6 +163,10 @@ EbErrorType IntraReference16bitSamplesCtor(
 
 
 static int32_t is_smooth(PredictionMode modeIn, int32_t plane) {
+#if ICOPY
+    printf("add_intra_bc_support\n");
+#endif
+
     if (plane == 0) {
         const PredictionMode mode = modeIn;//mbmi->mode;
         return (mode == SMOOTH_PRED || mode == SMOOTH_V_PRED ||

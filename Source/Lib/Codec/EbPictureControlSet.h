@@ -27,6 +27,10 @@
 #include "EbCdef.h"
 #endif
 
+#if ICOPY
+#include"av1me.h"
+#include "hash_motion.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -13668,6 +13672,35 @@ extern "C" {
      **************************************/
     struct CodedTreeblock_s;
     struct LargestCodingUnit_s;
+#if ICOPY
+#define MAX_MESH_STEP 4
+
+    typedef struct MESH_PATTERN {
+        int range;
+        int interval;
+    } MESH_PATTERN;
+
+    typedef struct SPEED_FEATURES {
+
+        // TODO(jingning): combine the related motion search speed features
+        // This allows us to use motion search at other sizes as a starting
+        // point for this motion search and limits the search range around it.
+        int adaptive_motion_search;
+
+        // Flag for allowing some use of exhaustive searches;
+        int allow_exhaustive_searches;
+
+        // Threshold for allowing exhaistive motion search.
+        int exhaustive_searches_thresh;
+
+        // Maximum number of exhaustive searches for a frame.
+        int max_exaustive_pct;
+
+        // Pattern to be used for any exhaustive mesh searches.
+        MESH_PATTERN mesh_patterns[MAX_MESH_STEP];
+
+    } SPEED_FEATURES;
+#endif
 
     typedef struct PictureControlSet_s
     {
@@ -13850,6 +13883,13 @@ extern "C" {
         int32_t                               cdef_preset[4];
         WienerInfo                            wiener_info[MAX_MB_PLANE];
         SgrprojInfo                           sgrproj_info[MAX_MB_PLANE];
+#if ICOPY
+        SPEED_FEATURES sf;
+        search_site_config ss_cfg;//CHKN this might be a seq based
+        hash_table hash_table;
+        CRC_CALCULATOR crc_calculator1;
+        CRC_CALCULATOR crc_calculator2;
+#endif
 
     } PictureControlSet_t;
 
@@ -14282,7 +14322,9 @@ extern "C" {
         uint8_t                               tx_search_reduced_set;
         uint8_t                               interpolation_search_level;
         uint8_t                               nsq_search_level;
-
+#if ICOPY
+        uint8_t                              sc_content_detected;
+#endif
     } PictureParentControlSet_t;
 
 
