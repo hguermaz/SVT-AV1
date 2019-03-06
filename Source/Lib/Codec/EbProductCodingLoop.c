@@ -3359,7 +3359,7 @@ void md_encode_block(
                 0,
                 intra_buffer_count,
                 intra_buffer_count > full_recon_intra_search_count,
-                1,                                                            
+                context_ptr->decoupled_fast_loop_search_method == SSD_SEARCH,
                 asm_type);
 
             // Evaluate inter fast loop candidates
@@ -3382,7 +3382,7 @@ void md_encode_block(
                     intra_buffer_count,
                     inter_buffer_count,
                     inter_buffer_count > full_recon_inter_search_count,
-                    1,                                                    
+                    context_ptr->decoupled_fast_loop_search_method == SSD_SEARCH,
                     asm_type);
             }
         }
@@ -3420,7 +3420,7 @@ void md_encode_block(
         // -Output is list of buffers for full reconstruction
         uint64_t ref_fast_cost = MAX_MODE_COST;
 
-        sort_fast_loop_canidates(
+        sort_fast_loop_candidates(
             context_ptr,
             buffer_total_count,
             candidate_buffer_ptr_array,

@@ -247,7 +247,9 @@ extern "C" {
 #if CHROMA_BLIND
         uint8_t                           chroma_level;
 #endif
-
+#if INTRA_INTER_FAST_LOOP
+        uint8_t                           decoupled_fast_loop_search_method;
+#endif
     } ModeDecisionContext_t;
 
     typedef void(*EB_AV1_LAMBDA_ASSIGN_FUNC)(

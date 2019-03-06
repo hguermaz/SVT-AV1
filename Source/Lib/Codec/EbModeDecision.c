@@ -462,7 +462,7 @@ void LimitMvOverBound(
 }
 
 #if INTRA_INTER_FAST_LOOP
-void sort_fast_loop_canidates(
+void sort_fast_loop_candidates(
     struct ModeDecisionContext_s   *context_ptr,
     uint32_t                        buffer_total_count,
     ModeDecisionCandidateBuffer_t **buffer_ptr_array,
@@ -476,7 +476,7 @@ void sort_fast_loop_canidates(
     uint32_t                          highestCostIndex;
     uint64_t                          highestCost;
 
-    // Build the best candidate index array; move the scratch candidates (MAX_CU_COST) to the last spots (if any)
+    //  move the scratch candidates (MAX_CU_COST) to the last spots (if any)
     uint32_t best_candidate_start_index = 0;
     uint32_t best_candidate_end_index = buffer_total_count - 1;
     for (uint8_t full_buffer_index = 0; full_buffer_index < buffer_total_count; full_buffer_index++) {
@@ -488,18 +488,28 @@ void sort_fast_loop_canidates(
         }
     }
 
+    // fl escape: inter then intra
     uint32_t i, j, index;
+    for (i = 0; i < fullReconCandidateCount - 1; ++i) {
+        for (j = i + 1; j < fullReconCandidateCount; ++j) {
+            if ((buffer_ptr_array[best_candidate_index_array[i]]->candidate_ptr->type == INTRA_MODE) &&
+                (buffer_ptr_array[best_candidate_index_array[j]]->candidate_ptr->type == INTER_MODE)) {
+                index = best_candidate_index_array[i];
+                best_candidate_index_array[i] = (uint8_t)best_candidate_index_array[j];
+                best_candidate_index_array[j] = (uint8_t)index;
+            }
+        }
+    }
 
+    // tx search
     for (i = 0; i < fullReconCandidateCount; i++) {
         if (*(buffer_ptr_array[i]->fast_cost_ptr) < *ref_fast_cost) {
             *ref_fast_cost = *(buffer_ptr_array[i]->fast_cost_ptr);
         }
     }
-
     for (i = 0; i < MAX_NFL; ++i) {
         sorted_candidate_index_array[i] = best_candidate_index_array[i];
     }
-
     for (i = 0; i < fullReconCandidateCount - 1; ++i) {
         for (j = i + 1; j < fullReconCandidateCount; ++j) {
             if (*(buffer_ptr_array[j]->fast_cost_ptr) < *(buffer_ptr_array[i]->fast_cost_ptr)) {
