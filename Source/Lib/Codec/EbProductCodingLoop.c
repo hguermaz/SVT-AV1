@@ -1262,7 +1262,6 @@ void generate_intra_reference_samples(
 #if INTRA_INTER_FAST_LOOP
 void perform_fast_loop(
     PictureControlSet_t                 *picture_control_set_ptr,
-    LargestCodingUnit_t                 *sb_ptr,
     ModeDecisionContext_t               *context_ptr,
     ModeDecisionCandidateBuffer_t      **candidateBufferPtrArrayBase,
     ModeDecisionCandidate_t             *fast_candidate_array,
@@ -3345,7 +3344,6 @@ void md_encode_block(
             uint32_t final_fast_candidate_intra_count = 0;
             perform_fast_loop(
                 picture_control_set_ptr,
-                context_ptr->sb_ptr,
                 context_ptr,
                 candidateBufferPtrArrayBase,
                 fast_candidate_array,
@@ -3369,7 +3367,6 @@ void md_encode_block(
             if (picture_control_set_ptr->slice_type != I_SLICE) {
                 perform_fast_loop(
                     picture_control_set_ptr,
-                    context_ptr->sb_ptr,
                     context_ptr,
                     candidateBufferPtrArrayBase,
                     fast_candidate_array,
@@ -3399,7 +3396,6 @@ void md_encode_block(
             // Evaluate intra and inter fast loop candidates
             perform_fast_loop(
                 picture_control_set_ptr,
-                context_ptr->sb_ptr,
                 context_ptr,
                 candidateBufferPtrArrayBase,
                 fast_candidate_array,

@@ -422,9 +422,7 @@ extern "C" {
         ModeDecisionCandidateBuffer_t **buffer_ptr_array,
         uint32_t                       *full_candidate_total_count_ptr,
         uint8_t                        *best_candidate_index_array,
-#if USED_NFL_FEATURE_BASED
         uint8_t                        *sorted_candidate_index_array,
-#endif
         uint64_t                       *ref_fast_cost);
 
 #else

@@ -461,7 +461,68 @@ void LimitMvOverBound(
 
 }
 
+#if INTRA_INTER_FAST_LOOP
+EbErrorType PreModeDecision(
+    struct ModeDecisionContext_s   *context_ptr,
+    uint32_t                        buffer_total_count,
+    ModeDecisionCandidateBuffer_t **buffer_ptr_array,
+    uint32_t                       *full_candidate_total_count_ptr,
+    uint8_t                        *best_candidate_index_array,    
+    uint8_t                        *sorted_candidate_index_array,                            
+    uint64_t                       *ref_fast_cost) {
 
+    EbErrorType return_error = EB_ErrorNone;
+    uint32_t fullCandidateIndex;
+    uint32_t fullReconCandidateCount = context_ptr->full_recon_search_count;
+
+    uint32_t                          highestCostIndex;
+    uint64_t                          highestCost;
+
+    // Build the initial best candidate index array; scratch candidates @ the last spots if any 
+    uint32_t best_candidate_start_index = 0;
+    uint32_t best_candidate_end_index = buffer_total_count - 1;
+    for (uint8_t full_buffer_index = 0; full_buffer_index < buffer_total_count; full_buffer_index++) {
+        if (*(buffer_ptr_array[full_buffer_index]->fast_cost_ptr) == MAX_CU_COST) {
+            best_candidate_index_array[best_candidate_end_index--] = full_buffer_index;
+        }
+        else {
+            best_candidate_index_array[best_candidate_start_index++] = full_buffer_index;
+        }
+    }
+
+    uint32_t                          candIndx = 0, i, j, index;
+    for (i = 0; i < fullReconCandidateCount - 1; ++i) {
+        for (j = i + 1; j < fullReconCandidateCount; ++j) {
+            if ((buffer_ptr_array[best_candidate_index_array[i]]->candidate_ptr->type == INTRA_MODE) &&
+                (buffer_ptr_array[best_candidate_index_array[j]]->candidate_ptr->type == INTER_MODE)) {
+                index = best_candidate_index_array[i];
+                best_candidate_index_array[i] = (uint8_t)best_candidate_index_array[j];
+                best_candidate_index_array[j] = (uint8_t)index;
+            }
+        }
+    }
+    for (i = 0; i < fullReconCandidateCount; i++) {
+        if (*(buffer_ptr_array[i]->fast_cost_ptr) < *ref_fast_cost) {
+            *ref_fast_cost = *(buffer_ptr_array[i]->fast_cost_ptr);
+        }
+    }
+
+    for (i = 0; i < MAX_NFL; ++i) {
+        sorted_candidate_index_array[i] = best_candidate_index_array[i];
+    }
+
+    for (i = 0; i < fullReconCandidateCount - 1; ++i) {
+        for (j = i + 1; j < fullReconCandidateCount; ++j) {
+            if (*(buffer_ptr_array[j]->fast_cost_ptr) < *(buffer_ptr_array[i]->fast_cost_ptr)) {
+                index = sorted_candidate_index_array[i];
+                sorted_candidate_index_array[i] = (uint8_t)sorted_candidate_index_array[j];
+                sorted_candidate_index_array[j] = (uint8_t)index;
+            }
+        }
+    }
+    return return_error;
+}
+#else
 /***************************************
 * Pre-Mode Decision
 *   Selects which fast cost modes to
@@ -606,7 +667,7 @@ EbErrorType PreModeDecision(
 #endif
     return return_error;
 }
-
+#endif
 #if IMPROVED_BIPRED_INJECTION || IMPROVED_UNIPRED_INJECTION
 
 #define BIPRED_3x3_REFINMENT_POSITIONS 8
