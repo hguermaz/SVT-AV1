@@ -244,9 +244,6 @@ extern "C" {
         uint8_t                           chroma_level;
 #endif
 
-#if NSQ_OPTIMASATION
-        PART                               nsq_table[NSQ_TAB_SIZE];
-#endif
     } ModeDecisionContext_t;
 
     typedef void(*EB_AV1_LAMBDA_ASSIGN_FUNC)(
