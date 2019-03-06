@@ -1262,6 +1262,7 @@ void generate_intra_reference_samples(
 #if INTRA_INTER_FAST_LOOP
 void perform_fast_loop(
     PictureControlSet_t                 *picture_control_set_ptr,
+    LargestCodingUnit_t                 *sb_ptr,
     ModeDecisionContext_t               *context_ptr,
     ModeDecisionCandidateBuffer_t      **candidateBufferPtrArrayBase,
     ModeDecisionCandidate_t             *fast_candidate_array,
@@ -1359,7 +1360,7 @@ void perform_fast_loop(
             // Distortion
 #if USE_SSE_FL
             // Y
-            if (use_ssd) {
+            //if (use_ssd) {
                 lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
@@ -1367,8 +1368,8 @@ void perform_fast_loop(
                     prediction_ptr->stride_y,
                     context_ptr->blk_geom->bheight,
                     context_ptr->blk_geom->bwidth);
-            }
-            else {
+            //}
+           // else {
                 lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
@@ -1376,7 +1377,7 @@ void perform_fast_loop(
                     prediction_ptr->stride_y,
                     context_ptr->blk_geom->bheight,
                     context_ptr->blk_geom->bwidth));
-            }
+           // }
 #else
             lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
                 input_picture_ptr->buffer_y + inputOriginIndex,
@@ -3324,10 +3325,12 @@ void md_encode_block(
         if (intra_inter_fast_loop) {
             // Derive fast inter candidates total count
             context_ptr->fast_candidate_inter_count = fastCandidateTotalCount - context_ptr->fast_candidate_intra_count;
+            // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
+            context_ptr->full_recon_search_count = MIN(fastCandidateTotalCount, context_ptr->full_recon_search_count);
             // Split nfl into intra and inter
             uint32_t full_recon_intra_search_count = (picture_control_set_ptr->slice_type == I_SLICE) ?
-                MIN(context_ptr->full_recon_search_count, context_ptr->fast_candidate_intra_count) :
-                1;
+                context_ptr->full_recon_search_count :
+                1;//MIN(context_ptr->full_recon_search_count >> 1, context_ptr->fast_candidate_intra_count);
             uint32_t full_recon_inter_search_count = MIN(context_ptr->full_recon_search_count - full_recon_intra_search_count, context_ptr->fast_candidate_inter_count);
             // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates 
             context_ptr->full_recon_search_count = full_recon_intra_search_count + full_recon_inter_search_count;
@@ -3340,6 +3343,7 @@ void md_encode_block(
             uint32_t final_fast_candidate_intra_count = 0;
             perform_fast_loop(
                 picture_control_set_ptr,
+                context_ptr->sb_ptr,
                 context_ptr,
                 candidateBufferPtrArrayBase,
                 fast_candidate_array,
@@ -3363,6 +3367,7 @@ void md_encode_block(
             if (picture_control_set_ptr->slice_type != I_SLICE) {
                 perform_fast_loop(
                     picture_control_set_ptr,
+                    context_ptr->sb_ptr,
                     context_ptr,
                     candidateBufferPtrArrayBase,
                     fast_candidate_array,
@@ -3392,6 +3397,7 @@ void md_encode_block(
             // Evaluate intra and inter fast loop candidates
             perform_fast_loop(
                 picture_control_set_ptr,
+                context_ptr->sb_ptr,
                 context_ptr,
                 candidateBufferPtrArrayBase,
                 fast_candidate_array,
@@ -3416,13 +3422,16 @@ void md_encode_block(
         // -Output is list of buffers for full reconstruction
         uint64_t ref_fast_cost = MAX_MODE_COST;
 
-        sort_fast_loop_candidates(
+        PreModeDecision(
             context_ptr,
             buffer_total_count,
             candidate_buffer_ptr_array,
+            &context_ptr->full_recon_search_count,
             context_ptr->best_candidate_index_array,
             context_ptr->sorted_candidate_index_array,
             &ref_fast_cost);
+
+
 #else
         ProductGenerateMdCandidatesCu(
             context_ptr->sb_ptr,
