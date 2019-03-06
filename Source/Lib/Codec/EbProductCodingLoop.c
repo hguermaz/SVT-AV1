@@ -1360,7 +1360,7 @@ void perform_fast_loop(
             // Distortion
 #if USE_SSE_FL
             // Y
-            //if (use_ssd) {
+            if (use_ssd) {
                 lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
@@ -1368,8 +1368,8 @@ void perform_fast_loop(
                     prediction_ptr->stride_y,
                     context_ptr->blk_geom->bheight,
                     context_ptr->blk_geom->bwidth);
-            //}
-           // else {
+            }
+            else {
                 lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
@@ -1377,7 +1377,7 @@ void perform_fast_loop(
                     prediction_ptr->stride_y,
                     context_ptr->blk_geom->bheight,
                     context_ptr->blk_geom->bwidth));
-           // }
+            }
 #else
             lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
                 input_picture_ptr->buffer_y + inputOriginIndex,
