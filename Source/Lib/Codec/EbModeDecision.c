@@ -476,7 +476,7 @@ void sort_fast_loop_canidates(
     uint32_t                          highestCostIndex;
     uint64_t                          highestCost;
 
-    // Build the initial best candidate index array; scratch candidates @ the last spots if any 
+    // Build the best candidate index array; move the scratch candidates (MAX_CU_COST) to the last spots (if any)
     uint32_t best_candidate_start_index = 0;
     uint32_t best_candidate_end_index = buffer_total_count - 1;
     for (uint8_t full_buffer_index = 0; full_buffer_index < buffer_total_count; full_buffer_index++) {
@@ -488,17 +488,8 @@ void sort_fast_loop_canidates(
         }
     }
 
-    uint32_t                          candIndx = 0, i, j, index;
-    for (i = 0; i < fullReconCandidateCount - 1; ++i) {
-        for (j = i + 1; j < fullReconCandidateCount; ++j) {
-            if ((buffer_ptr_array[best_candidate_index_array[i]]->candidate_ptr->type == INTRA_MODE) &&
-                (buffer_ptr_array[best_candidate_index_array[j]]->candidate_ptr->type == INTER_MODE)) {
-                index = best_candidate_index_array[i];
-                best_candidate_index_array[i] = (uint8_t)best_candidate_index_array[j];
-                best_candidate_index_array[j] = (uint8_t)index;
-            }
-        }
-    }
+    uint32_t i, j, index;
+
     for (i = 0; i < fullReconCandidateCount; i++) {
         if (*(buffer_ptr_array[i]->fast_cost_ptr) < *ref_fast_cost) {
             *ref_fast_cost = *(buffer_ptr_array[i]->fast_cost_ptr);
