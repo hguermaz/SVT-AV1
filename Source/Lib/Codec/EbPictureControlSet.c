@@ -897,8 +897,8 @@ EbErrorType picture_control_set_ctor(
 
     object_ptr->mi_stride = pictureLcuWidth * (BLOCK_SIZE_64 / 4);
 #if ICOPY
-    objectPtr->hash_table.p_lookup_table = NULL;
-    av1_hash_table_create(&objectPtr->hash_table);
+    object_ptr->hash_table.p_lookup_table = NULL;
+    av1_hash_table_create(&object_ptr->hash_table);
 #endif
     return EB_ErrorNone;
 }

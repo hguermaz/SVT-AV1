@@ -599,7 +599,7 @@ EbErrorType av1_intra_fast_cost(
     UNUSED(top_neighbor_mode);
 
 #if ICOPY 
-    ModeDecisionCandidate_t *candidate_ptr = candidate_buffer_ptr->candidate_ptr;
+    //ModeDecisionCandidate_t *candidate_ptr = candidate_buffer_ptr->candidate_ptr;
     if (av1_allow_intrabc(picture_control_set_ptr->parent_pcs_ptr->av1_cm) && candidate_ptr->use_intrabc) {
 
         uint64_t lumaSad = (LUMA_WEIGHT * luma_distortion) << AV1_COST_PRECISION;

@@ -4978,9 +4978,9 @@ void* picture_analysis_kernel(void *input_ptr)
 
 #if ICOPY
         picture_control_set_ptr->sc_content_detected = is_screen_content(
-            inputPicturePtr->bufferY + inputPicturePtr->origin_x + inputPicturePtr->origin_y*inputPicturePtr->strideY,
+            input_picture_ptr->buffer_y + input_picture_ptr->origin_x + input_picture_ptr->origin_y*input_picture_ptr->stride_y,
             0,
-            inputPicturePtr->strideY,
+            input_picture_ptr->stride_y,
             sequence_control_set_ptr->luma_width, sequence_control_set_ptr->luma_height);
 #endif
 

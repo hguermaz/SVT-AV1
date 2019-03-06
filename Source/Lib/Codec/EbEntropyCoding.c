@@ -5022,22 +5022,22 @@ EbErrorType ec_update_neighbors(
 
 }
 #if ICOPY
-int32_t is_chroma_reference(int32_t mi_row, int32_t mi_col, BlockSize bsize,
+int32_t is_chroma_reference(int32_t mi_row, int32_t mi_col, block_size bsize,
     int32_t subsampling_x, int32_t subsampling_y);
 
 static INLINE int av1_allow_palette(int allow_screen_content_tools,
-    BlockSize sb_type) {
+    block_size sb_type) {
     return allow_screen_content_tools && block_size_wide[sb_type] <= 64 &&
         block_size_high[sb_type] <= 64 && sb_type >= BLOCK_8X8;
 }
 
-static INLINE int av1_get_palette_bsize_ctx(BlockSize bsize) {
+static INLINE int av1_get_palette_bsize_ctx(block_size bsize) {
     return num_pels_log2_lookup[bsize] - num_pels_log2_lookup[BLOCK_8X8];
 }
 static void write_palette_mode_info(
     FRAME_CONTEXT           *ec_ctx,
     CodingUnit_t            *cu_ptr,
-    BlockSize bsize,
+    block_size bsize,
     int mi_row,
     int mi_col, aom_writer *w)
 {

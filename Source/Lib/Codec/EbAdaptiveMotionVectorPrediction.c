@@ -2092,12 +2092,12 @@ void av1_find_ref_dv(IntMv *ref_dv, const TileInfo *const tile,
     ref_dv->as_mv.col *= 8;
 }
 
-int32_t is_chroma_reference(int32_t mi_row, int32_t mi_col, BlockSize bsize,
+int32_t is_chroma_reference(int32_t mi_row, int32_t mi_col, block_size bsize,
     int32_t subsampling_x, int32_t subsampling_y);
 
 int av1_is_dv_valid(const MV dv,
     const MacroBlockD *xd, int mi_row, int mi_col,
-    BlockSize bsize, int mib_size_log2) {
+    block_size bsize, int mib_size_log2) {
     const int bw = block_size_wide[bsize];
     const int bh = block_size_high[bsize];
     const int SCALE_PX_TO_MV = 8;

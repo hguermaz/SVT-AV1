@@ -179,6 +179,20 @@ extern "C" {
 #endif
 
 #define ICOPY       0 //Intra Block Copy
+#define AOM_INTERP_EXTEND 4
+struct buf_2d {
+    uint8_t *buf;
+    uint8_t *buf0;
+    int width;
+    int height;
+    int stride;
+};
+typedef struct {
+    int col_min;
+    int col_max;
+    int row_min;
+    int row_max;
+} MvLimits;
 
 /********************************************************/
 /****************** Pre-defined Values ******************/

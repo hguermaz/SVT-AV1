@@ -73,7 +73,7 @@ struct SPEED_FEATURES;
 
 
 int av1_full_pixel_search(struct PictureControlSet_s *pcs, IntraBcContext /*MACROBLOCK*/ *x,
-                          BlockSize bsize, MV *mvp_full, int step_param,
+                          block_size bsize, MV *mvp_full, int step_param,
                           int method, int run_mesh_search, int error_per_bit,
                           int *cost_list, const MV *ref_mv, int var_max, int rd,
                           int x_pos, int y_pos, int intra);

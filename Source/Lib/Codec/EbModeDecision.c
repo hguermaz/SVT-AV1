@@ -2373,7 +2373,7 @@ static INLINE TxType av1_get_tx_type(
 #if ICOPY
 double av1_convert_qindex_to_q(int32_t qindex, aom_bit_depth_t bit_depth);
 
-static INLINE void setup_pred_plane(struct buf_2d *dst, BlockSize bsize,
+static INLINE void setup_pred_plane(struct buf_2d *dst, block_size bsize,
     uint8_t *src, int width, int height,
     int stride, int mi_row, int mi_col,
     int subsampling_x, int subsampling_y) {
@@ -2391,7 +2391,7 @@ static INLINE void setup_pred_plane(struct buf_2d *dst, BlockSize bsize,
     dst->height = height;
     dst->stride = stride;
 }
-void av1_setup_pred_block(BlockSize sb_type,
+void av1_setup_pred_block(block_size sb_type,
     struct buf_2d dst[MAX_MB_PLANE],
     const Yv12BufferConfig *src, int mi_row, int mi_col) {
     int i;
@@ -2460,7 +2460,7 @@ void  intra_bc_search(
     x->xd = cu_ptr->av1xd;
     x->nmv_vec_cost = context_ptr->md_rate_estimation_ptr->nmv_vec_cost;
     x->mv_cost_stack = context_ptr->md_rate_estimation_ptr->nmvcoststack;
-    BlockSize bsize = context_ptr->blk_geom->bsize;
+    block_size bsize = context_ptr->blk_geom->bsize;
     const Av1Common *const cm = pcs->parent_pcs_ptr->av1_cm;
     MvReferenceFrame ref_frame = INTRA_FRAME;
     generate_av1_mvp_table(

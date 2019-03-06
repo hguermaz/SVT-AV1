@@ -3188,6 +3188,9 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 
         // Initial Rate Estimatimation of the Motion vectors
         av1_estimate_mv_rate(
+#if ICOPY
+            picture_control_set_ptr,
+#endif
             md_rate_estimation_array,
             &picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc->nmvc);
 
@@ -3419,7 +3422,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
                 }
             }
 
-            av1_init3smotion_compensation(&picture_control_set_ptr->ss_cfg, picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr->strideY);
+            av1_init3smotion_compensation(&picture_control_set_ptr->ss_cfg, picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr->stride_y);
         }
 #endif
 

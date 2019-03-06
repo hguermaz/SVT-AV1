@@ -162,7 +162,7 @@ extern "C" {
         int mib_size, int mi_row, int mi_col);
     int av1_is_dv_valid(const MV dv,
         const MacroBlockD *xd, int mi_row, int mi_col,
-        BlockSize bsize, int mib_size_log2);
+        block_size bsize, int mib_size_log2);
 #endif
 
 #ifdef __cplusplus

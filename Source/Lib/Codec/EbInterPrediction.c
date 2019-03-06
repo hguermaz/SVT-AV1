@@ -4066,9 +4066,6 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         md_context_ptr,
                         md_context_ptr->cu_ptr,
                         &mv_unit,
-#if ICOPY
-                        0,
-#endif
                         md_context_ptr->cu_origin_x,
                         md_context_ptr->cu_origin_y,
                         md_context_ptr->blk_geom->bwidth,
