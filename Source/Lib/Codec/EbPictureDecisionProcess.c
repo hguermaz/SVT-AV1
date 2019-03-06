@@ -712,6 +712,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->slice_type == I_SLICE) {
         picture_control_set_ptr->allow_screen_content_tools = picture_control_set_ptr->sc_content_detected;
         picture_control_set_ptr->allow_intrabc = picture_control_set_ptr->sc_content_detected;
+        
+        //turn OFF intra bc for some specific modes
+        if (picture_control_set_ptr->enc_mode >= ENC_M1)
+            picture_control_set_ptr->allow_intrabc = 0;
+      
     }
     else {
         picture_control_set_ptr->allow_screen_content_tools = 0;

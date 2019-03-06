@@ -284,6 +284,10 @@ extern "C" {
 
 #if ICOPY 
         uint8_t  use_intrabc;
+        MbModeInfo *above_mbmi;
+        MbModeInfo *left_mbmi;
+        MbModeInfo *chroma_above_mbmi;
+        MbModeInfo *chroma_left_mbmi;
 #endif
     } MacroBlockD;
 

@@ -23,7 +23,7 @@
 
 int av1_is_dv_valid(const MV dv,
     const MacroBlockD *xd, int mi_row, int mi_col,
-    BlockSize bsize, int mib_size_log2);
+    block_size bsize, int mib_size_log2);
 
 void clamp_mv(
     MV *mv,
@@ -925,7 +925,7 @@ int av1_refining_search_sad(IntraBcContext  *x, MV *ref_mv, int error_per_bit,
   return best_sad;
 }
 
-int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, BlockSize bsize,
+int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_size bsize,
                           MV *mvp_full, int step_param, int method,
                           int run_mesh_search, int error_per_bit,
                           int *cost_list, const MV *ref_mv, int var_max, int rd,

@@ -165,7 +165,7 @@ extern "C" {
 #define ENABLE_EOB_ZERO_CHECK                           1
 #define DISABLE_128_SB_FOR_SUB_720                      1
 
-#define NSQ_OPTIMASATION                                1
+#define NSQ_OPTIMASATION                                0
 #if NSQ_OPTIMASATION
 #define NSQ_IDX_TH                                      6 // from 1 up to 6
 #define NSQ_ADD_NEIGH_INFO                              1
@@ -178,7 +178,7 @@ extern "C" {
 #define MAX_FRAMES_TO_REF_I                             64
 #endif
 
-#define ICOPY       0 //Intra Block Copy
+#define ICOPY       1 //Intra Block Copy
 #define AOM_INTERP_EXTEND 4
 struct buf_2d {
     uint8_t *buf;
@@ -193,6 +193,21 @@ typedef struct {
     int row_min;
     int row_max;
 } MvLimits;
+
+/*!\brief force enum to be unsigned 1 byte*/
+#define UENUM1BYTE(enumvar) \
+  ;                         \
+  typedef uint8_t enumvar
+
+enum {
+    DIAMOND = 0,
+    NSTEP = 1,
+    HEX = 2,
+    BIGDIA = 3,
+    SQUARE = 4,
+    FAST_HEX = 5,
+    FAST_DIAMOND = 6
+} UENUM1BYTE(SEARCH_METHODS);
 
 /********************************************************/
 /****************** Pre-defined Values ******************/

@@ -13624,6 +13624,10 @@ extern "C" {
 #if FAST_SG
         int8_t  wn_filter_mode;
 #endif
+
+#if ICOPY
+        struct PictureControlSet_s               *pcs_ptr;
+#endif
     } Av1Common;
 
     /**************************************
