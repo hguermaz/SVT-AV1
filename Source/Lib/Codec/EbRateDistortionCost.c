@@ -597,7 +597,8 @@ EbErrorType av1_intra_fast_cost(
     UNUSED(miCol);
     UNUSED(left_neighbor_mode);
     UNUSED(top_neighbor_mode);
-
+    uint64_t rate;
+    uint64_t totalDistortion;
 #if ICOPY 
     ModeDecisionCandidate_t *candidate_ptr = candidate_buffer_ptr->candidate_ptr;
     if (av1_allow_intrabc(picture_control_set_ptr->parent_pcs_ptr->av1_cm) && candidate_ptr->use_intrabc) {
