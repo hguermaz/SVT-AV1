@@ -1361,13 +1361,15 @@ void perform_fast_loop(
 #if USE_SSE_FL
             // Y
             if (use_ssd) {
-                lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
+
+                lumaFastDistortion = spatial_full_distortion_kernel( // spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
                     prediction_ptr->stride_y,
                     context_ptr->blk_geom->bheight,
                     context_ptr->blk_geom->bwidth);
+
             }
             else {
                 lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
@@ -1391,7 +1393,7 @@ void perform_fast_loop(
             if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
 #if USE_SSE_FL
                 if (use_ssd) {
-                    chromaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2](
+                    chromaFastDistortion = spatial_full_distortion_kernel( //spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2](
                         input_picture_ptr->bufferCb + inputCbOriginIndex,
                         input_picture_ptr->strideCb,
                         candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex,
@@ -1399,7 +1401,7 @@ void perform_fast_loop(
                         context_ptr->blk_geom->bheight_uv,
                         context_ptr->blk_geom->bwidth_uv);
 
-                    chromaFastDistortion += spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2](
+                    chromaFastDistortion += spatial_full_distortion_kernel( //spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2](
                         input_picture_ptr->bufferCr + inputCrOriginIndex,
                         input_picture_ptr->strideCb,
                         candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex,
