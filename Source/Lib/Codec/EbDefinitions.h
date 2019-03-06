@@ -165,6 +165,14 @@ extern "C" {
 #define ENABLE_EOB_ZERO_CHECK                           1
 #define DISABLE_128_SB_FOR_SUB_720                      1
 
+#define NSQ_OPTIMASATION                                0
+#if NSQ_OPTIMASATION
+#define NSQ_IDX_TH                                      6 // from 1 up to 6
+#define NSQ_ADD_NEIGH_INFO                              1
+#define REMOVE_DUPLICATE                                1
+#define NSQ_TAB_SIZE                                    6
+#endif
+
 /********************************************************/
 /****************** Pre-defined Values ******************/
 /********************************************************/
