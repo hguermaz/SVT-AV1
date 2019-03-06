@@ -462,16 +462,14 @@ void LimitMvOverBound(
 }
 
 #if INTRA_INTER_FAST_LOOP
-EbErrorType PreModeDecision(
+void sort_fast_loop_canidates(
     struct ModeDecisionContext_s   *context_ptr,
     uint32_t                        buffer_total_count,
     ModeDecisionCandidateBuffer_t **buffer_ptr_array,
-    uint32_t                       *full_candidate_total_count_ptr,
     uint8_t                        *best_candidate_index_array,    
     uint8_t                        *sorted_candidate_index_array,                            
     uint64_t                       *ref_fast_cost) {
 
-    EbErrorType return_error = EB_ErrorNone;
     uint32_t fullCandidateIndex;
     uint32_t fullReconCandidateCount = context_ptr->full_recon_search_count;
 
@@ -520,7 +518,6 @@ EbErrorType PreModeDecision(
             }
         }
     }
-    return return_error;
 }
 #else
 /***************************************
@@ -528,18 +525,6 @@ EbErrorType PreModeDecision(
 *   Selects which fast cost modes to
 *   do full reconstruction on.
 ***************************************/
-#if INTRA_INTER_FAST_LOOP
-EbErrorType PreModeDecision(
-    struct ModeDecisionContext_s   *context_ptr,
-    uint32_t                        buffer_total_count,
-    ModeDecisionCandidateBuffer_t **buffer_ptr_array,
-    uint32_t                       *full_candidate_total_count_ptr,
-    uint8_t                        *best_candidate_index_array,
-#if USED_NFL_FEATURE_BASED        
-    uint8_t                        *sorted_candidate_index_array,
-#endif                            
-    uint64_t                       *ref_fast_cost) {
-#else
 EbErrorType PreModeDecision(
     CodingUnit_t                   *cu_ptr,
     uint32_t                          buffer_total_count,
@@ -554,30 +539,13 @@ EbErrorType PreModeDecision(
     EbBool                           same_fast_full_candidate) {
 
     UNUSED(cu_ptr);
-#endif
+
     EbErrorType return_error = EB_ErrorNone;
     uint32_t fullCandidateIndex;
-#if INTRA_INTER_FAST_LOOP
-    uint32_t fullReconCandidateCount = context_ptr->full_recon_search_count;
-#else
     uint32_t fullReconCandidateCount;
-#endif
+
     uint32_t                          highestCostIndex;
     uint64_t                          highestCost;
-
-#if INTRA_INTER_FAST_LOOP
-    // Build the initial best candidate index array; scratch candidates @ the last spots if any 
-    uint32_t best_candidate_start_index = 0;
-    uint32_t best_candidate_end_index   = buffer_total_count - 1;
-    for (uint8_t full_buffer_index = 0; full_buffer_index < buffer_total_count; full_buffer_index++) {
-        if (*(buffer_ptr_array[full_buffer_index]->fast_cost_ptr) == MAX_CU_COST) {
-            best_candidate_index_array[best_candidate_end_index --] = full_buffer_index;
-        }
-        else {
-            best_candidate_index_array[best_candidate_start_index++] = full_buffer_index;
-        }
-    }
-#else
 
     *full_candidate_total_count_ptr = buffer_total_count;
 
@@ -591,13 +559,11 @@ EbErrorType PreModeDecision(
     //With N buffers, we get here with the best N-1, plus the last candidate. We need to exclude the worst, and keep the best N-1.
     highestCost = *(buffer_ptr_array[0]->fast_cost_ptr);
     highestCostIndex = 0;
-
+    uint32_t                          candIndx = 0, i, j, index;
     if (buffer_total_count > 1) {
-#if INTRA_INTER_FAST_LOOP
-        if (buffer_total_count == context_ptr->full_recon_search_count) {
-#else
+
         if (same_fast_full_candidate) {
-#endif
+
             for (i = 0; i < buffer_total_count; i++) {
                 best_candidate_index_array[candIndx++] = (uint8_t)i;
             }
@@ -621,8 +587,8 @@ EbErrorType PreModeDecision(
     }
     else
         best_candidate_index_array[0] = 0;
-#endif
-    uint32_t                          candIndx = 0, i, j, index;
+
+
     for (i = 0; i < fullReconCandidateCount - 1; ++i) {
         for (j = i + 1; j < fullReconCandidateCount; ++j) {
             if ((buffer_ptr_array[best_candidate_index_array[i]]->candidate_ptr->type == INTRA_MODE) &&
@@ -654,7 +620,7 @@ EbErrorType PreModeDecision(
     }
 
 #endif
-#if !INTRA_INTER_FAST_LOOP
+
     // Set (*full_candidate_total_count_ptr) to fullReconCandidateCount
     (*full_candidate_total_count_ptr) = fullReconCandidateCount;
 
@@ -664,7 +630,7 @@ EbErrorType PreModeDecision(
         // Set disable_merge_index
         *disable_merge_index = buffer_ptr_array[fullCandidateIndex]->candidate_ptr->type == INTER_MODE ? 1 : *disable_merge_index;
     }
-#endif
+
     return return_error;
 }
 #endif

@@ -416,11 +416,10 @@ extern "C" {
         uint8_t                        *best_candidate_index_array,
         uint32_t                       *best_intra_mode);
 #if INTRA_INTER_FAST_LOOP
-    EbErrorType PreModeDecision(
+    void sort_fast_loop_canidates(
         struct ModeDecisionContext_s   *context_ptr,
         uint32_t                        buffer_total_count,
         ModeDecisionCandidateBuffer_t **buffer_ptr_array,
-        uint32_t                       *full_candidate_total_count_ptr,
         uint8_t                        *best_candidate_index_array,
         uint8_t                        *sorted_candidate_index_array,
         uint64_t                       *ref_fast_cost);

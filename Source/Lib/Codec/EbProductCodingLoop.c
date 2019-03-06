@@ -3420,11 +3420,10 @@ void md_encode_block(
         // -Output is list of buffers for full reconstruction
         uint64_t ref_fast_cost = MAX_MODE_COST;
 
-        PreModeDecision(
+        sort_fast_loop_canidates(
             context_ptr,
             buffer_total_count,
             candidate_buffer_ptr_array,
-            &context_ptr->full_recon_search_count,
             context_ptr->best_candidate_index_array,
             context_ptr->sorted_candidate_index_array,
             &ref_fast_cost);
