@@ -3319,7 +3319,7 @@ EB_EXTERN void AV1EncodePass(
                                 context_ptr->mv_unit.mv[REF_LIST_0].mvUnion = pu_ptr->mv[REF_LIST_0].mvUnion;
                                 context_ptr->mv_unit.mv[REF_LIST_1].mvUnion = pu_ptr->mv[REF_LIST_1].mvUnion;
 
-                                EbPictureBufferDesc_t * ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->objectPtr)->referencePicture;
+                                EbPictureBufferDesc_t * ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
 
                                 av1_inter_prediction(
                                     picture_control_set_ptr,
@@ -3336,7 +3336,7 @@ EB_EXTERN void AV1EncodePass(
                                     blk_geom->bheight,
                                     ref_pic_list0,
                                     0,
-                                    reconBuffer,
+                                    recon_buffer,
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
 #if CHROMA_BLIND

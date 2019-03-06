@@ -2649,7 +2649,11 @@ void  inject_intra_bc_candidates(
     {
         candidateArray[*cand_cnt].type = INTRA_MODE;
         candidateArray[*cand_cnt].intra_luma_mode = DC_PRED;
+#if TWO_FAST_LOOP 
+        candidateArray[*cand_cnt].enable_two_fast_loops = 0;
+#else
         candidateArray[*cand_cnt].distortion_ready = 0;
+#endif
         candidateArray[*cand_cnt].use_intrabc = 1;
         candidateArray[*cand_cnt].is_directional_mode_flag = 0;
         candidateArray[*cand_cnt].use_angle_delta = 0;

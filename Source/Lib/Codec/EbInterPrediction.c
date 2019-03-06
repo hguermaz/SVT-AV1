@@ -1319,7 +1319,7 @@ EbErrorType av1_inter_prediction(
 
 #if ICOPY 
             if (use_intrabc && (subpel_x != 0 || subpel_y != 0))
-                convolve_2d_for_intrabc((const uint8_t *)srcPtr, src_stride, dstPtr, dst_stride, blk_geom->bwidth_uv, blk_geom->bheight_uv, subpel_x,
+                convolve_2d_for_intrabc((const uint8_t *)src_ptr, src_stride, dst_ptr, dst_stride, blk_geom->bwidth_uv, blk_geom->bheight_uv, subpel_x,
                     subpel_y, &conv_params);
             else
 #endif
@@ -1351,7 +1351,7 @@ EbErrorType av1_inter_prediction(
 
 #if ICOPY 
             if (use_intrabc && (subpel_x != 0 || subpel_y != 0))
-                convolve_2d_for_intrabc((const uint8_t *)srcPtr, src_stride, dstPtr, dst_stride, blk_geom->bwidth_uv, blk_geom->bheight_uv, subpel_x,
+                convolve_2d_for_intrabc((const uint8_t *)src_ptr, src_stride, dst_ptr, dst_stride, blk_geom->bwidth_uv, blk_geom->bheight_uv, subpel_x,
                     subpel_y, &conv_params);
             else
 #endif
@@ -4322,7 +4322,7 @@ EbErrorType inter_pu_prediction_av1(
             ref_pic_list0 = NULL;
         }
         else {
-            ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->objectPtr)->referencePicture;
+            ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
         }
 
         av1_inter_prediction(
