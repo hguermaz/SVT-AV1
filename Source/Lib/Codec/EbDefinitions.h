@@ -165,7 +165,7 @@ extern "C" {
 #define ENABLE_EOB_ZERO_CHECK                           1
 #define DISABLE_128_SB_FOR_SUB_720                      1
 
-#define NSQ_OPTIMASATION                                0
+#define NSQ_OPTIMASATION                                1
 #if NSQ_OPTIMASATION
 #define NSQ_IDX_TH                                      6 // from 1 up to 6
 #define NSQ_ADD_NEIGH_INFO                              1
@@ -173,7 +173,7 @@ extern "C" {
 #define NSQ_TAB_SIZE                                    6
 #endif
 
-#define BASE_LAYER_REF                                  0 // Base layer pictures use the previous I slice as the second reference
+#define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
 #if BASE_LAYER_REF
 #define MAX_FRAMES_TO_REF_I                             64
 #endif
