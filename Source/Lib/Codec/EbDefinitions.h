@@ -173,6 +173,11 @@ extern "C" {
 #define NSQ_TAB_SIZE                                    6
 #endif
 
+#define BASE_LAYER_REF                                  0 // Base layer pictures use the previous I slice as the second reference
+#if BASE_LAYER_REF
+#define MAX_FRAMES_TO_REF_I                             64
+#endif
+
 /********************************************************/
 /****************** Pre-defined Values ******************/
 /********************************************************/
