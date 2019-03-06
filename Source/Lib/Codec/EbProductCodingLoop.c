@@ -1361,7 +1361,7 @@ void perform_fast_loop(
             // Y
             if (use_ssd) {
 
-                lumaFastDistortion = spatial_full_distortion_kernel( // spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
+                lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2] (
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
@@ -1371,7 +1371,7 @@ void perform_fast_loop(
 
             }
             else {
-                lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
+                lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3] (
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
@@ -1392,7 +1392,7 @@ void perform_fast_loop(
             if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
 #if USE_SSE_FL
                 if (use_ssd) {
-                    chromaFastDistortion = spatial_full_distortion_kernel( //spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2](
+                    chromaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2] ( //spatial_full_distortion_kernel(
                         input_picture_ptr->bufferCb + inputCbOriginIndex,
                         input_picture_ptr->strideCb,
                         candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex,
@@ -1400,7 +1400,7 @@ void perform_fast_loop(
                         context_ptr->blk_geom->bheight_uv,
                         context_ptr->blk_geom->bwidth_uv);
 
-                    chromaFastDistortion += spatial_full_distortion_kernel( //spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2](
+                    chromaFastDistortion += spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2] ( //spatial_full_distortion_kernel(
                         input_picture_ptr->bufferCr + inputCrOriginIndex,
                         input_picture_ptr->strideCb,
                         candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex,
@@ -3310,7 +3310,6 @@ void md_encode_block(
             picture_control_set_ptr);
 #endif
 
-#if INTRA_INTER_FAST_LOOP
         ProductGenerateMdCandidatesCu(
             context_ptr->sb_ptr,
             context_ptr,
@@ -3321,9 +3320,10 @@ void md_encode_block(
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
 
-        EbBool intra_inter_fast_loop = (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N);
+#if INTRA_INTER_FAST_LOOP
+        EbBool decouple_intra_inter_fast_loop = (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N);
         uint32_t buffer_total_count;
-        if (intra_inter_fast_loop) {
+        if (decouple_intra_inter_fast_loop) {
             // Derive fast inter candidates total count
             context_ptr->fast_candidate_inter_count = fastCandidateTotalCount - context_ptr->fast_candidate_intra_count;
             // Update full_recon_search_count; number of full loop candidates could not exceed number of fast loop candidates
@@ -3415,11 +3415,8 @@ void md_encode_block(
                 asm_type);
 
         }
-        // PreModeDecision
-        // -Input is the buffers
-        // -Output is list of buffers for full reconstruction
-        uint64_t ref_fast_cost = MAX_MODE_COST;
 
+        uint64_t ref_fast_cost = MAX_MODE_COST;
         sort_fast_loop_candidates(
             context_ptr,
             buffer_total_count,
@@ -3427,20 +3424,7 @@ void md_encode_block(
             context_ptr->best_candidate_index_array,
             context_ptr->sorted_candidate_index_array,
             &ref_fast_cost);
-
-
 #else
-        ProductGenerateMdCandidatesCu(
-            context_ptr->sb_ptr,
-            context_ptr,
-            ss_mecontext,
-            leaf_index,
-            lcuAddr,
-            &buffer_total_count,
-            &fastCandidateTotalCount,
-            (void*)context_ptr->inter_prediction_context,
-            picture_control_set_ptr);
-
         //if we want to recon N candidate, we would need N+1 buffers
         maxBuffers = MIN((buffer_total_count + 1), context_ptr->buffer_depth_index_width[0]);
 
