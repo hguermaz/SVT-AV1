@@ -187,7 +187,7 @@ extern "C" {
 #define ICOPY       0 //Intra Block Copy
 #define AOM_INTERP_EXTEND 4
 
-#define REPLACE_2D_F_IN_IFS                             1
+#define REPLACE_2D_F_IN_IFS                             0
 
 struct buf_2d {
     uint8_t *buf;
