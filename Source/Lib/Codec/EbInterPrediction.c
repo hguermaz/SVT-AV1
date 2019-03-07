@@ -1021,7 +1021,6 @@ EbErrorType inter_prediction_fast(
 #if CHROMA_BLIND
     EbBool                                  perform_chroma,
 #endif
-    uint16_t                                *skip_filter,
     EbAsm                                   asm_type){
     (void)asm_type;
     EbErrorType  return_error = EB_ErrorNone;
@@ -1062,14 +1061,10 @@ EbErrorType inter_prediction_fast(
         conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstY, 128, is_compound, EB_8BIT);
         av1_get_convolve_filter_params(interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
-#if DISABLE_2D_F
-        *skip_filter = 0;
-        if ((subpel_x == 0) && (subpel_y == 0)) *skip_filter = 1;// subpel_x = 1;
-        if ((subpel_x == 1) && (subpel_y == 1)) *skip_filter = 1;// subpel_x = 0;
 
-        if (skip_filter == 0)
+        if ((subpel_x == 0) && (subpel_y == 0))  subpel_x = 1;
+        if ((subpel_x == 1) && (subpel_y == 1))  subpel_x = 0;
 
-#endif
             convolve[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
                 src_stride,
@@ -1102,10 +1097,10 @@ EbErrorType inter_prediction_fast(
 
             av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                 &filter_params_y, bwidth_uv, bheight_uv);
-#if DISABLE_2D_F
+
             if ((subpel_x == 0) && (subpel_y == 0)) subpel_x = 1;
             if ((subpel_x == 1) && (subpel_y == 1)) subpel_x = 0;
-#endif
+
             convolve[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
                 src_stride,
@@ -1130,10 +1125,10 @@ EbErrorType inter_prediction_fast(
             subpel_y = mv_q4.row & SUBPEL_MASK;
             src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
             conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstCr, 64, is_compound, EB_8BIT);
-#if DISABLE_2D_F
+
             if ((subpel_x == 0) && (subpel_y == 0)) subpel_x = 1;
             if ((subpel_x == 1) && (subpel_y == 1)) subpel_x = 0;
-#endif
+
             convolve[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
                 src_stride,
@@ -1168,10 +1163,10 @@ EbErrorType inter_prediction_fast(
         conv_params = get_conv_params_no_round(0, (mv_unit->predDirection == BI_PRED) ? 1 : 0, 0, tmp_dstY, 128, is_compound, EB_8BIT);
         av1_get_convolve_filter_params(interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
-#if DISABLE_2D_F
+
         if ((subpel_x == 0) && (subpel_y == 0)) subpel_x = 1;
         if ((subpel_x == 1) && (subpel_y == 1)) subpel_x = 0;
-#endif
+
         convolve[subpel_x != 0][subpel_y != 0][is_compound](
             src_ptr,
             src_stride,
@@ -1205,10 +1200,9 @@ EbErrorType inter_prediction_fast(
             av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                 &filter_params_y, bwidth_uv, bheight_uv);
 
-#if DISABLE_2D_F
             if ((subpel_x == 0) && (subpel_y == 0)) subpel_x = 1;
             if ((subpel_x == 1) && (subpel_y == 1)) subpel_x = 0;
-#endif
+
             convolve[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
                 src_stride,
@@ -1233,10 +1227,10 @@ EbErrorType inter_prediction_fast(
             subpel_y = mv_q4.row & SUBPEL_MASK;
             src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
             conv_params = get_conv_params_no_round(0, (mv_unit->predDirection == BI_PRED) ? 1 : 0, 0, tmp_dstCr, 64, is_compound, EB_8BIT);
-#if DISABLE_2D_F
+
             if ((subpel_x == 0) && (subpel_y == 0)) subpel_x = 1;
             if ((subpel_x == 1) && (subpel_y == 1)) subpel_x = 0;
-#endif
+
             convolve[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
                 src_stride,
@@ -3869,9 +3863,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
     int32_t i;
     int32_t tmp_rate;
     int64_t tmp_dist;
-#if REPLACE_2D_F_IN_IFS
-    int16_t skip_filter;
-#endif
+
     //(void)single_filter;
 
     InterpFilter assign_filter = SWITCHABLE;
@@ -3914,14 +3906,9 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 #if CHROMA_BLIND
         use_uv,
 #endif
-        &skip_filter,
         asm_type);
 
-    if (skip_filter) {
-        tmp_rate = MAXINT32;
-        tmp_dist = MAXUINT64;
-    }
-    else {
+
         model_rd_for_sb(
             picture_control_set_ptr,
             prediction_ptr,
@@ -3933,7 +3920,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
             skip_txfm_sb,
             skip_sse_sb,
             NULL, NULL, NULL);
-    }
+ 
 #else
     av1_inter_prediction(
         picture_control_set_ptr,
@@ -4044,13 +4031,8 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 #if CHROMA_BLIND
                         use_uv,
 #endif
-                        &skip_filter,
                         asm_type);
-                    if (skip_filter) {
-                        tmp_rate = MAXINT32;
-                        tmp_dist = MAXUINT64;
-                    }
-                    else {
+                   
                         model_rd_for_sb(
                             picture_control_set_ptr,
                             prediction_ptr,
@@ -4062,7 +4044,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                             skip_txfm_sb,
                             skip_sse_sb,
                             NULL, NULL, NULL);
-                    }
+                 
 #else
                     av1_inter_prediction(
                         picture_control_set_ptr,
