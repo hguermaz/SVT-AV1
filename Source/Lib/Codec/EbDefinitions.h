@@ -203,8 +203,10 @@ extern "C" {
 
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
+#define USE_SB64x64                                     0 // use SB 64x64 to speed up testing process
 #define M1_1                                            0 // run on top of M0
-#define M2_1                                            0 // run with M1_1 on
+#define M2_1                                            0 // run with M1_1 on top of M0
+
 
 #define AOM_INTERP_EXTEND 4
 
