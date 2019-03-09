@@ -4454,7 +4454,12 @@ EbErrorType inter_pu_prediction_av1(
 #if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
         if (!md_context_ptr->skip_interpolation_search) {
+#if M1_1
+            // Interpolation_Search_OFF_Nx8_8xN
+            if (md_context_ptr->blk_geom->bwidth > 8 && md_context_ptr->blk_geom->bheight > 8)
+#else
             if (md_context_ptr->blk_geom->bwidth > 4 && md_context_ptr->blk_geom->bheight > 4)
+#endif
                 interpolation_filter_search_HBD(
                     picture_control_set_ptr,
                     candidate_buffer_ptr->predictionPtrTemp,
@@ -4498,7 +4503,12 @@ EbErrorType inter_pu_prediction_av1(
     } else {
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
         if (!md_context_ptr->skip_interpolation_search) {
+#if M1_1
+            // Interpolation_Search_OFF_Nx8_8xN
+            if (md_context_ptr->blk_geom->bwidth > 8 && md_context_ptr->blk_geom->bheight > 8)
+#else
             if (md_context_ptr->blk_geom->bwidth > 4 && md_context_ptr->blk_geom->bheight > 4)
+#endif
                 interpolation_filter_search(
                     picture_control_set_ptr,
                     candidate_buffer_ptr->predictionPtrTemp,
