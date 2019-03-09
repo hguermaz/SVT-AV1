@@ -927,7 +927,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
     }
 #endif
-#if  M0_TEST_6 || M1_2
+#if  M0_TEST_6 
     if (!picture_control_set_ptr->is_used_as_reference_flag) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
     }
