@@ -937,6 +937,11 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
     }
 #endif
+#if M0_TEST_8
+    if (picture_control_set_ptr->temporal_layer_index > 0) {
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+    }
+#endif
 
     // Intra prediction modes                       Settings
     // 0                                            FULL  

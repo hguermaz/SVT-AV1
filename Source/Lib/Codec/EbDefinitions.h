@@ -220,6 +220,8 @@ extern "C" {
 #define M0_TEST_5                                            0
 #define M0_TEST_6                                            0
 #define M0_TEST_7                                            0
+#define M0_TEST_8                                            0
+#define M0_TEST_9                                            0
 
 
 #define M1_2                                               0

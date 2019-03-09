@@ -4510,6 +4510,8 @@ EbErrorType inter_pu_prediction_av1(
         uint16_t capped_size = !picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag ? 8 : 4;
 #elif M0_TEST_2
         uint16_t capped_size = !picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag ? 16 : 4;
+#elif M0_TEST_9
+        uint16_t capped_size = picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index > 0 ? 16 : 4;
 #elif M2_2
         uint16_t capped_size = picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag ? 8 : 128;
 #else
