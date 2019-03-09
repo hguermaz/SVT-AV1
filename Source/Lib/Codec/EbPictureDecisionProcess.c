@@ -731,8 +731,13 @@ EbErrorType signal_derivation_multi_processes_oq(
         printf("nsq_search_level is not supported\n");
         break;
     }
-        
-#if  M0_TEST_3
+       
+#if M2_2
+    if (picture_control_set_ptr->is_used_as_reference_flag) {
+        picture_control_set_ptr->nsq_max_shapes_md = 5;
+    }
+#endif
+#if  M0_TEST_3 || M1_2 || M2_2
     if (!picture_control_set_ptr->is_used_as_reference_flag) {
         picture_control_set_ptr->nsq_max_shapes_md = 1;
     }
@@ -779,7 +784,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
 
-#if  M0_TEST_0
+#if  M0_TEST_0 || M1_2
     if (!picture_control_set_ptr->is_used_as_reference_flag) {
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
     }
@@ -922,7 +927,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
     }
 #endif
-#if  M0_TEST_6
+#if  M0_TEST_6 || M1_2
     if (!picture_control_set_ptr->is_used_as_reference_flag) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
     }

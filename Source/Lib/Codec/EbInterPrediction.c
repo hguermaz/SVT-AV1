@@ -4510,6 +4510,8 @@ EbErrorType inter_pu_prediction_av1(
         uint16_t capped_size = !picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag ? 8 : 4;
 #elif M0_TEST_2
         uint16_t capped_size = !picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag ? 16 : 4;
+#elif M2_2
+        uint16_t capped_size = picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag ? 8 : 128;
 #else
         uint16_t capped_size = 4;
 #endif
@@ -4521,7 +4523,7 @@ EbErrorType inter_pu_prediction_av1(
             // Interpolation_Search_OFF_Nx8_8xN
             if (md_context_ptr->blk_geom->bwidth > 8 && md_context_ptr->blk_geom->bheight > 8)
 #else
-#if M0_TEST_1 || M0_TEST_2
+#if M0_TEST_1 || M0_TEST_2 || M2_2
             if (md_context_ptr->blk_geom->bwidth > capped_size && md_context_ptr->blk_geom->bheight > capped_size)
 #else
             if (md_context_ptr->blk_geom->bwidth > 4 && md_context_ptr->blk_geom->bheight > 4)

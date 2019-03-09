@@ -210,11 +210,7 @@ extern "C" {
 
 #define AOM_INTERP_EXTEND 4
 
-#if M2_1
-#define REDUCED_REFINEMENT_SET                           1
-#else
-#define REDUCED_REFINEMENT_SET                           0
-#endif
+
 
 #define M0_TEST_0                                            0
 #define M0_TEST_1                                            0
@@ -225,6 +221,16 @@ extern "C" {
 #define M0_TEST_6                                            0
 #define M0_TEST_7                                            0
 
+
+#define M1_2                                               0
+#define M2_2                                               0
+
+
+#if M2_1 || M2_2
+#define REDUCED_REFINEMENT_SET                           1
+#else
+#define REDUCED_REFINEMENT_SET                           0
+#endif
 
 struct buf_2d {
     uint8_t *buf;
@@ -3704,7 +3710,7 @@ static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
 
     //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
 };
-#elif M1_1
+#elif M1_1 || M2_2
 // 64x64_ME
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,    48,   48 },
