@@ -203,6 +203,8 @@ extern "C" {
 
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
+#define M1_1                                            0 // run on top of M0
+
 #define AOM_INTERP_EXTEND 4
 
 #define REDUCED_REFINEMENT_SET                           0
@@ -3668,6 +3670,23 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][M
     {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
 };
 
+#if M1_1
+// 64x64_ME
+static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,    48,   48 },
+    {  64,   96,   96,   96,   96,   48,   48,   48,   48,   48,   48,    48,   48 },
+    {  64,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 },
+    {  64,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 }
+};
+static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {  64,   64,   64,   64,   64,   48,   48,   48,   16,   16,   16,    16,   16 },
+    {  64,   96,   96,   96,   96,   48,   48,   48,   16,   16,   16,    16,   16 },
+    {  64,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 },
+    {  64,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 }
+
+//     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
+};
+#else
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,    48,   48 },
     { 112,   96,   96,   96,   96,   48,   48,   48,   48,   48,   48,    48,   48 },
@@ -3682,6 +3701,7 @@ static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
 
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
 };
+#endif
 
 #if OIS_BASED_INTRA
 static const uint16_t ep_to_pa_block_index[BLOCK_MAX_COUNT_SB_64] = {

@@ -691,7 +691,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_FULL;
     }
     else {
+#if M1_1
+        // NSQ_SEARCH_LEVEL5
+        picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL5;
+#else
         picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL6;
+#endif
     }
 
     switch (picture_control_set_ptr->nsq_search_level) {

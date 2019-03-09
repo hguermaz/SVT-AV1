@@ -672,7 +672,12 @@ void set_nfl(
             context_ptr->full_recon_search_count = 6;
         else
             context_ptr->full_recon_search_count = 4;
-            
+
+#if M1_1
+    // NFL_10_IN_NON_REF
+    if (!picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+        context_ptr->full_recon_search_count = 10;
+#endif
 #else
     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_ptr->index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
         context_ptr->full_recon_search_count = 1;
