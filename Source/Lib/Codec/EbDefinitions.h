@@ -214,6 +214,16 @@ extern "C" {
 #define REDUCED_REFINEMENT_SET                           0
 #endif
 
+#define M0_TEST_0                                            0
+#define M0_TEST_1                                            0
+#define M0_TEST_2                                            0
+#define M0_TEST_3                                            0
+#define M0_TEST_4                                            0
+#define M0_TEST_5                                            0
+#define M0_TEST_6                                            0
+#define M0_TEST_7                                            0
+
+
 struct buf_2d {
     uint8_t *buf;
     uint8_t *buf0;
