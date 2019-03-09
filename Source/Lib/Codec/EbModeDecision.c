@@ -640,8 +640,12 @@ EbErrorType PreModeDecision(
 
 #define BIPRED_3x3_REFINMENT_POSITIONS 8
 
-int8_t BIPRED_3x3_X_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-int8_t BIPRED_3x3_Y_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+#if REDUCED_REFINEMENT_SET
+int8_t ALLOW_REFINEMENT_FLAG[BIPRED_3x3_REFINMENT_POSITIONS] = {  1, 0, 1, 0, 1,  0,  1, 0 };
+#endif
+
+int8_t BIPRED_3x3_X_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { -1, -1, 0, 1, 1,  1,  0, -1 };
+int8_t BIPRED_3x3_Y_POS[BIPRED_3x3_REFINMENT_POSITIONS] = {  0,  1, 1, 1, 0, -1, -1, -1 };
 #endif
 #if IMPROVED_UNIPRED_INJECTION
 void Unipred3x3CandidatesInjection(
@@ -669,6 +673,10 @@ void Unipred3x3CandidatesInjection(
         /**************
         NEWMV L0
         ************* */
+#if REDUCED_REFINEMENT_SET
+        if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+            continue;
+#endif
 #if REMOVED_DUPLICATE_INTER
         int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->xMvL0 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
         int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->yMvL0 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
@@ -754,6 +762,10 @@ void Unipred3x3CandidatesInjection(
             /**************
             NEWMV L1
             ************* */
+#if REDUCED_REFINEMENT_SET
+            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                continue;
+#endif
 #if REMOVED_DUPLICATE_INTER_L1
             int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[1][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->xMvL1 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
             int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[1][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->yMvL1 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
@@ -866,6 +878,10 @@ void Bipred3x3CandidatesInjection(
        // (Best_L0, 8 Best_L1 neighbors)
         for (bipredIndex = 0; bipredIndex < BIPRED_3x3_REFINMENT_POSITIONS; ++bipredIndex)
         {
+#if REDUCED_REFINEMENT_SET
+            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                continue;
+#endif
 #if REMOVED_DUPLICATE_INTER_BIPRED
             int16_t to_inject_mv_x_l0 = use_close_loop_me ? inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : mePuResult->xMvL0 << 1;
             int16_t to_inject_mv_y_l0 = use_close_loop_me ? inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : mePuResult->yMvL0 << 1;
@@ -959,6 +975,10 @@ void Bipred3x3CandidatesInjection(
         // (8 Best_L0 neighbors, Best_L1) :
         for (bipredIndex = 0; bipredIndex < BIPRED_3x3_REFINMENT_POSITIONS; ++bipredIndex)
         {
+#if REDUCED_REFINEMENT_SET
+            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                continue;
+#endif
 #if REMOVED_DUPLICATE_INTER_BIPRED
             int16_t to_inject_mv_x_l0 = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->xMvL0 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
             int16_t to_inject_mv_y_l0 = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->yMvL0 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;

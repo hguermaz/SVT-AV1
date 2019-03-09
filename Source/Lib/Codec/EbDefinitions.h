@@ -204,6 +204,8 @@ extern "C" {
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
 #define AOM_INTERP_EXTEND 4
+
+#define REDUCED_REFINEMENT_SET                           0
 struct buf_2d {
     uint8_t *buf;
     uint8_t *buf0;
