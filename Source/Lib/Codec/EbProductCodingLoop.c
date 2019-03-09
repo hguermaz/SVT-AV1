@@ -673,7 +673,11 @@ void set_nfl(
         else
             context_ptr->full_recon_search_count = 4;
 
-#if M1_1
+#if M2_1
+    // NFL_8_IN_NON_REF
+    if (!picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+        context_ptr->full_recon_search_count = 8;
+#elif M1_1
     // NFL_10_IN_NON_REF
     if (!picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
         context_ptr->full_recon_search_count = 10;
