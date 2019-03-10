@@ -222,13 +222,13 @@ extern "C" {
 #define M0_TEST_7                                            0
 #define M0_TEST_8                                            0
 #define M0_TEST_9                                            0
-
+#define M0_TEST_10                                           0
 
 #define M1_2                                               0
 #define M2_2                                               0
+#define M3_2                                               0
 
-
-#if M2_1 || M2_2
+#if M2_1 || M2_2 || M3_2
 #define REDUCED_REFINEMENT_SET                           1
 #else
 #define REDUCED_REFINEMENT_SET                           0
@@ -3696,7 +3696,7 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][M
     {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
 };
 
-#if M2_1
+#if M2_1 || M3_2
 // 64x32_ME
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,    48,   48 },

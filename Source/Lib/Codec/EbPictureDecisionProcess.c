@@ -747,6 +747,20 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->nsq_max_shapes_md = 3;
     }
 #endif
+#if M0_TEST_10
+    if (picture_control_set_ptr->temporal_layer_index>0) {
+        picture_control_set_ptr->nsq_max_shapes_md = 1;
+    }
+#endif
+
+#if M3_2
+    if (picture_control_set_ptr->temporal_layer_index == 0) {
+        picture_control_set_ptr->nsq_max_shapes_md = 5;
+    }
+    else {
+        picture_control_set_ptr->nsq_max_shapes_md = 1;
+    }
+#endif
 #else
     // NSQ search Level                               Settings
    // 0                                              OFF

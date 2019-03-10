@@ -695,6 +695,12 @@ void set_nfl(
         else
             context_ptr->full_recon_search_count = 6;
 #endif
+ #if M3_2
+    if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+        context_ptr->full_recon_search_count = 8;
+    else
+        context_ptr->full_recon_search_count = 6;
+#endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
 #else
