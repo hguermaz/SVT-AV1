@@ -672,6 +672,31 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
 #endif
+#if M3_3
+    
+    if (picture_control_set_ptr->temporal_layer_index > 0) {
+        picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+    }
+
+#endif
+#if M4_1  
+    if (picture_control_set_ptr->slice_type == I_SLICE) {
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+    }
+    else {
+        
+        picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+    }
+#endif
+
+#if M5_M6_MDC
+
+    
+    if (picture_control_set_ptr->slice_type != I_SLICE) {
+        picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+    }
+#endif
+
     picture_control_set_ptr->max_number_of_pus_per_sb = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
 
    
@@ -742,7 +767,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->nsq_max_shapes_md = 1;
     }
 #endif
-#if  M0_TEST_4
+#if (M0_TEST_4|| M1_3) && !M2_3
     if (!picture_control_set_ptr->is_used_as_reference_flag) {
         picture_control_set_ptr->nsq_max_shapes_md = 3;
     }
@@ -753,12 +778,20 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
 #endif
 
-#if M3_2
+#if M3_3
     if (picture_control_set_ptr->temporal_layer_index == 0) {
         picture_control_set_ptr->nsq_max_shapes_md = 5;
     }
     else {
-        picture_control_set_ptr->nsq_max_shapes_md = 1;
+        picture_control_set_ptr->nsq_max_shapes_md = 0;
+    }
+#endif
+#if M4_1
+    if (picture_control_set_ptr->slice_type == I_SLICE) {
+        picture_control_set_ptr->nsq_max_shapes_md = 6;
+    }
+    else {
+        picture_control_set_ptr->nsq_max_shapes_md = 0;
     }
 #endif
 #else
@@ -804,6 +837,17 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
 #endif
 
+#if M3_3
+    
+    if (picture_control_set_ptr->temporal_layer_index > 0) {
+        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
+    }
+#endif
+#if M5_1
+
+    picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
+
+#endif
     // Loop filter Level                            Settings
     // 0                                            OFF
     // 1                                            CU-BASED
@@ -839,6 +883,17 @@ EbErrorType signal_derivation_multi_processes_oq(
     else {
         picture_control_set_ptr->loop_filter_mode = 0;
     }
+
+#if M4_1
+    
+    picture_control_set_ptr->loop_filter_mode = 2;
+
+#endif
+
+#if M5_M6_DLF
+    picture_control_set_ptr->loop_filter_mode = 1;
+
+#endif
 #if FAST_CDEF
     // CDEF Level                                   Settings
     // 0                                            OFF
@@ -864,6 +919,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else
         picture_control_set_ptr->cdef_filter_mode = 0;
+
+#if M5_M6_CDEF
+    
+            picture_control_set_ptr->cdef_filter_mode = 2;
+#endif
 #else
 #if ICOPY 
     if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
@@ -897,6 +957,18 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
         cm->sg_filter_mode = 1;
 #endif
+#if M4_1
+        cm->sg_filter_mode = 3;
+#endif
+#if M5_1
+        cm->sg_filter_mode = 2;
+#endif
+#if M5_M6_SG
+        cm->sg_filter_mode = 1;
+
+
+#endif
+
 
 #if FAST_WN
     // WN Level                                     Settings
@@ -910,6 +982,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         cm->wn_filter_mode = 2;
     else
         cm->wn_filter_mode = 0;
+
+#if M5_M6_WN
+    
+        cm->wn_filter_mode = 2;
+
+#endif
 #endif
 
     // Tx_search Level                                Settings
@@ -941,20 +1019,50 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
     }
 #endif
-#if  M0_TEST_6 
+#if  M0_TEST_6 || M4_1
     if (!picture_control_set_ptr->is_used_as_reference_flag) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
     }
 #endif
-#if  M0_TEST_7
+#if  M0_TEST_7 
     if (!picture_control_set_ptr->is_used_as_reference_flag) {
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
     }
 #endif
-#if M0_TEST_8
+#if  M3_3 && !M4_1
+    if (!picture_control_set_ptr->is_used_as_reference_flag) {
+        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
+        picture_control_set_ptr->tx_search_reduced_set = 1;
+    }
+#endif
+#if M5_1
+    
+    if (picture_control_set_ptr->temporal_layer_index == 0) {
+        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
+        picture_control_set_ptr->tx_search_reduced_set = 1;
+    }
+    else {       
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+    }
+
+#endif
+#if M0_TEST_8  
     if (picture_control_set_ptr->temporal_layer_index > 0) {
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
     }
+#endif
+#if M5_M6_TX
+
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+
+#endif
+
+        
+#if M5_M6_TX_W
+    if (picture_control_set_ptr->temporal_layer_index >  0) {
+        picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
+    }
+
 #endif
 
     // Intra prediction modes                       Settings
@@ -989,6 +1097,20 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if OIS_BASED_INTRA
         else 
             picture_control_set_ptr->intra_pred_mode = 4;
+#endif
+#if M3_3
+    if (picture_control_set_ptr->temporal_layer_index == 0)
+        picture_control_set_ptr->intra_pred_mode = 1;
+    else
+        picture_control_set_ptr->intra_pred_mode = 3;
+#endif
+#if M5_M6_INTRA
+    
+    if (picture_control_set_ptr->temporal_layer_index == 0)
+        picture_control_set_ptr->intra_pred_mode = 2;
+    else
+        picture_control_set_ptr->intra_pred_mode = 3;
+
 #endif
     } 
     

@@ -2450,7 +2450,7 @@ void  inject_inter_candidates(
             use_close_loop_me,
             close_loop_me_index);
     }
-
+#if !M4_1
     if (inject_newmv_candidate) {
 #if BASE_LAYER_REF
         if (isCompoundEnabled) {
@@ -2497,6 +2497,7 @@ void  inject_inter_candidates(
 #endif
         }
     }
+#endif
     // update the total number of candidates injected
     (*candidateTotalCnt) = canTotalCnt;
 

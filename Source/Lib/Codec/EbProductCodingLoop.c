@@ -677,10 +677,14 @@ void set_nfl(
     // NFL_8_IN_NON_REF
     if (!picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
         context_ptr->full_recon_search_count = 8;
-#elif M1_1
+#elif M1_1 && !M2_3
     // NFL_10_IN_NON_REF
     if (!picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
         context_ptr->full_recon_search_count = 10;
+#elif M2_3
+    // NFL_10_IN_NON_REF
+    if (!picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+        context_ptr->full_recon_search_count = 8;
 #endif
 #else
     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_ptr->index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
@@ -695,11 +699,23 @@ void set_nfl(
         else
             context_ptr->full_recon_search_count = 6;
 #endif
- #if M3_2
+ #if M3_2 || M4_1
     if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
         context_ptr->full_recon_search_count = 8;
     else
         context_ptr->full_recon_search_count = 6;
+#endif
+ #if M5_1
+    if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
+        context_ptr->full_recon_search_count = 8;
+    else
+        context_ptr->full_recon_search_count = 4;
+#endif
+
+#if M5_M6_NFL
+    
+        context_ptr->full_recon_search_count = 6;
+
 #endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
@@ -2605,7 +2621,11 @@ void AV1PerformFullLoop(
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FULL_LOOP) {
             context_ptr->skip_interpolation_search = 0;
 #if USED_NFL_FEATURE_BASED
+#if M5_M6_NFL_BASED
+            context_ptr->skip_interpolation_search = (best_fastLoop_candidate_index > NFL_IT_TH) ? 1 : context_ptr->skip_interpolation_search;
+#else
             context_ptr->skip_interpolation_search = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M3) && (best_fastLoop_candidate_index > NFL_IT_TH) ? 1 : context_ptr->skip_interpolation_search;
+#endif
 #endif
             if (candidate_ptr->type != INTRA_MODE) {
 
@@ -2680,7 +2700,11 @@ void AV1PerformFullLoop(
             picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
 
 #if USED_NFL_FEATURE_BASED
+#if M5_M6_NFL_BASED
+        tx_search_skip_fag =  (best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
+#else
         tx_search_skip_fag = (picture_control_set_ptr->parent_pcs_ptr->enc_mode > ENC_M3) && (best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
+#endif
 #endif
         if (!tx_search_skip_fag){
 

@@ -4520,7 +4520,7 @@ EbErrorType inter_pu_prediction_av1(
         uint16_t capped_size = 4;
 #endif
         if (!md_context_ptr->skip_interpolation_search) {
-#if M2_1
+#if M2_1 || M3_3
             // Interpolation_Search_OFF_Nx16_16xN
             if (md_context_ptr->blk_geom->bwidth > 16 && md_context_ptr->blk_geom->bheight > 16)
 #elif M1_1

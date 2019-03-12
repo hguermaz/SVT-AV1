@@ -1374,6 +1374,11 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
             CHROMA_MODE_1 :
             CHROMA_MODE_2 ;
+
+#if M5_M6_CHROMA || M5_1
+    
+    context_ptr->chroma_level = CHROMA_MODE_1;
+#endif
 #endif
 #if INTRA_INTER_FAST_LOOP
     // Set the search method when decoupled fast loop is used 
