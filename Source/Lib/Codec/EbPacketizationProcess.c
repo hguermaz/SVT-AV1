@@ -392,7 +392,7 @@ void* PacketizationKernel(void *input_ptr)
 #if ADP_STATS_PER_LAYER
             if (queueEntryPtr->picture_number == sequence_control_set_ptr->static_config.framesToBeEncoded - 1) {         
                 uint8_t layerIndex;
-                FILE *fp = fopen("adp_stat_check_2.log", "w");
+                FILE *fp = fopen("reference.log", "w");
                 fprintf(fp,"\nsq_search_count\tsq_non4_search_count\tmdc_count\tfast_mdc_count\tpred_mdc");
                 for (layerIndex = 0; layerIndex < 5; layerIndex++) {
                     fprintf(fp, "\n/***************************Layer %d Stats ********************************/\n", layerIndex);

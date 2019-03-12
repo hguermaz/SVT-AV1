@@ -659,7 +659,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if ADP_WIKI
         else {
             if (picture_control_set_ptr->slice_type == I_SLICE)
-                picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+                picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
             else
                 picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
            
