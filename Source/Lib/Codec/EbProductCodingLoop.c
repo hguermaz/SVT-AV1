@@ -705,7 +705,7 @@ void set_nfl(
     else
         context_ptr->full_recon_search_count = 6;
 #endif
- #if M5_1
+ #if  0//M5_1
     if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
         context_ptr->full_recon_search_count = 8;
     else

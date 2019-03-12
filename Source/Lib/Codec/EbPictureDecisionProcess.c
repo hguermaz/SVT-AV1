@@ -687,8 +687,11 @@ EbErrorType signal_derivation_multi_processes_oq(
         
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
+    picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
 #endif
-
+#if M5_1
+    picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+#endif
 #if M5_M6_MDC
 
     
@@ -843,7 +846,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
     }
 #endif
-#if M5_1
+#if  0//M5_1
 
     picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
 
@@ -887,6 +890,11 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if M4_1
     
     picture_control_set_ptr->loop_filter_mode = 2;
+
+#endif
+#if M5_1
+    
+    picture_control_set_ptr->loop_filter_mode = 1;
 
 #endif
 
@@ -960,7 +968,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if M4_1
         cm->sg_filter_mode = 3;
 #endif
-#if M5_1
+#if   M5_1
         cm->sg_filter_mode = 2;
 #endif
 #if M5_M6_SG
@@ -1035,7 +1043,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_reduced_set = 1;
     }
 #endif
-#if M5_1
+#if  M5_1
     
     if (picture_control_set_ptr->temporal_layer_index == 0) {
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;

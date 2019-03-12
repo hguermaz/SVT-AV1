@@ -3620,7 +3620,7 @@ static const uint32_t MD_SCAN_TO_OIS_32x32_SCAN[CU_MAX_COUNT] =
 /******************************************************************************
                             ME/HME settings
 *******************************************************************************/
-#if M5_1
+#if 0//M5_1
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12    
 static const uint8_t EnableHmeLevel0Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1 },      // INPUT_SIZE_576p_RANGE_OR_LOWER
@@ -3843,7 +3843,7 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][M
 };
 
 #endif
-#if  M5_1
+#if   0//M5_1
 
 // 48x24_ME
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
