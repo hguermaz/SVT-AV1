@@ -40,6 +40,7 @@ extern "C" {
 #define QUICK_ME_CLEANUP        1
 #define SCENE_CONTENT_SETTINGS  1
 #define HARD_CODE_SC_SETTING    0
+#define ADP_WIKI                0
 
 // M7_TO_M8 debugging
 #define M8_NFL_DEBUG            0
@@ -50,7 +51,7 @@ extern "C" {
 #define M8_CDEF_DEBUG           0
 
 #define M8_SKIP_BLK             0
-#define M8_OIS                  0
+#define M8_OIS                  1
 
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
@@ -220,6 +221,7 @@ extern "C" {
 #define HASH_X      1
 #define IBC_SW_WAVEFRONT    1
 #define FIX_SAD   1
+#define SC_DETECT_GOP       1  //make all frames in the GOP use the I frame screen content detection status
 #endif
 
 #define AOM_SAD_PORTING 1
@@ -3720,10 +3722,10 @@ static const uint16_t SearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPOR
         { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 },
         { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 }
     } , {
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 },
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 },
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 },
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 }
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 }
     }
 };
 static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
@@ -3733,10 +3735,10 @@ static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPO
         { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 },
         { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 }
     } , {
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 },
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 },
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 },
-        { 640,  640,  640,  640,  640,  640,  640,  640,  640,  640,  640,   640,  640 }
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
+        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 }
     }
 
     //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12

@@ -656,6 +656,15 @@ EbErrorType signal_derivation_multi_processes_oq(
             else
                 picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
         }
+#if ADP_WIKI
+        else {
+            if (picture_control_set_ptr->slice_type == I_SLICE)
+                picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+            else
+                picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
+           
+        }
+#else
         else if (picture_control_set_ptr->enc_mode <= ENC_M3) {
             if (picture_control_set_ptr->slice_type == I_SLICE)
                 picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
@@ -664,6 +673,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         }
         else
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+#endif
     }
     else {
 #endif
@@ -799,11 +809,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->slice_type == I_SLICE) {
         picture_control_set_ptr->allow_screen_content_tools = picture_control_set_ptr->sc_content_detected;
         picture_control_set_ptr->allow_intrabc =  picture_control_set_ptr->sc_content_detected;
-#if !SCENE_CONTENT_SETTINGS
+
         //turn OFF intra bc for some specific modes
-        if (picture_control_set_ptr->enc_mode >= ENC_M1)
+        if (picture_control_set_ptr->enc_mode >= ENC_M5)
             picture_control_set_ptr->allow_intrabc = 0;
-#endif
+
     }
     else {
         picture_control_set_ptr->allow_screen_content_tools = 0;
@@ -2150,6 +2160,13 @@ void* picture_decision_kernel(void *input_ptr)
                                     picture_control_set_ptr->av1_cm->ref_frame_sign_bias[ALTREF2_FRAME] =
                                     picture_control_set_ptr->av1_cm->ref_frame_sign_bias[BWDREF_FRAME] = 1;
                             }
+
+#if SC_DETECT_GOP
+                            if (picture_control_set_ptr->slice_type == I_SLICE)
+                                context_ptr->last_i_picture_sc_detection = picture_control_set_ptr->sc_content_detected;
+                            else
+                                picture_control_set_ptr->sc_content_detected = context_ptr->last_i_picture_sc_detection;
+#endif
 
                             // ME Kernel Multi-Processes Signal(s) derivation
                             signal_derivation_multi_processes_oq(

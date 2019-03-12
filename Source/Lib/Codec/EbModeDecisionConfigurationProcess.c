@@ -118,7 +118,10 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
 #define MEDIUM_SB_SCORE           16000 
 #define LOW_SB_SCORE               6000
 #define MAX_LUMINOSITY_BOOST         10
-uint32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,55,55,55,55,25,25,10,10,10,10,10 };
+uint32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,40,40,40,40,40,25,25,10,10,10,10,10 };
+#if ADP_WIKI
+uint32_t sc_budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,10,10,10,10,10,10,10,10,10,10,10,10 };
+#endif
 #else
 #define HIGH_SB_SCORE             50000  
 #define MEDIUM_SB_SCORE           10000 
@@ -2078,6 +2081,18 @@ void derive_sb_score(
             }
         }
 
+#if ADP_WIKI
+ 		if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) {
+        	// Use SB variance    
+         	if (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][RASTER_SCAN_CU_INDEX_64x64] > 2000)
+            	sb_score = sb_score << 2;
+
+
+         	// Use SB variance     option 2
+         	if (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][RASTER_SCAN_CU_INDEX_64x64] < 500)
+            	sb_score = sb_score >> 2;
+		}
+#endif
         context_ptr->sb_score_array[sb_index] = sb_score;
 #if M8_ADP
         // Track MIN and MAX LCU scores
@@ -2135,8 +2150,18 @@ void set_target_budget_oq(
     else {
         budget_per_sb = (((context_ptr->sb_average_score - MEDIUM_SB_SCORE) * (U_150 - U_125)) / (HIGH_SB_SCORE - MEDIUM_SB_SCORE)) + U_125;
     }
-
+#if ADP_WIKI
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) {
+        budget_per_sb = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) ?
+            U_150 :
+            CLIP3(SB_PRED_OPEN_LOOP_COST, U_150, budget_per_sb + sc_budget_per_sb_boost[context_ptr->adp_level]);
+    }
+    else {
+        budget_per_sb = CLIP3(SB_PRED_OPEN_LOOP_COST, U_150, budget_per_sb + budget_per_sb_boost[context_ptr->adp_level] + luminosity_change_boost);
+    }
+#else
     budget_per_sb = CLIP3(SB_PRED_OPEN_LOOP_COST, U_150, budget_per_sb + budget_per_sb_boost[context_ptr->adp_level] + luminosity_change_boost);
+#endif
     //printf("picture_number = %d\tsb_average_score = %d\n", picture_control_set_ptr->picture_number, budget_per_sb);
     budget = sequence_control_set_ptr->sb_tot_cnt * budget_per_sb;
 #else
