@@ -4,7 +4,8 @@
 */
 
 #include <stdlib.h>
-
+#include <stdio.h>
+#include <string.h>
 #include "EbDefinitions.h"
 #include "EbPacketizationProcess.h"
 #include "EbEntropyCodingResults.h"
@@ -391,18 +392,21 @@ void* PacketizationKernel(void *input_ptr)
 #if ADP_STATS_PER_LAYER
             if (queueEntryPtr->picture_number == sequence_control_set_ptr->static_config.framesToBeEncoded - 1) {         
                 uint8_t layerIndex;
-                SVT_LOG("\nsq_search_count\tsq_non4_search_count\tmdc_count\tfast_mdc_count\tpred_mdc");
+                FILE *fp = fopen("adp_stat_check_2.log", "w");
+                fprintf(fp,"\nsq_search_count\tsq_non4_search_count\tmdc_count\tfast_mdc_count\tpred_mdc");
                 for (layerIndex = 0; layerIndex < 5; layerIndex++) {
-                    SVT_LOG("\n/***************************Layer %d Stats ********************************/\n", layerIndex);
+                    fprintf(fp, "\n/***************************Layer %d Stats ********************************/\n", layerIndex);
                     if (sequence_control_set_ptr->total_count[layerIndex]) {
-                        SVT_LOG("%d\t", ((sequence_control_set_ptr->sq_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        SVT_LOG("%d\t", ((sequence_control_set_ptr->sq_non4_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        SVT_LOG("%d\t", ((sequence_control_set_ptr->mdc_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        SVT_LOG("%d\t", ((sequence_control_set_ptr->pred_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        SVT_LOG("%d\t", ((sequence_control_set_ptr->pred1_nfl_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->sq_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->sq_non4_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->mdc_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->pred_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->pred1_nfl_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
                     }
                 }
-                SVT_LOG("\n");
+                fprintf(fp, "\n");
+
+                fclose(fp);
             }
 #endif
             // Calculate frame latency in milliseconds
