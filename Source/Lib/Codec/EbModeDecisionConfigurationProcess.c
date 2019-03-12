@@ -2274,9 +2274,6 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
     EbErrorType return_error = EB_ErrorNone;
 
     context_ptr->adp_level = picture_control_set_ptr->parent_pcs_ptr->enc_mode;
-#if M8_ADP_DEBUG
-    context_ptr->adp_level = ENC_M8;
-#endif
 
     return return_error;
 }
