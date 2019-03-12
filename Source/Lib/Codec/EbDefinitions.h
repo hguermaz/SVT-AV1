@@ -220,6 +220,7 @@ extern "C" {
 #define HASH_X      1
 #define IBC_SW_WAVEFRONT    1
 #define FIX_SAD   1
+#define SC_DETECT_GOP       1  //make all frames in the GOP use the I frame screen content detection status
 #endif
 
 #define ADD_CDEF_FILTER_LEVEL                           1

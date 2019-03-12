@@ -2151,6 +2151,13 @@ void* picture_decision_kernel(void *input_ptr)
                                     picture_control_set_ptr->av1_cm->ref_frame_sign_bias[BWDREF_FRAME] = 1;
                             }
 
+#if SC_DETECT_GOP
+                            if (picture_control_set_ptr->slice_type == I_SLICE)
+                                context_ptr->last_i_picture_sc_detection = picture_control_set_ptr->sc_content_detected;
+                            else
+                                picture_control_set_ptr->sc_content_detected = context_ptr->last_i_picture_sc_detection;
+#endif
+
                             // ME Kernel Multi-Processes Signal(s) derivation
                             signal_derivation_multi_processes_oq(
                                 picture_control_set_ptr);
