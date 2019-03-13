@@ -80,6 +80,9 @@ extern "C" {
 
 #if FAST_CDEF
     int32_t get_cdef_gi_step(
+#if FASTER_CDEF
+        int8_t tml_idx,
+#endif
         int8_t   cdef_filter_mode);
 #endif
 

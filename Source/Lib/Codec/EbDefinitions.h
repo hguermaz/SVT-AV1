@@ -225,6 +225,7 @@ extern "C" {
 #define TOWARDS_4K30   0
 #define OPEN_LOOP_FAST_LOOP         0
 #define FASTER_CDEF                 0
+#define USE_BILINEAR_FILTER_IN_MD   0
 
 #define AOM_INTERP_EXTEND 4
 struct buf_2d {

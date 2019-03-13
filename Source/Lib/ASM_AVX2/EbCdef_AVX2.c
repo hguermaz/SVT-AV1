@@ -58,7 +58,7 @@ uint64_t search_one_dual_avx2(int *lev0, int *lev1, int nb_strengths,
     }
     best_mse_ = _mm256_set1_epi64x(best_mse);
     /* Find best mse when adding each possible new option. */
-    assert(~total_strengths % 4);
+    //assert(~total_strengths % 4);
 #if FAST_CDEF
 	for (int j = start_gi; j < total_strengths; ++j) { // process by 4x4
 		tmp = _mm256_set1_epi64x(mse[0][i][j]);

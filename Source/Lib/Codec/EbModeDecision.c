@@ -1956,6 +1956,7 @@ void  inject_inter_candidates(
 #else
 #if OPEN_LOOP_FAST_LOOP
         candidateArray[canTotalCnt].distortion_ready = 1;
+        candidateArray[canTotalCnt].me_distortion = mePuResult->distortionDirection[0].distortion ;
 #else
         candidateArray[canTotalCnt].distortion_ready = 0;
 #endif
@@ -2040,6 +2041,7 @@ void  inject_inter_candidates(
 #else
 #if OPEN_LOOP_FAST_LOOP
             candidateArray[canTotalCnt].distortion_ready = 1;
+            candidateArray[canTotalCnt].me_distortion = mePuResult->distortionDirection[1].distortion;
 #else
             candidateArray[canTotalCnt].distortion_ready = 0;
 #endif
@@ -2127,6 +2129,7 @@ void  inject_inter_candidates(
 #else
 #if OPEN_LOOP_FAST_LOOP
                 candidateArray[canTotalCnt].distortion_ready = 1;
+                candidateArray[canTotalCnt].me_distortion = mePuResult->distortionDirection[2].distortion;
 #else
                 candidateArray[canTotalCnt].distortion_ready = 0;
 #endif

@@ -258,13 +258,17 @@ void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int32_t dstride,
 }
 #if FAST_CDEF
 int32_t get_cdef_gi_step(
+#if FASTER_CDEF
+    int8_t tml_idx,
+#endif
     int8_t   cdef_filter_mode) {
  #if ADD_CDEF_FILTER_LEVEL
 #if FASTER_CDEF
-        int32_t gi_step = cdef_filter_mode == 1 ? 0 : cdef_filter_mode == 2 ? 4 : cdef_filter_mode == 3 ? 8 : cdef_filter_mode == 4 ? 16 : 64;
+    int32_t gi_step = tml_idx == 0 ? 8 : tml_idx < 3 ? 1 : 0;
 #else
         int32_t gi_step = cdef_filter_mode == 1 ? 1 : cdef_filter_mode == 2 ? 4 : cdef_filter_mode == 3 ? 8 : cdef_filter_mode == 4 ? 16 : 64;
 #endif
+
 #else
     int32_t gi_step = cdef_filter_mode == 1 ? 4 : cdef_filter_mode == 2 ? 8 : cdef_filter_mode == 3 ? 16 : 64;
 #endif
@@ -1547,7 +1551,11 @@ void finish_cdef_search(
     int32_t start_gi;
     int32_t end_gi;
 
-    gi_step = get_cdef_gi_step(pPcs->cdef_filter_mode);
+    gi_step = get_cdef_gi_step(
+#if FASTER_CDEF
+        pPcs->temporal_layer_index,
+#endif
+        pPcs->cdef_filter_mode);
 
     mid_gi = pPcs->cdf_ref_frame_strenght;
 #if ADD_CDEF_FILTER_LEVEL
@@ -1797,7 +1805,11 @@ void av1_cdef_search(
 #if FAST_CDEF
     int32_t selected_strength_cnt[TOTAL_STRENGTHS] = { 0 };
     int32_t best_frame_gi_cnt = 0;
-    int32_t gi_step = get_cdef_gi_step(pPcs->cdef_filter_mode);
+    int32_t gi_step = get_cdef_gi_step(
+#if FASTER_CDEF
+        pPcs->temporal_layer_index,
+#endif
+        pPcs->cdef_filter_mode);
     int32_t mid_gi = pPcs->cdf_ref_frame_strenght;
 #if ADD_CDEF_FILTER_LEVEL
     int32_t start_gi = pPcs->use_ref_frame_cdef_strength && pPcs->cdef_filter_mode == 1 ? (AOMMAX(0, mid_gi - gi_step)) : 0;
@@ -2189,7 +2201,11 @@ void av1_cdef_search16bit(
 #if FAST_CDEF
     int32_t selected_strength_cnt[TOTAL_STRENGTHS] = { 0 };
     int32_t best_frame_gi_cnt = 0;
-    int32_t gi_step = get_cdef_gi_step(pPcs->cdef_filter_mode);
+    int32_t gi_step = get_cdef_gi_step(
+#if FASTER_CDEF
+        pPcs->temporal_layer_index,
+#endif
+        pPcs->cdef_filter_mode);
     int32_t mid_gi = pPcs->cdf_ref_frame_strenght;
 #if ADD_CDEF_FILTER_LEVEL
     int32_t start_gi = pPcs->use_ref_frame_cdef_strength && pPcs->cdef_filter_mode == 1 ? (AOMMAX(0, mid_gi - gi_step)) : 0;

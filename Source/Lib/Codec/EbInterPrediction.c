@@ -4451,7 +4451,12 @@ EbErrorType inter_pu_prediction_av1(
 
     if (is16bit) {
 #if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
+
+#if USE_BILINEAR_FILTER_IN_MD
+        candidate_buffer_ptr->candidate_ptr->interp_filters = BILINEAR;
+#else
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
+#endif
         if (!md_context_ptr->skip_interpolation_search) {
             if (md_context_ptr->blk_geom->bwidth > 4 && md_context_ptr->blk_geom->bheight > 4)
                 interpolation_filter_search_HBD(
@@ -4495,7 +4500,11 @@ EbErrorType inter_pu_prediction_av1(
 #endif
             asm_type);
     } else {
+#if USE_BILINEAR_FILTER_IN_MD
+        candidate_buffer_ptr->candidate_ptr->interp_filters = BILINEAR;
+#else
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
+#endif
         if (!md_context_ptr->skip_interpolation_search) {
             if (md_context_ptr->blk_geom->bwidth > 4 && md_context_ptr->blk_geom->bheight > 4)
                 interpolation_filter_search(
@@ -4535,8 +4544,11 @@ EbErrorType inter_pu_prediction_av1(
             md_context_ptr->chroma_level == CHROMA_MODE_0,
 #endif
             asm_type);
-    }
 
+    }
+#if USE_BILINEAR_FILTER_IN_MD
+    candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
+#endif
     return return_error;
 }
 

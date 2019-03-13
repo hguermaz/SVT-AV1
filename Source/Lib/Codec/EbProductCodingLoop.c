@@ -1353,8 +1353,8 @@ void perform_fast_loop(
                 fastLoopCandidateIndex,
                 bestFirstFastCostSearchCandidateIndex,
                 asm_type);
-#if OPEN_LOOP_FAST_LOOP
-            if (first) {
+#if 0 //OPEN_LOOP_FAST_LOOP
+            if (0/*candidateBuffer->candidate_ptr->type == INTER_MODE*/) {
 #if TRACK_FAST_DISTORTION
                 candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
 #else
@@ -1366,12 +1366,18 @@ void perform_fast_loop(
                     prediction_ptr->stride_y,
                     context_ptr->blk_geom->bheight,
                     context_ptr->blk_geom->bwidth));
-                dist_offset = lumaFastDistortion - candidate_ptr->me_distortion;
-                first = 0;
+                dist_offset = abs(lumaFastDistortion - candidate_ptr->me_distortion) * 100 / lumaFastDistortion;
+                if (dist_offset > 50 ) {
+                    printf("%d\n", dist_offset);
+                }
             }
             else {
-                candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = MAX(0,candidate_ptr->me_distortion + dist_offset);   
+                candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = candidate_ptr->me_distortion;
+                if (candidateBuffer->candidate_ptr->type == INTER_MODE)
+                    candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = lumaFastDistortion << 1;
             }
+#else
+            candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = candidate_ptr->me_distortion;
 #endif
             // Fast Cost
             *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type](
