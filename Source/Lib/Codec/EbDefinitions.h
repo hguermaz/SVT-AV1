@@ -42,16 +42,8 @@ extern "C" {
 #define HARD_CODE_SC_SETTING    0
 #define ADP_WIKI                0
 
-// M7_TO_M8 debugging
-#define M8_NFL_DEBUG            0
-#define M8_ADP_DEBUG            0
-#define M8_ME_DEBUG             0
-#define M8_FL_DEBUG             0
-#define M8_GLOBAL_DEBUG         0
-#define M8_CDEF_DEBUG           0
-
-#define M8_SKIP_BLK             0
-#define M8_OIS                  1
+#define M8_SKIP_BLK             0 // OMK: keep the support but off by default
+#define M8_OIS                  0 // OMK: add multi mode signal
 
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
@@ -3724,10 +3716,10 @@ static const uint16_t SearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPOR
         { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 },
         { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 }
     } , {
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 }
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 };
 static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
@@ -3737,10 +3729,10 @@ static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPO
         { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 },
         { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 }
     } , {
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 },
-        { 640,  640,  640,  256,  256,  128,  128,  128,   96,   96,   96,    96,   96 }
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 640,  640,  640,  448,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 
     //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12

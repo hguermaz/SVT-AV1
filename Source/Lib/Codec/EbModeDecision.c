@@ -2640,7 +2640,9 @@ void  inject_intra_candidates_ois(
 #endif
             candidate_array[can_total_cnt].distortion_ready =  1;
             candidate_array[can_total_cnt].me_distortion = ois_blk_ptr[can_total_cnt].distortion;
-
+#if ICOPY
+            candidate_array[can_total_cnt].use_intrabc = 0;
+#endif
             candidate_array[can_total_cnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
             candidate_array[can_total_cnt].use_angle_delta = use_angle_delta ? candidate_array[can_total_cnt].is_directional_mode_flag : 0;
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
@@ -2689,7 +2691,9 @@ void  inject_intra_candidates_ois(
 #endif
             candidate_array[can_total_cnt].distortion_ready =  1;
             candidate_array[can_total_cnt].me_distortion = ois_blk_ptr[can_total_cnt].distortion;
-
+#if ICOPY
+            candidate_array[can_total_cnt].use_intrabc = 0;
+#endif
             candidate_array[can_total_cnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
             candidate_array[can_total_cnt].use_angle_delta = candidate_array[can_total_cnt].is_directional_mode_flag;
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_Y] = 0;
@@ -3049,16 +3053,13 @@ void  inject_intra_bc_candidates(
         candidateArray[*cand_cnt].angle_delta[PLANE_TYPE_UV] = 0;
         candidateArray[*cand_cnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
         candidateArray[*cand_cnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-        candidateArray[*cand_cnt].mpm_flag = EB_FALSE;
         candidateArray[*cand_cnt].ref_frame_type = INTRA_FRAME;
         candidateArray[*cand_cnt].pred_mode = DC_PRED;
         candidateArray[*cand_cnt].motion_mode = SIMPLE_TRANSLATION;
         //inter ralated
         candidateArray[*cand_cnt].is_compound = 0;
         candidateArray[*cand_cnt].merge_flag = EB_FALSE;
-        candidateArray[*cand_cnt].merge_index = 0;
         candidateArray[*cand_cnt].prediction_direction[0] = UNI_PRED_LIST_0;
-        candidateArray[*cand_cnt].is_skip_mode_flag = 0;
         candidateArray[*cand_cnt].is_new_mv = 0;
         candidateArray[*cand_cnt].is_zero_mv = 0;
         candidateArray[*cand_cnt].motionVector_x_L0 = dv_cand[dv_i].col;
