@@ -2640,7 +2640,9 @@ void  inject_intra_candidates_ois(
 #endif
             candidate_array[can_total_cnt].distortion_ready =  1;
             candidate_array[can_total_cnt].me_distortion = ois_blk_ptr[can_total_cnt].distortion;
-
+#if ICOPY
+            candidate_array[can_total_cnt].use_intrabc = 0;
+#endif
             candidate_array[can_total_cnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
             candidate_array[can_total_cnt].use_angle_delta = use_angle_delta ? candidate_array[can_total_cnt].is_directional_mode_flag : 0;
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
