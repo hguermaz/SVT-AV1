@@ -260,7 +260,11 @@ void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int32_t dstride,
 int32_t get_cdef_gi_step(
     int8_t   cdef_filter_mode) {
  #if ADD_CDEF_FILTER_LEVEL
+#if FASTER_CDEF
+        int32_t gi_step = cdef_filter_mode == 1 ? 0 : cdef_filter_mode == 2 ? 4 : cdef_filter_mode == 3 ? 8 : cdef_filter_mode == 4 ? 16 : 64;
+#else
         int32_t gi_step = cdef_filter_mode == 1 ? 1 : cdef_filter_mode == 2 ? 4 : cdef_filter_mode == 3 ? 8 : cdef_filter_mode == 4 ? 16 : 64;
+#endif
 #else
     int32_t gi_step = cdef_filter_mode == 1 ? 4 : cdef_filter_mode == 2 ? 8 : cdef_filter_mode == 3 ? 16 : 64;
 #endif

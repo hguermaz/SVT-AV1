@@ -1326,7 +1326,10 @@ void perform_fast_loop(
     uint64_t highestCost;
     uint64_t bestFirstFastCostSearchCandidateCost = MAX_CU_COST;
     int32_t  bestFirstFastCostSearchCandidateIndex = INVALID_FAST_CANDIDATE_INDEX;
-
+#if OPEN_LOOP_FAST_LOOP
+    int64_t dist_offset = 0;
+    uint8_t first = 1;
+#endif
     // 1st fast loop: src-to-src
     fastLoopCandidateIndex = fast_candidate_end_index;
     while (fastLoopCandidateIndex >= fast_candidate_start_index)
@@ -1339,8 +1342,37 @@ void perform_fast_loop(
         if (candidate_ptr->distortion_ready) {
 
             // Distortion
-            lumaFastDistortion = candidate_ptr->me_distortion;
-
+            // Prediction
+            EbPictureBufferDesc_t         *prediction_ptr = candidateBuffer->prediction_ptr;
+            ProductMdFastPuPrediction(
+                picture_control_set_ptr,
+                candidateBuffer,
+                context_ptr,
+                candidate_ptr->type,
+                candidate_ptr,
+                fastLoopCandidateIndex,
+                bestFirstFastCostSearchCandidateIndex,
+                asm_type);
+#if OPEN_LOOP_FAST_LOOP
+            if (first) {
+#if TRACK_FAST_DISTORTION
+                candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
+#else
+                lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
+#endif
+                    input_picture_ptr->buffer_y + inputOriginIndex,
+                    input_picture_ptr->stride_y,
+                    prediction_ptr->buffer_y + cuOriginIndex,
+                    prediction_ptr->stride_y,
+                    context_ptr->blk_geom->bheight,
+                    context_ptr->blk_geom->bwidth));
+                dist_offset = lumaFastDistortion - candidate_ptr->me_distortion;
+                first = 0;
+            }
+            else {
+                candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = MAX(0,candidate_ptr->me_distortion + dist_offset);   
+            }
+#endif
             // Fast Cost
             *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type](
                 cu_ptr,

@@ -14333,7 +14333,7 @@ extern "C" {
 #if NSQ_OPTIMASATION
         uint8_t                               nsq_max_shapes_md; // max number of shapes to be tested in MD
 #endif
-#if ICOPY
+#if ICOPY || SCENE_CONTENT_SETTINGS
         uint8_t                              sc_content_detected;
 #endif
     } PictureParentControlSet_t;

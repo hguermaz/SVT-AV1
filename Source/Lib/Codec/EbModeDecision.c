@@ -1954,7 +1954,11 @@ void  inject_inter_candidates(
         candidateArray[canTotalCnt].distortion_ready = 0;
 #endif
 #else
+#if OPEN_LOOP_FAST_LOOP
+        candidateArray[canTotalCnt].distortion_ready = 1;
+#else
         candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
 #endif
 #if ICOPY
         candidateArray[canTotalCnt].use_intrabc = 0;
@@ -2034,7 +2038,11 @@ void  inject_inter_candidates(
             candidateArray[canTotalCnt].distortion_ready = 0;
 #endif
 #else
+#if OPEN_LOOP_FAST_LOOP
+            candidateArray[canTotalCnt].distortion_ready = 1;
+#else
             candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
 #endif
 #if ICOPY
             candidateArray[canTotalCnt].use_intrabc = 0;
@@ -2117,7 +2125,11 @@ void  inject_inter_candidates(
                 candidateArray[canTotalCnt].distortion_ready = 0;
 #endif
 #else
+#if OPEN_LOOP_FAST_LOOP
+                candidateArray[canTotalCnt].distortion_ready = 1;
+#else
                 candidateArray[canTotalCnt].distortion_ready = 0;
+#endif
 #endif
 #if ICOPY
                 candidateArray[canTotalCnt].use_intrabc = 0;

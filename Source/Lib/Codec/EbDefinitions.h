@@ -230,7 +230,9 @@ extern "C" {
 
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
-#define TOWARDS_4K30   1
+#define TOWARDS_4K30   0
+#define OPEN_LOOP_FAST_LOOP         0
+#define FASTER_CDEF                 0
 
 #define AOM_INTERP_EXTEND 4
 struct buf_2d {
