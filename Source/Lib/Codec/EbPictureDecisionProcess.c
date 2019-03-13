@@ -687,7 +687,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         
         picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
     }
-    picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+    
 #endif
 #if M5_1
     picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
