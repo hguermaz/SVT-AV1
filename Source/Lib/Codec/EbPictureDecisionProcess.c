@@ -928,6 +928,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_reduced_set = 0;
     else
         picture_control_set_ptr->tx_search_reduced_set = 1;
+    
+    // Set skip tx search based on NFL falg (0: Skip OFF ; 1: skip ON)
+    if (picture_control_set_ptr->enc_mode <= ENC_M3)
+        picture_control_set_ptr->skip_tx_search = 0;
+    else
+        picture_control_set_ptr->skip_tx_search = 1;
 
     // Intra prediction modes                       Settings
     // 0                                            FULL  
@@ -940,6 +946,36 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (picture_control_set_ptr->slice_type == I_SLICE) 
          picture_control_set_ptr->intra_pred_mode = 0;
     else {
+#if SCENE_CONTENT_SETTINGS
+        if (picture_control_set_ptr->sc_content_detected) {
+            if (picture_control_set_ptr->enc_mode == ENC_M0)
+                if (picture_control_set_ptr->temporal_layer_index == 0)
+                    picture_control_set_ptr->intra_pred_mode = 1;
+                else
+                    picture_control_set_ptr->intra_pred_mode = 2;
+            else if (picture_control_set_ptr->enc_mode <= ENC_M5)
+                if (picture_control_set_ptr->temporal_layer_index == 0)
+                    picture_control_set_ptr->intra_pred_mode = 1;
+                else
+                    picture_control_set_ptr->intra_pred_mode = 3;
+#if OIS_BASED_INTRA
+            else if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
+            else
+#endif
+                if (picture_control_set_ptr->temporal_layer_index == 0)
+                    picture_control_set_ptr->intra_pred_mode = 2;
+                else
+                    picture_control_set_ptr->intra_pred_mode = 3;
+#if OIS_BASED_INTRA
+            else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+                picture_control_set_ptr->intra_pred_mode = 4;
+            else
+                picture_control_set_ptr->intra_pred_mode = 5;
+#endif
+        }
+        else {
+#endif
         if (picture_control_set_ptr->enc_mode  <= ENC_M1) 
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->intra_pred_mode = 1;
@@ -964,6 +1000,9 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->intra_pred_mode = 4;
         else
             picture_control_set_ptr->intra_pred_mode = 5;
+#endif
+#if SCENE_CONTENT_SETTINGS
+        }
 #endif
     } 
     
@@ -991,24 +1030,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     return return_error;
 }
 
-/***************************************************************************
-* Set the default subPel enble/disable flag for each frame
-****************************************************************************/
-uint8_t PictureLevelSubPelSettings(
-    uint8_t   input_resolution,
-    uint8_t   enc_mode,
-    uint8_t   temporal_layer_index,
-    EbBool    is_used_as_reference_flag){
 
-    // Set Subpel Flag
-    uint8_t subPelMode = 0;
-    UNUSED(input_resolution);
-    UNUSED(enc_mode);
-    UNUSED(temporal_layer_index);
-    UNUSED(is_used_as_reference_flag);
-    subPelMode =  1;
-    return subPelMode;
-}
 #if !CHROMA_BLIND
 /***************************************************************************
 * Set the default chroma mode for each frame
@@ -2179,11 +2201,7 @@ void* picture_decision_kernel(void *input_ptr)
                                 picture_control_set_ptr);
 
                             // Set the default settings of  subpel
-                            picture_control_set_ptr->use_subpel_flag = PictureLevelSubPelSettings(
-                                sequence_control_set_ptr->input_resolution,
-                                picture_control_set_ptr->enc_mode,
-                                picture_control_set_ptr->temporal_layer_index,
-                                picture_control_set_ptr->is_used_as_reference_flag);
+                            picture_control_set_ptr->use_subpel_flag = 1;
 #if !CHROMA_BLIND
                             // Set the default settings of  chroma
                             picture_control_set_ptr->chroma_mode = PictureLevelChromaSettings(

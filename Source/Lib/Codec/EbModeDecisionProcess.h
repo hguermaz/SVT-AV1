@@ -269,6 +269,9 @@ extern "C" {
 #if SHUT_GLOBAL_MV
         uint8_t                           global_mv_injection;
 #endif
+        uint8_t                           warped_motion_injection;
+        uint8_t                           unipred3x3_injection;
+        uint8_t                           bipred3x3_injection;
     } ModeDecisionContext_t;
 
     typedef void(*EB_AV1_LAMBDA_ASSIGN_FUNC)(

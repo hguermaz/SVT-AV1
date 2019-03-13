@@ -1354,6 +1354,21 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 2                    8
     // 3                    6
     // 4                    6 Intra/4 ref/3 non-ref
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) {
+        
+        if (picture_control_set_ptr->enc_mode == ENC_M0)
+            context_ptr->nfl_level = 0;
+        else if (picture_control_set_ptr->enc_mode <= ENC_M3)
+            context_ptr->nfl_level = 2;
+        else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+            context_ptr->nfl_level = 3;
+        else
+            context_ptr->nfl_level = 4;
+
+    }
+    else {
+#endif
     if (picture_control_set_ptr->enc_mode <= ENC_M1)
         context_ptr->nfl_level = 0;
     else if (picture_control_set_ptr->enc_mode <= ENC_M3)
@@ -1362,7 +1377,9 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->nfl_level = 3;
     else
         context_ptr->nfl_level = 4;
-
+#if SCENE_CONTENT_SETTINGS
+    }
+#endif
 #if CHROMA_BLIND
     // Set Chroma Mode
     // Level                Settings
@@ -1406,6 +1423,64 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->global_mv_injection = 0;
 #endif
+    
+    // Set warped motion injection
+    // Level                Settings
+    // 0                    OFF
+    // 1                    On
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) 
+        if (picture_control_set_ptr->enc_mode == ENC_M0)
+            context_ptr->warped_motion_injection = 1;
+        else
+            context_ptr->warped_motion_injection = 0;
+    else
+
+#endif
+    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+        context_ptr->warped_motion_injection = 1;
+    else
+        context_ptr->warped_motion_injection = 0;
+
+    
+    // Set unipred3x3 injection
+    // Level                Settings
+    // 0                    OFF
+    // 1                    On
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
+        if (picture_control_set_ptr->enc_mode == ENC_M0)
+            context_ptr->unipred3x3_injection = 1;
+        else
+            context_ptr->unipred3x3_injection = 0;
+    else
+
+#endif
+    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+        context_ptr->unipred3x3_injection = 1;
+    else
+        context_ptr->unipred3x3_injection = 0;
+
+    
+    // Set bipred3x3 injection
+    // Level                Settings
+    // 0                    OFF
+    // 1                    On
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
+        if (picture_control_set_ptr->enc_mode == ENC_M0)
+            context_ptr->bipred3x3_injection = 1;
+        else
+            context_ptr->bipred3x3_injection = 0;
+    else
+
+#endif
+    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+        context_ptr->bipred3x3_injection = 1;
+    else
+        context_ptr->bipred3x3_injection = 0;
+
+
     return return_error;
 }
 void move_cu_data(

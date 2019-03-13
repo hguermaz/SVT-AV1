@@ -2428,7 +2428,7 @@ void  inject_inter_candidates(
         has_overlappable_candidates(context_ptr->cu_ptr) &&
         context_ptr->blk_geom->bwidth >= 8 &&
         context_ptr->blk_geom->bheight >= 8 &&
-        picture_control_set_ptr->enc_mode <= ENC_M1){
+        context_ptr->warped_motion_injection){
 
         inject_warped_motion_candidates(
             picture_control_set_ptr,
@@ -2452,7 +2452,7 @@ void  inject_inter_candidates(
             //----------------------
             // Bipred2Nx2N
             //----------------------
-            if (picture_control_set_ptr->enc_mode <= ENC_M1)
+            if (context_ptr->bipred3x3_injection)
                 if (picture_control_set_ptr->slice_type == B_SLICE)
                     Bipred3x3CandidatesInjection(
                         picture_control_set_ptr,
@@ -2472,7 +2472,7 @@ void  inject_inter_candidates(
             //----------------------
             // Unipred2Nx2N
             //----------------------
-            if (picture_control_set_ptr->enc_mode <= ENC_M1)
+            if (context_ptr->unipred3x3_injection)
                 if (picture_control_set_ptr->slice_type != I_SLICE)
                     Unipred3x3CandidatesInjection(
                         picture_control_set_ptr,
