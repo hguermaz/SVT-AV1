@@ -42,8 +42,8 @@ extern "C" {
 #define HARD_CODE_SC_SETTING    0
 #define ADP_WIKI                0
 
-#define M8_SKIP_BLK             0 // OMK: keep the support but off by default
-#define M8_OIS                  0 // OMK: add multi mode signal
+#define M8_SKIP_BLK             1  
+#define M8_OIS                  1  
 
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF

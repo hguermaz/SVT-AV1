@@ -935,6 +935,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                            OFF per block : disable_angle_prediction for 64/32/4
     // 3                                            OFF : disable_angle_prediction
     // 4                                            OIS based Intra
+    // 5                                            Light OIS based Intra
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
          picture_control_set_ptr->intra_pred_mode = 0;
@@ -959,15 +960,23 @@ EbErrorType signal_derivation_multi_processes_oq(
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
 #if OIS_BASED_INTRA
-        else 
+        else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
             picture_control_set_ptr->intra_pred_mode = 4;
+        else
+            picture_control_set_ptr->intra_pred_mode = 5;
 #endif
     } 
     
     if (MR_MODE)
         picture_control_set_ptr->intra_pred_mode = 0;
 
+#if M8_SKIP_BLK
+    // Skip sub blk based on neighbors depth        Settings
+    // 0                                            OFF  
+    // 1                                            ON
+    picture_control_set_ptr->skip_sub_blks =   0;
 
+#endif
 #if TWO_FAST_LOOP
 		// Intra candidates are procsssed in a first fast loop , the best is injected into the second fast loop with Inter candidates.  
         // two fast loops                       Settings

@@ -14168,6 +14168,9 @@ extern "C" {
         EbPictureDepthMode                    pic_depth_mode;
         uint8_t                               loop_filter_mode;
         uint8_t                               intra_pred_mode;
+#if M8_SKIP_BLK
+        uint8_t                               skip_sub_blks;
+#endif
 #if TWO_FAST_LOOP
         uint8_t                               enable_two_fast_loops;
 #endif
