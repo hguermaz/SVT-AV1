@@ -79,7 +79,7 @@ extern "C" {
 
         uint8_t                                skip_flag;
         EbBool                                 merge_flag;
-#if !INTRA_INTER_FAST_LOOP || ICOPY
+#if !INTRA_INTER_FAST_LOOP
         uint8_t                                merge_index; // Hsan: does not seem to be used why not removed ?
 #endif
         uint16_t                               count_non_zero_coeffs;
@@ -87,7 +87,7 @@ extern "C" {
         EbBool                                 prediction_is_ready_luma;
 #endif
         uint8_t                                type;
-#if !INTRA_INTER_FAST_LOOP || ICOPY
+#if !INTRA_INTER_FAST_LOOP
         EbBool                                 mpm_flag;
 #endif
         // MD Rate Estimation Ptr
@@ -138,7 +138,7 @@ extern "C" {
         uint32_t                               pred_mv_weight;
         uint8_t                                ref_frame_type;
         uint8_t                                ref_mv_index;
-#if !INTRA_INTER_FAST_LOOP || ICOPY
+#if !INTRA_INTER_FAST_LOOP
         EbBool                                 is_skip_mode_flag;
 #endif
         EbBool                                 is_new_mv;
