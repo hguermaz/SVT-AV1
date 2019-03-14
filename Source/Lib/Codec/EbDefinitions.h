@@ -35,15 +35,27 @@
 extern "C" {
 #endif
     
+    // to match m1_m2_poc branch
+#define MATCH_POC_BRANCH                                1
 
      //Mode definition : Only one mode should be ON at a time
+#if MATCH_POC_BRANCH
+#define QUICK_ME_CLEANUP        0
+#define SCENE_CONTENT_SETTINGS  0
+#else
 #define QUICK_ME_CLEANUP        1
 #define SCENE_CONTENT_SETTINGS  1
+#endif
 #define HARD_CODE_SC_SETTING    0
 #define ADP_WIKI                0
 
+#if MATCH_POC_BRANCH
+#define M8_SKIP_BLK             0
+#define M8_OIS                  0
+#else
 #define M8_SKIP_BLK             1  
 #define M8_OIS                  1  
+#endif
     
 #define MATCH_EXES              0   // To match old wiki numbers M1, M2 and M8
 
@@ -161,7 +173,11 @@ extern "C" {
 #endif
 #define M8_ADP                                          1
 #if M8_ADP
+#if MATCH_POC_BRANCH
+#define FASTER_M8_ADP                                   0
+#else
 #define FASTER_M8_ADP                                   1
+#endif
 #endif
 #define FULL_LOOP_ESCAPE                                1
 #define SIMULATE_PF_N2                                  0
@@ -208,7 +224,11 @@ extern "C" {
 
 #define SHUT_FULL_DENOISE                               1
 
+#if MATCH_POC_BRANCH
+#define ICOPY       0 //Intra Block Copy
+#else
 #define ICOPY       1 //Intra Block Copy
+#endif
 #if ICOPY
 #define IBC_EARLY_0 1
 #define HASH_ME     0
