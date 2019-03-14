@@ -200,6 +200,7 @@ EbErrorType eb_sequence_control_set_ctor(
 #endif
 
 #if TOWARDS_4K30
+    sequence_control_set_ptr->enable_restoration = 0;
     sequence_control_set_ptr->enable_cdef = 0;
 #endif
     sequence_control_set_ptr->film_grain_params_present = 0;

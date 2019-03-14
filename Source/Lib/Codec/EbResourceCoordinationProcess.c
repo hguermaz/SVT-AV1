@@ -109,6 +109,11 @@ EbErrorType signal_derivation_pre_analysis_oq(
         picture_control_set_ptr->enable_hme_level1_flag = sequence_control_set_ptr->static_config.enable_hme_level1_flag;
         picture_control_set_ptr->enable_hme_level2_flag = sequence_control_set_ptr->static_config.enable_hme_level2_flag;
     }
+
+#if TOWARDS_4K30
+    picture_control_set_ptr->enable_hme_level1_flag = 0;
+    picture_control_set_ptr->enable_hme_level2_flag = 0;
+#endif
     if (picture_control_set_ptr->enc_mode >= ENC_M7)
         sequence_control_set_ptr->enable_restoration = 0;
 

@@ -1875,7 +1875,11 @@ void  inject_inter_candidates(
 
     uint32_t close_loop_me_index = use_close_loop_me ? get_in_loop_me_info_index(MAX_SS_ME_PU_COUNT, sequence_control_set_ptr->sb_size == BLOCK_128X128 ? 1 : 0, context_ptr->blk_geom) : 0;
 #if BASE_LAYER_REF
+#if TOWARDS_4K30
+    EbBool allow_bipred = EB_FALSE;
+#else
     EbBool allow_bipred = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0 || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
+#endif
 #else    
     EbBool allow_bipred = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
 #endif

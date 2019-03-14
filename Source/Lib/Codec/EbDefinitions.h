@@ -206,7 +206,7 @@ extern "C" {
 
 #define SHUT_FULL_DENOISE                               1
 
-#define ICOPY       1 //Intra Block Copy
+#define ICOPY       0 //Intra Block Copy
 #if ICOPY
 #define IBC_EARLY_0 1
 #define HASH_ME     0

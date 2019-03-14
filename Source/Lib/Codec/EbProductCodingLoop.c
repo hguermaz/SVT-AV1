@@ -698,6 +698,9 @@ void set_nfl(
         else
             context_ptr->full_recon_search_count = 6;
 #endif
+#if TOWARDS_4K30
+    context_ptr->full_recon_search_count = 1;
+#endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
 #else

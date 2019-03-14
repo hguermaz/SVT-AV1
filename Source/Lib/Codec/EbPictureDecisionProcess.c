@@ -928,6 +928,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_reduced_set = 0;
     else
         picture_control_set_ptr->tx_search_reduced_set = 1;
+#if TOWARDS_4K30
+    picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
+#endif
 
     // Intra prediction modes                       Settings
     // 0                                            FULL  
@@ -2170,11 +2173,15 @@ void* picture_decision_kernel(void *input_ptr)
                                 picture_control_set_ptr);
 
                             // Set the default settings of  subpel
+#if TOWARDS_4K30
+                            picture_control_set_ptr->use_subpel_flag = 0;
+#else
                             picture_control_set_ptr->use_subpel_flag = PictureLevelSubPelSettings(
                                 sequence_control_set_ptr->input_resolution,
                                 picture_control_set_ptr->enc_mode,
                                 picture_control_set_ptr->temporal_layer_index,
                                 picture_control_set_ptr->is_used_as_reference_flag);
+#endif
 #if !CHROMA_BLIND
                             // Set the default settings of  chroma
                             picture_control_set_ptr->chroma_mode = PictureLevelChromaSettings(

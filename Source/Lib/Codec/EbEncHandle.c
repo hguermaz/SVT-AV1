@@ -2259,7 +2259,7 @@ void CopyApiFromApp(
     sequence_control_set_ptr->max_temporal_layers = sequence_control_set_ptr->static_config.hierarchical_levels;
     sequence_control_set_ptr->static_config.use_qp_file = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->use_qp_file;
 
-#if SHUT_FILTERING
+#if SHUT_FILTERING || TOWARDS_4K30
     sequence_control_set_ptr->static_config.disable_dlf_flag = 1;//
 #else
     // Deblock Filter
