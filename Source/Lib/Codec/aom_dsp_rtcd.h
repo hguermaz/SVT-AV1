@@ -1518,6 +1518,94 @@ extern "C" {
     void aom_sad8x8x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
     void aom_sad8x8x4d_avx2(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
     RTCD_EXTERN void(*aom_sad8x8x4d)(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
+
+    unsigned int aom_variance4x4_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance4x4_sse2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance4x4)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance4x8_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance4x8_sse2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance4x8)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance4x16_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance4x16_sse2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance4x16)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance8x4_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance8x4_sse2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance8x4)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance8x8_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance8x8_sse2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance8x8)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance8x16_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance8x16_sse2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance8x16)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance8x32_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance8x32_sse2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance8x32)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance16x4_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance16x4_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance16x4)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance16x8_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance16x8_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance16x8)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance16x16_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance16x16_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance16x16)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance16x32_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance16x32_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance16x32)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance16x64_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance16x64_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance16x64)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance32x8_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance32x8_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance32x8)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance32x16_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance32x16_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance32x16)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance32x32_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance32x32_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance32x32)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance32x64_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance32x64_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance32x64)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance64x16_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance64x16_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance64x16)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance64x32_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance64x32_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance64x32)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance64x64_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance64x64_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance64x64)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance64x128_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance64x128_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance64x128)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance128x64_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance128x64_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance128x64)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+
+    unsigned int aom_variance128x128_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    unsigned int aom_variance128x128_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+    RTCD_EXTERN unsigned int(*aom_variance128x128)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
 #endif /* AOM_SAD_PORTING*/
 
     void aom_ifft16x16_float_avx2(const float *input, float *temp, float *output);
@@ -3192,6 +3280,78 @@ extern "C" {
         aom_sad16x8x4d = aom_sad16x8x4d_c;
         aom_sad8x4 = aom_sad8x4_c;
         aom_sad8x4x4d = aom_sad8x4x4d_c;
+#endif
+
+//VARIANCE
+#if INTRINSIC_OPT_2
+        aom_variance4x4 = aom_variance4x4_c;
+        if (flags & HAS_AVX2) aom_variance4x4 = aom_variance4x4_sse2;
+        aom_variance4x8 = aom_variance4x8_c;
+        if (flags & HAS_AVX2) aom_variance4x8 = aom_variance4x8_sse2;
+        aom_variance4x16 = aom_variance4x16_c;
+        if (flags & HAS_AVX2) aom_variance4x16 = aom_variance4x16_sse2;
+        aom_variance8x4 = aom_variance8x4_c;
+        if (flags & HAS_AVX2) aom_variance8x4 = aom_variance8x4_sse2;
+        aom_variance8x8 = aom_variance8x8_c;
+        if (flags & HAS_AVX2) aom_variance8x8 = aom_variance8x8_sse2;
+        aom_variance8x16 = aom_variance8x16_c;
+        if (flags & HAS_AVX2) aom_variance8x16 = aom_variance8x16_sse2;
+        aom_variance8x32 = aom_variance8x32_c;
+        if (flags & HAS_AVX2) aom_variance8x32 = aom_variance8x32_sse2;
+        aom_variance16x4 = aom_variance16x4_c;
+        if (flags & HAS_AVX2) aom_variance16x4 = aom_variance16x4_avx2;
+        aom_variance16x8 = aom_variance16x8_c;
+        if (flags & HAS_AVX2) aom_variance16x8 = aom_variance16x8_avx2;
+        aom_variance16x16 = aom_variance16x16_c;
+        if (flags & HAS_AVX2) aom_variance16x16 = aom_variance16x16_avx2;
+        aom_variance16x32 = aom_variance16x32_c;
+        if (flags & HAS_AVX2) aom_variance16x32 = aom_variance16x32_avx2;
+        aom_variance16x64 = aom_variance16x64_c;
+        if (flags & HAS_AVX2) aom_variance16x64 = aom_variance16x64_avx2;
+        aom_variance32x8 = aom_variance32x8_c;
+        if (flags & HAS_AVX2) aom_variance32x8 = aom_variance32x8_avx2;
+        aom_variance32x16 = aom_variance32x16_c;
+        if (flags & HAS_AVX2) aom_variance32x16 = aom_variance32x16_avx2;
+        aom_variance32x32 = aom_variance32x32_c;
+        if (flags & HAS_AVX2) aom_variance32x32 = aom_variance32x32_avx2;
+        aom_variance32x64 = aom_variance32x64_c;
+        if (flags & HAS_AVX2) aom_variance32x64 = aom_variance32x64_avx2;
+        aom_variance64x16 = aom_variance64x16_c;
+        if (flags & HAS_AVX2) aom_variance64x16 = aom_variance64x16_avx2;
+        aom_variance64x32 = aom_variance64x32_c;
+        if (flags & HAS_AVX2) aom_variance64x32 = aom_variance64x32_avx2;
+        aom_variance64x64 = aom_variance64x64_c;
+        if (flags & HAS_AVX2) aom_variance64x64 = aom_variance64x64_avx2;
+        aom_variance64x128 = aom_variance64x128_c;
+        if (flags & HAS_AVX2) aom_variance64x128 = aom_variance64x128_avx2;
+        aom_variance128x64 = aom_variance128x64_c;
+        if (flags & HAS_AVX2) aom_variance128x64 = aom_variance128x64_avx2;
+        aom_variance128x128 = aom_variance128x128_c;
+        if (flags & HAS_AVX2) aom_variance128x128 = aom_variance128x128_avx2;
+#else
+        aom_variance4x4 = aom_variance4x4_c;
+        aom_variance4x8 = aom_variance4x8_c;
+        aom_variance4x16 = aom_variance4x16_c;
+        aom_variance8x4 = aom_variance8x4_c;
+        aom_variance8x8 = aom_variance8x8_c;
+        aom_variance8x16 = aom_variance8x16_c;
+        aom_variance8x32 = aom_variance8x32_c;
+        aom_variance16x4 = aom_variance16x4_c;
+        aom_variance16x8 = aom_variance16x8_c;
+        aom_variance16x16 = aom_variance16x16_c;
+        aom_variance16x32 = aom_variance16x32_c;
+        aom_variance16x64 = aom_variance16x64_c;
+        aom_variance32x8 = aom_variance32x8_c;
+        aom_variance32x16 = aom_variance32x16_c
+        aom_variance32x32 = aom_variance32x32_c;
+        aom_variance32x64 = aom_variance32x64_c;
+        aom_variance64x16 = aom_variance64x16_c;
+        aom_variance64x32 = aom_variance64x32_c;
+        aom_variance64x64 = aom_variance64x64_c;
+        aom_variance64x128 = aom_variance64x128_c;
+        aom_variance128x64 = aom_variance128x64_c;
+        aom_variance128x128 = aom_variance128x128_c;
+aom_variance8x8 = aom_variance8x8_c;
 #endif
 #endif /* AOM_SAD_PORTING */
 
