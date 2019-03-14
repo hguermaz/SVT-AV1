@@ -3788,7 +3788,7 @@ void md_encode_block(
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
 #if INTRA_INTER_FAST_LOOP
-        EbBool decouple_intra_inter_fast_loop = (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N);
+        EbBool decouple_intra_inter_fast_loop = (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N && context_ptr->full_recon_search_count > 1);
         uint32_t buffer_total_count;
         if (decouple_intra_inter_fast_loop) {
             // Derive fast inter candidates total count
