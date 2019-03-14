@@ -810,6 +810,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->allow_screen_content_tools = picture_control_set_ptr->sc_content_detected;
         picture_control_set_ptr->allow_intrabc =  picture_control_set_ptr->sc_content_detected;
 
+#if IBC_MODES
+        //IBC Modes:  0:Slow   1:Fast  2:Faster   
+        picture_control_set_ptr->ibc_mode = 0;
+#endif
+
+
         //turn OFF intra bc for some specific modes
         if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->allow_intrabc = 0;

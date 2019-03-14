@@ -9984,6 +9984,56 @@ void av1_predict_intra_block_16bit(
     if (ss_y && bh < mi_size_high[BLOCK_8X8])
         chroma_up_available = (mirow - 1) > 0;//tile->mi_row_start;
 #endif
+
+
+#if ICOPY
+
+    int mi_stride = cm->mi_stride;
+    const int32_t offset = mirow * mi_stride + micol;
+    xd->mi = cm->pcs_ptr->mi_grid_base + offset;
+    ModeInfo *miPtr = *xd->mi;
+
+    if (xd->up_available) {
+        // xd->above_mbmi = xd->mi[-xd->mi_stride].mbmi;
+        xd->above_mbmi = &miPtr[-mi_stride].mbmi;
+    }
+    else {
+        xd->above_mbmi = NULL;
+    }
+
+    if (xd->left_available) {
+        //xd->left_mbmi = xd->mi[-1].mbmi;
+        xd->left_mbmi = &miPtr[-1].mbmi;
+    }
+    else {
+        xd->left_mbmi = NULL;
+    }
+
+
+    const int chroma_ref = ((mirow & 0x01) || !(bh & 0x01) || !ss_y) &&
+        ((micol & 0x01) || !(bw & 0x01) || !ss_x);
+    if (chroma_ref) {
+        // To help calculate the "above" and "left" chroma blocks, note that the
+        // current block may cover multiple luma blocks (eg, if partitioned into
+        // 4x4 luma blocks).
+        // First, find the top-left-most luma block covered by this chroma block   
+
+        ModeInfo *miPtr = xd->mi[-(mirow & ss_y) * mi_stride - (micol & ss_x)];
+
+        // Then, we consider the luma region covered by the left or above 4x4 chroma
+        // prediction. We want to point to the chroma reference block in that
+        // region, which is the bottom-right-most mi unit.
+        // This leads to the following offsets:
+        MbModeInfo *chroma_above_mi =
+            chroma_up_available ? &miPtr[-mi_stride + ss_x].mbmi : NULL;
+        xd->chroma_above_mbmi = chroma_above_mi;
+
+        MbModeInfo *chroma_left_mi =
+            chroma_left_available ? &miPtr[ss_y * mi_stride - 1].mbmi : NULL;
+        xd->chroma_left_mbmi = chroma_left_mi;
+    }
+
+#endif
     //CHKN  const MbModeInfo *const mbmi = xd->mi[0];
     const int32_t txwpx = tx_size_wide[tx_size];
     const int32_t txhpx = tx_size_high[tx_size];

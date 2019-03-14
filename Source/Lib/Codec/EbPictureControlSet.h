@@ -14340,6 +14340,9 @@ extern "C" {
 #if ICOPY
         uint8_t                              sc_content_detected;
 #endif
+#if IBC_MODES
+        uint8_t                              ibc_mode;
+#endif
     } PictureParentControlSet_t;
 
 

@@ -80,6 +80,9 @@ extern "C" {
         uint8_t                                 ref_frame_type,
         CodingUnit_t                           *cu_ptr,
         MvUnit_t                               *mv_unit,
+#if ICOPY_10B
+        uint8_t                                  use_intrabc,
+#endif
         uint16_t                                pu_origin_x,
         uint16_t                                pu_origin_y,
         uint8_t                                 bwidth,

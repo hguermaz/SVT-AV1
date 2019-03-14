@@ -2911,9 +2911,15 @@ void  intra_bc_search(
 
     /* pointer to current frame */
     Yv12BufferConfig cur_buf;
+#if ICOPY_10B
+    link_Eb_to_aom_buffer_desc_8bit(
+        pcs->parent_pcs_ptr->enhanced_picture_ptr,
+        &cur_buf);
+#else
     LinkEbToAomBufferDesc(
         pcs->parent_pcs_ptr->enhanced_picture_ptr,
         &cur_buf);
+#endif
     struct buf_2d yv12_mb[MAX_MB_PLANE];
     av1_setup_pred_block(bsize, yv12_mb, &cur_buf, mi_row, mi_col);
     for (int i = 0; i < num_planes; ++i) {
@@ -2930,8 +2936,15 @@ void  intra_bc_search(
     };
 
     //up to two dv candidates will be generated 
+#if IBC_MODES
+    enum IntrabcMotionDirection max_dir = pcs->parent_pcs_ptr->ibc_mode > 1 ? IBC_MOTION_LEFT : IBC_MOTION_DIRECTIONS;
+
+    for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
+        dir < max_dir; ++dir) {
+#else
     for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
         dir < IBC_MOTION_DIRECTIONS; ++dir) {
+#endif
 
         const MvLimits tmp_mv_limits = x->mv_limits;
 
@@ -2947,9 +2960,13 @@ void  intra_bc_search(
             x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
             x->mv_limits.col_max =
                 (sb_col * scs->mib_size - mi_col) * MI_SIZE - w;
+#if 0   
+            x->mv_limits.row_min = (sb_row  * scs->mib_size - mi_row) * MI_SIZE;           
+#else
             // TODO: Minimize the overlap between above and
             // left areas.
             x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
+#endif
             int bottom_coded_mi_edge =
                 AOMMIN((sb_row + 1) * scs->mib_size, tile->mi_row_end);
             x->mv_limits.row_max = (bottom_coded_mi_edge - mi_row) * MI_SIZE - h;
@@ -2963,6 +2980,7 @@ void  intra_bc_search(
 
         av1_set_mv_search_range(&x->mv_limits, &dv_ref.as_mv);
 
+        //CHKN : do not perform search in case the DV-centered search region is not included into the curr search direction.
         if (x->mv_limits.col_max < x->mv_limits.col_min ||
             x->mv_limits.row_max < x->mv_limits.row_min) {
             x->mv_limits = tmp_mv_limits;

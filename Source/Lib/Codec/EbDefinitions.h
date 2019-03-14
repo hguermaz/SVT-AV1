@@ -36,7 +36,7 @@ extern "C" {
 #endif
     
     // to match m1_m2_poc branch
-#define MATCH_POC_BRANCH                                1
+#define MATCH_POC_BRANCH                                0
 
      //Mode definition : Only one mode should be ON at a time
 #if MATCH_POC_BRANCH
@@ -236,6 +236,8 @@ extern "C" {
 #define IBC_SW_WAVEFRONT    1
 #define FIX_SAD   1
 #define SC_DETECT_GOP       1  //make all frames in the GOP use the I frame screen content detection status
+#define IBC_MODES           1  //add two intermediates modes for ibc    
+#define ICOPY_10B           1  //10b path
 #endif
 
 #define AOM_SAD_PORTING 1

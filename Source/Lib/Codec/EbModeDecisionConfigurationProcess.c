@@ -3580,9 +3580,15 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
                 //av1_hash_table_create(&picture_control_set_ptr->hash_table);
 
                 Yv12BufferConfig cpi_source;
+#if ICOPY_10B
+                link_Eb_to_aom_buffer_desc_8bit(
+                    picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr,
+                    &cpi_source);
+#else
                 LinkEbToAomBufferDesc(
                     picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr,
                     &cpi_source);
+#endif
 
                 av1_crc_calculator_init(&picture_control_set_ptr->crc_calculator1, 24, 0x5D6DCB);
                 av1_crc_calculator_init(&picture_control_set_ptr->crc_calculator2, 24, 0x864CFB);
