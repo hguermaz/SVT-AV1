@@ -1364,8 +1364,8 @@ void QpmGatherStatisticsSW(
 
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];
 	
-            ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
-            oisSad = OisCuPtr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
+            ois_candidate_t *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
+            oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
 
 #else
                 OisCu8Results_t            *oisCu8ResultsPtr = picture_control_set_ptr->ois_cu8_results[sb_index];
@@ -1419,8 +1419,8 @@ void QpmGatherStatisticsSW(
             mdScanCuIndex = RASTER_SCAN_TO_MD_SCAN[rasterScanCuIndex];
 
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
-            ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
-            oisSad = OisCuPtr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
+            ois_candidate_t *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
+            oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
 
 #else
             OisCu32Cu16Results_t            *oisCu32Cu16ResultsPtr = picture_control_set_ptr->ois_cu32_cu16_results[sb_index];
@@ -1450,8 +1450,8 @@ void QpmGatherStatisticsSW(
              mdScanCuIndex = RASTER_SCAN_TO_MD_SCAN[rasterScanCuIndex];
 
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
-            ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
-            oisSad = OisCuPtr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
+            ois_candidate_t *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
+            oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
 
 #else
             OisCu32Cu16Results_t            *oisCu32Cu16ResultsPtr = picture_control_set_ptr->ois_cu32_cu16_results[sb_index];
@@ -1480,8 +1480,8 @@ void QpmGatherStatisticsSW(
             mdScanCuIndex = 0;
 
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
-            ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
-            oisSad = OisCuPtr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
+            ois_candidate_t *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
+            oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
 
 #else
         OisCu32Cu16Results_t            *oisCu32Cu16ResultsPtr = picture_control_set_ptr->ois_cu32_cu16_results[sb_index];

@@ -10,6 +10,7 @@
 
 #include "EbDefinitions.h"
 #include "grainSynthesis.h"
+#include "EbSvtAv1Formats.h"
 
 
 #ifdef __cplusplus

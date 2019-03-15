@@ -640,6 +640,7 @@ EbErrorType PreModeDecision(
 
 #define BIPRED_3x3_REFINMENT_POSITIONS 8
 
+int8_t ALLOW_REFINEMENT_FLAG[BIPRED_3x3_REFINMENT_POSITIONS] = {  1, 0, 1, 0, 1,  0,  1, 0 };
 int8_t BIPRED_3x3_X_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { -1, -1, 0, 1, 1, 1, 0, -1 };
 int8_t BIPRED_3x3_Y_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { 0, 1, 1, 1, 0, -1, -1, -1 };
 #endif
@@ -669,6 +670,9 @@ void Unipred3x3CandidatesInjection(
         /**************
         NEWMV L0
         ************* */
+        if (context_ptr->unipred3x3_injection >= 2)
+            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                continue;
 #if REMOVED_DUPLICATE_INTER
         int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->xMvL0 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
         int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->yMvL0 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
@@ -754,6 +758,9 @@ void Unipred3x3CandidatesInjection(
             /**************
             NEWMV L1
             ************* */
+        if (context_ptr->unipred3x3_injection >= 2)
+            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                continue;
 #if REMOVED_DUPLICATE_INTER_L1
             int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[1][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->xMvL1 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
             int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[1][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->yMvL1 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
@@ -866,6 +873,9 @@ void Bipred3x3CandidatesInjection(
        // (Best_L0, 8 Best_L1 neighbors)
         for (bipredIndex = 0; bipredIndex < BIPRED_3x3_REFINMENT_POSITIONS; ++bipredIndex)
         {
+        if (context_ptr->bipred3x3_injection >= 2)
+            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                continue;
 #if REMOVED_DUPLICATE_INTER_BIPRED
             int16_t to_inject_mv_x_l0 = use_close_loop_me ? inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : mePuResult->xMvL0 << 1;
             int16_t to_inject_mv_y_l0 = use_close_loop_me ? inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : mePuResult->yMvL0 << 1;
@@ -959,6 +969,9 @@ void Bipred3x3CandidatesInjection(
         // (8 Best_L0 neighbors, Best_L1) :
         for (bipredIndex = 0; bipredIndex < BIPRED_3x3_REFINMENT_POSITIONS; ++bipredIndex)
         {
+        if (context_ptr->bipred3x3_injection >= 2)
+            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                continue;
 #if REMOVED_DUPLICATE_INTER_BIPRED
             int16_t to_inject_mv_x_l0 = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->xMvL0 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
             int16_t to_inject_mv_y_l0 = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->yMvL0 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
@@ -2452,7 +2465,7 @@ void  inject_inter_candidates(
             //----------------------
             // Bipred2Nx2N
             //----------------------
-            if (context_ptr->bipred3x3_injection)
+            if (context_ptr->bipred3x3_injection > 0)
                 if (picture_control_set_ptr->slice_type == B_SLICE)
                     Bipred3x3CandidatesInjection(
                         picture_control_set_ptr,
@@ -2472,7 +2485,7 @@ void  inject_inter_candidates(
             //----------------------
             // Unipred2Nx2N
             //----------------------
-            if (context_ptr->unipred3x3_injection)
+            if (context_ptr->unipred3x3_injection > 0)
                 if (picture_control_set_ptr->slice_type != I_SLICE)
                     Unipred3x3CandidatesInjection(
                         picture_control_set_ptr,
@@ -2935,7 +2948,7 @@ void  intra_bc_search(
         IBC_MOTION_DIRECTIONS
     };
 
-    //up to two dv candidates will be generated 
+    //up to two dv candidates will be generated
 #if IBC_MODES
     enum IntrabcMotionDirection max_dir = pcs->parent_pcs_ptr->ibc_mode > 1 ? IBC_MOTION_LEFT : IBC_MOTION_DIRECTIONS;
 
@@ -2960,13 +2973,9 @@ void  intra_bc_search(
             x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
             x->mv_limits.col_max =
                 (sb_col * scs->mib_size - mi_col) * MI_SIZE - w;
-#if 0   
-            x->mv_limits.row_min = (sb_row  * scs->mib_size - mi_row) * MI_SIZE;           
-#else
             // TODO: Minimize the overlap between above and
             // left areas.
             x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
-#endif
             int bottom_coded_mi_edge =
                 AOMMIN((sb_row + 1) * scs->mib_size, tile->mi_row_end);
             x->mv_limits.row_max = (bottom_coded_mi_edge - mi_row) * MI_SIZE - h;
@@ -2980,7 +2989,6 @@ void  intra_bc_search(
 
         av1_set_mv_search_range(&x->mv_limits, &dv_ref.as_mv);
 
-        //CHKN : do not perform search in case the DV-centered search region is not included into the curr search direction.
         if (x->mv_limits.col_max < x->mv_limits.col_min ||
             x->mv_limits.row_max < x->mv_limits.row_min) {
             x->mv_limits = tmp_mv_limits;
@@ -3158,7 +3166,11 @@ void  inject_intra_candidates(
         disable_angle_prediction    = 0;
 
     }
-
+#if MR_MODE
+    disable_z2_prediction       = 0;
+    disable_angle_refinement    = 0;
+    disable_angle_prediction    = 0;
+#endif
     angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
     uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
 #if !NSQ_OPTIMASATION

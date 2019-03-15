@@ -4,8 +4,7 @@
 */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+
 #include "EbDefinitions.h"
 #include "EbPacketizationProcess.h"
 #include "EbEntropyCodingResults.h"
@@ -14,7 +13,7 @@
 #include "EbPictureControlSet.h"
 #include "EbEntropyCoding.h"
 #include "EbRateControlTasks.h"
-#include "EbTime.h"
+#include "EbSvtAv1Time.h"
 
 static EbBool IsPassthroughData(EbLinkedListNode* dataNode)
 {
@@ -149,8 +148,8 @@ void* PacketizationKernel(void *input_ptr)
         output_stream_ptr->dts = picture_control_set_ptr->parent_pcs_ptr->decode_order - (uint64_t)(1 << sequence_control_set_ptr->static_config.hierarchical_levels) + 1;
 #endif     
         output_stream_ptr->pic_type = picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag ?
-            picture_control_set_ptr->parent_pcs_ptr->idr_flag ? EB_IDR_PICTURE :
-            picture_control_set_ptr->slice_type : EB_NON_REF_PICTURE;
+            picture_control_set_ptr->parent_pcs_ptr->idr_flag ? EB_AV1_KEY_PICTURE :
+            picture_control_set_ptr->slice_type : EB_AV1_NON_REF_PICTURE;
         output_stream_ptr->p_app_private = picture_control_set_ptr->parent_pcs_ptr->input_ptr->p_app_private;
 
         // Get Empty Rate Control Input Tasks
@@ -390,23 +389,20 @@ void* PacketizationKernel(void *input_ptr)
             }
 #endif
 #if ADP_STATS_PER_LAYER
-            if (queueEntryPtr->picture_number == sequence_control_set_ptr->static_config.framesToBeEncoded - 1) {         
+            if (queueEntryPtr->picture_number == sequence_control_set_ptr->static_config.frames_to_be_encoded - 1) {         
                 uint8_t layerIndex;
-                FILE *fp = fopen("reference.log", "w");
-                fprintf(fp,"\nsq_search_count\tsq_non4_search_count\tmdc_count\tfast_mdc_count\tpred_mdc");
+                SVT_LOG("\nsq_search_count\tsq_non4_search_count\tmdc_count\tpred_count\tpred1_nfl_count");
                 for (layerIndex = 0; layerIndex < 5; layerIndex++) {
-                    fprintf(fp, "\n/***************************Layer %d Stats ********************************/\n", layerIndex);
+                    SVT_LOG("\n/***************************Layer %d Stats ********************************/\n", layerIndex);
                     if (sequence_control_set_ptr->total_count[layerIndex]) {
-                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->sq_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->sq_non4_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->mdc_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->pred_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
-                        fprintf(fp,"%d\t", ((sequence_control_set_ptr->pred1_nfl_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        SVT_LOG("%d\t", ((sequence_control_set_ptr->sq_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        SVT_LOG("%d\t", ((sequence_control_set_ptr->sq_non4_search_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        SVT_LOG("%d\t", ((sequence_control_set_ptr->mdc_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        SVT_LOG("%d\t", ((sequence_control_set_ptr->pred_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
+                        SVT_LOG("%d\t", ((sequence_control_set_ptr->pred1_nfl_count[layerIndex] * 100) / sequence_control_set_ptr->total_count[layerIndex]));
                     }
                 }
-                fprintf(fp, "\n");
-
-                fclose(fp);
+                SVT_LOG("\n");
             }
 #endif
             // Calculate frame latency in milliseconds

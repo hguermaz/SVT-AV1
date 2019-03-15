@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
-#include "EbApi.h"
+#include "EbSvtAv1Enc.h"
 #ifdef _WIN32
 #define inline __inline
 #elif __GNUC__
@@ -35,29 +35,18 @@
 extern "C" {
 #endif
     
-    // to match m1_m2_poc branch
-#define MATCH_POC_BRANCH                                0
 
      //Mode definition : Only one mode should be ON at a time
-#if MATCH_POC_BRANCH
-#define QUICK_ME_CLEANUP        0
-#define SCENE_CONTENT_SETTINGS  0
-#else
+
 #define QUICK_ME_CLEANUP        1
 #define SCENE_CONTENT_SETTINGS  1
-#endif
+
 #define HARD_CODE_SC_SETTING    0
 #define ADP_WIKI                0
 
-#if MATCH_POC_BRANCH
-#define M8_SKIP_BLK             0
-#define M8_OIS                  0
-#else
 #define M8_SKIP_BLK             1  
 #define M8_OIS                  1  
-#endif
-    
-#define MATCH_EXES              0   // To match old wiki numbers M1, M2 and M8
+
 
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
@@ -173,11 +162,7 @@ extern "C" {
 #endif
 #define M8_ADP                                          1
 #if M8_ADP
-#if MATCH_POC_BRANCH
-#define FASTER_M8_ADP                                   0
-#else
 #define FASTER_M8_ADP                                   1
-#endif
 #endif
 #define FULL_LOOP_ESCAPE                                1
 #define SIMULATE_PF_N2                                  0
@@ -224,11 +209,9 @@ extern "C" {
 
 #define SHUT_FULL_DENOISE                               1
 
-#if MATCH_POC_BRANCH
-#define ICOPY       0 //Intra Block Copy
-#else
+
 #define ICOPY       1 //Intra Block Copy
-#endif
+
 #if ICOPY
 #define IBC_EARLY_0 1
 #define HASH_ME     0
@@ -236,6 +219,7 @@ extern "C" {
 #define IBC_SW_WAVEFRONT    1
 #define FIX_SAD   1
 #define SC_DETECT_GOP       1  //make all frames in the GOP use the I frame screen content detection status
+#define ADD_VAR_SC_DETECT   1
 #define IBC_MODES           1  //add two intermediates modes for ibc    
 #define ICOPY_10B           1  //10b path
 #endif
@@ -2600,8 +2584,8 @@ extern void invoke_safe_str_constraint_handler(
     errno_t error);
 
 static inline void handle_error(char *orig_dest, rsize_t orig_dmax,
-    char *err_msg, errno_t err_code){
-
+    char *err_msg, errno_t err_code)
+{
     (void)orig_dmax;
     *orig_dest = '\0';
 
@@ -3533,8 +3517,8 @@ static const uint8_t EnableHmeLevel0Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
 static const uint16_t HmeLevel0TotalSearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
         {  48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48 },
-        { 112,  112,   96,   96,   96,   64,   64,   64,   64,   64,   64,   64,   64 },
-        { 128,  128,  128,  128,  128,   96,   96,   96,   96,   96,   96,   96,   96 },
+        { 112,  112,  112,  112,  112,  112,   64,   64,   64,   64,   64,   64,   64 },
+        { 128,  128,  128,  128,  128,  128,   96,   96,   96,   96,   96,   96,   96 },
         { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 }
      } , {
         { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 },
@@ -3547,8 +3531,8 @@ static const uint16_t HmeLevel0TotalSearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COU
 static const uint16_t HmeLevel0SearchAreaInWidthArrayLeft[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
         {  24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24 },
-        {  56,   56,   48,   48,   48,   32,   32,   32,   32,   32,   32,   32,   32 },
-        {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 },
+        {  56,   56,   56,   56,   56,   56,   32,   32,   32,   32,   32,   32,   32 },
+        {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
         {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
     } , {
         {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
@@ -3560,8 +3544,8 @@ static const uint16_t HmeLevel0SearchAreaInWidthArrayLeft[SC_MAX_LEVEL][INPUT_SI
 static const uint16_t HmeLevel0SearchAreaInWidthArrayRight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
         {  24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24 },
-        {  56,   56,   48,   48,   48,   32,   32,   32,   32,   32,   32,   32,   32 },
-        {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 },
+        {  56,   56,   56,   56,   56,   56,   32,   32,   32,   32,   32,   32,   32 },
+        {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
         {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
     } , {
         {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
@@ -3573,8 +3557,8 @@ static const uint16_t HmeLevel0SearchAreaInWidthArrayRight[SC_MAX_LEVEL][INPUT_S
 static const uint16_t HmeLevel0TotalSearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
         {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
-        {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 },
-        {  80,   80,   80,   80,   80,   48,   48,   48,   48,   48,   48,   48,   48 },
+        {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
+        {  80,   80,   80,   80,   80,   80,   48,   48,   48,   48,   48,   48,   48 },
         {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 }
     } , {
         {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 },
@@ -3586,8 +3570,8 @@ static const uint16_t HmeLevel0TotalSearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_CO
 static const uint16_t HmeLevel0SearchAreaInHeightArrayTop[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
         {  20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20 },
-        {  32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24,   24 },
-        {  40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  32,   32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24 },
+        {  40,   40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24 },
         {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
     } , {
         {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
@@ -3599,8 +3583,8 @@ static const uint16_t HmeLevel0SearchAreaInHeightArrayTop[SC_MAX_LEVEL][INPUT_SI
 static const uint16_t HmeLevel0SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
         {  20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20 },
-        {  32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24,   24 },
-        {  40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  32,   32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24 },
+        {  40,   40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24 },
         {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
     }, {
         {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
@@ -3620,10 +3604,10 @@ static const uint8_t EnableHmeLevel1Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
 };
 static const uint16_t HmeLevel1SearchAreaInWidthArrayLeft[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
     } , {
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
@@ -3633,10 +3617,10 @@ static const uint16_t HmeLevel1SearchAreaInWidthArrayLeft[SC_MAX_LEVEL][INPUT_SI
 };
 static const uint16_t HmeLevel1SearchAreaInWidthArrayRight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
     } , {
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
@@ -3646,10 +3630,10 @@ static const uint16_t HmeLevel1SearchAreaInWidthArrayRight[SC_MAX_LEVEL][INPUT_S
 };
 static const uint16_t HmeLevel1SearchAreaInHeightArrayTop[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
     } , {
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
@@ -3659,10 +3643,10 @@ static const uint16_t HmeLevel1SearchAreaInHeightArrayTop[SC_MAX_LEVEL][INPUT_SI
 };
 static const uint16_t HmeLevel1SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
     } , {
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
         {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
@@ -3680,10 +3664,10 @@ static const uint8_t EnableHmeLevel2Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
 };
 static const uint16_t HmeLevel2SearchAreaInWidthArrayLeft[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
     } , {
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
@@ -3693,10 +3677,10 @@ static const uint16_t HmeLevel2SearchAreaInWidthArrayLeft[SC_MAX_LEVEL][INPUT_SI
 };
 static const uint16_t HmeLevel2SearchAreaInWidthArrayRight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
     } , {
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
@@ -3706,10 +3690,10 @@ static const uint16_t HmeLevel2SearchAreaInWidthArrayRight[SC_MAX_LEVEL][INPUT_S
 };
 static const uint16_t HmeLevel2SearchAreaInHeightArrayTop[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
     } , {
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
@@ -3719,10 +3703,10 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayTop[SC_MAX_LEVEL][INPUT_SI
 };
 static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
     } , {
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
@@ -3733,10 +3717,10 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
 
 static const uint16_t SearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,    48,   48 },
-        { 112,   96,   96,   96,   96,   48,   48,   48,   48,   48,   48,    48,   48 },
-        { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 },
-        { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 }
+        {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
+        { 112,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
+        { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
+        { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 }
     } , {
         { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
         { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
@@ -3746,10 +3730,10 @@ static const uint16_t SearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPOR
 };
 static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
-        {  64,   64,   64,   64,   64,   48,   48,   48,   16,   16,   16,    16,   16 },
-        { 112,   96,   96,   96,   96,   48,   48,   48,   16,   16,   16,    16,   16 },
-        { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 },
-        { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 }
+        {  64,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },
+        { 112,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },
+        { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },
+        { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 }
     } , {
         { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
         { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
@@ -3774,39 +3758,39 @@ static const uint8_t EnableHmeLevel0Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
 
 static const uint16_t HmeLevel0TotalSearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48 },
-    { 112,  112,   96,   96,   96,   64,   64,   64,   64,   64,   64,   64,   64 },
-    { 128,  128,  128,  128,  128,   96,   96,   96,   96,   96,   96,   96,   96 },
+    { 112,  112,  112,  112,  112,  112,   64,   64,   64,   64,   64,   64,   64 },
+    { 128,  128,  128,  128,  128,  128,   96,   96,   96,   96,   96,   96,   96 },
     { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 }
 };
 
 static const uint16_t HmeLevel0SearchAreaInWidthArrayLeft[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24 },
-    {  56,   56,   48,   48,   48,   32,   32,   32,   32,   32,   32,   32,   32 },
-    {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 },
+    {  56,   56,   56,   56,   56,   56,   32,   32,   32,   32,   32,   32,   32 },
+    {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
     {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
 };
 static const uint16_t HmeLevel0SearchAreaInWidthArrayRight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24 },
-    {  56,   56,   48,   48,   48,   32,   32,   32,   32,   32,   32,   32,   32 },
-    {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 },
+    {  56,   56,   56,   56,   56,   56,   32,   32,   32,   32,   32,   32,   32 },
+    {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
     {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
 };
 static const uint16_t HmeLevel0TotalSearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
-    {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 },
-    {  80,   80,   80,   80,   80,   48,   48,   48,   48,   48,   48,   48,   48 },
+    {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
+    {  80,   80,   80,   80,   80,   80,   48,   48,   48,   48,   48,   48,   48 },
     {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 }
 };
 static const uint16_t HmeLevel0SearchAreaInHeightArrayTop[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20 },
-    {  32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24,   24 },
-    {  40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24,   24 },
+    {  32,   32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24 },
+    {  40,   40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24 },
     {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
 };
 static const uint16_t HmeLevel0SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {  20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20 },
-    {  32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24,   24 },
-    {  40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24,   24 },
+    {  32,   32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24 },
+    {  40,   40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24 },
     {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
 };
 
@@ -3819,28 +3803,28 @@ static const uint8_t EnableHmeLevel1Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
     {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 }       // INPUT_SIZE_4K_RANGE
 };
 static const uint16_t HmeLevel1SearchAreaInWidthArrayLeft[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
 };
 static const uint16_t HmeLevel1SearchAreaInWidthArrayRight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
 };
 static const uint16_t HmeLevel1SearchAreaInHeightArrayTop[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
 };
 static const uint16_t HmeLevel1SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
-    {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 },
+    {  16,   16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,     8 }
 };
 // HME LEVEL 2
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
@@ -3851,41 +3835,41 @@ static const uint8_t EnableHmeLevel2Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
     {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 }       // INPUT_SIZE_4K_RANGE
 };
 static const uint16_t HmeLevel2SearchAreaInWidthArrayLeft[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
 };
 static const uint16_t HmeLevel2SearchAreaInWidthArrayRight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
 };
 static const uint16_t HmeLevel2SearchAreaInHeightArrayTop[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
 };
 static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
-    {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 },
+    {   8,    8,    8,    8,    8,    8,    4,    4,    4,    4,    4,     4,    4 }
 };
 
 static const uint8_t SearchAreaWidth[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,    48,   48 },
-    { 112,   96,   96,   96,   96,   48,   48,   48,   48,   48,   48,    48,   48 },
-    { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 },
-    { 128,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,    48,   48 }
+    {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
+    { 112,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
+    { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
+    { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 }
 };
 static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
-    {  64,   64,   64,   64,   64,   48,   48,   48,   16,   16,   16,    16,   16 },
-    { 112,   96,   96,   96,   96,   48,   48,   48,   16,   16,   16,    16,   16 },
-    { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 },
-    { 128,  112,  112,  112,  112,   48,   48,   48,   16,   16,   16,    16,   16 }
+    {  64,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },
+    { 112,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },
+    { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },
+    { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 }
 
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
 };

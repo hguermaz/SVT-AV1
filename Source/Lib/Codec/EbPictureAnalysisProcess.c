@@ -4984,13 +4984,6 @@ void* picture_analysis_kernel(void *input_ptr)
         SetPictureParametersForStatisticsGathering(
             sequence_control_set_ptr);
 
-#if ICOPY
-        picture_control_set_ptr->sc_content_detected = is_screen_content(
-            input_picture_ptr->buffer_y + input_picture_ptr->origin_x + input_picture_ptr->origin_y*input_picture_ptr->stride_y,
-            0,
-            input_picture_ptr->stride_y,
-            sequence_control_set_ptr->luma_width, sequence_control_set_ptr->luma_height);
-#endif
 
 #if HARD_CODE_SC_SETTING
         picture_control_set_ptr->sc_content_detected = EB_TRUE;
@@ -5034,7 +5027,21 @@ void* picture_analysis_kernel(void *input_ptr)
             sb_total_count,
             asm_type);
 
-
+#if ICOPY
+        picture_control_set_ptr->sc_content_detected = is_screen_content(
+            input_picture_ptr->buffer_y + input_picture_ptr->origin_x + input_picture_ptr->origin_y*input_picture_ptr->stride_y,
+            0,
+            input_picture_ptr->stride_y,
+            sequence_control_set_ptr->luma_width, sequence_control_set_ptr->luma_height);       
+ #if ADD_VAR_SC_DETECT
+        if (picture_control_set_ptr->sc_content_detected)
+            if (picture_control_set_ptr->pic_avg_variance > 1000)
+                picture_control_set_ptr->sc_content_detected = 1;
+            else
+                picture_control_set_ptr->sc_content_detected = 0;
+#endif
+       // picture_control_set_ptr->sc_content_detected = 0;
+#endif
         // Hold the 64x64 variance and mean in the reference frame
         uint32_t sb_index;
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {

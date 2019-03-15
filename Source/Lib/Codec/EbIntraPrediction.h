@@ -675,7 +675,7 @@ extern "C" {
         intra_mode_dc_luma_avx2_intrin,
 
     };
-    
+
     uint32_t UpdateNeighborDcIntraPred(
         MotionEstimationContext_t       *context_ptr,
         EbPictureBufferDesc_t           *input_ptr,
@@ -745,7 +745,7 @@ extern "C" {
         // AVX2
         ebav1_smooth_v_predictor,
     };
-    
+
     #if !OIS_BASED_INTRA
     static EB_INTRA_NOANG_16bit_TYPE FUNC_TABLE IntraPlanar_16bit_funcPtrArray[ASM_TYPE_TOTAL] = {
         // NON_AVX2

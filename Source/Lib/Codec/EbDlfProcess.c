@@ -137,6 +137,7 @@ void* dlf_kernel(void *input_ptr)
             av1_loop_filter_init(picture_control_set_ptr);
 
             if (picture_control_set_ptr->parent_pcs_ptr->loop_filter_mode == 2) {
+
                 av1_pick_filter_level(
                     context_ptr,
                     (EbPictureBufferDesc_t*)picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr,
@@ -186,12 +187,13 @@ void* dlf_kernel(void *input_ptr)
                 recon_picture_ptr,
                 cm->frame_to_show);
 
-            if (sequence_control_set_ptr->enable_restoration)
+            if (sequence_control_set_ptr->enable_restoration) {
                 av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
-
+            }
 
 #if CDEF_M
-            if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->parent_pcs_ptr->cdef_filter_mode){
+            if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->parent_pcs_ptr->cdef_filter_mode)
+            {
 #endif
                 if (is16bit)
                 {
@@ -205,8 +207,8 @@ void* dlf_kernel(void *input_ptr)
                     picture_control_set_ptr->ref_coeff[2] = (uint16_t*)input_picture_ptr->bufferCr + (input_picture_ptr->origin_x / 2 + input_picture_ptr->origin_y / 2 * input_picture_ptr->strideCr);
 
                 }
-                else{
-
+                else
+                {
                     //these copies should go!
                     EbByte  rec_ptr = &((recon_picture_ptr->buffer_y)[recon_picture_ptr->origin_x + recon_picture_ptr->origin_y * recon_picture_ptr->stride_y]);
                     EbByte  rec_ptr_cb = &((recon_picture_ptr->bufferCb)[recon_picture_ptr->origin_x / 2 + recon_picture_ptr->origin_y / 2 * recon_picture_ptr->strideCb]);
@@ -244,8 +246,8 @@ void* dlf_kernel(void *input_ptr)
         picture_control_set_ptr->tot_seg_searched_cdef      = 0;
         uint32_t segment_index;
 
-        for (segment_index = 0; segment_index < picture_control_set_ptr->cdef_segments_total_count; ++segment_index){
-
+        for (segment_index = 0; segment_index < picture_control_set_ptr->cdef_segments_total_count; ++segment_index)
+        {
             // Get Empty DLF Results to Cdef
             eb_get_empty_object(
                 context_ptr->dlf_output_fifo_ptr,

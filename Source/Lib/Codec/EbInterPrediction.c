@@ -25,7 +25,7 @@
 #include "EbAdaptiveMotionVectorPrediction.h"
 
 #include "EbModeDecisionProcess.h"
-#include "EbErrorCodes.h"
+#include "EbSvtAv1ErrorCodes.h"
 #include <smmintrin.h> /* SSE4.1 */
 
 
@@ -2340,7 +2340,6 @@ EbErrorType av1_inter_prediction_hbd(
                     av1_get_convolve_filter_params(cu_ptr->interp_filters, &filter_params_x,
                         &filter_params_y, blk_geom->bwidth_uv, blk_geom->bheight_uv);
 
-
                     convolveHbd[subpel_x != 0][subpel_y != 0][is_compound](
                         src_ptr,
                         src_stride,
@@ -2465,7 +2464,7 @@ EbErrorType av1_inter_prediction_hbd(
 #if ICOPY_10B
             if (use_intrabc && (subpel_x != 0 || subpel_y != 0))
                 highbd_convolve_2d_for_intrabc(
-                    (const uint16_t *)src_ptr,
+                (const uint16_t *)src_ptr,
                     src_stride,
                     dst_ptr, dst_stride, blk_geom->bwidth_uv, blk_geom->bheight_uv, subpel_x,
                     subpel_y, &conv_params, bit_depth);
@@ -4577,11 +4576,13 @@ EbErrorType inter_pu_prediction_av1(
         return return_error;
     }
 
+    uint16_t capped_size = md_context_ptr->interpolation_filter_search_blk_size == 0 ? 4 : 
+                           md_context_ptr->interpolation_filter_search_blk_size == 1 ? 8 : 16 ;
     if (is16bit) {
 #if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
         if (!md_context_ptr->skip_interpolation_search) {
-            if (md_context_ptr->blk_geom->bwidth > 4 && md_context_ptr->blk_geom->bheight > 4)
+            if (md_context_ptr->blk_geom->bwidth > capped_size && md_context_ptr->blk_geom->bheight > capped_size)
                 interpolation_filter_search_HBD(
                     picture_control_set_ptr,
                     candidate_buffer_ptr->predictionPtrTemp,
@@ -4628,7 +4629,7 @@ EbErrorType inter_pu_prediction_av1(
     } else {
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
         if (!md_context_ptr->skip_interpolation_search) {
-            if (md_context_ptr->blk_geom->bwidth > 4 && md_context_ptr->blk_geom->bheight > 4)
+            if (md_context_ptr->blk_geom->bwidth > capped_size && md_context_ptr->blk_geom->bheight > capped_size)
                 interpolation_filter_search(
                     picture_control_set_ptr,
                     candidate_buffer_ptr->predictionPtrTemp,

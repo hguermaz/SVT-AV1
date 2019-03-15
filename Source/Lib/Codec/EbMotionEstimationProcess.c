@@ -170,18 +170,27 @@ EbErrorType signal_derivation_me_kernel_oq(
     EbErrorType return_error = EB_ErrorNone;
 
     // Set ME/HME search regions
-    if (sequence_control_set_ptr->static_config.use_default_me_hme) {
+    if (sequence_control_set_ptr->static_config.use_default_me_hme) 
         set_me_hme_params_oq(
             context_ptr->me_context_ptr,
             picture_control_set_ptr,
             sequence_control_set_ptr,
             sequence_control_set_ptr->input_resolution);
-    }
-    else {
+    
+    else 
         set_me_hme_params_from_config(
             sequence_control_set_ptr,
             context_ptr->me_context_ptr);
-    }
+ #if SCENE_CONTENT_SETTINGS   
+    if (picture_control_set_ptr->sc_content_detected)
+        context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH ; 
+    else 
+#endif
+        if (picture_control_set_ptr->enc_mode <= ENC_M6)
+        context_ptr->me_context_ptr->fractionalSearchMethod = SSD_SEARCH ; 
+    else
+        context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH;
+
 
     return return_error;
 };

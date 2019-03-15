@@ -61,7 +61,7 @@
 #include <immintrin.h>
 
 #include "EbDefinitions.h"
-#include "EbApi.h"
+#include "EbSvtAv1Enc.h"
 #include "EbThreads.h"
 #include "EbUtility.h"
 #include "EbEncHandle.h"
@@ -165,7 +165,7 @@ uint8_t                          num_groups = 0;
 #ifdef _WIN32
 GROUP_AFFINITY                   group_affinity;
 EbBool                           alternate_groups = 0;
-#else
+#elif defined(__linux__)
 cpu_set_t                        group_affinity;
 typedef struct logicalProcessorGroup {
     uint32_t num;
@@ -268,18 +268,20 @@ uint32_t GetNumProcessors() {
 #endif
 }
 
-void InitThreadManagmentParams() {
+EbErrorType InitThreadManagmentParams() {
 #ifdef _WIN32
     // Initialize group_affinity structure with Current thread info
     GetThreadGroupAffinity(GetCurrentThread(), &group_affinity);
     num_groups = (uint8_t)GetActiveProcessorGroupCount();
-#else
+#elif defined(__linux__)
     const char* PROCESSORID = "processor";
     const char* PHYSICALID = "physical id";
     int processor_id_len = strnlen_ss(PROCESSORID, 128);
     int physical_id_len = strnlen_ss(PHYSICALID, 128);
-    if (processor_id_len < 0 || processor_id_len >= 128) return ;
-    if (physical_id_len < 0 || physical_id_len >= 128) return ;
+    if (processor_id_len < 0 || processor_id_len >= 128)
+        return EB_ErrorInsufficientResources;
+    if (physical_id_len < 0 || physical_id_len >= 128)
+        return EB_ErrorInsufficientResources;
     memset(lp_group, 0, sizeof(lp_group));
 
     int fd = open("/proc/cpuinfo", O_RDONLY | O_NOFOLLOW, "rt");
@@ -303,7 +305,7 @@ void InitThreadManagmentParams() {
                         socket_id = strtol(p, NULL, 0);
                         if (socket_id < 0 || socket_id > 15) {
                             close(fd);
-                            return;
+                            return EB_ErrorInsufficientResources;
                         }
                         if (socket_id + 1 > num_groups)
                             num_groups = socket_id + 1;
@@ -317,6 +319,7 @@ void InitThreadManagmentParams() {
         close(fd);
     }
 #endif
+    return EB_ErrorNone;
 }
 
 #ifdef _WIN32
@@ -328,7 +331,7 @@ uint64_t GetAffinityMask(uint32_t lpnum) {
 }
 #endif
 
-EbErrorType EbSetThreadManagementParameters(EbSvtAv1EncConfiguration   *config_ptr) {
+void EbSetThreadManagementParameters(EbSvtAv1EncConfiguration   *config_ptr) {
     uint32_t num_logical_processors = GetNumProcessors();
 #ifdef _WIN32
     // For system with a single processor group(no more than 64 logic processors all together)
@@ -363,7 +366,7 @@ EbErrorType EbSetThreadManagementParameters(EbSvtAv1EncConfiguration   *config_p
             }
         }
     }
-#else
+#elif defined(__linux__)
     CPU_ZERO(&group_affinity);
 
     if (num_groups == 1) {
@@ -404,7 +407,6 @@ EbErrorType EbSetThreadManagementParameters(EbSvtAv1EncConfiguration   *config_p
         }
     }
 #endif
-    return EB_ErrorNone;
 }
 void asmSetConvolveAsmTable(void);
 void asmSetConvolveHbdAsmTable(void);
@@ -466,11 +468,13 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
 
     unsigned int lpCount = GetNumProcessors();
     unsigned int coreCount = lpCount;
+#if defined(_WIN32) || defined(__linux__)
     if (sequence_control_set_ptr->static_config.target_socket != -1)
         coreCount /= num_groups;
     if (sequence_control_set_ptr->static_config.logical_processors != 0)
         coreCount = sequence_control_set_ptr->static_config.logical_processors < coreCount ?
             sequence_control_set_ptr->static_config.logical_processors: coreCount;
+#endif
 
 #ifdef _WIN32
     //Handle special case on Windows
@@ -574,7 +578,7 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
     sequence_control_set_ptr->total_process_init_count += sequence_control_set_ptr->entropy_coding_process_init_count = 1;//MAX(3, coreCount / 12);
 #else
     sequence_control_set_ptr->total_process_init_count += (sequence_control_set_ptr->picture_analysis_process_init_count             = MAX(MIN(15, coreCount), coreCount / 6));
-    sequence_control_set_ptr->total_process_init_count += (sequence_control_set_ptr->motion_estimation_process_init_count            = MAX(MIN(40, coreCount), coreCount / 3));
+    sequence_control_set_ptr->total_process_init_count += (sequence_control_set_ptr->motion_estimation_process_init_count            = MAX(MIN(20, coreCount), coreCount / 3));
     sequence_control_set_ptr->total_process_init_count += (sequence_control_set_ptr->source_based_operations_process_init_count      = MAX(MIN(3, coreCount), coreCount / 12));
     sequence_control_set_ptr->total_process_init_count += (sequence_control_set_ptr->mode_decision_configuration_process_init_count  = MAX(MIN(3, coreCount), coreCount / 12));
     sequence_control_set_ptr->total_process_init_count += (sequence_control_set_ptr->enc_dec_process_init_count                      = MAX(MIN(40, coreCount), coreCount));//1);//CHKN   ICOPY
@@ -704,7 +708,10 @@ static EbErrorType eb_enc_handle_ctor(
         return EB_ErrorInsufficientResources;
     }
 
-    InitThreadManagmentParams();
+    return_error = InitThreadManagmentParams();
+    if (return_error == EB_ErrorInsufficientResources) {
+        return EB_ErrorInsufficientResources;
+    }
 
     encHandlePtr->encodeInstanceTotalCount = EB_EncodeInstancesTotalCount;
 
@@ -1000,6 +1007,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
         inputData.is16bit = is16bit;
         inputData.ten_bit_format = encHandlePtr->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr->static_config.ten_bit_format;
         inputData.compressed_ten_bit_format = encHandlePtr->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr->static_config.compressed_ten_bit_format;
+        encHandlePtr->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr->picture_control_set_pool_init_count += maxLookAheadDistance;
         inputData.enc_mode = encHandlePtr->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr->static_config.enc_mode;
         inputData.speed_control = (uint8_t)encHandlePtr->sequence_control_set_instance_array[instanceIndex]->sequence_control_set_ptr->static_config.speed_control_flag;
         inputData.film_grain_noise_level = encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->static_config.film_grain_denoise_strength;
@@ -1822,10 +1830,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
     ************************************/
     EbSvtAv1EncConfiguration   *config_ptr = &encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->static_config;
 
-    return_error = EbSetThreadManagementParameters(config_ptr);
-    if (return_error == EB_ErrorInsufficientResources) {
-        return EB_ErrorInsufficientResources;
-    }
+    EbSetThreadManagementParameters(config_ptr);
 
     // Resource Coordination
     EB_CREATETHREAD(EbHandle, encHandlePtr->resourceCoordinationThreadHandle, sizeof(EbHandle), EB_THREAD, resource_coordination_kernel, encHandlePtr->resourceCoordinationContextPtr);
@@ -2183,11 +2188,7 @@ void SetParamBasedOnInput(
         sequence_control_set_ptr,
         sequence_control_set_ptr->luma_width*sequence_control_set_ptr->luma_height);
  #if DISABLE_128_SB_FOR_SUB_720
-#if MATCH_EXES
-    sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode <= ENC_M0 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
-#else
-    sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode <= ENC_M2 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
-#endif
+    sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode <= ENC_M1 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
 #endif
 }
 
@@ -2320,7 +2321,7 @@ void CopyApiFromApp(
     sequence_control_set_ptr->static_config.scene_change_detection = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->scene_change_detection;
     sequence_control_set_ptr->static_config.rate_control_mode = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->rate_control_mode;
     sequence_control_set_ptr->static_config.look_ahead_distance = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->look_ahead_distance;
-    sequence_control_set_ptr->static_config.framesToBeEncoded = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->framesToBeEncoded;
+    sequence_control_set_ptr->static_config.frames_to_be_encoded = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->frames_to_be_encoded;
     sequence_control_set_ptr->static_config.frame_rate = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->frame_rate;
     sequence_control_set_ptr->static_config.frame_rate_denominator = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->frame_rate_denominator;
     sequence_control_set_ptr->static_config.frame_rate_numerator = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->frame_rate_numerator;
@@ -2343,13 +2344,6 @@ void CopyApiFromApp(
     // Thresholds
     sequence_control_set_ptr->static_config.improve_sharpness = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->improve_sharpness;
     sequence_control_set_ptr->static_config.high_dynamic_range_input = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->high_dynamic_range_input;
-    sequence_control_set_ptr->static_config.access_unit_delimiter = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->access_unit_delimiter;
-    sequence_control_set_ptr->static_config.buffering_period_sei = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->buffering_period_sei;
-    sequence_control_set_ptr->static_config.picture_timing_sei = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->picture_timing_sei;
-    sequence_control_set_ptr->static_config.registered_user_data_sei_flag = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->registered_user_data_sei_flag;
-    sequence_control_set_ptr->static_config.unregistered_user_data_sei_flag = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->unregistered_user_data_sei_flag;
-    sequence_control_set_ptr->static_config.recovery_point_sei_flag = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->recovery_point_sei_flag;
-    sequence_control_set_ptr->static_config.enable_temporal_id = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->enable_temporal_id;
 
     // Annex A parameters
     sequence_control_set_ptr->static_config.profile = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->profile;
@@ -2671,40 +2665,6 @@ static EbErrorType VerifySettings(
         SVT_LOG("Error instance %u : Invalid HighDynamicRangeInput. HighDynamicRangeInput must be [0 - 1]\n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
-    if (config->access_unit_delimiter > 1) {
-        SVT_LOG("Error instance %u : Invalid AccessUnitDelimiter. AccessUnitDelimiter must be [0 - 1]\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
-
-    if (config->buffering_period_sei > 1) {
-        SVT_LOG("Error instance %u : Invalid BufferingPeriod. BufferingPeriod must be [0 - 1]\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
-
-    if (config->picture_timing_sei > 1) {
-        SVT_LOG("Error instance %u : Invalid PictureTiming. PictureTiming must be [0 - 1]\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
-
-    if (config->registered_user_data_sei_flag > 1) {
-        SVT_LOG("Error instance %u : Invalid RegisteredUserData. RegisteredUserData must be [0 - 1]\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
-
-    if (config->unregistered_user_data_sei_flag > 1) {
-        SVT_LOG("Error instance %u : Invalid UnregisteredUserData. UnregisteredUserData must be [0 - 1]\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
-
-    if (config->recovery_point_sei_flag > 1) {
-        SVT_LOG("Error instance %u : Invalid RecoveryPoint. RecoveryPoint must be [0 - 1]\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
-
-    if (config->enable_temporal_id > 1) {
-        SVT_LOG("Error instance %u : Invalid TemporalId. TemporalId must be [0 - 1]\n", channelNumber + 1);
-        return_error = EB_ErrorBadParameter;
-    }
 
     if ((config->encoder_bit_depth != 8) &&
         (config->encoder_bit_depth != 10)
@@ -2764,7 +2724,7 @@ EbErrorType eb_svt_enc_init_parameter(
     config_ptr->compressed_ten_bit_format = 0;
     config_ptr->source_width = 0;
     config_ptr->source_height = 0;
-    config_ptr->framesToBeEncoded = 0; 
+    config_ptr->frames_to_be_encoded = 0; 
     config_ptr->stat_report = 1;
 #if TILES
     config_ptr->tile_rows = 0;
@@ -2823,13 +2783,6 @@ EbErrorType eb_svt_enc_init_parameter(
     //config_ptr->codeEosNal = 0;
 
     config_ptr->high_dynamic_range_input = 0;
-    config_ptr->access_unit_delimiter = 0;
-    config_ptr->buffering_period_sei = 0;
-    config_ptr->picture_timing_sei = 0;
-    config_ptr->registered_user_data_sei_flag = EB_FALSE;
-    config_ptr->unregistered_user_data_sei_flag = EB_FALSE;
-    config_ptr->recovery_point_sei_flag = EB_FALSE;
-    config_ptr->enable_temporal_id = 1;
 
     // Annex A parameters
     config_ptr->profile = 0;
@@ -3049,7 +3002,7 @@ static EbErrorType CopyFrameBuffer(
     EbErrorType                      return_error = EB_ErrorNone;
 
     EbPictureBufferDesc_t           *input_picture_ptr = (EbPictureBufferDesc_t*)dst;
-    EbSvtEncInput               *inputPtr = (EbSvtEncInput*)src;
+    EbSvtIOFormat                   *inputPtr = (EbSvtIOFormat*)src;
     uint16_t                         inputRowIndex;
     EbBool                           is16BitInput = (EbBool)(config->encoder_bit_depth > EB_8BIT);
 

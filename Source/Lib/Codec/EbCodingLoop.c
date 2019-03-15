@@ -24,7 +24,7 @@
 
 #include "EbModeDecisionProcess.h"
 #include "EbEncDecProcess.h"
-#include "EbErrorCodes.h"
+#include "EbSvtAv1ErrorCodes.h"
 #include "EbTransforms.h"
 #include "EbModeDecisionConfiguration.h"
 #include "EbIntraPrediction.h"
@@ -3368,11 +3368,11 @@ EB_EXTERN void AV1EncodePass(
 
                                 EbPictureBufferDesc_t * ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
 
-#if ICOPY_10B 
+#if ICOPY_10B
                                 if (is16bit)
                                     ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture16bit;
-     
-                                if (is16bit) 
+
+                                if (is16bit)
                                     av1_inter_prediction_hbd(
                                         picture_control_set_ptr,
                                         cu_ptr->prediction_unit_array->ref_frame_type,
@@ -3389,7 +3389,7 @@ EB_EXTERN void AV1EncodePass(
                                         context_ptr->cu_origin_x,
                                         context_ptr->cu_origin_y,
                                         (uint8_t)sequence_control_set_ptr->static_config.encoder_bit_depth,
-                                        asm_type);                                
+                                        asm_type);
                                 else
 #endif
                                 av1_inter_prediction(

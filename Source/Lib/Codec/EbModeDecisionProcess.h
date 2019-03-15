@@ -272,6 +272,7 @@ extern "C" {
         uint8_t                           warped_motion_injection;
         uint8_t                           unipred3x3_injection;
         uint8_t                           bipred3x3_injection;
+        uint8_t                           interpolation_filter_search_blk_size;
     } ModeDecisionContext_t;
 
     typedef void(*EB_AV1_LAMBDA_ASSIGN_FUNC)(

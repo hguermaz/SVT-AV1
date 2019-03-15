@@ -20,7 +20,7 @@
 #include "EbEncDecResults.h"
 #include "EbPictureDemuxResults.h"
 #include "EbCodingLoop.h"
-#include "EbErrorCodes.h"
+#include "EbSvtAv1ErrorCodes.h"
 #include "EbDeblockingFilter.h"
 #include "grainSynthesis.h"
 
@@ -1369,10 +1369,23 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     }
     else {
 #endif
-    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->nfl_level = 0;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M1)
+        if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+            context_ptr->nfl_level = 0;
+        else
+            context_ptr->nfl_level = 1;
     else if (picture_control_set_ptr->enc_mode <= ENC_M3)
-        context_ptr->nfl_level = 2;
+        if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+            context_ptr->nfl_level = 0;
+        else
+            context_ptr->nfl_level = 2;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M5)
+        if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+            context_ptr->nfl_level = 2;
+        else
+            context_ptr->nfl_level = 3;
     else if(picture_control_set_ptr->enc_mode <= ENC_M7)
         context_ptr->nfl_level = 3;
     else
@@ -1396,7 +1409,16 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 #if INTRA_INTER_FAST_LOOP
     // Set the search method when decoupled fast loop is used 
     // Hsan: FULL_SAD_SEARCH not supported
-    if (picture_control_set_ptr->enc_mode <= ENC_M0)
+#if SCENE_CONTENT_SETTINGS
+
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected){
+	    if (picture_control_set_ptr->enc_mode <= ENC_M0)
+	        context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
+	    else
+	        context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
+	}else
+#endif
+    if (picture_control_set_ptr->enc_mode <= ENC_M5)
         context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
     else
         context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
@@ -1437,7 +1459,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
 
 #endif
-    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+    if (picture_control_set_ptr->enc_mode <= ENC_M5)
         context_ptr->warped_motion_injection = 1;
     else
         context_ptr->warped_motion_injection = 0;
@@ -1456,8 +1478,10 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
 
 #endif
-    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->unipred3x3_injection = 1;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M3)
+        context_ptr->unipred3x3_injection = 2;
     else
         context_ptr->unipred3x3_injection = 0;
 
@@ -1475,10 +1499,30 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
 
 #endif
-    if (picture_control_set_ptr->enc_mode <= ENC_M1)
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->bipred3x3_injection = 1;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M3)
+        context_ptr->bipred3x3_injection = 2;
     else
         context_ptr->bipred3x3_injection = 0;
+      
+    // Set interpolation filter search blk size
+    // Level                Settings
+    // 0                    ON for 8x8 and above
+    // 1                    ON for 16x16 and above
+    // 2                    ON for 32x32 and above
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
+        context_ptr->interpolation_filter_search_blk_size = 0;
+    else
+#endif
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
+        context_ptr->interpolation_filter_search_blk_size = 0;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M2)
+        context_ptr->interpolation_filter_search_blk_size = 1;
+    else        
+        context_ptr->interpolation_filter_search_blk_size = 2;
+    
 
 
     return return_error;
