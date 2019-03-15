@@ -26,7 +26,11 @@ extern "C" {
 #if IMPROVED_BIPRED_INJECTION || IMPROVED_UNIPRED_INJECTION
 #if ICOPY
 #define IBC_CAND 2 //two intra bc candidates
+#if ME_35X35_REFINEMENT
+#define MODE_DECISION_CANDIDATE_MAX_COUNT               (124+IBC_CAND + 4900) /* 61 Intra & 18+2x8+2x8 Inter*/
+#else
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (124+IBC_CAND) /* 61 Intra & 18+2x8+2x8 Inter*/
+#endif
 #else
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               124// 61 Intra & 18+2x8+2x8 Inter
 #endif
