@@ -175,6 +175,7 @@ void mode_decision_update_neighbor_arrays(
     uint8_t                    ref_frame_type = (uint8_t)context_ptr->cu_ptr->prediction_unit_array[0].ref_frame_type;
 
 
+#if !OPT_LOSSLESS
     neighbor_array_unit_mode_write32(
         context_ptr->interpolation_type_neighbor_array,
         context_ptr->cu_ptr->interp_filters,
@@ -183,12 +184,14 @@ void mode_decision_update_neighbor_arrays(
         bwdith,
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
     {
         struct PartitionContext partition;
         partition.above = partition_context_lookup[context_ptr->blk_geom->bsize].above;
         partition.left = partition_context_lookup[context_ptr->blk_geom->bsize].left;
 
+#if !OPT_LOSSLESS
         neighbor_array_unit_mode_write(
             context_ptr->leaf_partition_neighbor_array,
             (uint8_t*)(&partition), // NaderM
@@ -197,6 +200,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
         // Mode Type Update
         neighbor_array_unit_mode_write(
@@ -207,6 +211,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+#if !OPT_LOSSLESS
 #if M8_SKIP_BLK        
         // Intra Luma Mode Update
         neighbor_array_unit_mode_write(
@@ -217,6 +222,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 #endif
         // Intra Luma Mode Update
         neighbor_array_unit_mode_write(
@@ -276,6 +282,7 @@ void mode_decision_update_neighbor_arrays(
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
+#if !OPT_LOSSLESS
     //  Update skip_coeff_neighbor_array,
     neighbor_array_unit_mode_write(
         context_ptr->skip_coeff_neighbor_array,
@@ -285,6 +292,7 @@ void mode_decision_update_neighbor_arrays(
         bwdith,
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
 #if CHROMA_BLIND
     if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
