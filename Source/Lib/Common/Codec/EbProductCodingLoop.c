@@ -664,6 +664,16 @@ void md_update_all_neighbour_arrays_multiple(
 // Based on the MDStage and the encodeMode
 // the NFL candidates numbers are set
 //*************************//
+#if NFL_PER_SQ_SIZE
+uint32_t nfl_cap_table[6] = {
+    NFL_CAP_4x4,
+    NFL_CAP_8x8,
+    NFL_CAP_16x16,
+    NFL_CAP_32x32,
+    NFL_CAP_64x64,
+    NFL_CAP_128x128
+};
+#endif
 #if ADAPTIVE_DEPTH_PARTITIONING
 void set_nfl(
     ModeDecisionContext_t     *context_ptr
@@ -674,6 +684,9 @@ void set_nfl(
     LargestCodingUnit_t       *sb_ptr) {
 #endif
 
+#if M9_NON_UNIFORM_NFL || NFL_PER_SQ_SIZE
+    uint8_t nfl_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
+#endif
     // NFL Level MD       Settings
     // 0                  MAX_NFL 40
     // 1                  30
@@ -727,6 +740,12 @@ void set_nfl(
             context_ptr->full_recon_search_count = 8;
         else
             context_ptr->full_recon_search_count = 6;
+#endif
+#if NFL_PER_SQ_SIZE
+    if (picture_control_set_ptr->slice_type != I_SLICE) {
+        uint32_t nfl_cap = nfl_cap_table[nfl_index];
+        context_ptr->full_recon_search_count = nfl_cap;
+    }
 #endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
