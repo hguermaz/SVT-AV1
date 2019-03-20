@@ -2100,7 +2100,28 @@ void derive_sb_score(
 Input   : cost per depth
 Output  : budget per picture
 ******************************************************/
+#if M9_ADP
+void set_target_budget_layer_based(
+    SequenceControlSet_t               *sequence_control_set_ptr,
+    PictureControlSet_t                *picture_control_set_ptr,
+    ModeDecisionConfigurationContext_t *context_ptr)
+{
+    uint32_t budget;
+
+    if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
+        budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_121;
+    else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+        budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * SB_OPEN_LOOP_COST;
+    else
+        budget = picture_control_set_ptr->parent_pcs_ptr->sb_total_count * SB_PRED_OPEN_LOOP_COST;
+
+    context_ptr->budget = budget;
+}
+
+void set_target_budget_complexity_based(
+#else
 void set_target_budget_oq(
+#endif
     SequenceControlSet_t               *sequence_control_set_ptr,
     PictureControlSet_t                *picture_control_set_ptr,
     ModeDecisionConfigurationContext_t *context_ptr)
@@ -2206,10 +2227,23 @@ void derive_sb_md_mode(
 #endif
 
     // Set the target budget
+#if M9_ADP
+    if(context_ptr->adp_level <= ENC_M8)
+        set_target_budget_complexity_based(
+            sequence_control_set_ptr,
+            picture_control_set_ptr,
+            context_ptr);
+    else 
+        set_target_budget_layer_based(
+            sequence_control_set_ptr,
+            picture_control_set_ptr,
+            context_ptr);
+#else
     set_target_budget_oq(
         sequence_control_set_ptr,
         picture_control_set_ptr,
         context_ptr);
+#endif
 
     // Set the percentage based thresholds
     derive_default_segments(

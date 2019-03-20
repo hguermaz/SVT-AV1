@@ -908,12 +908,34 @@ EbErrorType signal_derivation_multi_processes_oq(
 #else
     if (sequence_control_set_ptr->enable_cdef) {
 #endif
+#if  M9_CDEF
+        //if (picture_control_set_ptr->sc_content_detected) {
+        //    if (picture_control_set_ptr->enc_mode <= ENC_M5)
+        //        picture_control_set_ptr->cdef_filter_mode = 4;
+        //    else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+        //        picture_control_set_ptr->cdef_filter_mode = 2;
+        //    else
+        //        picture_control_set_ptr->cdef_filter_mode = 1;
+        //}
+        //else 
+        {
+            if (picture_control_set_ptr->enc_mode <= ENC_M5)
+                picture_control_set_ptr->cdef_filter_mode = 4;
+            else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+                picture_control_set_ptr->cdef_filter_mode = 2;
+            else if (picture_control_set_ptr->enc_mode <= ENC_M8)
+                picture_control_set_ptr->cdef_filter_mode = 1;
+            else
+                picture_control_set_ptr->cdef_filter_mode = 0;
+        }
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M5)
             picture_control_set_ptr->cdef_filter_mode = 4;
         else if (picture_control_set_ptr->enc_mode <= ENC_M7)
             picture_control_set_ptr->cdef_filter_mode = 2;
         else
             picture_control_set_ptr->cdef_filter_mode = 1;
+#endif
     }
     else
         picture_control_set_ptr->cdef_filter_mode = 0;
@@ -1014,8 +1036,15 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
         else
             picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+#if M9_TX_SEARCH
+    else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+    else
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
+#else
     else
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+#endif
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
     
