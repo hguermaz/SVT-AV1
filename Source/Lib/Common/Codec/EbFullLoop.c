@@ -2233,7 +2233,52 @@ void CuFullDistortionFastTuMode_R(
     } while (txb_itr < tuTotalCount);
 }
 
+#if IMPROVE_1D_INTER_DEPTH_DECISION
+/***************************************
+ * Check merge_block algorithm
+ ***************************************/
 
+EbBool merge_1D_inter_block(
+    ModeDecisionContext_t    *context_ptr,
+    uint32_t                  sq_idx,
+    uint32_t                  nsq_idx) {
+    EbBool merge_blocks = EB_FALSE;
+    CodingUnit_t  *parent_cu_ptr = &context_ptr->md_cu_arr_nsq[sq_idx];
+    CodingUnit_t  *child_cu_ptr = &context_ptr->md_cu_arr_nsq[nsq_idx];
+    int parent_diriction = parent_cu_ptr->prediction_unit_array[0].inter_pred_direction_index;
+    int parent_mv_l0 = parent_cu_ptr->prediction_unit_array[0].mv[REF_LIST_0].mvUnion;
+    int parent_mv_l1 = parent_cu_ptr->prediction_unit_array[0].mv[REF_LIST_1].mvUnion;
+    int parent_eob = parent_cu_ptr->block_has_coeff;
+    int child_0_diriction = child_cu_ptr->prediction_unit_array[0].inter_pred_direction_index;
+    int child_0_mv_l0 = child_cu_ptr->prediction_unit_array[0].mv[REF_LIST_0].mvUnion;
+    int child_0_mv_l1 = child_cu_ptr->prediction_unit_array[0].mv[REF_LIST_1].mvUnion;
+    int child_eob = child_cu_ptr->block_has_coeff;
+    if (parent_diriction == child_0_diriction && child_eob == 0) {
+        switch (parent_diriction) {
+        case UNI_PRED_LIST_0:
+            if (parent_mv_l0 == child_0_mv_l0) {
+                merge_blocks = EB_TRUE;
+            }
+            break;
+        case UNI_PRED_LIST_1:
+            if (parent_mv_l1 == child_0_mv_l1) {
+                merge_blocks = EB_TRUE;
+            }
+            break;
+        case BI_PRED:
+            if (parent_mv_l0 == child_0_mv_l0 &&
+                parent_mv_l1 == child_0_mv_l1) {
+                merge_blocks = EB_TRUE;
+            }
+            break;
+        default:
+            merge_blocks = EB_FALSE;
+            break;
+        }
+    }
+    return merge_blocks;
+}
+#endif
 void  d1_non_square_block_decision(
     ModeDecisionContext_t               *context_ptr
 )
@@ -2242,12 +2287,24 @@ void  d1_non_square_block_decision(
     uint64_t tot_cost = 0;
     uint32_t first_blk_idx = context_ptr->cu_ptr->mds_idx - (context_ptr->blk_geom->totns - 1);//index of first block in this partition
     uint32_t blk_it;
+#if IMPROVE_1D_INTER_DEPTH_DECISION
+    uint32_t merge_block_cnt = 0;
+    EbBool merge_block_flag = FALSE;
+#endif
     for (blk_it = 0; blk_it < context_ptr->blk_geom->totns; blk_it++)
     {
         tot_cost += context_ptr->md_local_cu_unit[first_blk_idx + blk_it].cost;
+#if IMPROVE_1D_INTER_DEPTH_DECISION
+        merge_block_cnt += merge_1D_inter_block(context_ptr, context_ptr->blk_geom->sqi_mds, first_blk_idx + blk_it);
+#endif
     }
+#if IMPROVE_1D_INTER_DEPTH_DECISION
+    if (merge_block_cnt == context_ptr->blk_geom->totns) merge_block_flag = TRUE;
 
+    if (context_ptr->blk_geom->shape == PART_N || (tot_cost < context_ptr->md_local_cu_unit[context_ptr->blk_geom->sqi_mds].cost && merge_block_flag == FALSE))
+#else
     if (context_ptr->blk_geom->shape == PART_N || tot_cost < context_ptr->md_local_cu_unit[context_ptr->blk_geom->sqi_mds].cost)
+#endif
     {
         //store best partition cost in parent square
         context_ptr->md_local_cu_unit[context_ptr->blk_geom->sqi_mds].cost = tot_cost;

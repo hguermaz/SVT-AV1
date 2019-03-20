@@ -277,6 +277,8 @@ extern "C" {
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
 #define AOM_INTERP_EXTEND 4
+
+#define IMPROVE_1D_INTER_DEPTH_DECISION  1
 struct buf_2d {
     uint8_t *buf;
     uint8_t *buf0;
