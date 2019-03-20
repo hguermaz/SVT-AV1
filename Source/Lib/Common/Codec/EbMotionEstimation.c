@@ -3719,6 +3719,11 @@ static void QuarterPelSearch_LCU(
     int16_t                        y_search_area_origin,               //[IN] search area origin in the vertical direction, used to point to reference samples
     EbAsm                        asm_type,
     EbBool                        disable8x8CuInMeFlag,
+#if M9_SUBPEL_SELECTION
+    EbBool                          enable_half_pel32x32,
+    EbBool                          enable_half_pel16x16,
+    EbBool                          enable_half_pel8x8,
+#endif
     EbBool                        enableQuarterPel,
     EbBool                   ext_block_flag)
 {
@@ -3785,7 +3790,11 @@ static void QuarterPelSearch_LCU(
 #else
     //no PU 64x64, Half Pel Refinement
 #endif
+#if M9_SUBPEL_SELECTION
+    if (enableQuarterPel && enable_half_pel32x32)
+#else
     if (enableQuarterPel)
+#endif
     {
         // 32x32 [4 partitions]
         for (pu_index = 0; pu_index < 4; ++pu_index) {
@@ -3840,7 +3849,11 @@ static void QuarterPelSearch_LCU(
         }
     }
 
+#if M9_SUBPEL_SELECTION
+    if (enableQuarterPel && enable_half_pel16x16)
+#else
     if (enableQuarterPel)
+#endif
     {
         // 16x16 [16 partitions]
         for (pu_index = 0; pu_index < 16; ++pu_index) {
@@ -3895,7 +3908,11 @@ static void QuarterPelSearch_LCU(
         }
     }
 
+#if M9_SUBPEL_SELECTION
+    if (enableQuarterPel && enable_half_pel8x8)
+#else
     if (enableQuarterPel)
+#endif
     {
         // 8x8   [64 partitions]
         if (!disable8x8CuInMeFlag) {
@@ -7181,6 +7198,32 @@ EbErrorType MotionEstimateLcu(
 
                 }
 
+#if M9_SUBPEL_SELECTION
+                if (context_ptr->fractional_search_model == 0) {
+                    enableHalfPel32x32 = EB_TRUE;
+                    enableHalfPel16x16 = EB_TRUE;
+                    enableHalfPel8x8 = EB_TRUE;
+                    enableQuarterPel = EB_TRUE;
+                }
+                else if (context_ptr->fractional_search_model == 1) {
+                    suPelEnable(
+                        context_ptr,
+                        picture_control_set_ptr,
+                        listIndex,
+                        0,
+                        &enableHalfPel32x32,
+                        &enableHalfPel16x16,
+                        &enableHalfPel8x8);
+                    enableQuarterPel = EB_TRUE;
+
+                }
+                else {
+                    enableHalfPel32x32 = EB_FALSE;
+                    enableHalfPel16x16 = EB_FALSE;
+                    enableHalfPel8x8 = EB_FALSE;
+                    enableQuarterPel = EB_FALSE;
+                }
+#else
                 enableHalfPel32x32 = EB_TRUE;
                 enableHalfPel16x16 = EB_TRUE;
                 enableHalfPel8x8 = EB_TRUE;
@@ -7193,7 +7236,7 @@ EbErrorType MotionEstimateLcu(
 #else
                     enableQuarterPel = EB_FALSE;
 #endif
-
+#endif
                     if (enableHalfPel32x32 || enableHalfPel16x16 || enableHalfPel8x8 || enableQuarterPel) {
                         //if((picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)) {
 
@@ -7265,6 +7308,11 @@ EbErrorType MotionEstimateLcu(
                             y_search_area_origin,
                             asm_type,
                             picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_1,
+#if M9_SUBPEL_SELECTION
+                            enableHalfPel32x32,
+                            enableHalfPel16x16,
+                            enableHalfPel8x8,
+#endif
                             enableQuarterPel,
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
 #if TEST5_DISABLE_NSQ_ME
@@ -7287,7 +7335,9 @@ EbErrorType MotionEstimateLcu(
                         nsq_get_analysis_results_block(context_ptr);
                     }
 #endif
+#if !M9_SUBPEL_SELECTION
                 }
+#endif
             }
         }
     }

@@ -409,6 +409,9 @@ extern "C" {
         EbBool                        fractional_search64x64;
 #endif
 
+#if M9_SUBPEL_SELECTION
+        uint8_t                       fractional_search_model;
+#endif
         // ME
 #if QUICK_ME_CLEANUP
         uint16_t                      search_area_width;
