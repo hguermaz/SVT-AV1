@@ -891,7 +891,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     else {
         picture_control_set_ptr->loop_filter_mode = 0;
     }
-#if FAST_CDEF
     // CDEF Level                                   Settings
     // 0                                            OFF
     // 1                                            1 step refinement
@@ -955,7 +954,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->cdef_filter_mode = 0;
 
 #endif
-#endif
+
 #if FAST_SG
     // SG Level                                    Settings
     // 0                                            OFF

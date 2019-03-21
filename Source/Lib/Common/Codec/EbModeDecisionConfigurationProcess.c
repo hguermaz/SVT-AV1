@@ -719,7 +719,6 @@ void set_reference_sg_ep(
     }
 }
 #endif
-#if FAST_CDEF
 /******************************************************
 * Set the reference cdef strength for a given picture
 ******************************************************/
@@ -752,7 +751,7 @@ void set_reference_cdef_strength(
         break;
     }
 }
-#endif
+
 /******************************************************
 * Compute Tc, and Beta offsets for a given picture
 ******************************************************/
@@ -3285,11 +3284,10 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr,
             picture_control_set_ptr->slice_type == I_SLICE ? EB_FALSE : picture_control_set_ptr->parent_pcs_ptr->scene_transition_flag[REF_LIST_0]);
 
-#if FAST_CDEF
         // Set reference cdef strength 
         set_reference_cdef_strength(
             picture_control_set_ptr);
-#endif
+
 
 #if FAST_SG
         // Set reference sg ep 
