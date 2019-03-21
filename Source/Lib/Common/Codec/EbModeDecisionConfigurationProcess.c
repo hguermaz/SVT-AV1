@@ -491,17 +491,10 @@ void av1_set_quantizer(
 
     picture_control_set_ptr->base_qindex = (uint16_t)AOMMAX(picture_control_set_ptr->delta_q_present_flag, q);
     picture_control_set_ptr->y_dc_delta_q = 0;
-#if TUNE_CHROMA_OFFSET
-    picture_control_set_ptr->u_dc_delta_q = (picture_control_set_ptr->slice_type == I_SLICE) ? -10 : -20;
-    picture_control_set_ptr->u_ac_delta_q = (picture_control_set_ptr->slice_type == I_SLICE) ? -10 : -20;
-    picture_control_set_ptr->v_dc_delta_q = (picture_control_set_ptr->slice_type == I_SLICE) ? -10 : -20;
-    picture_control_set_ptr->v_ac_delta_q = (picture_control_set_ptr->slice_type == I_SLICE) ? -10 : -20;
-#else
     picture_control_set_ptr->u_dc_delta_q = 0;
     picture_control_set_ptr->u_ac_delta_q = 0;
     picture_control_set_ptr->v_dc_delta_q = 0;
     picture_control_set_ptr->v_ac_delta_q = 0;
-#endif
     picture_control_set_ptr->qm_y = aom_get_qmlevel(picture_control_set_ptr->base_qindex, picture_control_set_ptr->min_qmlevel, picture_control_set_ptr->max_qmlevel);
     picture_control_set_ptr->qm_u = aom_get_qmlevel(picture_control_set_ptr->base_qindex + picture_control_set_ptr->u_ac_delta_q,
         picture_control_set_ptr->min_qmlevel, picture_control_set_ptr->max_qmlevel);

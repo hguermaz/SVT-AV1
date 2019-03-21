@@ -378,9 +378,8 @@ extern "C" {
             unsigned                leaf_index           : 8;
             unsigned                split_flag           : 1;
             unsigned                skip_flag            : 1;
-#if FIX_INTER_DEPTH
             unsigned                mdc_split_flag      : 1;
-#endif
+
         };
 #if NO_ENCDEC
         EbPictureBufferDesc_t      *quant_tmp;

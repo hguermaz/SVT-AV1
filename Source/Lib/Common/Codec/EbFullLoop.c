@@ -524,11 +524,7 @@ void av1_quantize_inv_quantize_ii(
 #if !ADD_DELTA_QP_SUPPORT
     (void) qp;
 #endif
-#if MACRO_BLOCK_CLEANUP
     MacroblockPlane      candidate_plane ;
-#else
-    MacroblockPlane      candidate_plane = { 0 };
-#endif
 
     //    EB_SLICE          slice_type = picture_control_set_ptr->slice_type;
     //    uint32_t            temporal_layer_index = picture_control_set_ptr->temporal_layer_index;
@@ -922,7 +918,6 @@ void ProductFullLoop(
 
     }
 }
-#if FAST_TX_SEARCH
 // T1
 uint8_t allowed_tx_set_a[TX_SIZES_ALL][TX_TYPES] = {
 {1,    1,    1,    1,    0,    0,    0,    0,    0,    1,    1,    1,    0,    0,    0,    0},
@@ -966,7 +961,7 @@ uint8_t allowed_tx_set_b[TX_SIZES_ALL][TX_TYPES] = {
 {1,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0},
 {1,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0}
 };
-#endif
+
 void ProductFullLoopTxSearch(
     ModeDecisionCandidateBuffer_t  *candidateBuffer,
     ModeDecisionContext_t          *context_ptr,
@@ -2080,7 +2075,6 @@ void  d1_non_square_block_decision(
 }
 
 
-#if FIX_INTER_DEPTH
 /// compute the cost of curr depth, and the depth above
 void   compute_depth_costs(
     ModeDecisionContext_t    *context_ptr,
@@ -2088,21 +2082,11 @@ void   compute_depth_costs(
     uint32_t                  curr_depth_mds,
     uint32_t                  above_depth_mds,
     uint32_t                  step,
-#if FIX_47
     uint64_t                 *above_depth_cost,
     uint64_t                 *curr_depth_cost)
-#else
-    uint64_t                 *depthNCost,
-    uint64_t                 *depthNPlusOneCost)
-#endif
 {
-#if FIX_47
     uint64_t       above_non_split_rate = 0;
     uint64_t       above_split_rate = 0;
-#else
-    uint64_t       depthNRate = 0;
-    uint64_t       depthNPlusOneRate = 0;
-#endif
 
 
     /*
@@ -2226,117 +2210,7 @@ void   compute_depth_costs(
         above_split_rate;
 
 }
-#else
-/// compute the cost of curr depth, and the depth above
-void   compute_depth_costs(
-    ModeDecisionContext_t    *context_ptr,
-    SequenceControlSet_t     *sequence_control_set_ptr,
-    uint32_t                  curr_depth_mds,
-    uint32_t                  above_depth_mds,
-    uint32_t                  step,
-#if FIX_47
-    uint64_t                 *above_depth_cost,
-    uint64_t                 *curr_depth_cost)
-#else
-    uint64_t                 *depthNCost,
-    uint64_t                 *depthNPlusOneCost)
-#endif
-{
-#if FIX_47
-    uint64_t       above_rate = 0;
-    uint64_t       curr_rate = 0;
-#else
-    uint64_t       depthNRate = 0;
-    uint64_t       depthNPlusOneRate = 0;
-#endif
-    uint32_t     top_left_idx_mds = curr_depth_mds - 3 * step;
 
-    context_ptr->md_local_cu_unit[above_depth_mds].left_neighbor_mode = context_ptr->md_local_cu_unit[top_left_idx_mds].left_neighbor_mode;
-    context_ptr->md_local_cu_unit[above_depth_mds].left_neighbor_depth = context_ptr->md_local_cu_unit[top_left_idx_mds].left_neighbor_depth;
-    context_ptr->md_local_cu_unit[above_depth_mds].top_neighbor_mode = context_ptr->md_local_cu_unit[top_left_idx_mds].top_neighbor_mode;
-    context_ptr->md_local_cu_unit[above_depth_mds].top_neighbor_depth = context_ptr->md_local_cu_unit[top_left_idx_mds].top_neighbor_depth;
-    context_ptr->md_local_cu_unit[above_depth_mds].left_neighbor_partition = context_ptr->md_local_cu_unit[top_left_idx_mds].left_neighbor_partition;
-    context_ptr->md_local_cu_unit[above_depth_mds].above_neighbor_partition = context_ptr->md_local_cu_unit[top_left_idx_mds].above_neighbor_partition;
-#if FIX_47
-    // Compute above depth  cost
-    if (context_ptr->md_local_cu_unit[above_depth_mds].tested_cu_flag == EB_TRUE)
-    {
-        av1_split_flag_rate(
-            sequence_control_set_ptr,
-            context_ptr,
-            &context_ptr->md_cu_arr_nsq[above_depth_mds],
-            0,
-            PARTITION_NONE,//shouldn't this be final partition for above depth?
-            &above_rate,
-            context_ptr->full_lambda,
-            context_ptr->md_rate_estimation_ptr,
-            sequence_control_set_ptr->max_sb_depth);
-
-        *above_depth_cost = context_ptr->md_local_cu_unit[above_depth_mds].cost + above_rate;
-    }
-    else {
-        *above_depth_cost = MAX_MODE_COST;
-    }
-
-    // Compute curr depth  cost
-    av1_split_flag_rate(
-        sequence_control_set_ptr,
-        context_ptr,
-        &context_ptr->md_cu_arr_nsq[above_depth_mds],
-        0,
-        PARTITION_SPLIT,
-        &curr_rate,
-        context_ptr->full_lambda,
-        context_ptr->md_rate_estimation_ptr,
-        sequence_control_set_ptr->max_sb_depth);
-
-    *curr_depth_cost =
-        context_ptr->md_local_cu_unit[curr_depth_mds].cost +
-        context_ptr->md_local_cu_unit[curr_depth_mds - 1 * step].cost +
-        context_ptr->md_local_cu_unit[curr_depth_mds - 2 * step].cost +
-        context_ptr->md_local_cu_unit[curr_depth_mds - 3 * step].cost +
-        curr_rate;
-#else  
-    // Compute depth N cost
-    av1_split_flag_rate(
-        sequence_control_set_ptr,
-        context_ptr,
-        &context_ptr->md_cu_arr_nsq[above_depth_mds],
-        0,
-        PARTITION_NONE,
-        &depthNRate,
-        context_ptr->full_lambda,
-        context_ptr->md_rate_estimation_ptr,
-        sequence_control_set_ptr->max_sb_depth);
-
-    if (context_ptr->md_local_cu_unit[above_depth_mds].tested_cu_flag == EB_FALSE)
-        context_ptr->md_local_cu_unit[above_depth_mds].cost = MAX_MODE_COST;
-
-    *depthNCost = context_ptr->md_local_cu_unit[above_depth_mds].cost + depthNRate;
-
-    // Compute depth N+1 cost
-    av1_split_flag_rate(
-        sequence_control_set_ptr,
-        context_ptr,
-        &context_ptr->md_cu_arr_nsq[above_depth_mds],
-        0,
-        PARTITION_SPLIT,
-        &depthNPlusOneRate,
-        context_ptr->full_lambda,
-        context_ptr->md_rate_estimation_ptr,
-        sequence_control_set_ptr->max_sb_depth);
-
-
-    *depthNPlusOneCost =
-        context_ptr->md_local_cu_unit[curr_depth_mds].cost +
-        context_ptr->md_local_cu_unit[curr_depth_mds - 1 * step].cost +
-        context_ptr->md_local_cu_unit[curr_depth_mds - 2 * step].cost +
-        context_ptr->md_local_cu_unit[curr_depth_mds - 3 * step].cost +
-        depthNPlusOneRate;
-#endif
-
-}
-#endif
 uint32_t d2_inter_depth_block_decision(
     ModeDecisionContext_t          *context_ptr,
     uint32_t                        blk_mds,
@@ -2378,16 +2252,13 @@ uint32_t d2_inter_depth_block_decision(
 
             //get parent idx
             parent_depth_idx_mds = current_depth_idx_mds - parent_depth_offset[sequence_control_set_ptr->sb_size == BLOCK_128X128][blk_geom->depth];
-#if FIX_DEBUG_CRASH
             if (picture_control_set_ptr->slice_type == I_SLICE && parent_depth_idx_mds == 0) {
                 parent_depth_cost = MAX_MODE_COST;
             }
             else {
-#endif
+
                 compute_depth_costs(context_ptr, sequence_control_set_ptr, current_depth_idx_mds, parent_depth_idx_mds, ns_depth_offset[sequence_control_set_ptr->sb_size == BLOCK_128X128][blk_geom->depth], &parent_depth_cost, &current_depth_cost);
-#if FIX_DEBUG_CRASH
             }
-#endif
             if (parent_depth_cost <= current_depth_cost) {
                 context_ptr->md_cu_arr_nsq[parent_depth_idx_mds].split_flag = EB_FALSE;
                 context_ptr->md_local_cu_unit[parent_depth_idx_mds].cost = parent_depth_cost;

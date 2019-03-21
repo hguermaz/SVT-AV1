@@ -205,11 +205,6 @@ EbErrorType enc_dec_context_ctor(
     }
 
     // Second Stage ME Context
-#if! DISABLE_IN_LOOP_ME
-    return_error = in_loop_me_context_ctor(
-        &context_ptr->ss_mecontext
-    );
-#endif
     if (return_error == EB_ErrorInsufficientResources) {
         return EB_ErrorInsufficientResources;
     }

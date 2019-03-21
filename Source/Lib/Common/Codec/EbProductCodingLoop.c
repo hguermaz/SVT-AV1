@@ -811,10 +811,8 @@ void Initialize_cu_data_structure(
             context_ptr->md_cu_arr_nsq[blk_idx].part = PARTITION_SPLIT;
 
             context_ptr->md_local_cu_unit[blk_idx].tested_cu_flag = EB_FALSE;
-#if FIX_47
             //TODO: try to move this whole function to init
             context_ptr->md_cu_arr_nsq[blk_idx].mds_idx = blk_geom->blkidx_mds;
-#endif
         }
 
         ++blk_idx;
@@ -4302,10 +4300,9 @@ EB_EXTERN EbErrorType mode_decision_sb(
         context_ptr->md_local_cu_unit[blk_idx_mds].tested_cu_flag = EB_TRUE;
 
         cu_ptr->mds_idx = blk_idx_mds;
-#if FIX_INTER_DEPTH
         context_ptr->md_cu_arr_nsq[blk_idx_mds].mdc_split_flag = (uint16_t)leafDataPtr->split_flag;
 
-#endif
+
         cu_ptr->split_flag = (uint16_t)leafDataPtr->split_flag; //mdc indicates smallest or non valid CUs with split flag=
         cu_ptr->qp = context_ptr->qp;
         cu_ptr->best_d1_blk = blk_idx_mds;
@@ -6427,11 +6424,7 @@ void in_loop_me_halfpel_search_sblock(
     }
 
 
-#if NO_SUBPEL_FOR_128X128
     if (0) {
-#else
-    if (context_ptr->sb_size == BLOCK_128X128) {
-#endif
         // 128x64 [2 partitions]
         for (block_index = 0; block_index < 2; ++block_index) {
 
@@ -7703,11 +7696,7 @@ static void in_loop_me_quarterpel_search_sblock(
     }
 
 
-#if NO_SUBPEL_FOR_128X128
     if (0) {
-#else
-    if (context_ptr->sb_size == BLOCK_128X128) {
-#endif
         // 128x64 [2 partitions]
         for (block_index = 0; block_index < 2; ++block_index) {
 

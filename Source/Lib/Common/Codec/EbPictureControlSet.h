@@ -13478,14 +13478,6 @@ extern "C" {
     };
 
     typedef struct MacroblockPlane {
-#if !MACRO_BLOCK_CLEANUP
-        DECLARE_ALIGNED(16, int16_t, src_diff[MAX_SB_SQUARE]);
-        tran_low_t *qcoeff;
-        tran_low_t *coeff;
-        uint16_t *eobs;
-        uint8_t *txb_entropy_ctx;
-        struct Buf2d src;
-#endif
 
         // Quantizer setings
         // These are used/accessed only in the quantization process

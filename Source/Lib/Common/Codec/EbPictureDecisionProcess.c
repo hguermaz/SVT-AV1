@@ -2366,11 +2366,7 @@ void* picture_decision_kernel(void *input_ptr)
 #endif
 
                             picture_control_set_ptr->use_src_ref = EB_FALSE;
-#if DISABLE_IN_LOOP_ME
                             picture_control_set_ptr->enable_in_loop_motion_estimation_flag = EB_FALSE;
-#else
-                            picture_control_set_ptr->enable_in_loop_motion_estimation_flag = sequence_control_set_ptr->static_config.in_loop_me_flag && picture_control_set_ptr->slice_type != I_SLICE ? EB_TRUE : EB_FALSE;
-#endif
                             picture_control_set_ptr->limit_ois_to_dc_mode_flag = EB_FALSE;
 #if !M9_CU_8x8
                             picture_control_set_ptr->cu8x8_mode = CU_8x8_MODE_0;

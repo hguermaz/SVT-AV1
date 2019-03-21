@@ -56,27 +56,17 @@ extern "C" {
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 #endif
-
-
-
-
 // NEW MACOS
 #define INTRINSIC_OPT_2                                 1 // Intrinsics opt work phase 2
 #define DIS_EDGE_FIL                                    0 // disable intra edge filter - to be removed after fixing the neigbor array for intra 4xN and Nx4
-#define DISABLE_INTRA_PRED_INTRINSIC                    0 // To be used to switch between intrinsic and C code for intra-pred
 #define USE_INLOOP_ME_FULL_SAD                          0 // To switch between full SAD and subsampled-SAD for in-loop-me subpel.
-#define NO_SUBPEL_FOR_128X128                           1 // Intrinsic is not available for 128x128 Subpel
+
+
+
 //FOR DEBUGGING - Do not remove
 #define NO_ENCDEC                                       0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
 
-#define FIX_DEBUG_CRASH                                 1
-#define FIX_47                                          1 // interdepth decision to be tedted block aware
-#define HME_ENHANCED_CENTER_SEARCH                      1
-#define TUNE_CHROMA_OFFSET                              0
-#define FAST_TX_SEARCH                                  1
-#define MACRO_BLOCK_CLEANUP                             1
-#define FIX_INTER_DEPTH                                 1  // Fix interdepth depth cost when MDC cuts depths
-#define DISABLE_IN_LOOP_ME                              1
+
 #define EXTRA_ALLOCATION                                1
 #define SCS_CP_FIX                                      0 
 #define ENCDEC_TX_SEARCH                                1
