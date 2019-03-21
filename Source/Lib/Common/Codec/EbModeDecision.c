@@ -491,7 +491,7 @@ void sort_fast_loop_candidates(
         }
     }
 
-    // fl escape: inter then intra
+    // fl escape level 1: inter then intra
     uint32_t i, j, index;
     for (i = 0; i < fullReconCandidateCount - 1; ++i) {
         for (j = i + 1; j < fullReconCandidateCount; ++j) {
@@ -504,6 +504,23 @@ void sort_fast_loop_candidates(
         }
     }
 
+#if M9_FULL_LOOP_ESCAPE
+    // fl escape level 2: inter then intra
+    for (i = 0; i < fullReconCandidateCount; ++i) {
+        sorted_candidate_index_array[i] = best_candidate_index_array[i];
+    }
+    for (i = 0; i < fullReconCandidateCount - 1; ++i) {
+        for (j = i + 1; j < fullReconCandidateCount; ++j) {
+            if (*(buffer_ptr_array[sorted_candidate_index_array[j]]->fast_cost_ptr) < *(buffer_ptr_array[sorted_candidate_index_array[i]]->fast_cost_ptr)) {
+                index = sorted_candidate_index_array[i];
+                sorted_candidate_index_array[i] = (uint8_t)sorted_candidate_index_array[j];
+                sorted_candidate_index_array[j] = (uint8_t)index;
+            }
+        }
+    }
+    // tx search
+    *ref_fast_cost = *(buffer_ptr_array[sorted_candidate_index_array[0]]->fast_cost_ptr);
+#else
     // tx search
     for (i = 0; i < fullReconCandidateCount; i++) {
         if (*(buffer_ptr_array[i]->fast_cost_ptr) < *ref_fast_cost) {
@@ -522,6 +539,7 @@ void sort_fast_loop_candidates(
             }
         }
     }
+#endif
 }
 #else
 /***************************************
@@ -2621,11 +2639,13 @@ void  inject_intra_candidates_ois(
     uint32_t                    can_total_cnt = 0;
     EbBool                      use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
     ModeDecisionCandidate_t    *candidate_array = context_ptr->fast_candidate_array;
-
+#if CFL_FIX
+    EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 ) ? EB_TRUE : EB_FALSE;
+#else
     EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 || 
                                                     context_ptr->blk_geom->bwidth == 4  ||   
                                                     context_ptr->blk_geom->bheight == 4)    ? EB_TRUE : EB_FALSE;
-
+#endif
 
     ois_sb_results_t    *ois_sb_results_ptr = picture_control_set_ptr->parent_pcs_ptr->ois_sb_results[sb_ptr->index];
     ois_candidate_t     *ois_blk_ptr = ois_sb_results_ptr->ois_candidate_array[ep_to_pa_block_index[context_ptr->blk_geom->blkidx_mds]];
@@ -3129,11 +3149,13 @@ void  inject_intra_candidates(
     EbBool                      use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
     uint8_t                     angleDeltaCandidateCount = use_angle_delta ? 7 : 1;
     ModeDecisionCandidate_t    *candidateArray = context_ptr->fast_candidate_array;
-
+#if CFL_FIX
+    EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 ) ? EB_TRUE : EB_FALSE;
+#else
     EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 || 
                                                     context_ptr->blk_geom->bwidth == 4  ||   
                                                     context_ptr->blk_geom->bheight == 4)    ? EB_TRUE : EB_FALSE;
-
+#endif
     uint8_t                     disable_z2_prediction;
     uint8_t                     disable_angle_refinement;
     uint8_t                     disable_angle_prediction;

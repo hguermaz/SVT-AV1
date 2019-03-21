@@ -175,6 +175,7 @@ void mode_decision_update_neighbor_arrays(
     uint8_t                    ref_frame_type = (uint8_t)context_ptr->cu_ptr->prediction_unit_array[0].ref_frame_type;
 
 
+#if !OPT_LOSSLESS
     neighbor_array_unit_mode_write32(
         context_ptr->interpolation_type_neighbor_array,
         context_ptr->cu_ptr->interp_filters,
@@ -183,12 +184,14 @@ void mode_decision_update_neighbor_arrays(
         bwdith,
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
     {
         struct PartitionContext partition;
         partition.above = partition_context_lookup[context_ptr->blk_geom->bsize].above;
         partition.left = partition_context_lookup[context_ptr->blk_geom->bsize].left;
 
+#if !OPT_LOSSLESS
         neighbor_array_unit_mode_write(
             context_ptr->leaf_partition_neighbor_array,
             (uint8_t*)(&partition), // NaderM
@@ -197,6 +200,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
         // Mode Type Update
         neighbor_array_unit_mode_write(
@@ -207,6 +211,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+#if !OPT_LOSSLESS
 #if M8_SKIP_BLK        
         // Intra Luma Mode Update
         neighbor_array_unit_mode_write(
@@ -217,6 +222,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 #endif
         // Intra Luma Mode Update
         neighbor_array_unit_mode_write(
@@ -276,6 +282,7 @@ void mode_decision_update_neighbor_arrays(
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
+#if !OPT_LOSSLESS
     //  Update skip_coeff_neighbor_array,
     neighbor_array_unit_mode_write(
         context_ptr->skip_coeff_neighbor_array,
@@ -285,6 +292,7 @@ void mode_decision_update_neighbor_arrays(
         bwdith,
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
 #if CHROMA_BLIND
     if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
@@ -656,6 +664,16 @@ void md_update_all_neighbour_arrays_multiple(
 // Based on the MDStage and the encodeMode
 // the NFL candidates numbers are set
 //*************************//
+#if NFL_PER_SQ_SIZE
+uint32_t nfl_cap_table[6] = {
+    NFL_CAP_4x4,
+    NFL_CAP_8x8,
+    NFL_CAP_16x16,
+    NFL_CAP_32x32,
+    NFL_CAP_64x64,
+    NFL_CAP_128x128
+};
+#endif
 #if ADAPTIVE_DEPTH_PARTITIONING
 void set_nfl(
     ModeDecisionContext_t     *context_ptr
@@ -666,6 +684,9 @@ void set_nfl(
     LargestCodingUnit_t       *sb_ptr) {
 #endif
 
+#if M9_NON_UNIFORM_NFL || NFL_PER_SQ_SIZE
+    uint8_t nfl_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
+#endif
     // NFL Level MD       Settings
     // 0                  MAX_NFL 40
     // 1                  30
@@ -719,6 +740,12 @@ void set_nfl(
             context_ptr->full_recon_search_count = 8;
         else
             context_ptr->full_recon_search_count = 6;
+#endif
+#if NFL_PER_SQ_SIZE
+    if (picture_control_set_ptr->slice_type != I_SLICE) {
+        uint32_t nfl_cap = nfl_cap_table[nfl_index];
+        context_ptr->full_recon_search_count = nfl_cap;
+    }
 #endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
@@ -2051,6 +2078,9 @@ void AV1CostCalcCfl(
     uint32_t                            cuChromaOriginIndex,
     uint64_t                            full_distortion[DIST_CALC_TOTAL],
     uint64_t                           *coeffBits,
+#if CFL_FIX
+    EbBool                              check_dc,
+#endif
     EbAsm                               asm_type) {
 
     ModeDecisionCandidate_t            *candidate_ptr = candidateBuffer->candidate_ptr;
@@ -2078,12 +2108,15 @@ void AV1CostCalcCfl(
         crFullDistortion[DIST_CALC_PREDICTION] = 0;
         cb_coeff_bits = 0;
         cr_coeff_bits = 0;
-
+#if CFL_FIX
+        alpha_q3 = (check_dc) ? 0:
+            cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
+#else
         alpha_q3 =
             cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
         if (candidate_ptr->cfl_alpha_idx == 0 && candidate_ptr->cfl_alpha_signs == 0)// To check DC
             alpha_q3 = 0;
-
+#endif
         assert(chroma_width * CFL_BUF_LINE + chroma_height <=
             CFL_BUF_SQUARE);
 
@@ -2152,13 +2185,16 @@ void AV1CostCalcCfl(
 
         cb_coeff_bits = 0;
         cr_coeff_bits = 0;
-
+#if CFL_FIX
+        alpha_q3 = (check_dc) ? 0 :
+            cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_V); // once for U, once for V
+#else
         alpha_q3 =
             cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_V); // once for U, once for V
 
         if (candidate_ptr->cfl_alpha_idx == 0 && candidate_ptr->cfl_alpha_signs == 0) // To check DC
             alpha_q3 = 0;
-
+#endif
         assert(chroma_width * CFL_BUF_LINE + chroma_height <=
             CFL_BUF_SQUARE);
 
@@ -2273,6 +2309,9 @@ static void cfl_rd_pick_alpha(
                     cuChromaOriginIndex,
                     full_distortion,
                     &coeffBits,
+#if CFL_FIX
+                    0,
+#endif
                     asm_type);
 
                 if (coeffBits == INT64_MAX) break;
@@ -2312,6 +2351,9 @@ static void cfl_rd_pick_alpha(
                             cuChromaOriginIndex,
                             full_distortion,
                             &coeffBits,
+#if CFL_FIX
+                            0,
+#endif
                             asm_type);
 
                         if (coeffBits == INT64_MAX) break;
@@ -2359,6 +2401,9 @@ static void cfl_rd_pick_alpha(
         cuChromaOriginIndex,
         full_distortion,
         &coeffBits,
+#if CFL_FIX
+        1,
+#endif
         asm_type);
 
     int64_t dc_rd =
@@ -2416,21 +2461,30 @@ static void CflPrediction(
         context_ptr->blk_geom,
         asm_type);
 
-
+#if CFL_FIX
+    if (context_ptr->blk_geom->has_uv) {
+        uint32_t recLumaOffset = ((context_ptr->blk_geom->origin_y >> 3) << 3) * candidateBuffer->recon_ptr->stride_y +
+            ((context_ptr->blk_geom->origin_x >> 3) << 3);
+#else
+    uint32_t recLumaOffset = (context_ptr->blk_geom->origin_y) * candidateBuffer->recon_ptr->stride_y +
+        (context_ptr->blk_geom->origin_x);
+#endif
     // 2: Form the pred_buf_q3
     uint32_t chroma_width = context_ptr->blk_geom->bwidth_uv;
     uint32_t chroma_height = context_ptr->blk_geom->bheight_uv;
-
-    uint32_t recLumaOffset = (context_ptr->blk_geom->origin_y) * candidateBuffer->recon_ptr->stride_y +
-        (context_ptr->blk_geom->origin_x);
 
     // Down sample Luma
     cfl_luma_subsampling_420_lbd_c(
         &(candidateBuffer->recon_ptr->buffer_y[recLumaOffset]),
         candidateBuffer->recon_ptr->stride_y,
         context_ptr->pred_buf_q3,
+#if CFL_FIX
+        context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bwidth ? (context_ptr->blk_geom->bwidth_uv << 1) : context_ptr->blk_geom->bwidth,
+        context_ptr->blk_geom->bheight_uv == context_ptr->blk_geom->bheight ? (context_ptr->blk_geom->bheight_uv << 1) : context_ptr->blk_geom->bheight);
+#else
         context_ptr->blk_geom->bwidth,
         context_ptr->blk_geom->bheight);
+#endif
 
 
     int32_t round_offset = chroma_width * chroma_height / 2;
@@ -2516,6 +2570,12 @@ static void CflPrediction(
         // Alphas = 0, Preds are the same as DC. Switch to DC mode
         candidateBuffer->candidate_ptr->intra_chroma_mode = UV_DC_PRED;
     }
+#if CFL_FIX
+    }
+    else {
+        candidateBuffer->candidate_ptr->intra_chroma_mode = UV_DC_PRED;
+    }
+#endif
 }
 uint8_t get_skip_tx_search_flag(
     int32_t                  sq_size,
@@ -2583,9 +2643,11 @@ void AV1PerformFullLoop(
     //      printf("NOPPPP");
 
     for (fullLoopCandidateIndex = 0; fullLoopCandidateIndex < fullCandidateTotalCount; ++fullLoopCandidateIndex) {
-
+#if M9_FULL_LOOP_ESCAPE
+        candidateIndex = (context_ptr->full_loop_escape == 2) ? context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex]: context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
+#else
         candidateIndex = context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
-
+#endif
 #if USED_NFL_FEATURE_BASED
         uint8_t best_fastLoop_candidate_index = context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex];
 #endif
@@ -3992,6 +4054,11 @@ void md_encode_block(
             context_ptr->full_recon_search_count,
 #else
             fullCandidateTotalCount,
+#endif
+#if M9_FULL_LOOP_ESCAPE
+            (context_ptr->full_loop_escape == 2) ? context_ptr->sorted_candidate_index_array : context_ptr->best_candidate_index_array,
+#else
+            context_ptr->best_candidate_index_array,
 #endif
             context_ptr->best_candidate_index_array,
             &best_intra_mode);

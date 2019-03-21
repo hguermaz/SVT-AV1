@@ -753,7 +753,10 @@ static void Av1EncodeLoop(
                     eob[0]);
 
             }
-
+#if CFL_FIX
+            if (context_ptr->blk_geom->has_uv) {
+                reconLumaOffset = (reconSamples->origin_y + round_origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + round_origin_x);
+#endif
             // Down sample Luma
             cfl_luma_subsampling_420_lbd_c(
                 reconSamples->buffer_y + reconLumaOffset,
@@ -763,10 +766,13 @@ static void Av1EncodeLoop(
 #else
                 context_ptr->pred_buf_q3,
 #endif
+#if CFL_FIX
+                context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bwidth ? (context_ptr->blk_geom->bwidth_uv << 1) : context_ptr->blk_geom->bwidth,
+                context_ptr->blk_geom->bheight_uv == context_ptr->blk_geom->bheight ? (context_ptr->blk_geom->bheight_uv << 1) : context_ptr->blk_geom->bheight);
+#else
                 context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
                 context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
-
-
+#endif
             int32_t round_offset = ((context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr])*(context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr])) / 2;
 
 
@@ -881,6 +887,9 @@ static void Av1EncodeLoop(
                     context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]);
 
 #if CHROMA_BLIND
+            }
+#endif
+#if CFL_FIX
             }
 #endif
         }
