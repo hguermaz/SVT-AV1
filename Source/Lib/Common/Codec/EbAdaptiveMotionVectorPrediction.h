@@ -84,9 +84,7 @@ extern "C" {
     );
 
     void update_mi_map(
-#if CHROMA_BLIND
         struct ModeDecisionContext_s   *context_ptr,
-#endif
         CodingUnit_t                   *cu_ptr,
         uint32_t                          cu_origin_x,
         uint32_t                          cu_origin_y,

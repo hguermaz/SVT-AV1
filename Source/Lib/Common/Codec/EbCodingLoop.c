@@ -718,11 +718,8 @@ static void Av1EncodeLoop(
         }
 
 
-#if CHROMA_BLIND
         if (cu_ptr->prediction_mode_flag == INTRA_MODE && (context_ptr->evaluate_cfl_ep || cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED)) {
-#else
-        if (cu_ptr->prediction_mode_flag == INTRA_MODE && cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED) {
-#endif
+
 
 
             EbPictureBufferDesc_t *reconSamples = predSamples;
@@ -751,11 +748,8 @@ static void Av1EncodeLoop(
             cfl_luma_subsampling_420_lbd_c(
                 reconSamples->buffer_y + reconLumaOffset,
                 reconSamples->stride_y,
-#if CHROMA_BLIND
                 context_ptr->md_context->pred_buf_q3,
-#else
-                context_ptr->pred_buf_q3,
-#endif
+
 #if CFL_FIX
                 context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bwidth ? (context_ptr->blk_geom->bwidth_uv << 1) : context_ptr->blk_geom->bwidth,
                 context_ptr->blk_geom->bheight_uv == context_ptr->blk_geom->bheight ? (context_ptr->blk_geom->bheight_uv << 1) : context_ptr->blk_geom->bheight);
@@ -768,17 +762,12 @@ static void Av1EncodeLoop(
 
 
             subtract_average(
-#if CHROMA_BLIND
                 context_ptr->md_context->pred_buf_q3,
-#else
-                context_ptr->pred_buf_q3,
-#endif
                 context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
                 context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
                 round_offset,
                 LOG2F(context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr]) + LOG2F(context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]));
 
-#if CHROMA_BLIND
             if (context_ptr->evaluate_cfl_ep)
             {
                 // 3: Loop over alphas and find the best or choose DC
@@ -834,7 +823,7 @@ static void Av1EncodeLoop(
             }
 
             if (cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED) {
-#endif
+
                 int32_t alpha_q3 =
                     cfl_idx_to_alpha(cu_ptr->prediction_unit_array->cfl_alpha_idx, cu_ptr->prediction_unit_array->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
 
@@ -842,11 +831,8 @@ static void Av1EncodeLoop(
                 //assert(chromaSize * CFL_BUF_LINE + chromaSize <= CFL_BUF_SQUARE);
 
                 cfl_predict_lbd(
-#if CHROMA_BLIND
                     context_ptr->md_context->pred_buf_q3,
-#else
-                    context_ptr->pred_buf_q3,
-#endif
+
                     predSamples->bufferCb + predCbOffset,
                     predSamples->strideCb,
                     predSamples->bufferCb + predCbOffset,
@@ -862,11 +848,7 @@ static void Av1EncodeLoop(
                 //assert(chromaSize * CFL_BUF_LINE + chromaSize <= CFL_BUF_SQUARE);
 
                 cfl_predict_lbd(
-#if CHROMA_BLIND
                     context_ptr->md_context->pred_buf_q3,
-#else
-                    context_ptr->pred_buf_q3,
-#endif
                     predSamples->bufferCr + predCrOffset,
                     predSamples->strideCr,
                     predSamples->bufferCr + predCrOffset,
@@ -876,9 +858,7 @@ static void Av1EncodeLoop(
                     context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
                     context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]);
 
-#if CHROMA_BLIND
             }
-#endif
 #if CFL_FIX
             }
 #endif
@@ -1235,11 +1215,7 @@ static void Av1EncodeLoop16bit(
                 cfl_luma_subsampling_420_hbd_c(
                     ((uint16_t*)reconSamples->buffer_y) + reconLumaOffset,
                     reconSamples->stride_y,
-#if CHROMA_BLIND
                     context_ptr->md_context->pred_buf_q3,
-#else
-                    context_ptr->pred_buf_q3,
-#endif
                     context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
                     context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
 
@@ -1247,11 +1223,7 @@ static void Av1EncodeLoop16bit(
 
 
                 subtract_average(
-#if CHROMA_BLIND
                     context_ptr->md_context->pred_buf_q3,
-#else
-                    context_ptr->pred_buf_q3,
-#endif
                     context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
                     context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
                     round_offset,
@@ -1265,11 +1237,7 @@ static void Av1EncodeLoop16bit(
                 // assert(chromaSize * CFL_BUF_LINE + chromaSize <=                CFL_BUF_SQUARE);
 
                 cfl_predict_hbd(
-#if CHROMA_BLIND
                     context_ptr->md_context->pred_buf_q3,
-#else
-                    context_ptr->pred_buf_q3,
-#endif
                     ((uint16_t*)predSamples16bit->bufferCb) + predCbOffset,
                     predSamples16bit->strideCb,
                     ((uint16_t*)predSamples16bit->bufferCb) + predCbOffset,
@@ -1285,11 +1253,7 @@ static void Av1EncodeLoop16bit(
                 //assert(chromaSize * CFL_BUF_LINE + chromaSize <=                CFL_BUF_SQUARE);
 
                 cfl_predict_hbd(
-#if CHROMA_BLIND
                     context_ptr->md_context->pred_buf_q3,
-#else
-                    context_ptr->pred_buf_q3,
-#endif
                     ((uint16_t*)predSamples16bit->bufferCr) + predCrOffset,
                     predSamples16bit->strideCr,
                     ((uint16_t*)predSamples16bit->bufferCr) + predCrOffset,
@@ -1482,11 +1446,7 @@ static void Av1EncodeGenerateRecon(
     //**********************************
     if (component_mask & PICTURE_BUFFER_DESC_LUMA_MASK) {
 
-#if CHROMA_BLIND
         if (cu_ptr->prediction_mode_flag != INTRA_MODE || (cu_ptr->prediction_unit_array->intra_chroma_mode != UV_CFL_PRED && context_ptr->evaluate_cfl_ep == EB_FALSE))
-#else
-        if (cu_ptr->prediction_mode_flag != INTRA_MODE || cu_ptr->prediction_unit_array->intra_chroma_mode != UV_CFL_PRED)
-#endif
         {
             predLumaOffset = (predSamples->origin_y + origin_y)             * predSamples->stride_y + (predSamples->origin_x + origin_x);
             if (txb_ptr->y_has_coeff == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
@@ -2746,14 +2706,13 @@ EB_EXTERN void AV1EncodePass(
                 uint32_t  coded_area_org = context_ptr->coded_area_sb;
                 uint32_t  coded_area_org_uv = context_ptr->coded_area_sb_uv;
 
-#if CHROMA_BLIND
                 // Derive disable_cfl_flag as evaluate_cfl_ep = f(disable_cfl_flag)
                 EbBool disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 ||
                     context_ptr->blk_geom->bwidth == 4 ||
                     context_ptr->blk_geom->bheight == 4) ? EB_TRUE : EB_FALSE;
                 // Evaluate cfl @ EP if applicable, and not done @ MD 
                 context_ptr->evaluate_cfl_ep = (disable_cfl_flag == EB_FALSE && context_ptr->md_context->chroma_level == CHROMA_MODE_1);
-#endif
+
 
 #if ADD_DELTA_QP_SUPPORT
                 if (context_ptr->skip_qpm_flag == EB_FALSE && sequence_control_set_ptr->static_config.improve_sharpness) {
@@ -2920,9 +2879,7 @@ EB_EXTERN void AV1EncodePass(
                                     recon_buffer,
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
-#if CHROMA_BLIND
                                     EB_TRUE,
-#endif
                                     asm_type);
 
 
@@ -3362,9 +3319,7 @@ EB_EXTERN void AV1EncodePass(
                                 context_ptr->cu_origin_y,
                                 &cu_ptr->prediction_unit_array[0].wm_params,
                                 (uint8_t) sequence_control_set_ptr->static_config.encoder_bit_depth,
-#if CHROMA_BLIND
                                 EB_TRUE,
-#endif
                                 asm_type);
                         }
 
@@ -3410,9 +3365,7 @@ EB_EXTERN void AV1EncodePass(
                                     recon_buffer,
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
-#if CHROMA_BLIND
                                     EB_TRUE,
-#endif
                                     asm_type);
                             }
                         }

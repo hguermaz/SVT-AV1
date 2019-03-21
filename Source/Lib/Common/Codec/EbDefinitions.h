@@ -71,8 +71,6 @@ extern "C" {
 #define TEST5_DISABLE_NSQ_ME                            0
 
 
-#define FAST_WN                                         1
-#define CHROMA_BLIND                                    1 // Added the ability to switch between three chroma modes: 1. chroma @ MD, 2. chroma blind @ MD + CFL @ EP. 3. chroma blind @ MD + no CFL @ EP
 #define CONTENT_BASED_QPS                               1 // Adaptive QP Scaling (active for I only)
 #define ADAPTIVE_DEPTH_PARTITIONING                     1 // Added the ability to switch @ SB basis between: (1) all square up to 64x64,  (2) mdc up to 64x64, (3) mdc up to 64x64 only pred, (4) mdc up to 64x64 only pred + 1 NFL
 #if ADAPTIVE_DEPTH_PARTITIONING
@@ -1944,9 +1942,6 @@ typedef enum EB_BITFIELD_MASKS {
 #define INIT_RC_OPT_G1                    1
 #define INIT_RC_OPT_G2                    1
 #define HIST_OPT                          2 // 1 is intrinsic, 2 is C
-#if !CHROMA_BLIND
-#define INTER_DEPTH_DECISION_CHROMA_BLIND 1
-#endif
 #define ENABLE_8x8                        0
 
 #define    Log2f                              Log2f_SSE2
@@ -3054,17 +3049,10 @@ static const uint8_t INTRA_AREA_TH_CLASS_1[MAX_HIERARCHICAL_LEVEL][MAX_TEMPORAL_
 #define N4_SHAPE      2
 #define ONLY_DC_SHAPE 3
 
-#if CHROMA_BLIND 
 #define EB_CHROMA_LEVEL uint8_t
 #define CHROMA_MODE_0  0 // Chroma @ MD
 #define CHROMA_MODE_1  1 // Chroma blind @ MD + CFL @ EP
 #define CHROMA_MODE_2  2 // Chroma blind @ MD + no CFL @ EP
-#else
-typedef enum EbChromaMode {
-    CHROMA_MODE_FULL = 1,
-    CHROMA_MODE_BEST = 2 //Chroma for best full loop candidate.
-} EbChromaMode;
-#endif
 
 typedef enum EbSbComplexityStatus {
     SB_COMPLEXITY_STATUS_0 = 0,

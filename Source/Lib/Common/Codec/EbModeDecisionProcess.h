@@ -184,9 +184,6 @@ extern "C" {
         uint16_t                        cu_origin_x;
         uint16_t                        cu_origin_y;
         uint64_t                        chroma_weight;
-#if !CHROMA_BLIND
-        uint32_t                        use_chroma_information_in_fast_loop;
-#endif
         uint8_t                         sb_sz;
         uint32_t                        sb_origin_x;
         uint32_t                        sb_origin_y;
@@ -200,9 +197,6 @@ extern "C" {
         unsigned                        luma_intra_ref_samples_gen_done      : 2; // only 1 bit is needed, but used two for rounding
         unsigned                        chroma_intra_ref_samples_gen_done    : 2; // only 1 bit is needed, but used two for rounding
         unsigned                        generate_mvp                         : 2; // only 1 bit is needed, but used two for rounding
-#if !CHROMA_BLIND
-        unsigned                        round_mv_to_integer                  : 2; // only 1 bit is needed, but used two for rounding
-#endif
         uint32_t                        full_recon_search_count;
         EbBool                          cu_use_ref_src_flag;
         uint16_t                        qp_index;
@@ -243,9 +237,7 @@ extern "C" {
         uint8_t                           parent_sq_type[MAX_PARENT_SQ];
         uint8_t                           parent_sq_has_coeff[MAX_PARENT_SQ];
         uint8_t                           parent_sq_pred_mode[MAX_PARENT_SQ];
-#if CHROMA_BLIND
         uint8_t                           chroma_level;
-#endif
 #if NSQ_OPTIMASATION
         PART                              nsq_table[NSQ_TAB_SIZE];
 #endif
@@ -341,7 +333,6 @@ extern "C" {
         uint8_t                  sb_qp);
 
 
-#if CHROMA_BLIND 
     extern void cfl_rd_pick_alpha(
         PictureControlSet_t             *picture_control_set_ptr,
         ModeDecisionCandidateBuffer_t   *candidateBuffer,
@@ -351,7 +342,7 @@ extern "C" {
         uint32_t                         inputCbOriginIndex,
         uint32_t                         cuChromaOriginIndex,
         EbAsm                            asm_type);
-#endif
+
 
 #ifdef __cplusplus
 }
