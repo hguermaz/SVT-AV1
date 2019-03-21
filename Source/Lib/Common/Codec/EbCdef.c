@@ -19,11 +19,8 @@
 #include "EbEncDecProcess.h"
 #include "aom_dsp_rtcd.h"
 
-#if CDEF_M
  void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#else
-static void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#endif
+
     int32_t src_voffset, int32_t src_hoffset, int32_t sstride,
     int32_t vsize, int32_t hsize);
 
@@ -1147,11 +1144,6 @@ void av1_cdef_frame16bit(
 
 ///-------search
 
-#if ! CDEF_M
-#define REDUCED_PRI_STRENGTHS 8
-#define REDUCED_TOTAL_STRENGTHS (REDUCED_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
-#define TOTAL_STRENGTHS (CDEF_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
-#endif
 static int32_t priconv[REDUCED_PRI_STRENGTHS] = { 0, 1, 2, 3, 5, 7, 10, 13 };
 
 /* Search for the best strength to add as an option, knowing we
@@ -1367,11 +1359,7 @@ static uint64_t joint_strength_search_dual(int32_t *best_lev0, int32_t *best_lev
 }
 
 /* FIXME: SSE-optimize this. */
-#if CDEF_M
  void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#else
- static void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#endif
     int32_t src_voffset, int32_t src_hoffset, int32_t sstride,
     int32_t vsize, int32_t hsize) {
     int32_t r, c;
@@ -1497,7 +1485,6 @@ uint64_t compute_cdef_dist(uint16_t *dst, int32_t dstride, uint16_t *src,
     }
     return sum >> 2 * coeff_shift;
 }
-#if CDEF_M
 void finish_cdef_search(
     EncDecContext_t                *context_ptr,
     SequenceControlSet_t           *sequence_control_set_ptr,
@@ -1697,7 +1684,7 @@ void finish_cdef_search(
     free(sb_index);
     free(selected_strength);
 }
-#endif
+
 
 void av1_cdef_search(
     EncDecContext_t                *context_ptr,

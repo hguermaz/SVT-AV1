@@ -26,9 +26,8 @@ extern "C" {
     {
         EbObjectWrapper_t      *picture_control_set_wrapper_ptr;
       
-#if CDEF_M
         uint32_t          segment_index;
-#endif
+
 
     } DlfResults_t;
     typedef struct CdefResults_s

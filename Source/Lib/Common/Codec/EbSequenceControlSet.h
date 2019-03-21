@@ -129,10 +129,9 @@ extern "C" {
         uint32_t                                me_segment_row_count_array[MAX_TEMPORAL_LAYERS];
         uint32_t                                enc_dec_segment_col_count_array[MAX_TEMPORAL_LAYERS];
         uint32_t                                enc_dec_segment_row_count_array[MAX_TEMPORAL_LAYERS];
-#if CDEF_M
         uint32_t                                cdef_segment_column_count;
         uint32_t                                cdef_segment_row_count;
-#endif
+
 #if REST_M
         uint32_t                                rest_segment_column_count;
         uint32_t                                rest_segment_row_count;

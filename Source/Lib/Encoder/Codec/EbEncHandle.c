@@ -529,10 +529,9 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
     sequence_control_set_ptr->enc_dec_segment_col_count_array[4] = encDecSegW;
     sequence_control_set_ptr->enc_dec_segment_col_count_array[5] = encDecSegW;
 
-#if CDEF_M
     sequence_control_set_ptr->cdef_segment_column_count = meSegW;
     sequence_control_set_ptr->cdef_segment_row_count    = meSegH;
-#endif
+
 #if REST_M
     //since restoration unit size is same for Luma and Chroma, Luma segments and chroma segments do not correspond to the same area!
     //to keep proper processing, segments have to be configured based on chroma resolution.
