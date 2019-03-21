@@ -683,7 +683,6 @@ void SetSliceAndPictureChromaQpOffsets(
 
 }
 
-#if FAST_SG
 /******************************************************
 * Set the reference sg ep for a given picture
 ******************************************************/
@@ -718,7 +717,7 @@ void set_reference_sg_ep(
         break;
     }
 }
-#endif
+
 /******************************************************
 * Set the reference cdef strength for a given picture
 ******************************************************/
@@ -3289,11 +3288,9 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr);
 
 
-#if FAST_SG
         // Set reference sg ep 
         set_reference_sg_ep(
             picture_control_set_ptr);
-#endif
         SetGlobalMotionField(
             picture_control_set_ptr);
 

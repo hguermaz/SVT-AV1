@@ -302,7 +302,6 @@ void* rest_kernel(void *input_ptr)
                 cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
             }
 
-#if FAST_SG
             uint8_t best_ep_cnt = 0;
             uint8_t best_ep = 0;
             for (uint8_t i = 0; i < SGRPROJ_PARAMS; i++) {
@@ -312,7 +311,7 @@ void* rest_kernel(void *input_ptr)
                 }
             }
             cm->sg_frame_ep = best_ep;
-#endif
+
 
             if (picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr != NULL) {
                 // copy stat to ref object (intra_coded_area, Luminance, Scene change detection flags)

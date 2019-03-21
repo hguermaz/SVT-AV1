@@ -13608,15 +13608,12 @@ extern "C" {
         int32_t tile_row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
         int32_t tile_width, tile_height;               // In MI units
         struct PictureParentControlSet_s               *p_pcs_ptr;
-#if FAST_SG
         int8_t  sg_filter_mode;
         int32_t sg_frame_ep_cnt[SGRPROJ_PARAMS];
         int32_t sg_frame_ep;
         int8_t  sg_ref_frame_ep[2];
-#endif
-#if FAST_SG
         int8_t  wn_filter_mode;
-#endif
+
 
 #if ICOPY
         struct PictureControlSet_s               *pcs_ptr;
