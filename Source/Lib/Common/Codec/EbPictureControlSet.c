@@ -231,6 +231,11 @@ EbErrorType picture_control_set_ctor(
 
     }
 
+#if CABAC_UP   
+    EB_MALLOC(FRAME_CONTEXT*, object_ptr->ec_ctx_array, sizeof(FRAME_CONTEXT)             * all_sb, EB_N_PTR);
+    EB_MALLOC(MdRateEstimationContext_t*, object_ptr->rate_est_array, sizeof(MdRateEstimationContext_t) * all_sb, EB_N_PTR);
+#endif
+
     // Copy SB array map
     EB_MALLOC(LargestCodingUnit_t**, object_ptr->sb_ptr_array_copy, sizeof(LargestCodingUnit_t*) * object_ptr->sb_total_count, EB_N_PTR);
 
