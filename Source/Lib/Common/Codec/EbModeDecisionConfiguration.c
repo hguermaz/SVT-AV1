@@ -333,13 +333,9 @@ void RefinementPredictionLoop(
 
     MdcpLocalCodingUnit_t    *localCuArray         = context_ptr->localCuArray;
     SbParams_t               *sb_params            = &sequence_control_set_ptr->sb_params_array[sb_index];
-    #if !MDC_FIX_1
-    uint32_t                  temporal_layer_index = picture_control_set_ptr->temporal_layer_index;
-#endif
+
     uint32_t                  cu_index             = 0;
-#if !MDC_FIX_1
-    uint8_t                   stationary_edge_over_time_flag = (&(picture_control_set_ptr->parent_pcs_ptr->sb_stat_array[sb_index]))->stationary_edge_over_time_flag;
-#endif
+
     sb_ptr->pred64 = EB_FALSE;
     while (cu_index < CU_MAX_COUNT)
     {
@@ -349,38 +345,7 @@ void RefinementPredictionLoop(
             sb_ptr->pred64 = (cu_index == 0) ? EB_TRUE : sb_ptr->pred64;
             uint32_t depth = GetCodedUnitStats(cu_index)->depth;
             uint8_t refinementLevel;
-#if !MDC_FIX_1
-            if (sb_ptr->picture_control_set_ptr->slice_type == I_SLICE) {
-
-                {
-                    uint8_t lowestLevel = 0x00;
-
-                    if (sequence_control_set_ptr->input_resolution == INPUT_SIZE_4K_RANGE)
-                        refinementLevel = NdpRefinementControl_ISLICE_M4[0][depth]; // HG: why always 0
-                    else
-                        refinementLevel = NdpRefinementControl_ISLICE_1080P_M4[0][depth]; // HG: why always 0
-
-                    if (depth <= 1 && stationary_edge_over_time_flag > 0) {
-                        if (depth == 0)
-                            refinementLevel = Predp1 + Predp2 + Predp3;
-                        else
-                            refinementLevel = Pred + Predp1 + Predp2;
-
-                    }
-                    lowestLevel = (refinementLevel & REFINEMENT_Pp3) ? REFINEMENT_Pp3 : (refinementLevel & REFINEMENT_Pp2) ? REFINEMENT_Pp2 : (refinementLevel & REFINEMENT_Pp1) ? REFINEMENT_Pp1 :
-                        (refinementLevel & REFINEMENT_P) ? REFINEMENT_P :
-                        (refinementLevel & REFINEMENT_Pm1) ? REFINEMENT_Pm1 : (refinementLevel & REFINEMENT_Pm2) ? REFINEMENT_Pm2 : (refinementLevel & REFINEMENT_Pm3) ? REFINEMENT_Pm3 : 0x00;
-
-                    MdcRefinement(
-                        &(*context_ptr->localCuArray),
-                        cu_index,
-                        depth,
-                        refinementLevel,
-                        lowestLevel);
-                }
-            }
-            else 
-#endif    
+  
             {
 #if M8_ADP
                 if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_DEPTH_MODE) {
@@ -392,7 +357,6 @@ void RefinementPredictionLoop(
                 }
                 else
 
-#if MDC_FIX_1
 #if M8_ADP
                     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_FAST_OPEN_LOOP_DEPTH_MODE) {
                         refinementLevel = ndp_level_1[depth];
@@ -403,14 +367,7 @@ void RefinementPredictionLoop(
 #else
                     refinementLevel = NdpRefinementControl[temporal_layer_index][depth];
 #endif
-#else
-                    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_OPEN_LOOP_DEPTH_MODE ||
-                        (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_OPEN_LOOP_DEPTH_MODE)))
 
-                        refinementLevel = NdpRefinementControlNREF[temporal_layer_index][depth];
-                    else
-                        refinementLevel = NdpRefinementControl_FAST[temporal_layer_index][depth];
-#endif
                 if (picture_control_set_ptr->parent_pcs_ptr->cu8x8_mode == CU_8x8_MODE_1) {
                     refinementLevel = ((refinementLevel & REFINEMENT_Pp1) && depth == 2) ? refinementLevel - REFINEMENT_Pp1 :
                         ((refinementLevel & REFINEMENT_Pp2) && depth == 1) ? refinementLevel - REFINEMENT_Pp2 :
@@ -663,11 +620,6 @@ void MdcInterDepthDecision(
     uint32_t                                 origin_x,
     uint32_t                                 origin_y,
     uint32_t                                 endDepth,
-#if !MDC_FIX_1
-    uint32_t                                 splitFlagBits0,
-    uint32_t                                 splitFlagBits1,
-    uint64_t                                 lambda,
-#endif
     uint32_t                                 cu_index)
 {
 
@@ -700,9 +652,7 @@ void MdcInterDepthDecision(
 
         // Compute depth N cost
         localCuArray[depthTwoCandidateCuIndex].splitContext = 0;
-#if !MDC_FIX_1
-        depthNRate = (((lambda  * splitFlagBits0) + MD_OFFSET) >> MD_SHIFT);
-#endif
+
         depthNCost = (localCuArray[depthTwoCandidateCuIndex]).earlyCost + depthNRate;
 
         if (endDepth < 3) {
@@ -712,10 +662,7 @@ void MdcInterDepthDecision(
 
         }
         else {
-#if !MDC_FIX_1
-            // Assign rate
-            depthNPlusOneRate = (((lambda  * splitFlagBits1) + MD_OFFSET) >> MD_SHIFT);
-#endif
+
             depthNPlusOneCost = (localCuArray[cu_index]).earlyCost + (localCuArray[leftCuIndex]).earlyCost + (localCuArray[topCuIndex]).earlyCost + (localCuArray[topLeftCuIndex]).earlyCost + depthNPlusOneRate;
 
             if (depthNCost <= depthNPlusOneCost) {
@@ -753,9 +700,7 @@ void MdcInterDepthDecision(
         depthOneCandidateCuIndex = topLeftCuIndex - 1;
 
         if (GetCodedUnitStats(depthOneCandidateCuIndex)->depth == 1) {
-#if !MDC_FIX_1
-            depthNRate = (((lambda  *splitFlagBits0) + MD_OFFSET) >> MD_SHIFT);
-#endif
+
             depthNCost = localCuArray[depthOneCandidateCuIndex].earlyCost + depthNRate;
             if (endDepth < 2) {
 
@@ -765,10 +710,7 @@ void MdcInterDepthDecision(
             }
             else {
                 // Compute depth N+1 cost
-#if !MDC_FIX_1
-                // Assign rate
-                depthNPlusOneRate = (((lambda  *splitFlagBits1) + MD_OFFSET) >> MD_SHIFT);
-#endif
+
                 depthNPlusOneCost = localCuArray[depthTwoCandidateCuIndex].earlyCost +
                     localCuArray[leftCuIndex].earlyCost +
                     localCuArray[topCuIndex].earlyCost +
@@ -813,9 +755,7 @@ void MdcInterDepthDecision(
         if (GetCodedUnitStats(depthZeroCandidateCuIndex)->depth == 0) {
 
             // Compute depth N cost
-#if !MDC_FIX_1
-            depthNRate = (((lambda  *splitFlagBits0) + MD_OFFSET) >> MD_SHIFT);
-#endif
+
             depthNCost = (&localCuArray[depthZeroCandidateCuIndex])->earlyCost + depthNRate;
             if (endDepth < 1) {
 
@@ -824,10 +764,7 @@ void MdcInterDepthDecision(
             }
             else {
                 // Compute depth N+1 cost
-#if !MDC_FIX_1
-                // Assign rate
-                depthNPlusOneRate = (((lambda  *splitFlagBits1) + MD_OFFSET) >> MD_SHIFT);
-#endif
+
                 depthNPlusOneCost = localCuArray[depthOneCandidateCuIndex].earlyCost +
                     localCuArray[leftCuIndex].earlyCost +
                     localCuArray[topCuIndex].earlyCost +
@@ -907,40 +844,26 @@ void PredictionPartitionLoop(
 #if !INTRA_INTER_FAST_LOOP
                     context_ptr->mdc_candidate_ptr->merge_index = 0;
 #endif
-#if MDC_FIX_1
                     context_ptr->mdc_candidate_ptr->prediction_direction[0] = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) ?
                         UNI_PRED_LIST_0 :
                         mePuResult->distortionDirection[0].direction;
-#else
-                    context_ptr->mdc_candidate_ptr->prediction_direction[0] = UNI_PRED_LIST_0;
-#endif
 #if !INTRA_INTER_FAST_LOOP
                     context_ptr->mdc_candidate_ptr->is_skip_mode_flag = 0;
 #endif
                     // Hsan: what's the best mode for rate simulation
-#if MDC_FIX_1
                     context_ptr->mdc_candidate_ptr->inter_mode = NEARESTMV;
                     context_ptr->mdc_candidate_ptr->pred_mode = NEARESTMV;
-#else
-                    context_ptr->mdc_candidate_ptr->inter_mode = NEWMV;
-                    context_ptr->mdc_candidate_ptr->pred_mode = NEWMV;
-#endif
+
                     context_ptr->mdc_candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
-#if !MDC_FIX_1
-                    context_ptr->mdc_candidate_ptr->is_compound = 0;
-#endif
                     context_ptr->mdc_candidate_ptr->is_new_mv = 1;
                     context_ptr->mdc_candidate_ptr->is_zero_mv = 0;
                     context_ptr->mdc_candidate_ptr->drl_index = 0;
                     context_ptr->mdc_candidate_ptr->motionVector_x_L0 = mePuResult->xMvL0 << 1;
                     context_ptr->mdc_candidate_ptr->motionVector_y_L0 = mePuResult->yMvL0 << 1;
-#if MDC_FIX_1
                     context_ptr->mdc_candidate_ptr->motionVector_x_L1 = mePuResult->xMvL1 << 1;
                     context_ptr->mdc_candidate_ptr->motionVector_y_L1 = mePuResult->yMvL1 << 1;
-#endif
                     context_ptr->mdc_candidate_ptr->ref_mv_index = 0;
                     context_ptr->mdc_candidate_ptr->pred_mv_weight = 0;
-#if MDC_FIX_1
                     if (context_ptr->mdc_candidate_ptr->prediction_direction[0] == BI_PRED) {
                         context_ptr->mdc_candidate_ptr->ref_frame_type = LAST_BWD_FRAME;
                         context_ptr->mdc_candidate_ptr->is_compound = 1;
@@ -953,9 +876,7 @@ void PredictionPartitionLoop(
                         context_ptr->mdc_candidate_ptr->ref_frame_type = BWDREF_FRAME;
                         context_ptr->mdc_candidate_ptr->is_compound = 0;
                     }
-#else
-                    context_ptr->mdc_candidate_ptr->ref_frame_type = LAST_FRAME;
-#endif
+
                     context_ptr->mdc_candidate_ptr->motion_vector_pred_x[REF_LIST_0] = 0;
                     context_ptr->mdc_candidate_ptr->motion_vector_pred_y[REF_LIST_0] = 0;
                     // Initialize the ref mv
@@ -964,11 +885,10 @@ void PredictionPartitionLoop(
                     // Initialize mdc cu (only av1 rate estimation inputs)
                     context_ptr->mdc_cu_ptr->is_inter_ctx = 0;
                     context_ptr->mdc_cu_ptr->skip_flag_context = 0;
-#if MDC_FIX_1
                     context_ptr->mdc_cu_ptr->inter_mode_ctx[context_ptr->mdc_candidate_ptr->ref_frame_type] = 0;
                     context_ptr->mdc_cu_ptr->reference_mode_context = 0;
                     context_ptr->mdc_cu_ptr->compoud_reference_type_context = 0;
-#endif
+
                     av1_zero(context_ptr->mdc_cu_ptr->av1xd->neighbors_ref_counts); // Hsan: neighbor not generated @ open loop partitioning => assumes always (0,0)
 
                     // Fast Cost Calc
@@ -1004,11 +924,6 @@ void PredictionPartitionLoop(
                     cuStatsPtr->origin_x,
                     cuStatsPtr->origin_y,
                     endDepth,
-#if !MDC_FIX_1
-                    md_rate_estimation_ptr->splitFlagBits[0],
-                    md_rate_estimation_ptr->splitFlagBits[3],
-                    context_ptr->lambda,
-#endif
                     cu_index);
             }
             else {

@@ -72,7 +72,6 @@ extern "C" {
 #define ADP_STATS_PER_LAYER                             0
 
 
-#define MDC_FIX_1                                       1
 
 #define M8_ADP                                          1
 #if M8_ADP
