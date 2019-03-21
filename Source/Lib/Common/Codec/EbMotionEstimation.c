@@ -4784,8 +4784,9 @@ void HmeOneQuadrantLevel0(
             &context_ptr->sixteenth_sb_buffer[0],
             context_ptr->sixteenth_sb_buffer_stride,
             &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-            sixteenthRefPicPtr->stride_y * 2,
-            sb_height >> 1, sb_width,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+            sb_width,
             /* results */
             level0BestSad,
             xLevel0SearchCenter,
@@ -4811,8 +4812,9 @@ void HmeOneQuadrantLevel0(
                 &context_ptr->sixteenth_sb_buffer[0],
                 context_ptr->sixteenth_sb_buffer_stride,
                 &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-                sixteenthRefPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+                sb_width,
                 // results
                 level0BestSad,
                 xLevel0SearchCenter,
@@ -4831,8 +4833,9 @@ void HmeOneQuadrantLevel0(
                 &context_ptr->sixteenth_sb_buffer[0],
                 context_ptr->sixteenth_sb_buffer_stride,
                 &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-                sixteenthRefPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+                sb_width,
                 /* results */
                 level0BestSad,
                 xLevel0SearchCenter,
@@ -4850,8 +4853,9 @@ void HmeOneQuadrantLevel0(
                 &context_ptr->sixteenth_sb_buffer[0],
                 context_ptr->sixteenth_sb_buffer_stride,
                 &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-                sixteenthRefPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+                sb_width,
                 /* results */
                 level0BestSad,
                 xLevel0SearchCenter,
@@ -4864,7 +4868,10 @@ void HmeOneQuadrantLevel0(
         }
     }
 
-    *level0BestSad *= 2; // Multiply by 2 because considered only ever other line
+    *level0BestSad = (context_ptr->hme_search_method == FULL_SAD_SEARCH) ?
+        *level0BestSad :
+        *level0BestSad * 2; // Multiply by 2 because considered only ever other line
+
     *xLevel0SearchCenter += x_search_area_origin;
     *xLevel0SearchCenter *= 4; // Multiply by 4 because operating on 1/4 resolution
     *yLevel0SearchCenter += y_search_area_origin;
@@ -4980,99 +4987,39 @@ void HmeLevel0(
     yTopLeftSearchRegion = ((int16_t)sixteenthRefPicPtr->origin_y + origin_y) + y_search_area_origin;
     searchRegionIndex = xTopLeftSearchRegion + yTopLeftSearchRegion * sixteenthRefPicPtr->stride_y;
 
-#if  USE_SAD_HMEL0
-    if (context_ptr->hme_search_method == FULL_SAD_SEARCH) {
-        sad_loop_kernel(
-            &context_ptr->sixteenth_sb_buffer[0],
-            context_ptr->sixteenth_sb_buffer_stride,
-            &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-            sixteenthRefPicPtr->stride_y,
-            sb_height, sb_width,
-            /* results */
-            level0BestSad,
-            xLevel0SearchCenter,
-            yLevel0SearchCenter,
-            /* range */
-            sixteenthRefPicPtr->stride_y,
-            search_area_width,
-            search_area_height
-        );
 
-        *xLevel0SearchCenter += x_search_area_origin;
-        *xLevel0SearchCenter *= 4; // Multiply by 4 because operating on 1/4 resolution
-        *yLevel0SearchCenter += y_search_area_origin;
-        *yLevel0SearchCenter *= 4; // Multiply by 4 because operating on 1/4 resolution
-    }
-    else {
-#endif
-        if (((sb_width & 7) == 0) || (sb_width == 4))
+    if (((sb_width & 7) == 0) || (sb_width == 4))
+    {
+        if (((search_area_width & 15) == 0) && (asm_type == ASM_AVX2))
         {
-            if (((search_area_width & 15) == 0) && (asm_type == ASM_AVX2))
-            {
-                sad_loop_kernel_avx2_hme_l0_intrin(
-                    &context_ptr->sixteenth_sb_buffer[0],
-                    context_ptr->sixteenth_sb_buffer_stride,
-                    &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-                    sixteenthRefPicPtr->stride_y * 2,
-                    sb_height >> 1, sb_width,
-                    // results
-                    level0BestSad,
-                    xLevel0SearchCenter,
-                    yLevel0SearchCenter,
-                    // range
-                    sixteenthRefPicPtr->stride_y,
-                    search_area_width,
-                    search_area_height
-                );
-            }
-            else if ((search_area_width & 15) == 0)
-            {
-                // Only width equals 16 (LCU equals 64) is updated
-                // other width sizes work with the old code as the one in"sad_loop_kernel_sse4_1_intrin"
-                sad_loop_kernel_sse4_1_hme_l0_intrin(
-                    &context_ptr->sixteenth_sb_buffer[0],
-                    context_ptr->sixteenth_sb_buffer_stride,
-                    &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-                    sixteenthRefPicPtr->stride_y * 2,
-                    sb_height >> 1, sb_width,
-                    /* results */
-                    level0BestSad,
-                    xLevel0SearchCenter,
-                    yLevel0SearchCenter,
-                    /* range */
-                    sixteenthRefPicPtr->stride_y,
-                    search_area_width,
-                    search_area_height
-                );
-            }
-            else
-            {
-                // Put the first search location into level0 results
-                NxMSadLoopKernel_funcPtrArray[asm_type](
-                    &context_ptr->sixteenth_sb_buffer[0],
-                    context_ptr->sixteenth_sb_buffer_stride,
-                    &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-                    sixteenthRefPicPtr->stride_y * 2,
-                    sb_height >> 1, sb_width,
-                    /* results */
-                    level0BestSad,
-                    xLevel0SearchCenter,
-                    yLevel0SearchCenter,
-                    /* range */
-                    sixteenthRefPicPtr->stride_y,
-                    search_area_width,
-                    search_area_height
-                    );
-            }
-        }
-        else
-        {
-            sad_loop_kernel(
+            sad_loop_kernel_avx2_hme_l0_intrin(
                 &context_ptr->sixteenth_sb_buffer[0],
                 context_ptr->sixteenth_sb_buffer_stride,
                 &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
-                sixteenthRefPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+                sb_width,
+                // results
+                level0BestSad,
+                xLevel0SearchCenter,
+                yLevel0SearchCenter,
+                // range
+                sixteenthRefPicPtr->stride_y,
+                search_area_width,
+                search_area_height
+            );
+        }
+        else if ((search_area_width & 15) == 0)
+        {
+            // Only width equals 16 (LCU equals 64) is updated
+            // other width sizes work with the old code as the one in"sad_loop_kernel_sse4_1_intrin"
+            sad_loop_kernel_sse4_1_hme_l0_intrin(
+                &context_ptr->sixteenth_sb_buffer[0],
+                context_ptr->sixteenth_sb_buffer_stride,
+                &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+                sb_width,
                 /* results */
                 level0BestSad,
                 xLevel0SearchCenter,
@@ -5083,15 +5030,56 @@ void HmeLevel0(
                 search_area_height
             );
         }
-
-        *level0BestSad *= 2; // Multiply by 2 because considered only ever other line
-        *xLevel0SearchCenter += x_search_area_origin;
-        *xLevel0SearchCenter *= 4; // Multiply by 4 because operating on 1/4 resolution
-        *yLevel0SearchCenter += y_search_area_origin;
-        *yLevel0SearchCenter *= 4; // Multiply by 4 because operating on 1/4 resolution
-#if  USE_SAD_HMEL0
+        else
+        {
+            // Put the first search location into level0 results
+            NxMSadLoopKernel_funcPtrArray[asm_type](
+                &context_ptr->sixteenth_sb_buffer[0],
+                context_ptr->sixteenth_sb_buffer_stride,
+                &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+                (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+                sb_width,
+                /* results */
+                level0BestSad,
+                xLevel0SearchCenter,
+                yLevel0SearchCenter,
+                /* range */
+                sixteenthRefPicPtr->stride_y,
+                search_area_width,
+                search_area_height
+                );
+        }
     }
-#endif
+    else
+    {
+        sad_loop_kernel(
+            &context_ptr->sixteenth_sb_buffer[0],
+            context_ptr->sixteenth_sb_buffer_stride,
+            &sixteenthRefPicPtr->buffer_y[searchRegionIndex],
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sixteenthRefPicPtr->stride_y : sixteenthRefPicPtr->stride_y * 2,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+            sb_width,
+            /* results */
+            level0BestSad,
+            xLevel0SearchCenter,
+            yLevel0SearchCenter,
+            /* range */
+            sixteenthRefPicPtr->stride_y,
+            search_area_width,
+            search_area_height
+        );
+    }
+    
+    *level0BestSad = (context_ptr->hme_search_method == FULL_SAD_SEARCH) ?
+        *level0BestSad     : 
+        *level0BestSad  * 2; // Multiply by 2 because considered only ever other line
+
+    *xLevel0SearchCenter += x_search_area_origin;
+    *xLevel0SearchCenter *= 4; // Multiply by 4 because operating on 1/4 resolution
+    *yLevel0SearchCenter += y_search_area_origin;
+    *yLevel0SearchCenter *= 4; // Multiply by 4 because operating on 1/4 resolution
+
     return;
 }
 
@@ -5181,14 +5169,35 @@ void HmeLevel1(
     yTopLeftSearchRegion = ((int16_t)quarterRefPicPtr->origin_y + origin_y) + y_search_area_origin;
     searchRegionIndex = xTopLeftSearchRegion + yTopLeftSearchRegion * quarterRefPicPtr->stride_y;
 
-#if USE_SAD_HMEL1
-    if (context_ptr->hme_search_method == FULL_SAD_SEARCH) {
+    if (((sb_width & 7) == 0) || (sb_width == 4))
+    {
+        // Put the first search location into level0 results
+        NxMSadLoopKernel_funcPtrArray[asm_type](
+            &context_ptr->quarter_sb_buffer[0],
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? context_ptr->quarter_sb_buffer_stride : context_ptr->quarter_sb_buffer_stride * 2,
+            &quarterRefPicPtr->buffer_y[searchRegionIndex],
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? quarterRefPicPtr->stride_y : quarterRefPicPtr->stride_y * 2,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+            sb_width,
+            /* results */
+            level1BestSad,
+            xLevel1SearchCenter,
+            yLevel1SearchCenter,
+            /* range */
+            quarterRefPicPtr->stride_y,
+            search_area_width,
+            search_area_height
+            );
+    }
+    else
+    {
         sad_loop_kernel(
             &context_ptr->quarter_sb_buffer[0],
-            context_ptr->quarter_sb_buffer_stride,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? context_ptr->quarter_sb_buffer_stride : context_ptr->quarter_sb_buffer_stride * 2,
             &quarterRefPicPtr->buffer_y[searchRegionIndex],
-            quarterRefPicPtr->stride_y,
-            sb_height, sb_width,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? quarterRefPicPtr->stride_y : quarterRefPicPtr->stride_y * 2,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+            sb_width,
             /* results */
             level1BestSad,
             xLevel1SearchCenter,
@@ -5198,60 +5207,17 @@ void HmeLevel1(
             search_area_width,
             search_area_height
         );
-
-        *xLevel1SearchCenter += x_search_area_origin;
-        *xLevel1SearchCenter *= 2; // Multiply by 2 because operating on 1/2 resolution
-        *yLevel1SearchCenter += y_search_area_origin;
-        *yLevel1SearchCenter *= 2; // Multiply by 2 because operating on 1/2 resolution
     }
-    else {
-#endif
-        if (((sb_width & 7) == 0) || (sb_width == 4))
-        {
-            // Put the first search location into level0 results
-            NxMSadLoopKernel_funcPtrArray[asm_type](
-                &context_ptr->quarter_sb_buffer[0],
-                context_ptr->quarter_sb_buffer_stride * 2,
-                &quarterRefPicPtr->buffer_y[searchRegionIndex],
-                quarterRefPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
-                /* results */
-                level1BestSad,
-                xLevel1SearchCenter,
-                yLevel1SearchCenter,
-                /* range */
-                quarterRefPicPtr->stride_y,
-                search_area_width,
-                search_area_height
-                );
-        }
-        else
-        {
-            sad_loop_kernel(
-                &context_ptr->quarter_sb_buffer[0],
-                context_ptr->quarter_sb_buffer_stride * 2,
-                &quarterRefPicPtr->buffer_y[searchRegionIndex],
-                quarterRefPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
-                /* results */
-                level1BestSad,
-                xLevel1SearchCenter,
-                yLevel1SearchCenter,
-                /* range */
-                quarterRefPicPtr->stride_y,
-                search_area_width,
-                search_area_height
-            );
-        }
 
-        *level1BestSad *= 2; // Multiply by 2 because considered only ever other line
-        *xLevel1SearchCenter += x_search_area_origin;
-        *xLevel1SearchCenter *= 2; // Multiply by 2 because operating on 1/2 resolution
-        *yLevel1SearchCenter += y_search_area_origin;
-        *yLevel1SearchCenter *= 2; // Multiply by 2 because operating on 1/2 resolution
-#if USE_SAD_HMEL1
-    }
-#endif
+    *level1BestSad = (context_ptr->hme_search_method == FULL_SAD_SEARCH) ?
+        *level1BestSad :
+        *level1BestSad * 2; // Multiply by 2 because considered only ever other line
+
+    *xLevel1SearchCenter += x_search_area_origin;
+    *xLevel1SearchCenter *= 2; // Multiply by 2 because operating on 1/2 resolution
+    *yLevel1SearchCenter += y_search_area_origin;
+    *yLevel1SearchCenter *= 2; // Multiply by 2 because operating on 1/2 resolution
+
     return;
 }
 
@@ -5344,14 +5310,37 @@ void HmeLevel2(
     xTopLeftSearchRegion = ((int16_t)refPicPtr->origin_x + origin_x) + x_search_area_origin;
     yTopLeftSearchRegion = ((int16_t)refPicPtr->origin_y + origin_y) + y_search_area_origin;
     searchRegionIndex = xTopLeftSearchRegion + yTopLeftSearchRegion * refPicPtr->stride_y;
-#if USE_SAD_HMEL2
-    if (context_ptr->hme_search_method == FULL_SAD_SEARCH) {
+
+    if ((((sb_width & 7) == 0) && (sb_width != 40) && (sb_width != 56)))
+    {
+        // Put the first search location into level0 results
+        NxMSadLoopKernel_funcPtrArray[asm_type](
+            context_ptr->sb_src_ptr,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? context_ptr->sb_src_stride : context_ptr->sb_src_stride * 2,
+            &refPicPtr->buffer_y[searchRegionIndex],
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? refPicPtr->stride_y : refPicPtr->stride_y * 2,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+            sb_width,
+            /* results */
+            level2BestSad,
+            xLevel2SearchCenter,
+            yLevel2SearchCenter,
+            /* range */
+            refPicPtr->stride_y,
+            search_area_width,
+            search_area_height
+            );
+    }
+    else
+    {
+        // Put the first search location into level0 results
         sad_loop_kernel(
             context_ptr->sb_src_ptr,
-            context_ptr->sb_src_stride,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? context_ptr->sb_src_stride : context_ptr->sb_src_stride * 2,
             &refPicPtr->buffer_y[searchRegionIndex],
-            refPicPtr->stride_y,
-            sb_height, sb_width,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? refPicPtr->stride_y : refPicPtr->stride_y * 2,
+            (context_ptr->hme_search_method == FULL_SAD_SEARCH) ? sb_height : sb_height >> 1,
+            sb_width,
             /* results */
             level2BestSad,
             xLevel2SearchCenter,
@@ -5361,57 +5350,16 @@ void HmeLevel2(
             search_area_width,
             search_area_height
         );
-        *xLevel2SearchCenter += x_search_area_origin;
-        *yLevel2SearchCenter += y_search_area_origin;
-    }
-    else {
-#endif
-        if ((((sb_width & 7) == 0) && (sb_width != 40) && (sb_width != 56)))
-        {
-            // Put the first search location into level0 results
-            NxMSadLoopKernel_funcPtrArray[asm_type](
-                context_ptr->sb_src_ptr,
-                context_ptr->sb_src_stride * 2,
-                &refPicPtr->buffer_y[searchRegionIndex],
-                refPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
-                /* results */
-                level2BestSad,
-                xLevel2SearchCenter,
-                yLevel2SearchCenter,
-                /* range */
-                refPicPtr->stride_y,
-                search_area_width,
-                search_area_height
-                );
-        }
-        else
-        {
-            // Put the first search location into level0 results
-            sad_loop_kernel(
-                context_ptr->sb_src_ptr,
-                context_ptr->sb_src_stride * 2,
-                &refPicPtr->buffer_y[searchRegionIndex],
-                refPicPtr->stride_y * 2,
-                sb_height >> 1, sb_width,
-                /* results */
-                level2BestSad,
-                xLevel2SearchCenter,
-                yLevel2SearchCenter,
-                /* range */
-                refPicPtr->stride_y,
-                search_area_width,
-                search_area_height
-            );
 
-        }
-
-        *level2BestSad *= 2; // Multiply by 2 because considered only every other line
-        *xLevel2SearchCenter += x_search_area_origin;
-        *yLevel2SearchCenter += y_search_area_origin;
-#if USE_SAD_HMEL2
     }
-#endif
+
+    *level2BestSad = (context_ptr->hme_search_method == FULL_SAD_SEARCH) ?
+        *level2BestSad :
+        *level2BestSad * 2; // Multiply by 2 because considered only ever other line
+
+    *xLevel2SearchCenter += x_search_area_origin;
+    *yLevel2SearchCenter += y_search_area_origin;
+
     return;
 }
 
