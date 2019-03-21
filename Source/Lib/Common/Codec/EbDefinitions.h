@@ -51,8 +51,6 @@ extern "C" {
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH           1 // F7
 #define M0_ME_SEARCH_BASE                               1 // F13
-#define INC_NFL12                                       1 // F14
-#define AV1_UPGRADE                                     1 // Upgrade to V1.0.0
 #define INTRAD_ASM                                      1 // asm for intra directionnal modes - Z1
 #define SUPPORT_10BIT                                   1 // Support for 10 Bit encodings
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass

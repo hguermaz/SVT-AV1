@@ -402,39 +402,20 @@ void reset_mode_decision(
 
     // 64x64 CU
     context_ptr->buffer_depth_index_start[0] = 0;
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[0] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[0] = 5; // 3 NFL + 1 for temporary data
-#endif
+
     // 32x32 CU
     context_ptr->buffer_depth_index_start[1] = context_ptr->buffer_depth_index_start[0] + context_ptr->buffer_depth_index_width[0];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[1] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[1] = 6;
-#endif
     // 16x16 CU
     context_ptr->buffer_depth_index_start[2] = context_ptr->buffer_depth_index_start[1] + context_ptr->buffer_depth_index_width[1];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[2] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[2] = 6;
-#endif
     // 8x8 CU
     context_ptr->buffer_depth_index_start[3] = context_ptr->buffer_depth_index_start[2] + context_ptr->buffer_depth_index_width[2];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[3] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[3] = 6;
-#endif
     // 4x4 CU
     context_ptr->buffer_depth_index_start[4] = context_ptr->buffer_depth_index_start[3] + context_ptr->buffer_depth_index_width[3];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[4] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[4] = 5;
-#endif
 #endif
     // Slice Type
     slice_type =

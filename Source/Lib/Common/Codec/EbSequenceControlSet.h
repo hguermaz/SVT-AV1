@@ -230,10 +230,8 @@ extern "C" {
         int32_t                                 timing_info_present;
         int32_t                                 operating_points_decoder_model_cnt;
 
-#if AV1_UPGRADE
         int32_t                                 decoder_model_info_present_flag;
         int32_t                                 display_model_info_present_flag;
-#endif
         int32_t                                 film_grain_denoise_strength;
         int32_t                                 film_grain_params_present;  // To turn on/off film grain (on a sequence basis)
 

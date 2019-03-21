@@ -84,14 +84,13 @@ EbErrorType clip_mv(
     (*mvx) = CLIP3(((int16_t)((1 - cu_origin_x - 8 - tb_size) << 2)), ((int16_t)((picture_width + 8 - cu_origin_x - 1) << 2)), (*mvx));
     // vertical clipping
     (*mvy) = CLIP3(((int16_t)((1 - cu_origin_y - 8 - tb_size) << 2)), ((int16_t)((picture_height + 8 - cu_origin_y - 1) << 2)), (*mvy));
-#if AV1_UPGRADE
     const int32_t clamp_max = MV_UPP - 1;
     const int32_t clamp_min = MV_LOW + 1;
     // horizontal clipping
     (*mvx) = CLIP3(clamp_min, clamp_max, (*mvx));
     // vertical clipping
     (*mvy) = CLIP3(clamp_min, clamp_max, (*mvy));
-#endif
+
     return return_error;
 }
 

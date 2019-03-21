@@ -30,13 +30,10 @@ extern "C" {
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               124// 61 Intra & 18+2x8+2x8 Inter
 #endif
 
-#if INC_NFL12
 #if !INTRA_INTER_FAST_LOOP
 #define MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT        (MAX_NFL*6) //up to 6 depths
 #endif
-#else
-#define MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT        33
-#endif
+
 #if !INTRA_INTER_FAST_LOOP
 #define INDEPENDENT_INTRA_CHROMA_MODE_TOTAL_COUNT       4       // Planar, Vertical, Horizontal, DC
 #endif

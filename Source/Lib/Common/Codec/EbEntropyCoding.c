@@ -3061,7 +3061,6 @@ static void write_tile_info(const PictureParentControlSet_t *const pcs_ptr,
     struct aom_write_bit_buffer *wb) {
 
     av1_get_tile_limits((PictureParentControlSet_t *)pcs_ptr);
-#if AV1_UPGRADE
     write_tile_info_max_tile(pcs_ptr, wb);
 
     if (pcs_ptr->av1_cm->tile_rows * pcs_ptr->av1_cm->tile_cols > 1) {
@@ -3073,58 +3072,7 @@ static void write_tile_info(const PictureParentControlSet_t *const pcs_ptr,
     }
 
 
-#else
-    if (pcs_ptr->large_scale_tile) {
-        printf("ERROR[AN]: large_scale_tile not supported yet\n");
-        //const int32_t tile_width =
-        //    ALIGN_POWER_OF_TWO(cm->tile_width, cm->seq_params.mib_size_log2) >>
-        //    cm->seq_params.mib_size_log2;
-        //const int32_t tile_height =
-        //    ALIGN_POWER_OF_TWO(cm->tile_height, cm->seq_params.mib_size_log2) >>
-        //    cm->seq_params.mib_size_log2;
 
-        //assert(tile_width > 0);
-        //assert(tile_height > 0);
-
-        //// Write the tile sizes
-        //if (cm->seq_params.sb_size == BLOCK_128X128) {
-        //    assert(tile_width <= 32);
-        //    assert(tile_height <= 32);
-        //    aom_wb_write_literal(wb, tile_width - 1, 5);
-        //    aom_wb_write_literal(wb, tile_height - 1, 5);
-        //} else {
-        //    assert(tile_width <= 64);
-        //    assert(tile_height <= 64);
-        //    aom_wb_write_literal(wb, tile_width - 1, 6);
-        //    aom_wb_write_literal(wb, tile_height - 1, 6);
-        //}
-    }
-    else {
-        write_tile_info_max_tile(pcs_ptr, wb);
-    }
-#endif
-    /**saved_wb = *wb;*/
-#if !AV1_UPGRADE
-    if (pcs_ptr->large_scale_tile) {
-
-        printf("ERROR[AN]: large_scale_tile not supported yet\n");
-#endif
-        //if (cm->tile_rows * cm->tile_cols > 1) {
-        //    // Note that the last item in the uncompressed header is the data
-        //    // describing tile configuration.
-        //    // Number of bytes in tile column size - 1
-        //    aom_wb_write_literal(wb, 0, 2);
-        //    // Number of bytes in tile size - 1
-        //    aom_wb_write_literal(wb, 0, 2);
-        //}
-        //return;
-#if !AV1_UPGRADE
-    }
-#endif
-    //if (cm->tile_rows * cm->tile_cols > 1) {
-    //    // Number of bytes in tile size - 1
-    //    aom_wb_write_literal(wb, 3, 2);
-    //}
 }
 
 static void write_frame_size(PictureParentControlSet_t *pcsPtr,
@@ -3170,7 +3118,6 @@ static void write_bitdepth(SequenceControlSet_t *scsPtr/*Av1Common *const cm*/,
         aom_wb_write_bit(wb, scsPtr->static_config.encoder_bit_depth == EB_10BIT ? 0 : 1);
     }
 }
-#if AV1_UPGRADE
 static void write_color_config(
     SequenceControlSet_t *scsPtr/*Av1Common *const cm*/, struct aom_write_bit_buffer *wb) {
 
@@ -3249,87 +3196,7 @@ static void write_color_config(
     //aom_wb_write_bit(wb, cm->separate_uv_delta_q);
 }
 
-#else
-static void WriteBitdepthColorspaceSampling(
-    SequenceControlSet_t *scsPtr/*Av1Common *const cm*/, struct aom_write_bit_buffer *wb) {
-    write_bitdepth(scsPtr, wb);
 
-    const int32_t is_monochrome = 0;// cm->seq_params.monochrome;
-    // monochrome bit
-    aom_wb_write_bit(wb, is_monochrome);
-    //if (cm->profile != PROFILE_1)
-    //    aom_wb_write_bit(wb, is_monochrome);
-    //else
-    //    assert(!is_monochrome);
-
-
-    if (1/*cm->color_primaries == AOM_CICP_CP_UNSPECIFIED &&
-         cm->transfer_characteristics == AOM_CICP_TC_UNSPECIFIED &&
-         cm->matrix_coefficients == AOM_CICP_MC_UNSPECIFIED*/) {
-        aom_wb_write_bit(wb, 0);  // No color description present
-    }
-    else {
-        //aom_wb_write_bit(wb, 1);  // Color description present
-        //aom_wb_write_literal(wb, cm->color_primaries, 8);
-        //aom_wb_write_literal(wb, cm->transfer_characteristics, 8);
-        //aom_wb_write_literal(wb, cm->matrix_coefficients, 8);
-    }
-
-    if (is_monochrome) {
-        printf("ERROR[AN]: is_monochrome not supported yet\n");
-        return;
-    }
-
-
-
-    if (0/*cm->color_primaries == AOM_CICP_CP_BT_709 &&
-         cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
-         cm->matrix_coefficients ==
-         AOM_CICP_MC_IDENTITY*/) {  // it would be better to remove this
-         // dependency too
-         //assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
-         //assert(cm->profile == PROFILE_1 ||
-         //    (cm->profile == PROFILE_2 && cm->bit_depth == AOM_BITS_12));
-    }
-    else {
-        // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
-        aom_wb_write_bit(wb, 0);
-        //aom_wb_write_bit(wb, cm->color_range);
-
-        //if (cm->profile == PROFILE_0) {
-        //    // 420 only
-        //    assert(cm->subsampling_x == 1 && cm->subsampling_y == 1);
-        //}
-        //else if (cm->profile == PROFILE_1) {
-        //    // 444 only
-        //    assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
-        //}
-        //else if (cm->profile == PROFILE_2) {
-        //    if (cm->bit_depth == AOM_BITS_12) {
-        //        // 420, 444 or 422
-        //        aom_wb_write_bit(wb, cm->subsampling_x);
-        //        if (cm->subsampling_x == 0) {
-        //            assert(cm->subsampling_y == 0 &&
-        //                "4:4:0 subsampling not allowed in AV1");
-        //        }
-        //        else {
-        //            aom_wb_write_bit(wb, cm->subsampling_y);
-        //        }
-        //    }
-        //    else {
-        //        // 422 only
-        //        assert(cm->subsampling_x == 1 && cm->subsampling_y == 0);
-        //    }
-        //}
-        aom_wb_write_literal(wb, 0, 2);
-        //if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
-        //    aom_wb_write_literal(wb, cm->chroma_sample_position, 2);
-        //}
-    }
-    aom_wb_write_bit(wb, 0);
-    //aom_wb_write_bit(wb, cm->separate_uv_delta_q);
-}
-#endif
 void WriteSequenceHeader(SequenceControlSet_t *scsPtr/*AV1_COMP *cpi*/, struct aom_write_bit_buffer *wb) {
     //    Av1Common *const cm = &cpi->common;
     //    SequenceHeader *seq_params = &cm->seq_params;
@@ -4096,15 +3963,10 @@ static void WriteUncompressedHeaderObu(SequenceControlSet_t *scsPtr/*AV1_COMP *c
 
     //if (scsPtr->frame_id_numbers_present_flag)
     //    pcsPtr->refresh_mask = get_refresh_mask(pcsPtr);
-#if AV1_UPGRADE
     const int32_t might_bwd_adapt =
         !(scsPtr->reduced_still_picture_hdr) && !(pcsPtr->disable_cdf_update);
     if (pcsPtr->large_scale_tile)
         pcsPtr->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
-#else
-    const int32_t might_bwd_adapt =
-        !(scsPtr->reduced_still_picture_hdr) && !(pcsPtr->large_scale_tile) && !(pcsPtr->disable_cdf_update);
-#endif
     if (might_bwd_adapt) {
         aom_wb_write_bit(
             wb, pcsPtr->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
@@ -4294,7 +4156,6 @@ static uint32_t WriteSequenceHeaderObu(
         //write_bitstream_level(cm->seq_params.level[0], &wb);
     }
     else {
-#if AV1_UPGRADE
         aom_wb_write_bit(&wb, scsPtr->timing_info_present);  // timing info present flag
 
         if (scsPtr->timing_info_present) {
@@ -4340,83 +4201,7 @@ static uint32_t WriteSequenceHeaderObu(
     WriteSequenceHeader(scsPtr, &wb);
 
     write_color_config(scsPtr, &wb);
-#else
 
-        uint8_t operating_points_cnt_minus_1 =
-            numberSpatialLayers > 1 ? numberSpatialLayers - 1 : 0;
-        aom_wb_write_literal(&wb, operating_points_cnt_minus_1,
-            OP_POINTS_CNT_MINUS_1_BITS);
-        int32_t i;
-        if (operating_points_cnt_minus_1 == 0) {
-            scsPtr->operating_point_idc[0] = 0;
-        }
-        else {
-            printf("ERROR[AN]: more than 1 operating_point_idc not supported\n");
-            // Set operating_point_idc[] such that for the i-th operating point the
-            // first (operating_points_cnt-i) spatial layers and the first temporal
-            // layer are decoded Note that highest quality operating point should come
-            // first
-            /*for (i = 0; i < operating_points_cnt_minus_1 + 1; i++)
-                cm->seq_params.operating_point_idc[i] =
-                (~(~0u << (operating_points_cnt_minus_1 + 1 - i)) << 8) | 1;*/
-        }
-
-        for (i = 0; i < operating_points_cnt_minus_1 + 1; i++) {
-            aom_wb_write_literal(&wb, scsPtr->operating_point_idc[i],
-                OP_POINTS_IDC_BITS);
-            write_bitstream_level(scsPtr->level[i], &wb);
-            if (scsPtr->level[i].major > 3)
-                aom_wb_write_bit(&wb, scsPtr->tier[i]);
-        }
-}
-
-
-    WriteSequenceHeader(scsPtr, &wb);
-
-    // color_config
-    WriteBitdepthColorspaceSampling(scsPtr, &wb);
-
-    // timing_info
-    if (!scsPtr->reduced_still_picture_hdr)
-        aom_wb_write_bit(&wb, scsPtr->timing_info_present);  // timing info present flag
-    else
-        assert(scsPtr->timing_info_present == 0);
-
-    if (scsPtr->timing_info_present) {
-        // timing_info
-        printf("ERROR[AN]: timing_info_present not supported\n");
-        /*write_timing_info_header(cm, &wb);
-        aom_wb_write_bit(&wb, cm->decoder_model_info_present_flag);
-        if (cm->decoder_model_info_present_flag) write_decoder_model_info(cm, &wb);*/
-    }
-
-    if (scsPtr->operating_points_decoder_model_cnt > 0) {
-        printf("ERROR[AN]: operating_points_decoder_model_cnt not supported\n");
-        //aom_wb_write_bit(&wb, 1);
-        //aom_wb_write_literal(&wb, cm->operating_points_decoder_model_cnt - 1, 5);
-    }
-    else {
-        aom_wb_write_bit(&wb, 0);
-    }
-    /*for (int32_t op_num = 0; op_num < scsPtr->operating_points_decoder_model_cnt;
-       ++op_num) {
-        aom_wb_write_literal(
-            &wb, cm->op_params[op_num].decoder_model_operating_point_idc, 12);
-        aom_wb_write_bit(&wb,
-                     cm->op_params[op_num].display_model_param_present_flag);
-        if (cm->op_params[op_num].display_model_param_present_flag)
-        aom_wb_write_literal(&wb, cm->op_params[op_num].initial_display_delay - 1,
-                           4);
-        if (cm->decoder_model_info_present_flag) {
-            aom_wb_write_bit(&wb,
-                       cm->op_params[op_num].decoder_model_param_present_flag);
-            if (cm->op_params[op_num].decoder_model_param_present_flag)
-                write_dec_model_op_parameters(cm, &wb, op_num);
-        }
-  }*/
-
-
-#endif
     aom_wb_write_bit(&wb, scsPtr->film_grain_params_present);
 
     add_trailing_bits(&wb);
