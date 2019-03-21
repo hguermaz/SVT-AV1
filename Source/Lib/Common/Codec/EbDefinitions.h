@@ -209,10 +209,13 @@ extern "C" {
 #if !M9_SETTINGS
 #define FRAC_64x64_BUG_FIX                              1
 #endif
-#define USE_SAD_ME                                      0
-#define USE_SAD_HMEL0                                   0
-#define USE_SAD_HMEL1                                   0
-#define USE_SAD_HMEL2                                   0
+#define USE_SAD_ME                                      1
+#define USE_SAD_HME                                     1
+#if USE_SAD_HME
+#define USE_SAD_HMEL0                                   1
+#define USE_SAD_HMEL1                                   1
+#define USE_SAD_HMEL2                                   1
+#endif
 
 #define FULL_LOOP_ESCAPE                                1
 #define SIMULATE_PF_N2                                  0

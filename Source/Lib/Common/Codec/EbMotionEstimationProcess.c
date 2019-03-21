@@ -229,11 +229,13 @@ EbErrorType signal_derivation_me_kernel_oq(
 #endif
 
 
-
+#if USE_SAD_HME
     context_ptr->me_context_ptr->hme_search_method = (picture_control_set_ptr->enc_mode == ENC_M0) ?
         FULL_SAD_SEARCH :
         SUB_SAD_SEARCH;
-
+#else
+    context_ptr->me_context_ptr->hme_search_method = SUB_SAD_SEARCH;
+#endif
 #if USE_SAD_ME
     context_ptr->me_context_ptr->me_search_method = (picture_control_set_ptr->enc_mode == ENC_M0) ?
         FULL_SAD_SEARCH :
@@ -614,12 +616,19 @@ void* MotionEstimationKernel(void *input_ptr)
                         {
                             uint8_t  *framePtr = &sixteenthDecimatedPicturePtr->buffer_y[bufferIndex];
                             uint8_t  *localPtr = context_ptr->me_context_ptr->sixteenth_sb_buffer;
-
+#if USE_SAD_HMEL0 
+                            for (lcuRow = 0; lcuRow < (sb_height >> 2); lcuRow += 1) {
+                                EB_MEMCPY(localPtr, framePtr, (sb_width >> 2) * sizeof(uint8_t));
+                                localPtr += 16;
+                                framePtr += sixteenthDecimatedPicturePtr->stride_y;
+                            }
+#else
                             for (lcuRow = 0; lcuRow < (sb_height >> 2); lcuRow += 2) {
                                 EB_MEMCPY(localPtr, framePtr, (sb_width >> 2) * sizeof(uint8_t));
                                 localPtr += 16;
                                 framePtr += sixteenthDecimatedPicturePtr->stride_y << 1;
                             }
+#endif
                         }
                     }
 
