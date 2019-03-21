@@ -55,7 +55,6 @@ extern "C" {
 
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass
 
-#define QT_10BIT_SUPPORT                                1
 #define CDEF_10BIT_FIX                                  1
 #define RS_10BIT_FIX                                    1
 #define MD_10BIT_FIX                                    1

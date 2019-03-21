@@ -121,100 +121,6 @@ extern "C" {
 #define SMOOTHING_THRESHOLD                 8
 #define SMOOTHING_THRESHOLD_10BIT          32
 
-#if !QT_10BIT_SUPPORT
-
-    extern EbErrorType GenerateIntraReferenceSamplesEncodePass(
-
-        EbBool                         *is_left_availble,
-        EbBool                         *is_above_availble,
-
-        EbBool                     constrained_intra_flag,   //input parameter, indicates if constrained intra is switched on/off
-        EbBool                     strongIntraSmoothingFlag,
-        uint32_t                      origin_x,
-        uint32_t                      origin_y,
-        uint32_t                      size,
-        uint32_t                      cu_depth,
-        NeighborArrayUnit_t        *mode_type_neighbor_array,
-        NeighborArrayUnit_t        *luma_recon_neighbor_array,
-        NeighborArrayUnit_t        *cb_recon_neighbor_array,
-        NeighborArrayUnit_t        *cr_recon_neighbor_array,
-        void                       *refWrapperPtr,
-        EbBool                     pictureLeftBoundary,
-        EbBool                     pictureTopBoundary,
-        EbBool                     pictureRightBoundary);
-#endif
-
-
-
-
-#if !QT_10BIT_SUPPORT
-
-    extern EbErrorType GenerateIntraReference16bitSamplesEncodePass(
-        EbBool                         *is_left_availble,
-        EbBool                         *is_above_availble,
-        EbBool                     constrained_intra_flag,   //input parameter, indicates if constrained intra is switched on/off
-        EbBool                     strongIntraSmoothingFlag,
-        uint32_t                      origin_x,
-        uint32_t                      origin_y,
-        uint32_t                      size,
-        uint32_t                      cu_depth,
-        NeighborArrayUnit_t        *mode_type_neighbor_array,
-        NeighborArrayUnit_t        *luma_recon_neighbor_array,
-        NeighborArrayUnit_t        *cb_recon_neighbor_array,
-        NeighborArrayUnit_t        *cr_recon_neighbor_array,
-        void                       *refWrapperPtr,
-        EbBool                     pictureLeftBoundary,
-        EbBool                     pictureTopBoundary,
-        EbBool                     pictureRightBoundary);
-
-
-    extern EbErrorType GenerateLumaIntraReference16bitSamplesEncodePass(
-        EbBool                     *is_left_availble,
-        EbBool                     *is_above_availble,
-        EbBool                     constrained_intra_flag,   //input parameter, indicates if constrained intra is switched on/off
-        EbBool                     strongIntraSmoothingFlag,
-        uint32_t                      origin_x,
-        uint32_t                      origin_y,
-        uint32_t                      size,
-        uint32_t                      sb_sz,
-        uint32_t                      cu_depth,
-        NeighborArrayUnit_t        *mode_type_neighbor_array,
-        NeighborArrayUnit_t        *luma_recon_neighbor_array,
-        NeighborArrayUnit_t        *cb_recon_neighbor_array,
-        NeighborArrayUnit_t        *cr_recon_neighbor_array,
-        void                       *refWrapperPtr,
-        EbBool                     pictureLeftBoundary,
-        EbBool                     pictureTopBoundary,
-        EbBool                     pictureRightBoundary);
-
-
-    extern EbErrorType GenerateChromaIntraReference16bitSamplesEncodePass(
-        EbBool                     *is_left_availble,
-        EbBool                     *is_above_availble,
-        EbBool                     constrained_intra_flag,   //input parameter, indicates if constrained intra is switched on/off
-        EbBool                     strongIntraSmoothingFlag,
-        uint32_t                      origin_x,
-        uint32_t                      origin_y,
-        uint32_t                      size,
-        uint32_t                      sb_sz,
-        uint32_t                      cu_depth,
-        NeighborArrayUnit_t        *mode_type_neighbor_array,
-        NeighborArrayUnit_t        *luma_recon_neighbor_array,
-        NeighborArrayUnit_t        *cb_recon_neighbor_array,
-        NeighborArrayUnit_t        *cr_recon_neighbor_array,
-        void                       *refWrapperPtr,
-        EbBool                     pictureLeftBoundary,
-        EbBool                     pictureTopBoundary,
-        EbBool                     pictureRightBoundary);
-
-
-    extern EbErrorType IntraPredictionCL(
-        struct ModeDecisionContext_s           *context_ptr,
-        uint32_t                                  component_mask,
-        PictureControlSet_t                    *picture_control_set_ptr,
-        ModeDecisionCandidateBuffer_t           *candidate_buffer_ptr,
-        EbAsm                                  asm_type);
-#endif
 
     extern EbErrorType AV1IntraPredictionCL(
         struct ModeDecisionContext_s           *context_ptr,
@@ -225,87 +131,6 @@ extern "C" {
         ModeDecisionCandidateBuffer_t           *candidate_buffer_ptr,
         EbAsm                                  asm_type);
 
-#if !QT_10BIT_SUPPORT
-    extern EbErrorType EncodePassIntraPrediction(
-
-        uint8_t                         upsample_left,
-        uint8_t                         upsample_above,
-        uint8_t                          upsample_left_chroma,
-        uint8_t                          upsample_above_chroma,
-
-        EbBool                         is_left_availble,
-        EbBool                         is_above_availble,
-        void                                   *ref_samples,
-        uint32_t                                  origin_x,
-        uint32_t                                  origin_y,
-        uint32_t                                  puSize,
-        EbPictureBufferDesc_t                  *prediction_ptr,
-        uint32_t                                  luma_mode,
-        uint32_t                                  chroma_mode,
-        int32_t                                  angle_delta,
-        uint16_t                                  bitdepth,
-        EbAsm                                  asm_type);
-    extern EbErrorType EncodePassIntraPrediction16bit(
-
-        uint8_t                         upsample_left,
-        uint8_t                         upsample_above,
-        uint8_t                          upsample_left_chroma,
-        uint8_t                          upsample_above_chroma,
-
-        EbBool                         is_left_availble,
-        EbBool                         is_above_availble,
-        void                                   *ref_samples,
-        uint32_t                                  origin_x,
-        uint32_t                                  origin_y,
-        uint32_t                                  puSize,
-        EbPictureBufferDesc_t                  *prediction_ptr,
-        uint32_t                                  luma_mode,
-        uint32_t                                  chroma_mode,
-        int32_t                                  angle_delta,
-        uint16_t                                  bitdepth,
-        EbAsm                                  asm_type);
-
-    extern EbErrorType EncodePassIntra4x4Prediction(
-        uint8_t                         upsample_left,
-        uint8_t                         upsample_above,
-        uint8_t                          upsample_left_chroma,
-        uint8_t                          upsample_above_chroma,
-
-        EbBool                         is_left_availble,
-        EbBool                         is_above_availble,
-        IntraReferenceSamples_t                *referenceSamples,
-        uint32_t                                  origin_x,
-        uint32_t                                  origin_y,
-        uint32_t                                  puSize,
-        uint32_t                                  chromaPuSize,
-        EbPictureBufferDesc_t                  *prediction_ptr,
-        uint32_t                                  luma_mode,
-        uint32_t                                  chroma_mode,
-        uint32_t                                  component_mask,
-        EbAsm                                  asm_type);
-
-    extern EbErrorType EncodePassIntra4x4Prediction16bit(
-
-        uint8_t                         upsample_left,
-        uint8_t                         upsample_above,
-        uint8_t                          upsample_left_chroma,
-        uint8_t                          upsample_above_chroma,
-
-        EbBool                         is_left_availble,
-        EbBool                         is_above_availble,
-        IntraReference16bitSamples_t           *referenceSamples,
-        uint32_t                                  origin_x,
-        uint32_t                                  origin_y,
-        uint32_t                                  puSize,
-        uint32_t                                  chromaPuSize,
-        EbPictureBufferDesc_t                  *prediction_ptr,
-        uint32_t                                  luma_mode,
-        uint32_t                                  chroma_mode,
-        uint32_t                                  component_mask,
-        uint16_t                                  bitdepth,
-        EbAsm                                  asm_type);
-
-#endif
 #if !OIS_BASED_INTRA
     static const uint32_t intraLumaModeNumber[] = {
         18,
@@ -402,20 +227,6 @@ extern "C" {
         uint32_t           openLoopIntraCandidate,
         EbAsm                       asm_type);
 #endif
-#if !QT_10BIT_SUPPORT
-    extern EbErrorType Intra4x4IntraPredictionCL(
-        uint32_t                                pu_index,
-        uint32_t                                pu_origin_x,
-        uint32_t                                pu_origin_y,
-        uint32_t                                pu_width,
-        uint32_t                                pu_height,
-        uint32_t                                sb_sz,
-        uint32_t                                component_mask,
-        PictureControlSet_t                    *picture_control_set_ptr,
-        ModeDecisionCandidateBuffer_t          *candidate_buffer_ptr,
-        EbPtr                                  prediction_context_ptr,
-        EbAsm                                   asm_type);
-#endif
 
     /***************************************
     * Function Ptr Types
@@ -485,44 +296,18 @@ extern "C" {
         uint8_t         *dst,              //output parameter, pointer to the prediction
         const uint32_t   prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
         const EbBool  skip);
-#if !QT_10BIT_SUPPORT
-    extern void highbd_smooth_v_predictor(
-        const uint32_t   size,                       //input parameter, denotes the size of the current PU
-        uint16_t         *ref_samples,                 //input parameter, pointer to the reference samples
-        uint16_t         *dst,              //output parameter, pointer to the prediction
-        const uint32_t   prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-        const EbBool  skip);
-#endif
     extern void ebav1_smooth_v_predictor(
         const uint32_t   size,                       //input parameter, denotes the size of the current PU
         uint8_t         *ref_samples,                 //input parameter, pointer to the reference samples
         uint8_t         *dst,              //output parameter, pointer to the prediction
         const uint32_t   prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
         const EbBool  skip);
-#if !QT_10BIT_SUPPORT
-    extern void highbd_smooth_h_predictor(
-        const uint32_t   size,                       //input parameter, denotes the size of the current PU
-        uint16_t         *ref_samples,                 //input parameter, pointer to the reference samples
-        uint16_t         *dst,              //output parameter, pointer to the prediction
-        const uint32_t   prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-        const EbBool  skip);
-#endif
     extern void ebav1_smooth_h_predictor(
         const uint32_t   size,                       //input parameter, denotes the size of the current PU
         uint8_t         *ref_samples,                 //input parameter, pointer to the reference samples
         uint8_t         *dst,              //output parameter, pointer to the prediction
         const uint32_t   prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
         const EbBool  skip);
-#if !QT_10BIT_SUPPORT
-    extern void highbd_dc_predictor(
-        EbBool                         is_left_availble,
-        EbBool                         is_above_availble,
-        const uint32_t   size,                       //input parameter, denotes the size of the current PU
-        uint8_t         *ref_samples,                 //input parameter, pointer to the reference samples
-        uint8_t         *dst,              //output parameter, pointer to the prediction
-        const uint32_t   prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-        const EbBool  skip);                     //skip half rows
-#endif
 
     void IntraModeAngular_AV1_Z1_16bit(
         const uint32_t   size,                    //input parameter, denotes the size of the current PU
@@ -590,83 +375,6 @@ extern "C" {
         intra_mode_horizontal_chroma_sse2_intrin,
     };
 #endif
-#if !QT_10BIT_SUPPORT
-    static EB_INTRA_DC_AV1_TYPE FUNC_TABLE IntraDC_Av1_funcPtrArray[9][ASM_TYPE_TOTAL] = {
-
-        // 4x4
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            intra_mode_dc_4x4_av1_sse2_intrin,
-        },
-        // 8x8
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            intra_mode_dc_8x8_av1_sse2_intrin,
-        },
-        // 16x16
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            intra_mode_dc_16x16_av1_sse2_intrin,
-
-        },
-        // NxN
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            highbd_dc_predictor,
-
-        },
-        // 32x32
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            intra_mode_dc_32x32_av1_avx2_intrin,
-
-        } ,
-        // NxN
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            highbd_dc_predictor,
-
-        },
-        // NxN
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            highbd_dc_predictor,
-
-        },
-        // NxN
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-            highbd_dc_predictor,
-
-        },
-        // 64x64
-        {
-            // NON_AVX2
-            highbd_dc_predictor,
-            // AVX2
-
-            intra_mode_dc_64x64_av1_avx2_intrin,
-
-        }
-
-    };
-#endif
 #if !OIS_BASED_INTRA
     static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraDCLuma_funcPtrArray[ASM_TYPE_TOTAL] = {
         // NON_AVX2
@@ -717,28 +425,13 @@ extern "C" {
         intra_mode_planar_av1_avx2_intrin,
     };
 #endif
-#if !QT_10BIT_SUPPORT
-    static EB_INTRA_NOANG_16bit_TYPE FUNC_TABLE IntraSmoothV_16bit_Av1_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        highbd_smooth_v_predictor,
-        // AVX2
-        highbd_smooth_v_predictor,
-    };
-#endif
+
     static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraSmoothH_Av1_funcPtrArray[ASM_TYPE_TOTAL] = {
         // NON_AVX2
         ebav1_smooth_h_predictor,
         // AVX2
         ebav1_smooth_h_predictor,
     };
-#if !QT_10BIT_SUPPORT
-    static EB_INTRA_NOANG_16bit_TYPE FUNC_TABLE IntraSmoothH_16bit_Av1_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        highbd_smooth_h_predictor,
-        // AVX2
-        highbd_smooth_h_predictor,
-    };
-#endif
     static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraSmoothV_Av1_funcPtrArray[ASM_TYPE_TOTAL] = {
         // NON_AVX2
         ebav1_smooth_v_predictor,

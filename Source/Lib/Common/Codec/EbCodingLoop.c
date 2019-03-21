@@ -698,9 +698,8 @@ static void Av1EncodeLoop(
 #endif
             0,
             COMPONENT_LUMA,
-#if QT_10BIT_SUPPORT
             BIT_INCREMENT_8BIT,
-#endif
+
             txb_ptr->transform_type[PLANE_TYPE_Y],
             clean_sparse_coeff_flag);
 
@@ -1081,11 +1080,7 @@ static void Av1EncodeLoop16bit(
 {
     (void)use_delta_qp;
     (void)dZoffset;
-#if QT_10BIT_SUPPORT
     (void)cbQp;
-#else
-    uint32_t                 chroma_qp = cbQp;
-#endif
 
     CodingUnit_t          *cu_ptr = context_ptr->cu_ptr;
     TransformUnit_t       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
@@ -1107,19 +1102,15 @@ static void Av1EncodeLoop16bit(
     const uint32_t scratchCbOffset = ROUND_UV(context_ptr->blk_geom->origin_x) / 2 + ROUND_UV(context_ptr->blk_geom->origin_y) / 2 * SB_STRIDE_UV;
     const uint32_t scratchCrOffset = ROUND_UV(context_ptr->blk_geom->origin_x) / 2 + ROUND_UV(context_ptr->blk_geom->origin_y) / 2 * SB_STRIDE_UV;
 
-#if QT_10BIT_SUPPORT
     const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
     const uint32_t coeff1dOffsetChroma = context_ptr->coded_area_sb_uv;
     UNUSED(coeff1dOffsetChroma);
-#endif
+
 
     EbBool clean_sparse_coeff_flag = EB_FALSE;
 
     //Update QP for Quant
     qp += QP_BD_OFFSET;
-#if !QT_10BIT_SUPPORT
-    chroma_qp += QP_BD_OFFSET;
-#endif
 
     {
 
@@ -1188,11 +1179,7 @@ static void Av1EncodeLoop16bit(
                 sb_ptr->picture_control_set_ptr,
                 ((int32_t*)transform16bit->buffer_y) + coeff1dOffset,
                 NOT_USED_VALUE,
-#if QT_10BIT_SUPPORT
                 ((int32_t*)coeffSamplesTB->buffer_y) + coeff1dOffset,
-#else
-                ((int32_t*)coeffSamplesTB->buffer_y) + scratchLumaOffset,
-#endif
                 ((int32_t*)inverse_quant_buffer->buffer_y) + coeff1dOffset,
                 qp,
                 context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
@@ -1207,9 +1194,8 @@ static void Av1EncodeLoop16bit(
 #endif
                 0,
                 COMPONENT_LUMA,
-#if QT_10BIT_SUPPORT
                 BIT_INCREMENT_10BIT,
-#endif
+
                 txb_ptr->transform_type[PLANE_TYPE_Y],
                 clean_sparse_coeff_flag);
             txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -1233,7 +1219,6 @@ static void Av1EncodeLoop16bit(
                 EbPictureBufferDesc_t *reconSamples = predSamples16bit;
                 uint32_t reconLumaOffset = (reconSamples->origin_y + origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + origin_x);
                 if (txb_ptr->y_has_coeff == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-#if QT_10BIT_SUPPORT
                     uint16_t     *predBuffer = ((uint16_t*)predSamples16bit->buffer_y) + predLumaOffset;
                     av1_inv_transform_recon(
                         ((int32_t*)inverse_quant_buffer->buffer_y) + coeff1dOffset,
@@ -1244,31 +1229,6 @@ static void Av1EncodeLoop16bit(
                         txb_ptr->transform_type[PLANE_TYPE_Y],
                         PLANE_TYPE_Y,
                         eob[0]);
-#else
-                    av1_estimate_inv_transform(
-                        ((int32_t*)inverse_quant_buffer->buffer_y) + scratchLumaOffset,
-                        64,
-                        ((int32_t*)inverse_quant_buffer->buffer_y) + scratchLumaOffset,
-                        64,
-                        txb_size,
-                        transformScratchBuffer,
-                        BIT_INCREMENT_10BIT,
-                        txb_ptr->transform_type[PLANE_TYPE_Y],
-                        eob[0],
-                        asm_type,
-                        0);
-
-                    picture_addition_kernel16_bit(
-                        ((uint16_t*)predSamples16bit->buffer_y) + predLumaOffset,
-                        predSamples16bit->stride_y,
-                        ((int32_t*)inverse_quant_buffer->buffer_y) + scratchLumaOffset,
-                        64,
-                        ((uint16_t*)reconSamples->buffer_y) + reconLumaOffset,
-                        reconSamples->stride_y,
-                        txb_size,
-                        txb_size,
-                        10);
-#endif
                 }
 
                 // Down sample Luma
@@ -1393,11 +1353,7 @@ static void Av1EncodeLoop16bit(
                 ((int32_t*)transform16bit->bufferCb) + context_ptr->coded_area_sb_uv,
                 NOT_USED_VALUE,
 
-#if QT_10BIT_SUPPORT
                 ((int32_t*)coeffSamplesTB->bufferCb) + context_ptr->coded_area_sb_uv,
-#else
-                ((int32_t*)coeffSamplesTB->bufferCb) + scratchCbOffset,
-#endif
                 ((int32_t*)inverse_quant_buffer->bufferCb) + context_ptr->coded_area_sb_uv,
                 qp,
                 context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
@@ -1412,9 +1368,7 @@ static void Av1EncodeLoop16bit(
 #endif
                 0,
                 COMPONENT_CHROMA_CB,
-#if QT_10BIT_SUPPORT
                 BIT_INCREMENT_10BIT,
-#endif
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 clean_sparse_coeff_flag);
 
@@ -1423,19 +1377,6 @@ static void Av1EncodeLoop16bit(
             //**********************************
             // Cr
             //**********************************
-#if !QT_10BIT_SUPPORT
-            encode_transform(
-                ((int16_t*)residual16bit->bufferCr) + scratchCrOffset,
-                32,
-                ((int16_t*)transform16bit->bufferCr) + scratchCrOffset,
-                32,
-                txb_size >> 1,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                EB_FALSE,
-                context_ptr->trans_coeff_shape_chroma,
-                asm_type);
-#endif
 
             av1_estimate_transform(
                 ((int16_t*)residual16bit->bufferCr) + scratchCbOffset,
@@ -1464,11 +1405,7 @@ static void Av1EncodeLoop16bit(
                 sb_ptr->picture_control_set_ptr,
                 ((int32_t*)transform16bit->bufferCr) + context_ptr->coded_area_sb_uv,
                 NOT_USED_VALUE,
-#if QT_10BIT_SUPPORT
                 ((int32_t*)coeffSamplesTB->bufferCr) + context_ptr->coded_area_sb_uv,
-#else
-                ((int32_t*)coeffSamplesTB->bufferCr) + scratchCbOffset,
-#endif
                 ((int32_t*)inverse_quant_buffer->bufferCr) + context_ptr->coded_area_sb_uv,
                 qp,
                 context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
@@ -1483,9 +1420,7 @@ static void Av1EncodeLoop16bit(
 #endif
                 0,
                 COMPONENT_CHROMA_CR,
-#if QT_10BIT_SUPPORT
                 BIT_INCREMENT_10BIT,
-#endif
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 clean_sparse_coeff_flag);
             txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
@@ -1659,20 +1594,12 @@ static void Av1EncodeGenerateRecon16bit(
 
     uint32_t predLumaOffset;
     uint32_t predChromaOffset;
-#if !QT_10BIT_SUPPORT
-    uint32_t scratchLumaOffset;
-    uint32_t scratchChromaOffset;
-    uint32_t reconLumaOffset;
-    uint32_t reconChromaOffset;
-#endif
 
     CodingUnit_t          *cu_ptr = context_ptr->cu_ptr;
     TransformUnit_t       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
 
-#if QT_10BIT_SUPPORT
     (void)asm_type;
     (void)transformScratchBuffer;
-#endif
     //**********************************
     // Luma
     //**********************************
@@ -1681,13 +1608,8 @@ static void Av1EncodeGenerateRecon16bit(
 
         {
             predLumaOffset = (predSamples->origin_y + origin_y)* predSamples->stride_y + (predSamples->origin_x + origin_x);
-#if !QT_10BIT_SUPPORT
-            scratchLumaOffset = context_ptr->blk_geom->tx_org_x[context_ptr->txb_itr] + context_ptr->blk_geom->tx_org_y[context_ptr->txb_itr] * SB_STRIDE_Y;
-            reconLumaOffset = (predSamples->origin_y + origin_y)* predSamples->stride_y + (predSamples->origin_x + origin_x);
-#endif
             if (txb_ptr->y_has_coeff == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
 
-#if QT_10BIT_SUPPORT
                 uint16_t     *predBuffer = ((uint16_t*)predSamples->buffer_y) + predLumaOffset;
                 av1_inv_transform_recon(
                     ((int32_t*)residual16bit->buffer_y) + context_ptr->coded_area_sb,
@@ -1699,31 +1621,7 @@ static void Av1EncodeGenerateRecon16bit(
                     PLANE_TYPE_Y,
                     eob[0]
                 );
-#else
-                av1_estimate_inv_transform(
-                    ((int32_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                    64,
-                    ((int32_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                    64,
-                    txb_size,
-                    transformScratchBuffer,
-                    BIT_INCREMENT_10BIT,
-                    txb_ptr->transform_type[PLANE_TYPE_Y],
-                    eob[0],
-                    asm_type,
-                    0);
 
-                picture_addition_kernel16_bit(
-                    (uint16_t*)predSamples->buffer_y + predLumaOffset,
-                    predSamples->stride_y,
-                    ((int32_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                    64,
-                    (uint16_t*)predSamples->buffer_y + reconLumaOffset,
-                    predSamples->stride_y,
-                    txb_size,
-                    txb_size,
-                    10);
-#endif
             }
 
         }
@@ -1745,15 +1643,10 @@ static void Av1EncodeGenerateRecon16bit(
         uint32_t                 round_origin_y = (origin_y >> 3) << 3;// for Chroma blocks with size of 4
 
         predChromaOffset = (((predSamples->origin_y + round_origin_y) >> 1)           * predSamples->strideCb) + ((predSamples->origin_x + round_origin_x) >> 1);
-#if !QT_10BIT_SUPPORT
-        scratchChromaOffset = ROUND_UV(context_ptr->blk_geom->tx_org_x[context_ptr->txb_itr]) / 2 + ROUND_UV(context_ptr->blk_geom->tx_org_y[context_ptr->txb_itr]) / 2 * SB_STRIDE_UV;
-        reconChromaOffset = (((predSamples->origin_y + origin_y) >> 1) * predSamples->strideCb) + ((predSamples->origin_x + origin_x) >> 1);
-#endif
 
         if (txb_ptr->u_has_coeff == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
 
 
-#if QT_10BIT_SUPPORT
             uint16_t     *predBuffer = ((uint16_t*)predSamples->bufferCb) + predChromaOffset;
             av1_inv_transform_recon(
                 ((int32_t*)residual16bit->bufferCb) + context_ptr->coded_area_sb_uv,
@@ -1764,31 +1657,6 @@ static void Av1EncodeGenerateRecon16bit(
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 PLANE_TYPE_UV,
                 eob[1]);
-#else
-            av1_estimate_inv_transform(
-                ((int32_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                ((int32_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                txb_size >> 1,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                txb_ptr->transform_type[PLANE_TYPE_UV],
-                eob[1],
-                asm_type,
-                0);
-
-            picture_addition_kernel16_bit(
-                (uint16_t*)predSamples->bufferCb + predChromaOffset,
-                predSamples->strideCb,
-                ((int32_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                (uint16_t*)predSamples->bufferCb + reconChromaOffset,
-                predSamples->strideCb,
-                txb_size >> 1,
-                txb_size >> 1,
-                10);
-#endif
 
         }
 
@@ -1796,13 +1664,8 @@ static void Av1EncodeGenerateRecon16bit(
         // Cr
         //**********************************
         predChromaOffset = (((predSamples->origin_y + round_origin_y) >> 1)           * predSamples->strideCr) + ((predSamples->origin_x + round_origin_x) >> 1);
-#if !QT_10BIT_SUPPORT
-        scratchChromaOffset = ROUND_UV(context_ptr->blk_geom->tx_org_x[context_ptr->txb_itr]) / 2 + ROUND_UV(context_ptr->blk_geom->tx_org_y[context_ptr->txb_itr]) / 2 * SB_STRIDE_UV;
-        reconChromaOffset = (((predSamples->origin_y + origin_y) >> 1) * predSamples->strideCr) + ((predSamples->origin_x + origin_x) >> 1);
-#endif
         if (txb_ptr->v_has_coeff == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
 
-#if QT_10BIT_SUPPORT
             uint16_t     *predBuffer = ((uint16_t*)predSamples->bufferCr) + predChromaOffset;
             av1_inv_transform_recon(
                 ((int32_t*)residual16bit->bufferCr) + context_ptr->coded_area_sb_uv,
@@ -1813,31 +1676,6 @@ static void Av1EncodeGenerateRecon16bit(
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 PLANE_TYPE_UV,
                 eob[2]);
-#else
-            av1_estimate_inv_transform(
-                ((int32_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                ((int32_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                txb_size >> 1,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                txb_ptr->transform_type[PLANE_TYPE_UV],
-                eob[2],
-                asm_type,
-                0);
-
-            picture_addition_kernel16_bit(
-                (uint16_t*)predSamples->bufferCr + predChromaOffset,
-                predSamples->strideCr,
-                ((int32_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                (uint16_t*)predSamples->bufferCr + reconChromaOffset,
-                predSamples->strideCr,
-                txb_size >> 1,
-                txb_size >> 1,
-                10);
-#endif
 
 
         }
@@ -1845,306 +1683,6 @@ static void Av1EncodeGenerateRecon16bit(
 
     return;
 }
-#if !QT_10BIT_SUPPORT
-/**********************************************************
-* Encode Generate Recon
-*
-* Summary: Performs a H.265 conformant
-*   Inverse Transform and generate
-*   the reconstructed samples of a TU.
-*
-* Inputs:
-*   origin_x
-*   origin_y
-*   txb_size
-*   sb_sz
-*   input - Inverse Qunatized Coeff (position sensitive)
-*   pred - prediction samples (position independent)
-*
-* Outputs:
-*   Recon  (position independent)
-*
-**********************************************************/
-static void EncodeGenerateRecon(
-    EncDecContext_t       *context_ptr,
-    uint32_t                 origin_x,
-    uint32_t                 origin_y,
-    EbPictureBufferDesc_t *predSamples,     // no basis/offset
-    EbPictureBufferDesc_t *residual16bit,    // no basis/offset
-    int16_t                *transformScratchBuffer,
-    EbAsm                 asm_type)
-{
-    uint32_t predLumaOffset;
-    uint32_t predChromaOffset;
-    uint32_t scratchLumaOffset;
-    uint32_t scratchChromaOffset;
-    uint32_t reconLumaOffset;
-    uint32_t reconChromaOffset;
-
-    CodingUnit_t          *cu_ptr = context_ptr->cu_ptr;
-    TransformUnit_t       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
-    uint32_t                 txb_size = context_ptr->cu_stats->size;
-
-    EbPictureBufferDesc_t *reconSamples = predSamples;
-    // *Note - The prediction is built in-place in the Recon buffer. It is overwritten with Reconstructed
-    //   samples if the CBF==1 && SKIP==False
-
-    //**********************************
-    // Luma
-    //**********************************
-
-    {
-        predLumaOffset = (predSamples->origin_y + origin_y)             * predSamples->stride_y + (predSamples->origin_x + origin_x);
-        scratchLumaOffset = ((origin_y & (63)) * 64) + (origin_x & (63));
-        reconLumaOffset = (reconSamples->origin_y + origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + origin_x);
-        if (txb_ptr->lumaCbf == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-
-            encode_inv_transform(
-                txb_ptr->trans_coeff_shape_luma == ONLY_DC_SHAPE || txb_ptr->is_only_dc[0],
-                ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                64,
-                ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                64,
-                txb_size,
-                transformScratchBuffer,
-                BIT_INCREMENT_8BIT,
-                (EbBool)(txb_size == MIN_PU_SIZE),
-                asm_type);
-
-            addition_kernel_func_ptr_array[asm_type][txb_size >> 3](
-                predSamples->buffer_y + predLumaOffset,
-                predSamples->stride_y,
-                ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                64,
-                reconSamples->buffer_y + reconLumaOffset,
-                reconSamples->stride_y,
-                txb_size,
-                txb_size);
-        }
-    }
-
-    //**********************************
-    // Chroma
-    //**********************************
-
-    {
-        predChromaOffset = (((predSamples->origin_y + origin_y) >> 1)           * predSamples->strideCb) + ((predSamples->origin_x + origin_x) >> 1);
-        scratchChromaOffset = (((origin_y & (63)) >> 1) * 32) + ((origin_x & (63)) >> 1);
-        reconChromaOffset = (((reconSamples->origin_y + origin_y) >> 1)          * reconSamples->strideCb) + ((reconSamples->origin_x + origin_x) >> 1);
-        //**********************************
-        // Cb
-        //**********************************
-        if (txb_ptr->cbCbf == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-
-            encode_inv_transform(
-                txb_ptr->trans_coeff_shape_chroma == ONLY_DC_SHAPE || txb_ptr->is_only_dc[1],
-                ((int16_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                ((int16_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                txb_size >> 1,
-                transformScratchBuffer,
-                BIT_INCREMENT_8BIT,
-                EB_FALSE,
-                asm_type);
-
-            addition_kernel_func_ptr_array[asm_type][txb_size >> 4](
-                predSamples->bufferCb + predChromaOffset,
-                predSamples->strideCb,
-                ((int16_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                reconSamples->bufferCb + reconChromaOffset,
-                reconSamples->strideCb,
-                txb_size >> 1,
-                txb_size >> 1);
-        }
-
-        //**********************************
-        // Cr
-        //**********************************
-        predChromaOffset = (((predSamples->origin_y + origin_y) >> 1)           * predSamples->strideCr) + ((predSamples->origin_x + origin_x) >> 1);
-        scratchChromaOffset = (((origin_y & (63)) >> 1) * 32) + ((origin_x & (63)) >> 1);
-        reconChromaOffset = (((reconSamples->origin_y + origin_y) >> 1)          * reconSamples->strideCr) + ((reconSamples->origin_x + origin_x) >> 1);
-        if (txb_ptr->crCbf == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-
-            encode_inv_transform(
-                txb_ptr->trans_coeff_shape_chroma == ONLY_DC_SHAPE || txb_ptr->is_only_dc[2],
-                ((int16_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                ((int16_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                txb_size >> 1,
-                transformScratchBuffer,
-                BIT_INCREMENT_8BIT,
-                EB_FALSE,
-                asm_type);
-
-            addition_kernel_func_ptr_array[asm_type][txb_size >> 4](
-                predSamples->bufferCr + predChromaOffset,
-                predSamples->strideCr,
-                ((int16_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                reconSamples->bufferCr + reconChromaOffset,
-                reconSamples->strideCr,
-                txb_size >> 1,
-                txb_size >> 1);
-        }
-    }
-
-    return;
-}
-
-/**********************************************************
-* Encode Generate Recon
-*
-* Summary: Performs a H.265 conformant
-*   Inverse Transform and generate
-*   the reconstructed samples of a TU.
-*
-* Inputs:
-*   origin_x
-*   origin_y
-*   txb_size
-*   sb_sz
-*   input - Inverse Qunatized Coeff (position sensitive)
-*   pred - prediction samples (position independent)
-*
-* Outputs:
-*   Recon  (position independent)
-*
-**********************************************************/
-static void EncodeGenerateRecon16bit(
-    EncDecContext_t       *context_ptr,
-    uint32_t                 origin_x,
-    uint32_t                 origin_y,
-    EbPictureBufferDesc_t *predSamples,     // no basis/offset
-    EbPictureBufferDesc_t *residual16bit,    // no basis/offset
-    int16_t                *transformScratchBuffer,
-    EbAsm                 asm_type)
-{
-
-    uint32_t predLumaOffset;
-    uint32_t predChromaOffset;
-    uint32_t scratchLumaOffset;
-    uint32_t scratchChromaOffset;
-    uint32_t reconLumaOffset;
-    uint32_t reconChromaOffset;
-
-    CodingUnit_t          *cu_ptr = context_ptr->cu_ptr;
-    TransformUnit_t       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
-    uint32_t                 txb_size = context_ptr->cu_stats->size;
-
-    //**********************************
-    // Luma
-    //**********************************
-
-    {
-        predLumaOffset = (predSamples->origin_y + origin_y)* predSamples->stride_y + (predSamples->origin_x + origin_x);
-        scratchLumaOffset = ((origin_y & (63)) * 64) + (origin_x & (63));
-        reconLumaOffset = (predSamples->origin_y + origin_y)* predSamples->stride_y + (predSamples->origin_x + origin_x);
-        if (txb_ptr->lumaCbf == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-
-            encode_inv_transform(
-                txb_ptr->trans_coeff_shape_luma == ONLY_DC_SHAPE || txb_ptr->is_only_dc[0],
-                ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                64,
-                ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                64,
-                txb_size,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                (EbBool)(txb_size == MIN_PU_SIZE),
-                asm_type);
-
-            addition_kernel_func_ptr_array16bit[asm_type](
-                (uint16_t*)predSamples->buffer_y + predLumaOffset,
-                predSamples->stride_y,
-                ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
-                64,
-                (uint16_t*)predSamples->buffer_y + reconLumaOffset,
-                predSamples->stride_y,
-                txb_size,
-                txb_size);
-
-        }
-
-    }
-
-    //**********************************
-    // Chroma
-    //**********************************
-
-    {
-
-        //**********************************
-        // Cb
-        //**********************************
-        predChromaOffset = (((predSamples->origin_y + origin_y) >> 1)  * predSamples->strideCb) + ((predSamples->origin_x + origin_x) >> 1);
-        scratchChromaOffset = (((origin_y & (63)) >> 1) * 32) + ((origin_x & (63)) >> 1);
-        reconChromaOffset = (((predSamples->origin_y + origin_y) >> 1) * predSamples->strideCb) + ((predSamples->origin_x + origin_x) >> 1);
-        if (txb_ptr->cbCbf == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-
-            encode_inv_transform(
-                txb_ptr->trans_coeff_shape_chroma == ONLY_DC_SHAPE || txb_ptr->is_only_dc[1],
-                ((int16_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                ((int16_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                txb_size >> 1,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                EB_FALSE,
-                asm_type);
-
-            addition_kernel_func_ptr_array16bit[asm_type](
-                (uint16_t*)predSamples->bufferCb + predChromaOffset,
-                predSamples->strideCb,
-                ((int16_t*)residual16bit->bufferCb) + scratchChromaOffset,
-                32,
-                (uint16_t*)predSamples->bufferCb + reconChromaOffset,
-                predSamples->strideCb,
-                txb_size >> 1,
-                txb_size >> 1);
-
-        }
-
-        //**********************************
-        // Cr
-        //**********************************
-        predChromaOffset = (((predSamples->origin_y + origin_y) >> 1)  * predSamples->strideCr) + ((predSamples->origin_x + origin_x) >> 1);
-        scratchChromaOffset = (((origin_y & (63)) >> 1) * 32) + ((origin_x & (63)) >> 1);
-        reconChromaOffset = (((predSamples->origin_y + origin_y) >> 1) * predSamples->strideCr) + ((predSamples->origin_x + origin_x) >> 1);
-        if (txb_ptr->crCbf == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-
-            encode_inv_transform(
-                txb_ptr->trans_coeff_shape_chroma == ONLY_DC_SHAPE || txb_ptr->is_only_dc[2],
-                ((int16_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                ((int16_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                txb_size >> 1,
-                transformScratchBuffer,
-                BIT_INCREMENT_10BIT,
-                EB_FALSE,
-                asm_type);
-
-            addition_kernel_func_ptr_array16bit[asm_type](
-                (uint16_t*)predSamples->bufferCr + predChromaOffset,
-                predSamples->strideCr,
-                ((int16_t*)residual16bit->bufferCr) + scratchChromaOffset,
-                32,
-                (uint16_t*)predSamples->bufferCr + reconChromaOffset,
-                predSamples->strideCr,
-                txb_size >> 1,
-                txb_size >> 1);
-
-        }
-    }
-
-    return;
-}
-
-#endif
 static EB_AV1_ENCODE_LOOP_FUNC_PTR   Av1EncodeLoopFunctionTable[2] =
 {
     Av1EncodeLoop,
@@ -2156,34 +1694,6 @@ EB_AV1_GENERATE_RECON_FUNC_PTR   Av1EncodeGenerateReconFunctionPtr[2] =
     Av1EncodeGenerateRecon,
     Av1EncodeGenerateRecon16bit
 };
-#if !QT_10BIT_SUPPORT
-
-EB_GENERATE_RECON_FUNC_PTR   EncodeGenerateReconFunctionPtr[2] =
-{
-    EncodeGenerateRecon,
-    EncodeGenerateRecon16bit
-};
-#endif
-
-#if !QT_10BIT_SUPPORT
-EB_GENERATE_RECON_INTRA_4x4_FUNC_PTR   EncodeGenerateReconIntra4x4FunctionPtr[2] =
-{
-    EncodeGenerateReconIntra4x4,
-    EncodeGenerateReconIntra4x416bit
-};
-
-EB_GENERATE_INTRA_SAMPLES_FUNC_PTR GenerateIntraReferenceSamplesFuncTable[2] =
-{
-    GenerateIntraReferenceSamplesEncodePass,
-    GenerateIntraReference16bitSamplesEncodePass
-};
-
-EB_ENC_PASS_INTRA_FUNC_PTR EncodePassIntraPredictionFuncTable[2] =
-{
-    EncodePassIntraPrediction,
-    EncodePassIntraPrediction16bit
-};
-#endif
 
 /*******************************************
 * Encode Pass - Assign Delta Qp
