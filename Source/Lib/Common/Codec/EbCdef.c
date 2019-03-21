@@ -2192,7 +2192,6 @@ void av1_cdef_search16bit(
         uint16_t *ref_buffer = 0;
         int32_t ref_stride;
         switch (pli) {
-#if CDEF_10BIT_FIX
         case 0:
             ref_buffer = inputBufferY;
             ref_stride = input_picture_ptr->stride_y;
@@ -2211,26 +2210,6 @@ void av1_cdef_search16bit(
             in_buffer = reconBufferCr;
             in_stride = recon_picture_ptr->strideCr;
             break;
-#else
-        case 0:
-            ref_buffer = reconBufferY;
-            ref_stride = recon_picture_ptr->stride_y;
-            in_buffer = inputBufferY;
-            in_stride = input_picture_ptr->stride_y;
-            break;
-        case 1:
-            ref_buffer = reconBufferCb;
-            ref_stride = recon_picture_ptr->strideCb;
-            in_buffer = inputBufferCb;
-            in_stride = input_picture_ptr->strideCb;
-            break;
-        case 2:
-            ref_buffer = reconBufferCr;
-            ref_stride = recon_picture_ptr->strideCr;
-            in_buffer = inputBufferCr;
-            in_stride = input_picture_ptr->strideCr;
-            break;
-#endif
         }
 
         ///CHKN: allocate one frame 16bit for src and recon!!

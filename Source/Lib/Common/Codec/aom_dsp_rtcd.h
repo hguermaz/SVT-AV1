@@ -428,11 +428,9 @@ extern "C" {
     void av1_inv_txfm_add_ssse3(const tran_low_t *dqcoeff, uint8_t *dst, int32_t stride, const TxfmParam *txfm_param);
     RTCD_EXTERN void(*av1_inv_txfm_add)(const tran_low_t *dqcoeff, uint8_t *dst, int32_t stride, const TxfmParam *txfm_param);
 
-#if RS_10BIT_FIX
     //uint32_t aom_highbd_8_mse16x16_c(const uint8_t *src_ptr, int32_t  source_stride, const uint8_t *ref_ptr, int32_t  recon_stride, uint32_t *sse);
     void      aom_highbd_8_mse16x16_sse2(const uint8_t *src_ptr, int32_t  source_stride, const uint8_t *ref_ptr, int32_t  recon_stride, uint32_t *sse);
     RTCD_EXTERN void(*aom_highbd_8_mse16x16)(const uint8_t *src_ptr, int32_t  source_stride, const uint8_t *ref_ptr, int32_t  recon_stride, uint32_t *sse);
-#endif
 
     void av1_upsample_intra_edge_c(uint8_t *p, int32_t sz);
     void av1_upsample_intra_edge_sse4_1(uint8_t *p, int32_t sz);

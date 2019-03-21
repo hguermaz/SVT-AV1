@@ -55,10 +55,6 @@ extern "C" {
 
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass
 
-#define CDEF_10BIT_FIX                                  1
-#define RS_10BIT_FIX                                    1
-#define MD_10BIT_FIX                                    1
-#define LF_10BIT_FIX                                    1
 #define INTERPOL_FILTER_SEARCH_10BIT_SUPPORT            1
 
 #define BUG_FIX                                         1 // BUG fix related to transform type

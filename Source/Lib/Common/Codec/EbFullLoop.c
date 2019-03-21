@@ -549,7 +549,6 @@ void av1_quantize_inv_quantize_ii(
 #else
     uint32_t qIndex = picture_control_set_ptr->parent_pcs_ptr->base_qindex;
 #endif
-#if MD_10BIT_FIX
     if (bit_increment == 0) {
         if (component_type == COMPONENT_LUMA) {
             candidate_plane.quant_QTX = picture_control_set_ptr->parent_pcs_ptr->quantsMd.y_quant[qIndex];
@@ -616,39 +615,7 @@ void av1_quantize_inv_quantize_ii(
             candidate_plane.dequant_QTX = picture_control_set_ptr->parent_pcs_ptr->deq.v_dequant_QTX[qIndex];
         }
     }
-#else
-    if (component_type == COMPONENT_LUMA) {
-        candidate_plane.quant_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.y_quant[qIndex];
-        candidate_plane.quant_fp_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.y_quant_fp[qIndex];
-        candidate_plane.round_fp_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.y_round_fp[qIndex];
-        candidate_plane.quant_shift_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.y_quant_shift[qIndex];
-        candidate_plane.zbin_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.y_zbin[qIndex];
-        candidate_plane.round_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.y_round[qIndex];
-        candidate_plane.dequant_QTX = picture_control_set_ptr->parent_pcs_ptr->deq.y_dequant_QTX[qIndex];
-    }
 
-    if (component_type == COMPONENT_CHROMA_CB) {
-        candidate_plane.quant_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.u_quant[qIndex];
-        candidate_plane.quant_fp_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.u_quant_fp[qIndex];
-        candidate_plane.round_fp_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.u_round_fp[qIndex];
-        candidate_plane.quant_shift_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.u_quant_shift[qIndex];
-        candidate_plane.zbin_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.u_zbin[qIndex];
-        candidate_plane.round_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.u_round[qIndex];
-        candidate_plane.dequant_QTX = picture_control_set_ptr->parent_pcs_ptr->deq.u_dequant_QTX[qIndex];
-
-    }
-
-    if (component_type == COMPONENT_CHROMA_CR) {
-        candidate_plane.quant_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.v_quant[qIndex];
-        candidate_plane.quant_fp_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.v_quant_fp[qIndex];
-        candidate_plane.round_fp_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.v_round_fp[qIndex];
-        candidate_plane.quant_shift_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.v_quant_shift[qIndex];
-        candidate_plane.zbin_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.v_zbin[qIndex];
-        candidate_plane.round_QTX = picture_control_set_ptr->parent_pcs_ptr->quants.v_round[qIndex];
-        candidate_plane.dequant_QTX = picture_control_set_ptr->parent_pcs_ptr->deq.v_dequant_QTX[qIndex];
-
-        }
-#endif
     const SCAN_ORDER *const scan_order = &av1_scan_orders[transform_size][tx_type];  //get_scan(tx_size, tx_type);
 
     const int32_t n_coeffs = av1_get_max_eob(transform_size);

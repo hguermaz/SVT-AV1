@@ -14217,10 +14217,8 @@ extern "C" {
         const qm_val_t                       *gqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
         Quants                                quants;
         Dequants                              deq;
-#if MD_10BIT_FIX
         Quants                                quantsMd;
         Dequants                              deqMd;
-#endif
         int32_t                               min_qmlevel;
         int32_t                               max_qmlevel;
         // Encoder

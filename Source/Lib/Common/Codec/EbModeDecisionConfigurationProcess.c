@@ -3326,7 +3326,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             quants,
             dequants);
 
-#if MD_10BIT_FIX
         Quants *const quantsMd = &picture_control_set_ptr->parent_pcs_ptr->quantsMd;
         Dequants *const dequantsMd = &picture_control_set_ptr->parent_pcs_ptr->deqMd;
         av1_build_quantizer(
@@ -3338,7 +3337,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr->parent_pcs_ptr->v_ac_delta_q,
             quantsMd,
             dequantsMd);
-#endif
 
 #if REST_FAST_RATE_EST   
         // Hsan: collapse spare code 
