@@ -8227,21 +8227,13 @@ static void build_intra_predictors_md(
                 use_intra_edge_upsample(txwpx, txhpx, p_angle - 90, filt_type);
             if (need_above && upsample_above) {
                 const int32_t n_px = txwpx + (need_right ? txhpx : 0);
-#if INTRA_ASM
                 av1_upsample_intra_edge(above_row, n_px);
-#else
-                av1_upsample_intra_edge_c(above_row, n_px);
-#endif
             }
             upsample_left =
                 use_intra_edge_upsample(txhpx, txwpx, p_angle - 180, filt_type);
             if (need_left && upsample_left) {
                 const int32_t n_px = txhpx + (need_bottom ? txwpx : 0);
-#if INTRA_ASM
                 av1_upsample_intra_edge(left_col, n_px);
-#else
-                av1_upsample_intra_edge_c(left_col, n_px);
-#endif
             }
         }
         dr_predictor(dst, dst_stride, tx_size, above_row, left_col, upsample_above,
@@ -8510,21 +8502,13 @@ static void build_intra_predictors(
                 use_intra_edge_upsample(txwpx, txhpx, p_angle - 90, filt_type);
             if (need_above && upsample_above) {
                 const int32_t n_px = txwpx + (need_right ? txhpx : 0);
-#if INTRA_ASM
                 av1_upsample_intra_edge(above_row, n_px);
-#else
-                av1_upsample_intra_edge_c(above_row, n_px);
-#endif
             }
             upsample_left =
                 use_intra_edge_upsample(txhpx, txwpx, p_angle - 180, filt_type);
             if (need_left && upsample_left) {
                 const int32_t n_px = txhpx + (need_bottom ? txwpx : 0);
-#if INTRA_ASM
                 av1_upsample_intra_edge(left_col, n_px);
-#else
-                av1_upsample_intra_edge_c(left_col, n_px);
-#endif
             }
         }
         dr_predictor(dst, dst_stride, tx_size, above_row, left_col, upsample_above,

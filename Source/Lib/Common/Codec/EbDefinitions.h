@@ -48,7 +48,6 @@ extern "C" {
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
 
-#define CBF_ZERO_OFF                                    1 // Remove CBF zero feature due to VQ problems
 #define TX_TYPE_FIX                                     1 // Fix the Tx Type search for Inter blocks
 #define INC_NFL                                         1 // Set NFL to 4 for all sizes and temporal layers
 #define REMOVE_INTRA_CONST                              1 // Remove the constraints for INTRA injection
