@@ -2051,6 +2051,9 @@ void AV1CostCalcCfl(
     uint32_t                            cuChromaOriginIndex,
     uint64_t                            full_distortion[DIST_CALC_TOTAL],
     uint64_t                           *coeffBits,
+#if CFL_FIX
+    EbBool                              check_dc,
+#endif
     EbAsm                               asm_type) {
 
     ModeDecisionCandidate_t            *candidate_ptr = candidateBuffer->candidate_ptr;
@@ -2078,12 +2081,15 @@ void AV1CostCalcCfl(
         crFullDistortion[DIST_CALC_PREDICTION] = 0;
         cb_coeff_bits = 0;
         cr_coeff_bits = 0;
-
+#if CFL_FIX
+        alpha_q3 = (check_dc) ? 0:
+            cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
+#else
         alpha_q3 =
             cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
         if (candidate_ptr->cfl_alpha_idx == 0 && candidate_ptr->cfl_alpha_signs == 0)// To check DC
             alpha_q3 = 0;
-
+#endif
         assert(chroma_width * CFL_BUF_LINE + chroma_height <=
             CFL_BUF_SQUARE);
 
@@ -2152,13 +2158,16 @@ void AV1CostCalcCfl(
 
         cb_coeff_bits = 0;
         cr_coeff_bits = 0;
-
+#if CFL_FIX
+        alpha_q3 = (check_dc) ? 0 :
+            cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_V); // once for U, once for V
+#else
         alpha_q3 =
             cfl_idx_to_alpha(candidate_ptr->cfl_alpha_idx, candidate_ptr->cfl_alpha_signs, CFL_PRED_V); // once for U, once for V
 
         if (candidate_ptr->cfl_alpha_idx == 0 && candidate_ptr->cfl_alpha_signs == 0) // To check DC
             alpha_q3 = 0;
-
+#endif
         assert(chroma_width * CFL_BUF_LINE + chroma_height <=
             CFL_BUF_SQUARE);
 
@@ -2273,6 +2282,9 @@ static void cfl_rd_pick_alpha(
                     cuChromaOriginIndex,
                     full_distortion,
                     &coeffBits,
+#if CFL_FIX
+                    0,
+#endif
                     asm_type);
 
                 if (coeffBits == INT64_MAX) break;
@@ -2312,6 +2324,9 @@ static void cfl_rd_pick_alpha(
                             cuChromaOriginIndex,
                             full_distortion,
                             &coeffBits,
+#if CFL_FIX
+                            0,
+#endif
                             asm_type);
 
                         if (coeffBits == INT64_MAX) break;
@@ -2359,6 +2374,9 @@ static void cfl_rd_pick_alpha(
         cuChromaOriginIndex,
         full_distortion,
         &coeffBits,
+#if CFL_FIX
+        1,
+#endif
         asm_type);
 
     int64_t dc_rd =
@@ -2416,21 +2434,30 @@ static void CflPrediction(
         context_ptr->blk_geom,
         asm_type);
 
-
+#if CFL_FIX
+    if (context_ptr->blk_geom->has_uv) {
+        uint32_t recLumaOffset = ((context_ptr->blk_geom->origin_y >> 3) << 3) * candidateBuffer->recon_ptr->stride_y +
+            ((context_ptr->blk_geom->origin_x >> 3) << 3);
+#else
+    uint32_t recLumaOffset = (context_ptr->blk_geom->origin_y) * candidateBuffer->recon_ptr->stride_y +
+        (context_ptr->blk_geom->origin_x);
+#endif
     // 2: Form the pred_buf_q3
     uint32_t chroma_width = context_ptr->blk_geom->bwidth_uv;
     uint32_t chroma_height = context_ptr->blk_geom->bheight_uv;
-
-    uint32_t recLumaOffset = (context_ptr->blk_geom->origin_y) * candidateBuffer->recon_ptr->stride_y +
-        (context_ptr->blk_geom->origin_x);
 
     // Down sample Luma
     cfl_luma_subsampling_420_lbd_c(
         &(candidateBuffer->recon_ptr->buffer_y[recLumaOffset]),
         candidateBuffer->recon_ptr->stride_y,
         context_ptr->pred_buf_q3,
+#if CFL_FIX
+        context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bwidth ? (context_ptr->blk_geom->bwidth_uv << 1) : context_ptr->blk_geom->bwidth,
+        context_ptr->blk_geom->bheight_uv == context_ptr->blk_geom->bheight ? (context_ptr->blk_geom->bheight_uv << 1) : context_ptr->blk_geom->bheight);
+#else
         context_ptr->blk_geom->bwidth,
         context_ptr->blk_geom->bheight);
+#endif
 
 
     int32_t round_offset = chroma_width * chroma_height / 2;
@@ -2516,6 +2543,12 @@ static void CflPrediction(
         // Alphas = 0, Preds are the same as DC. Switch to DC mode
         candidateBuffer->candidate_ptr->intra_chroma_mode = UV_DC_PRED;
     }
+#if CFL_FIX
+    }
+    else {
+        candidateBuffer->candidate_ptr->intra_chroma_mode = UV_DC_PRED;
+    }
+#endif
 }
 uint8_t get_skip_tx_search_flag(
     int32_t                  sq_size,

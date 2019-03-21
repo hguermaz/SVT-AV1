@@ -228,6 +228,8 @@ extern "C" {
 
 #define AOM_INTERP_EXTEND 4
 
+#define CFL_FIX         1 // Fixes to CFL and enabling CFL for 4x*
+
 #define IMPROVE_1D_INTER_DEPTH_DECISION  1
 struct buf_2d {
     uint8_t *buf;
