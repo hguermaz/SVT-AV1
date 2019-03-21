@@ -73,10 +73,7 @@ extern "C" {
 
 
 
-#define M8_ADP                                          1
-#if M8_ADP
 #define FASTER_M8_ADP                                   1
-#endif
 
 
 // M9 settings toward 4K 60 fps
@@ -3082,13 +3079,9 @@ typedef enum EbPictureDepthMode {
 #define SB_SQ_BLOCKS_DEPTH_MODE             1
 #define SB_SQ_NON4_BLOCKS_DEPTH_MODE        2
 #define SB_OPEN_LOOP_DEPTH_MODE             3
-#if M8_ADP
 #define SB_FAST_OPEN_LOOP_DEPTH_MODE        4
 #define SB_PRED_OPEN_LOOP_DEPTH_MODE        5
-#else
-#define SB_PRED_OPEN_LOOP_DEPTH_MODE        4
-#define SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE  5
-#endif
+
 
 typedef enum EB_INTRA4x4_SEARCH_METHOD {
     INTRA4x4_OFF = 0,

@@ -652,12 +652,8 @@ uint32_t nfl_cap_table[6] = {
 #endif
 void set_nfl(
     ModeDecisionContext_t     *context_ptr
-#if M8_ADP    
     ){
-#else
-    PictureControlSet_t       *picture_control_set_ptr,
-    LargestCodingUnit_t       *sb_ptr) {
-#endif
+
 
 #if M9_NON_UNIFORM_NFL || NFL_PER_SQ_SIZE
     uint8_t nfl_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
@@ -671,7 +667,6 @@ void set_nfl(
     // 5                  6
     // 6                  4  
     // 7                  3 
-#if M8_ADP
     
     switch (context_ptr->nfl_level) {
    case 0:
@@ -703,19 +698,7 @@ void set_nfl(
         break;
     }
 
-#else
-    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_ptr->index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
-        context_ptr->full_recon_search_count = 1;
-    else
-        if (context_ptr->nfl_level == 0)
-            context_ptr->full_recon_search_count = MAX_NFL;
-        else if (context_ptr->nfl_level == 1)
-            context_ptr->full_recon_search_count = 10;
-        else if (context_ptr->nfl_level == 2)
-            context_ptr->full_recon_search_count = 8;
-        else
-            context_ptr->full_recon_search_count = 6;
-#endif
+
 #if NFL_PER_SQ_SIZE
     if (picture_control_set_ptr->slice_type != I_SLICE) {
         uint32_t nfl_cap = nfl_cap_table[nfl_index];
@@ -3658,12 +3641,8 @@ void md_encode_block(
 #endif
         set_nfl(
             context_ptr
-#if M8_ADP
         );
-#else
-            picture_control_set_ptr,
-            context_ptr->sb_ptr);
-#endif
+
 
 
         ProductGenerateMdCandidatesCu(

@@ -60,11 +60,8 @@ extern "C" {
 
         // Adaptive Depth Partitioning
         uint32_t                             *sb_score_array;
-#if M8_ADP
         uint8_t                               cost_depth_mode[SB_PRED_OPEN_LOOP_DEPTH_MODE];
-#else
-        uint8_t                               cost_depth_mode[SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE];
-#endif
+
         uint8_t                              *sb_cost_array;
         uint32_t                              predicted_cost;
         uint32_t                              budget;
@@ -73,9 +70,7 @@ extern "C" {
         uint8_t                               number_of_segments;
         uint32_t                              sb_min_score;
         uint32_t                              sb_max_score;
-#if M8_ADP
         uint32_t                              sb_average_score;
-#endif
 
         const BlockGeom                      *blk_geom;
         ModeDecisionCandidate_t              *mdc_candidate_ptr;
