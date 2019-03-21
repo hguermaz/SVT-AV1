@@ -33,16 +33,6 @@ EbErrorType motion_compensation_prediction_context_ctor(
     MotionCompensationPredictionContext_t *context_ptr;
     EB_MALLOC(MotionCompensationPredictionContext_t *, context_ptr, sizeof(MotionCompensationPredictionContext_t), EB_N_PTR);
     *(context_dbl_ptr) = context_ptr;
-#if !EXTRA_ALLOCATION
-    EB_MALLOC(EbByte, context_ptr->avc_style_mcp_intermediate_result_buf0, sizeof(uint8_t)*max_cu_width*max_cu_height * 6 * 3 / 2 + 16, EB_N_PTR);        //Y + U + V;
-
-    EB_MALLOC(EbByte, context_ptr->avc_style_mcp_intermediate_result_buf1, sizeof(uint8_t)*max_cu_width*max_cu_height * 6 * 3 / 2 + 16, EB_N_PTR);        //Y + U + V;
-
-#if !USE_PRE_COMPUTE
-    EB_MALLOC(EbByte, context_ptr->avc_style_mcp_two_d_interpolation_first_pass_filter_result_buf, sizeof(uint8_t)*(6 * max_cu_width + MaxHorizontalLumaFliterTag - 1)*(max_cu_height + MaxVerticalLumaFliterTag - 1), EB_N_PTR);
-#endif
-
-#endif
 
     // context_ptr->localReferenceBlock = (uint16_t*)malloc(sizeof(uint16_t)*( (max_cu_width+8)*(max_cu_height+8)));
 
@@ -62,20 +52,6 @@ EbErrorType motion_compensation_prediction_context_ctor(
         initData.bot_padding = 0;
 
         initData.splitMode = EB_FALSE;
-#if !EXTRA_ALLOCATION
-        return_error = eb_picture_buffer_desc_ctor(
-            (EbPtr*)&context_ptr->local_reference_block_l0,
-            (EbPtr)&initData);
-        if (return_error == EB_ErrorInsufficientResources) {
-            return EB_ErrorInsufficientResources;
-        }
-        return_error = eb_picture_buffer_desc_ctor(
-            (EbPtr*)&context_ptr->local_reference_block_l1,
-            (EbPtr)&initData);
-        if (return_error == EB_ErrorInsufficientResources) {
-            return EB_ErrorInsufficientResources;
-        }
-#endif
 
         initData.bit_depth = EB_8BIT;
         initData.maxWidth = max_cu_width + 32;

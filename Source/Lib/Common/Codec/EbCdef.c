@@ -1364,20 +1364,12 @@ static uint64_t joint_strength_search_dual(int32_t *best_lev0, int32_t *best_lev
     int32_t vsize, int32_t hsize) {
     int32_t r, c;
     const uint16_t *base = &src[src_voffset * sstride + src_hoffset];
-#if REDUCE_COPY_CDEF
     for (r = 0; r < vsize; r++) {
         EB_MEMCPY(dst, (void*)base, 2 * hsize);
         dst += dstride;
         base += sstride;
     }
     UNUSED(c);
-#else
-    for (r = 0; r < vsize; r++) {
-        for (c = 0; c < hsize; c++) {
-            dst[r * dstride + c] = base[r * sstride + c];
-        }
-    }
-#endif
 }
 
 uint64_t dist_8x8_16bit_c(uint16_t *dst, int32_t dstride, uint16_t *src,
@@ -1907,7 +1899,6 @@ void av1_cdef_search(
 
                 for (i = 0; i < CDEF_INBUF_SIZE; i++)
                     inbuf[i] = CDEF_VERY_LARGE;
-#if    REDUCE_COPY_CDEF
                 int32_t yoff = CDEF_VBORDER * (fbr != 0);
                 int32_t xoff = CDEF_HBORDER * (fbc != 0);
                 int32_t ysize = (nvb << mi_high_l2[pli]) + CDEF_VBORDER * (fbr + vb_step < nvfb) + yoff;
@@ -1919,7 +1910,7 @@ void av1_cdef_search(
                     (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) - yoff,
                     (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]) - xoff,
                     stride[pli], ysize, xsize);
-#endif
+
 #if FAST_CDEF
                 for (gi = start_gi; gi < end_gi; gi++) {
 #else
@@ -1932,21 +1923,7 @@ void av1_cdef_search(
                     if (fast) threshold = priconv[threshold];
                     /* We avoid filtering the pixels for which some of the pixels to
                     average are outside the frame. We could change the filter instead, but it would add special cases for any future vectorization. */
-#if    !REDUCE_COPY_CDEF
-                    int32_t yoff = CDEF_VBORDER * (fbr != 0);
-                    int32_t xoff = CDEF_HBORDER * (fbc != 0);
-                    int32_t ysize = (nvb << mi_high_l2[pli]) + CDEF_VBORDER * (fbr + vb_step < nvfb) + yoff;
-                    int32_t xsize = (nhb << mi_wide_l2[pli]) + CDEF_HBORDER * (fbc + hb_step < nhfb) + xoff;
-#endif
                     sec_strength = gi % CDEF_SEC_STRENGTHS;
-#if    !REDUCE_COPY_CDEF
-                    copy_sb16_16(
-                        &in[(-yoff * CDEF_BSTRIDE - xoff)], CDEF_BSTRIDE,
-                        src[pli],
-                        (fbr * MI_SIZE_64X64 << mi_high_l2[pli]) - yoff,
-                        (fbc * MI_SIZE_64X64 << mi_wide_l2[pli]) - xoff,
-                        stride[pli], ysize, xsize);
-#endif
                     cdef_filter_fb(NULL, tmp_dst, CDEF_BSTRIDE, in, xdec[pli], ydec[pli],
                         dir, &dirinit, var, pli, dlist, cdef_count, threshold,
                         sec_strength + (sec_strength == 3), pri_damping,

@@ -273,18 +273,12 @@ void* rest_kernel(void *input_ptr)
         {
 
 
-
-
-
-#if REST_REF_ONLY
-            if (sequence_control_set_ptr->enable_restoration && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag) {
-#else
 #if ICOPY
             if (sequence_control_set_ptr->enable_restoration && picture_control_set_ptr->parent_pcs_ptr->allow_intrabc == 0) {
 #else
             if (sequence_control_set_ptr->enable_restoration) {
 #endif
-#endif
+
 
 
 

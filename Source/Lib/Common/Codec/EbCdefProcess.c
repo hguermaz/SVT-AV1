@@ -517,11 +517,7 @@ void* cdef_kernel(void *input_ptr)
 
 
 
-#if CDEF_REF_ONLY
-        if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag) {
-#else
         if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->parent_pcs_ptr->cdef_filter_mode) {
-#endif
                 finish_cdef_search(
                     0,
                     sequence_control_set_ptr,
@@ -545,7 +541,7 @@ void* cdef_kernel(void *input_ptr)
         }
         else {
 
-#if 1//CDEF_REF_ONLY || ICOPY
+#if 1
             picture_control_set_ptr->parent_pcs_ptr->cdef_bits = 0;
             picture_control_set_ptr->parent_pcs_ptr->cdef_strengths[0] = 0;
             picture_control_set_ptr->parent_pcs_ptr->nb_cdef_strengths = 1;
