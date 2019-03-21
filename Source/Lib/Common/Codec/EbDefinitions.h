@@ -48,12 +48,6 @@ extern "C" {
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
 
-#define ENABLE_INTER_4x4                                0 // optional
-#define DISABLE_4xN_Nx4                                 1 //
-#define DISABLE_128x128                                 0
-#define VCI_CANDIDATE_II                                1
-
-#if VCI_CANDIDATE_II
 #define INTRA_ASM                                       1
 #define CBF_ZERO_OFF                                    1 // Remove CBF zero feature due to VQ problems
 #define TX_TYPE_FIX                                     1 // Fix the Tx Type search for Inter blocks
@@ -95,7 +89,7 @@ extern "C" {
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 #endif
-#endif
+
 
 // NEW MACOS
 #define INTRINSIC_OPT_2                                 1 // Intrinsics opt work phase 2
