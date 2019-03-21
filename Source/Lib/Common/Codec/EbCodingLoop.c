@@ -32,9 +32,8 @@
 #include "EbCodingLoop.h"
 
 extern void av1_predict_intra_block(
-#if TILES   
     TileInfo                    *tile,
-#endif
+
 #if INTRA_CORE_OPT
     ModeDecisionContext_t                  *md_context_ptr,
 #endif
@@ -70,9 +69,8 @@ extern void av1_predict_intra_block(
 
 #if INTRA_10BIT_SUPPORT
 void av1_predict_intra_block_16bit(
-#if TILES   
     TileInfo               *tile,
-#endif
+
     EncDecContext_t         *context_ptr,
     #if !ICOPY
     CodingUnit_t *cu_ptr,
@@ -3335,9 +3333,8 @@ EB_EXTERN void AV1EncodePass(
                             {
                                 MvReferenceFrame ref_frame = INTRA_FRAME;
                                 generate_av1_mvp_table(
-#if TILES
                                     &sb_ptr->tile_info,
-#endif
+
                                     context_ptr->md_context,
                                     cu_ptr,
                                     context_ptr->blk_geom,
@@ -3475,9 +3472,7 @@ EB_EXTERN void AV1EncodePass(
                                         mode = cu_ptr->pred_mode; //PredictionMode mode,
 
                                     av1_predict_intra_block_16bit(
-#if TILES   
                                         &sb_ptr->tile_info,
-#endif
                                         context_ptr,
                                         #if !ICOPY
                                         cu_ptr,
@@ -3554,9 +3549,7 @@ EB_EXTERN void AV1EncodePass(
                                     // Hsan: if CHROMA_MODE_1, then CFL will be evaluated @ EP as no CHROMA @ MD 
                                     // If that's the case then you should ensure than the 1st chroma prediction uses UV_DC_PRED (that's the default configuration for CHROMA_MODE_1 if CFL applicable (set @ fast loop candidates injection) then MD assumes chroma mode always UV_DC_PRED)
                                     av1_predict_intra_block(
-#if TILES
                                         &sb_ptr->tile_info,
-#endif
 #if INTRA_CORE_OPT
                                         NULL,
 #endif
@@ -3891,9 +3884,7 @@ EB_EXTERN void AV1EncodePass(
 
                     //IntMv  predmv[2];
                     enc_pass_av1_mv_pred(
-#if TILES
                         &sb_ptr->tile_info,
-#endif
                          context_ptr->md_context,
                         cu_ptr,
                         blk_geom,

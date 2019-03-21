@@ -9451,9 +9451,8 @@ extern void av1_predict_intra_block_md(
 
 #endif
 extern void av1_predict_intra_block(
-#if TILES  
     TileInfo * tile,
-#endif
+
 #if INTRA_CORE_OPT
     ModeDecisionContext_t                  *md_context_ptr,
 #endif
@@ -9512,32 +9511,6 @@ extern void av1_predict_intra_block(
 
     int32_t mirow = bl_org_y_pict >> 2;
     int32_t micol = bl_org_x_pict >> 2;
-#if INTRA_CORE_OPT
-#if TILES
-    int32_t up_available = (mirow > tile->mi_row_start);
-    int32_t left_available = (micol > tile->mi_col_start);
-#else
-    int32_t up_available = (mirow > 0);
-    int32_t left_available = (micol > 0);
-#endif
-    const int32_t bw = mi_size_wide[bsize];
-    const int32_t bh = mi_size_high[bsize];
-
-    int32_t mb_to_top_edge = -((mirow * MI_SIZE) * 8);
-    int32_t mb_to_bottom_edge = ((cm->mi_rows - bh - mirow) * MI_SIZE) * 8;
-    int32_t mb_to_left_edge = -((micol * MI_SIZE) * 8);
-    int32_t mb_to_right_edge = ((cm->mi_cols - bw - micol) * MI_SIZE) * 8;
-
-    // OMK to be changed in case of tiles
-#if TILES
-    int32_t  tile_mi_col_end = tile->mi_col_end;
-    int32_t  tile_mi_row_end = tile->mi_row_end;	
-#else
-    int32_t  tile_mi_col_end = cm->mi_cols;       //  xd->tile.mi_col_end = cm->mi_cols;
-    int32_t  tile_mi_row_end = cm->mi_rows;       //  xd->tile.mi_row_end = cm->mi_rows;
-#endif
-
-#else
     xd->up_available = (mirow > 0);
     xd->left_available = (micol > 0);
     const int32_t bw = mi_size_wide[bsize];
@@ -9563,7 +9536,6 @@ extern void av1_predict_intra_block(
 
     if (xd->n8_w > xd->n8_h)
         if (mirow & (xd->n8_w - 1)) xd->is_sec_rect = 1;
-#endif
     uint8_t  *dst;
     int32_t dst_stride;
     if (plane == 0) {
@@ -9591,17 +9563,10 @@ extern void av1_predict_intra_block(
     const int32_t ss_x = plane == 0 ? 0 : 1; //CHKN
     const int32_t ss_y = plane == 0 ? 0 : 1;
 
-#if TILES
     if (ss_x && bw < mi_size_wide[BLOCK_8X8])
         chroma_left_available = (micol - 1) > tile->mi_col_start;
     if (ss_y && bh < mi_size_high[BLOCK_8X8])
         chroma_up_available = (mirow - 1) > tile->mi_row_start;
-#else
-    if (ss_x && bw < mi_size_wide[BLOCK_8X8])
-        chroma_left_available = (micol - 1) > 0;//tile->mi_col_start;
-    if (ss_y && bh < mi_size_high[BLOCK_8X8])
-        chroma_up_available = (mirow - 1) > 0;//tile->mi_row_start;
-#endif
 
 #if ICOPY
    
@@ -9846,9 +9811,8 @@ extern void av1_predict_intra_block(
 
 #if INTRA_10BIT_SUPPORT
 void av1_predict_intra_block_16bit(
-#if TILES   
     TileInfo * tile,
-#endif
+
     EncDecContext_t         *context_ptr,
     #if !ICOPY
     CodingUnit_t *cu_ptr,
@@ -9884,13 +9848,9 @@ void av1_predict_intra_block_16bit(
 
     int32_t mirow = bl_org_y_pict >> 2;
     int32_t micol = bl_org_x_pict >> 2;
-#if TILES
     xd->up_available = (mirow > tile->mi_row_start);
     xd->left_available = (micol > tile->mi_col_start);
-#else
-    xd->up_available = (mirow > 0);
-    xd->left_available = (micol > 0);
-#endif
+
     const int32_t bw = mi_size_wide[bsize];
     const int32_t bh = mi_size_high[bsize];
 
@@ -9898,17 +9858,10 @@ void av1_predict_intra_block_16bit(
     xd->mb_to_bottom_edge = ((cm->mi_rows - bh - mirow) * MI_SIZE) * 8;
     xd->mb_to_left_edge = -((micol * MI_SIZE) * 8);
     xd->mb_to_right_edge = ((cm->mi_cols - bw - micol) * MI_SIZE) * 8;
-#if TILES 
     xd->tile.mi_col_start = tile->mi_col_start;
     xd->tile.mi_col_end = tile->mi_col_end;
     xd->tile.mi_row_start = tile->mi_row_start;
     xd->tile.mi_row_end = tile->mi_row_end;
-#else
-    xd->tile.mi_col_start = 0;
-    xd->tile.mi_col_end = cm->mi_cols;
-    xd->tile.mi_row_start = 0;
-    xd->tile.mi_row_end = cm->mi_rows;
-#endif
     xd->n8_h = bh;
     xd->n8_w = bw;
     xd->is_sec_rect = 0;
@@ -9946,17 +9899,10 @@ void av1_predict_intra_block_16bit(
     const int32_t ss_x = plane == 0 ? 0 : 1;
     const int32_t ss_y = plane == 0 ? 0 : 1;
 
-#if TILES
     if (ss_x && bw < mi_size_wide[BLOCK_8X8])
         chroma_left_available = (micol - 1) > tile->mi_col_start;
     if (ss_y && bh < mi_size_high[BLOCK_8X8])
         chroma_up_available = (mirow - 1) > tile->mi_row_start;
-#else
-    if (ss_x && bw < mi_size_wide[BLOCK_8X8])
-        chroma_left_available = (micol - 1) > 0;//tile->mi_col_start;
-    if (ss_y && bh < mi_size_high[BLOCK_8X8])
-        chroma_up_available = (mirow - 1) > 0;//tile->mi_row_start;
-#endif
 
     
 #if ICOPY_10B
@@ -10224,9 +10170,8 @@ EbErrorType AV1IntraPredictionCL(
             mode = candidate_buffer_ptr->candidate_ptr->pred_mode;
 
         av1_predict_intra_block(
-#if TILES
             &md_context_ptr->sb_ptr->tile_info, 
-#endif		
+		
 #if INTRA_CORE_OPT
             md_context_ptr,
 #endif

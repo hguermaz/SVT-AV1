@@ -21,11 +21,10 @@
 #include "EbRateControlTasks.h"
 #include "EbSvtAv1ErrorCodes.h"
 
-#if TILES
 void av1_tile_set_col(TileInfo *tile, PictureParentControlSet_t * pcsPtr, int col);
 void av1_tile_set_row(TileInfo *tile, PictureParentControlSet_t * pcsPtr, int row);
 void set_tile_info(PictureParentControlSet_t * pcsPtr);
-#endif
+
 
 /************************************************
  * Defines
@@ -720,7 +719,6 @@ void* picture_manager_kernel(void *input_ptr)
                         ChildPictureControlSetPtr->parent_pcs_ptr->av1_cm->pcs_ptr = ChildPictureControlSetPtr;
 #endif
 
-#if TILES             
                         set_tile_info(ChildPictureControlSetPtr->parent_pcs_ptr);
 
                         struct PictureParentControlSet_s     *ppcs_ptr = ChildPictureControlSetPtr->parent_pcs_ptr;
@@ -750,7 +748,7 @@ void* picture_manager_kernel(void *input_ptr)
                             }
                         }                       
 
-#endif
+
 
                         // Picture edges
                         ConfigurePictureEdges(entrySequenceControlSetPtr, ChildPictureControlSetPtr);

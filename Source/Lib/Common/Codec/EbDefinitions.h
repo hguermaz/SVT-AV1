@@ -47,7 +47,6 @@ extern "C" {
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
-#define TILES                                           1
 
 #define INTRA_CORE_OPT                                  0
 #define ENABLE_INTRA_4x4                                1 //

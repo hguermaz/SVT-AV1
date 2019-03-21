@@ -350,11 +350,7 @@ void GetTxbCtx(
 
     uint8_t sign;
 
-#if TILES
     if (dcSignLevelCoeffNeighborArray->topArray[dcSignLevelCoeffTopNeighborIndex] != INVALID_NEIGHBOR_DATA){
-#else
-    if (cu_origin_y != 0) {//dcSignLevelCoeffNeighborArray->topArray[dcSignLevelCoeffTopNeighborIndex] != INVALID_NEIGHBOR_DATA){ AMIR
-#endif
         do {
             sign = ((uint8_t)dcSignLevelCoeffNeighborArray->topArray[k + dcSignLevelCoeffTopNeighborIndex] >> COEFF_CONTEXT_BITS);
             assert(sign <= 2);
@@ -362,11 +358,7 @@ void GetTxbCtx(
         } while (++k < txb_w_unit);
     }
 
-#if TILES
     if (dcSignLevelCoeffNeighborArray->leftArray[dcSignLevelCoeffLeftNeighborIndex] != INVALID_NEIGHBOR_DATA){ 
-#else
-    if (cu_origin_x != 0) {// dcSignLevelCoeffNeighborArray->leftArray[dcSignLevelCoeffLeftNeighborIndex] != INVALID_NEIGHBOR_DATA){ AMIR
-#endif
         k = 0;
         do {
             sign = ((uint8_t)dcSignLevelCoeffNeighborArray->leftArray[k + dcSignLevelCoeffLeftNeighborIndex] >> COEFF_CONTEXT_BITS);
@@ -396,22 +388,14 @@ void GetTxbCtx(
             int32_t left = 0;
 
             k = 0;
-#if TILES
             if (dcSignLevelCoeffNeighborArray->topArray[dcSignLevelCoeffTopNeighborIndex] != INVALID_NEIGHBOR_DATA) {
-#else
-            if (cu_origin_y != 0) {
-#endif
                 do {
                     top |= (int32_t)(dcSignLevelCoeffNeighborArray->topArray[k + dcSignLevelCoeffTopNeighborIndex]);
                 } while (++k < txb_w_unit);
             }
             top &= COEFF_CONTEXT_MASK;
 
-#if TILES
             if (dcSignLevelCoeffNeighborArray->leftArray[dcSignLevelCoeffLeftNeighborIndex] != INVALID_NEIGHBOR_DATA) {
-#else
-            if (cu_origin_x != 0) {
-#endif
                 k = 0;
                 do {
                     left |= (int32_t)(dcSignLevelCoeffNeighborArray->leftArray[k + dcSignLevelCoeffLeftNeighborIndex]);
@@ -439,21 +423,13 @@ void GetTxbCtx(
         int16_t ctx_base_left = 0;
         int16_t ctx_base_top = 0;
 
-#if TILES
         if (dcSignLevelCoeffNeighborArray->topArray[dcSignLevelCoeffTopNeighborIndex] != INVALID_NEIGHBOR_DATA) {
-#else
-        if (cu_origin_y != 0) {
-#endif
             k = 0;
             do {
                 ctx_base_top += (dcSignLevelCoeffNeighborArray->topArray[k + dcSignLevelCoeffTopNeighborIndex] != 0);
             } while (++k < txb_w_unit);
         }
-#if TILES
         if (dcSignLevelCoeffNeighborArray->leftArray[dcSignLevelCoeffLeftNeighborIndex] != INVALID_NEIGHBOR_DATA) {
-#else
-        if (cu_origin_x != 0) {
-#endif
             k = 0;
             do {
                 ctx_base_left += (dcSignLevelCoeffNeighborArray->leftArray[k + dcSignLevelCoeffLeftNeighborIndex] != 0);
@@ -2839,11 +2815,6 @@ static void write_tile_info_max_tile(const PictureParentControlSet_t *const pcsP
     aom_wb_write_bit(wb, pcsPtr->uniform_tile_spacing_flag);
 
     if (pcsPtr->uniform_tile_spacing_flag) {
-
-#if !TILES
-        //CHKN: no tiles
-        cm->log2_tile_cols = cm->min_log2_tile_cols;
-#endif
         // Uniform spaced tiles with power-of-two number of rows and columns
         // tile columns
         int32_t ones = cm->log2_tile_cols - cm->min_log2_tile_cols;
@@ -2855,10 +2826,6 @@ static void write_tile_info_max_tile(const PictureParentControlSet_t *const pcsP
         }
 
         // rows
-#if ! TILES
-        //CHKN: no tiles
-        cm->log2_tile_rows = cm->min_log2_tile_rows;
-#endif
         ones = cm->log2_tile_rows - cm->min_log2_tile_rows;
         while (ones--) {
             aom_wb_write_bit(wb, 1);
@@ -2921,7 +2888,6 @@ void av1_get_tile_limits(PictureParentControlSet_t * pcsPtr) {
     cm->min_log2_tiles = AOMMAX(cm->min_log2_tiles, cm->min_log2_tile_cols);
 }
 
-#if TILES
 void av1_calculate_tile_cols(PictureParentControlSet_t * pcs_ptr) {
 
     Av1Common *const cm = pcs_ptr->av1_cm;
@@ -3087,7 +3053,7 @@ void av1_calculate_tile_rows(PictureParentControlSet_t * pcsPtr)
      tile->mi_col_end = AOMMIN(mi_col_end, cm->mi_cols);
      assert(tile->mi_col_end > tile->mi_col_start);
  }
-#endif
+
 
 
 static void write_tile_info(const PictureParentControlSet_t *const pcs_ptr,
@@ -3098,7 +3064,6 @@ static void write_tile_info(const PictureParentControlSet_t *const pcs_ptr,
 #if AV1_UPGRADE
     write_tile_info_max_tile(pcs_ptr, wb);
 
-#if TILES
     if (pcs_ptr->av1_cm->tile_rows * pcs_ptr->av1_cm->tile_cols > 1) {
 
         // tile id used for cdf update
@@ -3106,7 +3071,7 @@ static void write_tile_info(const PictureParentControlSet_t *const pcs_ptr,
         // Number of bytes in tile size - 1
         aom_wb_write_literal(wb, 3, 2);
     }
-#endif
+
 
 #else
     if (pcs_ptr->large_scale_tile) {
@@ -4459,7 +4424,6 @@ static uint32_t WriteSequenceHeaderObu(
     size = aom_wb_bytes_written(&wb);
     return size;
 }
-#if TILES
 static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
     int endTile, int tiles_log2,
     int tile_start_and_end_present_flag)
@@ -4478,7 +4442,7 @@ static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
     size = aom_wb_bytes_written(&wb);
     return size;
 }
-#endif
+
 static uint32_t WriteFrameHeaderObu(
     SequenceControlSet_t      *scsPtr,
     PictureParentControlSet_t *pcsPtr,
@@ -4535,26 +4499,16 @@ EbErrorType WriteFrameHeaderAv1(
     currDataSize +=
         WriteFrameHeaderObu(scsPtr, parentPcsPtr, /*saved_wb,*/ data + currDataSize, showExisting, showExisting);
 
-#if TILES   
     const int n_log2_tiles = parentPcsPtr->av1_cm->log2_tile_rows + parentPcsPtr->av1_cm->log2_tile_cols;
     int tile_start_and_end_present_flag = 0;
 
    currDataSize += write_tile_group_header(data + currDataSize,0,
         0, n_log2_tiles, tile_start_and_end_present_flag);
-#else
-    //currDataSize += write_tile_group_header(
-    //    data + currDataSize, tile_idx,
-    //    AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
-    //    n_log2_tiles, cm->num_tg > 1);
-#endif
 
     if (!showExisting) {
         // Add data from EC stream to Picture Stream.
-#if TILES
         int32_t frameSize = parentPcsPtr->av1_cm->tile_cols*parentPcsPtr->av1_cm->tile_rows==1 ? pcsPtr->entropy_coder_ptr->ecWriter.pos : pcsPtr->entropy_coder_ptr->ec_frame_size;
-#else
-        int32_t frameSize = pcsPtr->entropy_coder_ptr->ecWriter.pos;
-#endif
+
         OutputBitstreamUnit_t *ecOutputBitstreamPtr = (OutputBitstreamUnit_t*)pcsPtr->entropy_coder_ptr->ecOutputBitstreamPtr;
         //****************************************************************//
         // Copy from EC stream to frame stream
@@ -5607,11 +5561,7 @@ EB_EXTERN EbErrorType write_sb(
 
     SbGeom_t * sb_geom = &sequence_control_set_ptr->sb_geom[tbPtr->index];// .block_is_inside_md_scan[blk_index])
 
-#if !TILES 
-    if (context_ptr->sb_origin_x == 0 && context_ptr->sb_origin_y == 0)
 
-        av1_reset_loop_restoration(picture_control_set_ptr);
-#endif
     if (!(sb_geom->is_complete_sb)) {
 
         checkCuOutOfBound = EB_TRUE;

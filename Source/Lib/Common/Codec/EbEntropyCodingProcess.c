@@ -21,12 +21,11 @@
 #include "EbEntropyCodingResults.h"
 #include "EbRateControlTasks.h"
 
-#if TILES
 #define  AV1_MIN_TILE_SIZE_BYTES 1
 void av1_reset_loop_restoration(PictureControlSet_t     *piCSetPtr);
 void av1_tile_set_col(TileInfo *tile, PictureParentControlSet_t * pcsPtr, int col);
 void av1_tile_set_row(TileInfo *tile, PictureParentControlSet_t * pcsPtr, int row);
-#endif
+
 
 /******************************************************
  * Enc Dec Context Constructor
@@ -250,7 +249,6 @@ static void ResetEntropyCodingPicture(
 }
 
 
-#if TILES
 static void reset_ec_tile(
     uint32_t  total_size,
     uint32_t  is_last_tile_in_tg,
@@ -331,7 +329,7 @@ static void reset_ec_tile(
 
     return;
 }
-#endif
+
 /******************************************************
  * EncDec Configure LCU
  ******************************************************/
@@ -583,10 +581,8 @@ void* EntropyCodingKernel(void *input_ptr)
                     context_ptr->sb_origin_y = sb_origin_y;
                     lastLcuFlag = (sb_index == sequence_control_set_ptr->sb_tot_cnt - 1) ? EB_TRUE : EB_FALSE;
 
-#if TILES 
                     if (sb_index == 0)
                         av1_reset_loop_restoration(picture_control_set_ptr);
-#endif
                     // Configure the LCU
                     EntropyCodingConfigureLcu(
                         context_ptr,
@@ -676,7 +672,6 @@ void* EntropyCodingKernel(void *input_ptr)
             }
 
         }
-#if TILES
         else
         {
 
@@ -803,7 +798,7 @@ void* EntropyCodingKernel(void *input_ptr)
              } 
 
         }
-#endif
+
         // Release Mode Decision Results
         eb_release_object(encDecResultsWrapperPtr);
 

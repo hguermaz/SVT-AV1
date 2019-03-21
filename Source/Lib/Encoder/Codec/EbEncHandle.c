@@ -2295,10 +2295,9 @@ void CopyApiFromApp(
     sequence_control_set_ptr->static_config.constrained_intra = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->constrained_intra;
 
     // Adaptive Loop Filter
-#if TILES
     sequence_control_set_ptr->static_config.tile_rows = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->tile_rows;
     sequence_control_set_ptr->static_config.tile_columns = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->tile_columns;
-#endif
+
 
     // Rate Control
     sequence_control_set_ptr->static_config.scene_change_detection = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->scene_change_detection;
@@ -2609,12 +2608,11 @@ static EbErrorType VerifySettings(
 
         return_error = EB_ErrorBadParameter;
     }
-#if TILES
     if (config->tile_rows < 0 || config->tile_columns < 0 || config->tile_rows > 6 || config->tile_columns > 6) {
         SVT_LOG("Error Instance %u: Log2Tile rows/cols must be [0 - 6] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
-#endif
+
     if (config->scene_change_detection > 1) {
         SVT_LOG("Error Instance %u: The scene change detection must be [0 - 1] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
@@ -2702,10 +2700,9 @@ EbErrorType eb_svt_enc_init_parameter(
     config_ptr->source_height = 0;
     config_ptr->frames_to_be_encoded = 0; 
     config_ptr->stat_report = 0;
-#if TILES
     config_ptr->tile_rows = 0;
     config_ptr->tile_columns = 0;
-#endif
+
     config_ptr->qp = 50;
     config_ptr->use_qp_file = EB_FALSE;
     config_ptr->scene_change_detection = 0;
