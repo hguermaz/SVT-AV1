@@ -48,11 +48,7 @@ extern "C" {
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
 
-#define INC_NFL                                         1 // Set NFL to 4 for all sizes and temporal layers
-#define REMOVE_INTRA_CONST                              1 // Remove the constraints for INTRA injection
-
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
-#define M0_ME_QUARTER_PEL_SEARCH                        1 // F1
 #define SHUT_CBF_FL_SKIP                                1 // F2 Lossless
 #define V2_HME_ME_SR                                    1 // F3
 #define ME_64x64                                        1 // F4

@@ -1327,13 +1327,12 @@ void ProductFullLoopTxSearch(
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]);
 
 
-#if TX_TYPE_FIX
             //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
             if (yCountNonZeroCoeffsTemp == 0 && tx_type != DCT_DCT) {
 
                 continue;
             }
-#endif
+
 
 
             // LUMA DISTORTION
@@ -1429,11 +1428,7 @@ void ProductFullLoopTxSearch(
 #endif
     // For Inter blocks, transform type of chroma follows luma transfrom type
     if (is_inter)
-#if TX_TYPE_FIX
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y];
-#else
-        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV];
-#endif
 }
 
 #if ENCDEC_TX_SEARCH

@@ -708,7 +708,6 @@ static void Av1EncodeLoop(
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
 
 
-#if TX_TYPE_FIX
         if (count_non_zero_coeffs[0] == 0) {
             // INTER. Chroma follows Luma in transform type
             if (cu_ptr->prediction_mode_flag == INTER_MODE) {
@@ -719,7 +718,7 @@ static void Av1EncodeLoop(
                 txb_ptr->transform_type[PLANE_TYPE_Y] = DCT_DCT;
             }
         }
-#endif
+
 
 #if CHROMA_BLIND
         if (cu_ptr->prediction_mode_flag == INTRA_MODE && (context_ptr->evaluate_cfl_ep || cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED)) {
@@ -1215,7 +1214,6 @@ static void Av1EncodeLoop16bit(
                 txb_ptr->transform_type[PLANE_TYPE_Y],
                 clean_sparse_coeff_flag);
             txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
-#if TX_TYPE_FIX
             if (count_non_zero_coeffs[0] == 0) {
                 // INTER. Chroma follows Luma in transform type
                 if (cu_ptr->prediction_mode_flag == INTER_MODE) {
@@ -1226,7 +1224,7 @@ static void Av1EncodeLoop16bit(
                     txb_ptr->transform_type[PLANE_TYPE_Y] = DCT_DCT;
                 }
             }
-#endif
+
 
         }
 

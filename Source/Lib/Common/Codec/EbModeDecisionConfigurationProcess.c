@@ -1275,9 +1275,6 @@ void Forward85CuToModeDecision(
 
         SbParams_t  *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
         MdcLcuData_t *resultsPtr = &picture_control_set_ptr->mdc_sb_array[sb_index];
-#if !REMOVE_INTRA_CONST
-        uint32_t cuIndexInRaterScan;   uint16_t cuVar;
-#endif
         resultsPtr->leaf_count = 0;
         uint8_t cu_index = 0;
         while (cu_index < CU_MAX_COUNT)
@@ -1294,20 +1291,8 @@ void Forward85CuToModeDecision(
 
                     break;
                 case 1:
-#if REMOVE_INTRA_CONST
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
-#else
-                    //OMK To revisit : add Varpart flag and move to MD
-                    cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
-                    cuVar = (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][cuIndexInRaterScan]);
-                    if ((picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40) || (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE&& picture_control_set_ptr->slice_type == I_SLICE && cuVar>40))
-                        split_flag = EB_TRUE;
-                    else {
-                        resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
-                        resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
-                    }
-#endif
                     break;
 
                 case 2:

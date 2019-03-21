@@ -3367,7 +3367,6 @@ uint32_t combined_averaging_ssd_c(
     return ssd;
 }
 #endif
-#if M0_ME_QUARTER_PEL_SEARCH
 /*******************************************
 * PU_QuarterPelRefinementOnTheFly
 *   performs Quarter Pel refinement for each PU
@@ -4684,7 +4683,7 @@ static void QuarterPelSearch_LCU(
 
     return;
 }
-#endif
+
 void HmeOneQuadrantLevel0(
     PictureParentControlSet_t   *picture_control_set_ptr,
     MeContext_t             *context_ptr,                        // input/output parameter, ME context Ptr, used to get/update ME results
@@ -7484,15 +7483,10 @@ EbErrorType MotionEstimateLcu(
                 enableHalfPel32x32 = EB_TRUE;
                 enableHalfPel16x16 = EB_TRUE;
                 enableHalfPel8x8 = EB_TRUE;
-#if M0_ME_QUARTER_PEL_SEARCH
                 enableQuarterPel = EB_TRUE;
-#endif
                 if (picture_control_set_ptr->use_subpel_flag == 1) {
-#if M0_ME_QUARTER_PEL_SEARCH
                     enableQuarterPel = EB_TRUE; // AMIR enable in M1
-#else
-                    enableQuarterPel = EB_FALSE;
-#endif
+
 #endif
                     if (enableHalfPel32x32 || enableHalfPel16x16 || enableHalfPel8x8 || enableQuarterPel) {
                         //if((picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)) {
@@ -7544,7 +7538,6 @@ EbErrorType MotionEstimateLcu(
                             enableHalfPel16x16,
                             enableHalfPel8x8);
 
-#if M0_ME_QUARTER_PEL_SEARCH
                         // Quarter-Pel Refinement [8 search positions]
                         QuarterPelSearch_LCU(
                             context_ptr,
@@ -7575,7 +7568,6 @@ EbErrorType MotionEstimateLcu(
                             picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE);
 #endif
 
-#endif
 
                     }
 #if NSQ_OPTIMASATION 
