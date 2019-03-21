@@ -9,13 +9,9 @@
 #include "EbUtility.h"
 #include "EbModeDecisionProcess.h"
 #include "EbDefinitions.h"
-#if !OPEN_LOOP_EARLY_PARTITION
-static const uint32_t me2Nx2NOffset[4] = { 0, 1, 5, 21 };
-#endif
 /********************************************
  * Constants
  ********************************************/
-#if OPEN_LOOP_EARLY_PARTITION
 int pa_to_ep_block_index[85] = {
 
     0    ,
@@ -64,7 +60,7 @@ int pa_to_ep_block_index[85] = {
     1040 ,
     1065 ,    1074 ,    1083 ,    1092
 };
-#endif
+
 #define ADD_CU_STOP_SPLIT             0   // Take into account & Stop Splitting
 #define ADD_CU_CONTINUE_SPLIT         1   // Take into account & Continue Splitting
 #define DO_NOT_ADD_CU_CONTINUE_SPLIT  2   // Do not take into account & Continue Splitting
@@ -280,159 +276,6 @@ EbErrorType MdcRefinement(
     return return_error;
 }
 
-#if !OPEN_LOOP_EARLY_PARTITION
-/*******************************************
-Cost Computation for intra CU
-*******************************************/
-// TO be updated with AV1 functions
-EbErrorType MdcIntraCuRate(
-    uint32_t                                  cu_depth,
-    MdRateEstimationContext_t               *md_rate_estimation_ptr,
-    PictureControlSet_t                    *picture_control_set_ptr,
-    uint64_t                                  *mdcIntraRate)
-{
-    EbErrorType return_error = EB_ErrorNone;
-
-    (void)mdcIntraRate;
-    (void)picture_control_set_ptr;
-    (void)md_rate_estimation_ptr;
-    (void)cu_depth;
-    //uint32_t chroma_mode = EB_INTRA_CHROMA_DM;
-    //EB_PART_MODE partitionMode = SIZE_2Nx2N;
-    //int32_t prediction_index = -1;
-
-    //// Number of bits for each synatax element
-    //uint64_t partSizeIntraBitsNum = 0;
-    //uint64_t intraLumaModeBitsNum = 0;
-
-    //// Luma and chroma rate
-    //uint64_t lumaRate;
-    //uint64_t chromaRate;
-
-    //EncodeContext_t *encode_context_ptr = ((SequenceControlSet_t*)(picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr))->encode_context_ptr;
-
-    //CHECK_REPORT_ERROR(
-    //    (partitionMode == SIZE_2Nx2N),
-    //    encode_context_ptr->app_callback_ptr,
-    //    EB_ENC_RD_COST_ERROR3);
-
-    //// Estimate Chroma Mode Bits
-    //chromaRate = md_rate_estimation_ptr->intraChromaBits[chroma_mode];
-
-    //// Estimate Partition Size Bits :
-    //// *Note - Intra is implicitly 2Nx2N
-    //partSizeIntraBitsNum = ((uint8_t)cu_depth == (((SequenceControlSet_t *)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr)->max_sb_depth - 1)) ?
-    //    md_rate_estimation_ptr->intraPartSizeBits[partitionMode] :
-    //    ZERO_COST;
-
-    //// Estimate Luma Mode Bits for Intra
-    ///*intra_luma_mode_context(
-    //cu_ptr,
-    //luma_mode,
-    //&prediction_index);*/
-
-    //intraLumaModeBitsNum = (prediction_index != -1) ?
-    //    md_rate_estimation_ptr->intraLumaBits[prediction_index] :
-    //    md_rate_estimation_ptr->intraLumaBits[3];
-
-    //// Rate of the candiadate mode is equal to the sum of the rate of independent syntax element
-    //lumaRate =
-    //    partSizeIntraBitsNum +
-    //    intraLumaModeBitsNum;
-
-    //// Assign fast cost
-    //*(mdcIntraRate) = chromaRate + lumaRate;
-
-    return return_error;
-}
-
-/*******************************************
-Cost Computation for inter CU
-*******************************************/
-// TO be updated with AV1 functions
-uint64_t MdcInterCuRate(
-    uint32_t                                   direction,
-    int16_t                                   xMvL0,
-    int16_t                                   yMvL0,
-    int16_t                                   xMvL1,
-    int16_t                                   yMvL1)
-{
-
-    int32_t MVs_0, MVs_1, MVs_2, MVs_3;
-
-    uint64_t rate = 86440;
-
-
-    switch (direction)
-    {
-    default:
-    case UNI_PRED_LIST_0:
-
-        // Estimate the Motion Vector Prediction Index Bits
-        rate += 23196;
-
-        // Estimate the Motion Vector Difference Bits
-        MVs_0 = ABS(xMvL0);
-        MVs_1 = ABS(yMvL0);
-        MVs_0 = MVs_0 > 499 ? 499 : MVs_0;
-        MVs_1 = MVs_1 > 499 ? 499 : MVs_1;
-        rate += mvBitTable[MVs_0][MVs_1];
-        break;
-
-    case UNI_PRED_LIST_1:
-
-        // Estimate the Motion Vector Prediction Index Bits
-        rate += 23196;
-
-        // Estimate the Motion Vector Difference Bits
-
-        MVs_2 = ABS(xMvL1);
-        MVs_3 = ABS(yMvL1);
-        MVs_2 = MVs_2 > 499 ? 499 : MVs_2;
-        MVs_3 = MVs_3 > 499 ? 499 : MVs_3;
-
-
-        rate += mvBitTable[MVs_2][MVs_3];
-
-
-
-
-        break;
-
-    case BI_PRED:
-        //LIST 0 RATE ESTIMATION
-
-        // Estimate the Motion Vector Prediction Index Bits
-
-        rate += 46392;
-
-        // Estimate the Motion Vector Difference Bits
-
-        MVs_0 = ABS(xMvL0);
-        MVs_1 = ABS(yMvL0);
-        MVs_0 = MVs_0 > 499 ? 499 : MVs_0;
-        MVs_1 = MVs_1 > 499 ? 499 : MVs_1;
-
-
-        rate += mvBitTable[MVs_0][MVs_1];
-
-        // Estimate the Motion Vector Difference Bits
-        MVs_2 = ABS(xMvL1);
-        MVs_3 = ABS(yMvL1);
-        MVs_2 = MVs_2 > 499 ? 499 : MVs_2;
-        MVs_3 = MVs_3 > 499 ? 499 : MVs_3;
-
-
-        rate += mvBitTable[MVs_2][MVs_3];
-
-        break;
-
-    }
-
-    return rate;
-}
-
-#endif
 /*******************************************
 Derive the contouring class
 If (AC energy < 32 * 32) then apply aggressive action (Class 1),
@@ -692,9 +535,7 @@ void ForwardCuToModeDecision(
 
 
     resultsPtr->leaf_count = 0;
-#if OPEN_LOOP_EARLY_PARTITION
     uint8_t   enable_blk_4x4 = 0;
-#endif
     cu_index = 0;
 
     while (cu_index < CU_MAX_COUNT)
@@ -743,10 +584,8 @@ void ForwardCuToModeDecision(
                 case ADD_CU_STOP_SPLIT:
                     // Stop
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
-#if OPEN_LOOP_EARLY_PARTITION
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
-#endif
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_FALSE;
 
                     break;
@@ -754,10 +593,8 @@ void ForwardCuToModeDecision(
                 case ADD_CU_CONTINUE_SPLIT:
                     // Go Down + consider the current CU as candidate
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
-#if OPEN_LOOP_EARLY_PARTITION
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
-#endif
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
 
                     break;
@@ -770,10 +607,9 @@ void ForwardCuToModeDecision(
 
                 default:
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
-#if OPEN_LOOP_EARLY_PARTITION
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
-#endif
+
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
 
                     break;
@@ -783,7 +619,6 @@ void ForwardCuToModeDecision(
             case 3:
 
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
-#if OPEN_LOOP_EARLY_PARTITION
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
 
@@ -802,18 +637,14 @@ void ForwardCuToModeDecision(
                     }
                 }else
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_FALSE;
-#else
-                resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_FALSE;
-#endif
+
 
                 break;
 
             default:
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
-#if OPEN_LOOP_EARLY_PARTITION
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = pa_to_ep_block_index[cu_index];
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].tot_d1_blocks = 1;
-#endif
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
                 break;
             }
@@ -1028,9 +859,6 @@ void PredictionPartitionLoop(
     uint32_t                                endDepth,
     ModeDecisionConfigurationContext_t     *context_ptr){
 
-#if !OPEN_LOOP_EARLY_PARTITION
-    MdRateEstimationContext_t *md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
-#endif
     MdcpLocalCodingUnit_t *localCuArray = context_ptr->localCuArray;
     MdcpLocalCodingUnit_t   *cu_ptr;
 
@@ -1040,11 +868,7 @@ void PredictionPartitionLoop(
     uint64_t      cuInterRate = 0;
     uint64_t      cuInterCost = 0;
 #endif
-#if !OPEN_LOOP_EARLY_PARTITION
-    uint32_t      cuIntraSad = 0;
-    uint64_t      cuIntraRate = 0;
-    uint64_t      cuIntraCost = 0;
-#endif
+
     uint32_t      cuIndexInRaterScan;
     uint32_t      cu_index = 0;
     uint32_t      startIndex = 0;
@@ -1066,74 +890,16 @@ void PredictionPartitionLoop(
         if (sb_params->raster_scan_cu_validity[cuIndexInRaterScan])
         {
             uint32_t depth;
-#if !OPEN_LOOP_EARLY_PARTITION
-            uint32_t size;
-#endif
+
             cuStatsPtr = GetCodedUnitStats(cu_index);
 
             depth = cuStatsPtr->depth;
-#if !OPEN_LOOP_EARLY_PARTITION
-            size = cuStatsPtr->size;
-#endif
+
             cu_ptr->earlySplitFlag = (depth < endDepth) ? EB_TRUE : EB_FALSE;
 
             if (depth >= startDepth && depth <= endDepth) {
                 //reset the flags here:   all CU splitFalg=TRUE. default: we always split. interDepthDecision will select where  to stop splitting(ie setting the flag to False)
-#if !OPEN_LOOP_EARLY_PARTITION
-                {
-                    MdcIntraCuRate(
-                        depth,
-                        md_rate_estimation_ptr,
-                        picture_control_set_ptr,
-                        &cuIntraRate);
 
-
-                    OisCu32Cu16Results_t            *oisCu32Cu16ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index];
-                    OisCu8Results_t                   *oisCu8ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu8_results[sb_index];
-                    OisCandidate_t * OisCuPtr = cuIndexInRaterScan < RASTER_SCAN_CU_INDEX_8x8_0 ?
-                        oisCu32Cu16ResultsPtr->sorted_ois_candidate[cuIndexInRaterScan] : oisCu8ResultsPtr->sorted_ois_candidate[cuIndexInRaterScan - RASTER_SCAN_CU_INDEX_8x8_0];
-
-
-                    if (size > 32) {
-                        cuIntraSad =
-                            oisCu32Cu16ResultsPtr->sorted_ois_candidate[1][0].distortion +
-                            oisCu32Cu16ResultsPtr->sorted_ois_candidate[2][0].distortion +
-                            oisCu32Cu16ResultsPtr->sorted_ois_candidate[3][0].distortion +
-                            oisCu32Cu16ResultsPtr->sorted_ois_candidate[4][0].distortion;
-                    }
-                    else if (size == 32) {
-                        cuIntraSad = oisCu32Cu16ResultsPtr->sorted_ois_candidate[cuIndexInRaterScan][0].distortion;
-                    }
-                    else {
-                        if (size > 8) {
-                            cuIntraSad = oisCu32Cu16ResultsPtr->sorted_ois_candidate[cuIndexInRaterScan][0].distortion;
-                        }
-                        else {
-                            if (OisCuPtr[0].valid_distortion) {
-                                cuIntraSad = OisCuPtr[0].distortion;
-                            }
-                            else {
-
-                                const CodedUnitStats_t  *cu_stats = GetCodedUnitStats(ParentBlockIndex[cu_index]);
-                                const uint32_t me2Nx2NTableOffset = cu_stats->cuNumInDepth + me2Nx2NOffset[cu_stats->depth];
-
-
-                                if (oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].valid_distortion) {
-                                    cuIntraSad = oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                                }
-                                else {
-                                    cuIntraSad = 0;
-                                }
-                            }
-                        }
-                    }
-
-
-                    cuIntraCost = (cuIntraSad << COST_PRECISION) + ((context_ptr->lambda * cuIntraRate + MD_OFFSET) >> MD_SHIFT);
-                    cu_ptr->earlyCost = cuIntraCost;
-
-                }
-#endif
                 if (picture_control_set_ptr->slice_type != I_SLICE) {
 
                     MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexInRaterScan];
@@ -1242,9 +1008,7 @@ void PredictionPartitionLoop(
                     cu_ptr->earlyCost = cuInterCost;
 #endif
                 }
-#if !OPEN_LOOP_EARLY_PARTITION
-                cu_ptr->earlyCost = picture_control_set_ptr->slice_type == I_SLICE ? cuIntraCost : MIN(cuInterCost, cuIntraCost);
-#endif
+
                 if (endDepth == 2) {
                     context_ptr->group_of8x8_blocks_count = depth == 2 ? incrementalCount[cuIndexInRaterScan] : 0;
                 }
@@ -1284,32 +1048,16 @@ EbErrorType EarlyModeDecisionLcu(
     EbErrorType    return_error = EB_ErrorNone;
     uint32_t       tbOriginX    = sb_ptr->origin_x;
     uint32_t       tbOriginY    = sb_ptr->origin_y;
-#if !OPEN_LOOP_EARLY_PARTITION  
-    EB_SLICE       slice_type   = picture_control_set_ptr->slice_type;
-#endif
+
 
     uint32_t      startDepth = DEPTH_64;
 
-#if OPEN_LOOP_EARLY_PARTITION        
     uint32_t      endDepth =  DEPTH_8 ;
-#else
-    uint32_t      endDepth = (slice_type == I_SLICE) ? DEPTH_8 : DEPTH_16;
-#endif
+
     context_ptr->group_of8x8_blocks_count = 0;
     context_ptr->group_of16x16_blocks_count = 0;
 
-#if !OPEN_LOOP_EARLY_PARTITION
-    // The MDC refinements had been taken into account at the budgeting algorithm & therefore could be skipped for the ADP case
-    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode != PIC_SB_SWITCH_DEPTH_MODE) {
-        PrePredictionRefinement(
-            sequence_control_set_ptr,
-            picture_control_set_ptr,
-            sb_ptr,
-            sb_index,
-            &startDepth,
-            &endDepth);
-    }
-#endif
+
     PredictionPartitionLoop(
         sequence_control_set_ptr,
         picture_control_set_ptr,

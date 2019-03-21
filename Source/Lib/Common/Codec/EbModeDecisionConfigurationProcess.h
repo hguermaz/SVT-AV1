@@ -11,9 +11,7 @@
 #include "EbDefinitions.h"
 #include "EbRateControlProcess.h"
 #include "EbSequenceControlSet.h"
-#if MDC_FIX_0
 #include "EbModeDecision.h"
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
