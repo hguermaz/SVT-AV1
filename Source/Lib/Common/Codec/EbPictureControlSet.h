@@ -25,9 +25,8 @@
 #if CABAC_UP
 #include "EbMdRateEstimation.h"
 #endif
-#if CDEF_M
 #include "EbCdef.h"
-#endif
+
 
 #if ICOPY
 #include"av1me.h"
@@ -13747,7 +13746,6 @@ extern "C" {
         EbBool                                entropy_coding_pic_done;
         EbHandle                              intra_mutex;
         uint32_t                              intra_coded_area;
-#if CDEF_M
         uint32_t                              tot_seg_searched_cdef;
         EbHandle                              cdef_search_mutex;
 
@@ -13760,14 +13758,13 @@ extern "C" {
         uint16_t *src[3];        //dlfed recon in 16bit form
         uint16_t *ref_coeff[3];  //input video in 16bit form
 
-#endif
-#if REST_M
+
         uint32_t                              tot_seg_searched_rest;
         EbHandle                              rest_search_mutex;
         uint16_t                              rest_segments_total_count;
         uint8_t                               rest_segments_column_count;
         uint8_t                               rest_segments_row_count;            
-#endif
+
         // Mode Decision Config
         MdcLcuData_t                         *mdc_sb_array;
 
@@ -14053,9 +14050,8 @@ extern "C" {
         uint8_t                              *zz_cost_array;
         // Non moving index array
         uint8_t                              *non_moving_index_array;
-#if NEW_PRED_STRUCT
         int                                   kf_zeromotion_pct; // percent of zero motion blocks
-#endif
+
         uint8_t                               fade_out_from_black;
         uint8_t                               fade_in_to_black;
         EbBool                                is_pan;
@@ -14145,10 +14141,8 @@ extern "C" {
         EbPred                                pred_structure;
         uint8_t                               hierarchical_levels;
         uint16_t                              full_sb_count;
-#if NEW_PRED_STRUCT
         EbBool                                init_pred_struct_position_flag;
         int8_t                                hierarchical_layers_diff;
-#endif        
         // ME Tools
         EbBool                                use_subpel_flag;
         EbBool                                enable_hme_flag;
@@ -14223,10 +14217,8 @@ extern "C" {
         const qm_val_t                       *gqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
         Quants                                quants;
         Dequants                              deq;
-#if MD_10BIT_FIX
         Quants                                quantsMd;
         Dequants                              deqMd;
-#endif
         int32_t                               min_qmlevel;
         int32_t                               max_qmlevel;
         // Encoder
@@ -14326,9 +14318,7 @@ extern "C" {
         aom_film_grain_t                      film_grain_params;
         struct aom_denoise_and_model_t       *denoise_and_model;
         EbBool                                enable_in_loop_motion_estimation_flag;
-#if REST_M       
         RestUnitSearchInfo                   *rusi_picture[3];//for 3 planes
-#endif
 #if FAST_CDEF
         int8_t                                cdef_filter_mode;
         int32_t                               cdef_frame_strength;

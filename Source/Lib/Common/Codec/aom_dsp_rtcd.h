@@ -147,19 +147,13 @@ extern "C" {
     void cfl_predict_hbd_avx2(const int16_t *pred_buf_q3, uint16_t *pred, int32_t pred_stride, uint16_t *dst, int32_t dst_stride, int32_t alpha_q3, int32_t bit_depth, int32_t width, int32_t height);
     RTCD_EXTERN void(*cfl_predict_hbd)(const int16_t *pred_buf_q3, uint16_t *pred, int32_t pred_stride, uint16_t *dst, int32_t dst_stride, int32_t alpha_q3, int32_t bit_depth, int32_t width, int32_t height);
 
-#if QT_10BIT_SUPPORT
     void av1_filter_intra_edge_high_c_old(uint8_t *p, int32_t sz, int32_t strength);
-#else
-    void av1_filter_intra_edge_high_c(uint8_t *p, int32_t sz, int32_t strength);
-#endif
     void av1_filter_intra_edge_sse4_1(uint8_t *p, int32_t sz, int32_t strength);
     RTCD_EXTERN void(*av1_filter_intra_edge)(uint8_t *p, int32_t sz, int32_t strength);
 
-#if INTRA_10BIT_SUPPORT
     void av1_filter_intra_edge_high_c(uint16_t *p, int32_t sz, int32_t strength);
     void av1_filter_intra_edge_high_sse4_1(uint16_t *p, int32_t sz, int32_t strength);
     RTCD_EXTERN void(*av1_filter_intra_edge_high)(uint16_t *p, int32_t sz, int32_t strength);
-#endif
 
     void av1_fwd_txfm2d_4x16_c(int16_t *input, int32_t *output, uint32_t input_stride, TxType transform_type, uint8_t  bit_depth);
     void av1_fwd_txfm2d_4x16_avx2(int16_t *input, int32_t *output, uint32_t inputStride, TxType transform_type, uint8_t  bit_depth);
@@ -343,7 +337,6 @@ extern "C" {
     void aom_highbd_quantize_b_64x64_avx2(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int32_t skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
     RTCD_EXTERN void(*aom_quantize_b_64x64)(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int32_t skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
 
-#if QT_10BIT_SUPPORT
 
     void aom_highbd_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int32_t skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
     RTCD_EXTERN void(*aom_highbd_quantize_b)(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int32_t skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
@@ -354,7 +347,7 @@ extern "C" {
     void aom_highbd_quantize_b_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int32_t skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
     RTCD_EXTERN void(*aom_highbd_quantize_b_64x64)(const tran_low_t *coeff_ptr, intptr_t n_coeffs, int32_t skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan);
 
-#endif
+
 
 
     void av1_inv_txfm2d_add_4x4_c(const int32_t *input, uint16_t *output, int32_t stride, TxType tx_type, int32_t bd);
@@ -435,24 +428,19 @@ extern "C" {
     void av1_inv_txfm_add_ssse3(const tran_low_t *dqcoeff, uint8_t *dst, int32_t stride, const TxfmParam *txfm_param);
     RTCD_EXTERN void(*av1_inv_txfm_add)(const tran_low_t *dqcoeff, uint8_t *dst, int32_t stride, const TxfmParam *txfm_param);
 
-#if RS_10BIT_FIX
     //uint32_t aom_highbd_8_mse16x16_c(const uint8_t *src_ptr, int32_t  source_stride, const uint8_t *ref_ptr, int32_t  recon_stride, uint32_t *sse);
     void      aom_highbd_8_mse16x16_sse2(const uint8_t *src_ptr, int32_t  source_stride, const uint8_t *ref_ptr, int32_t  recon_stride, uint32_t *sse);
     RTCD_EXTERN void(*aom_highbd_8_mse16x16)(const uint8_t *src_ptr, int32_t  source_stride, const uint8_t *ref_ptr, int32_t  recon_stride, uint32_t *sse);
-#endif
 
-#if INTRA_ASM
     void av1_upsample_intra_edge_c(uint8_t *p, int32_t sz);
     void av1_upsample_intra_edge_sse4_1(uint8_t *p, int32_t sz);
     RTCD_EXTERN void(*av1_upsample_intra_edge)(uint8_t *p, int32_t sz);
 
 
-#if INTRA_10BIT_SUPPORT
     // AMIR
     //void av1_upsample_intra_edge_high_c(uint16_t *p, int32_t sz, int32_t bd);
     //void av1_upsample_intra_edge_high_sse4_1(uint16_t *p, int32_t sz, int32_t bd);
     //RTCD_EXTERN void(*av1_upsample_intra_edge_high)(uint16_t *p, int32_t sz, int32_t bd);
-#endif
 /* DC_PRED top */
 
     void aom_dc_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
@@ -1340,7 +1328,7 @@ extern "C" {
     void aom_highbd_paeth_predictor_8x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
     #define aom_highbd_paeth_predictor_8x8 aom_highbd_paeth_predictor_8x8_c
 #endif
-#endif
+
 
 #if AOM_SAD_PORTING
     uint32_t aom_sad128x128_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
@@ -1642,7 +1630,6 @@ extern "C" {
     void aom_fft8x8_float_avx2(const float *input, float *temp, float *output);
     RTCD_EXTERN void(*aom_fft8x8_float)(const float *input, float *temp, float *output);
 
-#if INTRA_10BIT_SUPPORT
     void aom_highbd_dc_128_predictor_16x16_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int32_t bd);
     void aom_highbd_dc_128_predictor_16x16_avx2(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int32_t bd);
     RTCD_EXTERN void(*aom_highbd_dc_128_predictor_16x16)(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int32_t bd);
@@ -2397,10 +2384,9 @@ extern "C" {
     void av1_txb_init_levels_avx2(const tran_low_t *const coeff, const int32_t width, const int32_t height, uint8_t *const levels);
     RTCD_EXTERN void(*av1_txb_init_levels)(const tran_low_t *const coeff, const int32_t width, const int32_t height, uint8_t *const levels);
 
-#endif
+
 
     void aom_dsp_rtcd(void);
-
 
 
 #ifdef RTCD_C
@@ -2468,11 +2454,8 @@ extern "C" {
         if (flags & HAS_AVX2) subtract_average = subtract_average_avx2;
 
 
-#if INTRA_10BIT_SUPPORT
         av1_filter_intra_edge = av1_filter_intra_edge_high_c_old;
-#else
-        av1_filter_intra_edge = av1_filter_intra_edge_high_c;
-#endif
+
         if (flags & HAS_SSE4_1) av1_filter_intra_edge = av1_filter_intra_edge_sse4_1;
 
         eb_smooth_v_predictor = smooth_v_predictor_c;
@@ -2581,7 +2564,6 @@ extern "C" {
         //aom_highbd_8_mse16x16 = aom_highbd_8_mse16x16_c;
         if (flags & HAS_SSE2) aom_highbd_8_mse16x16 = aom_highbd_8_mse16x16_sse2;
 
-#if INTRA_ASM
         av1_upsample_intra_edge = av1_upsample_intra_edge_c;
         if (flags & HAS_SSE4_1) av1_upsample_intra_edge = av1_upsample_intra_edge_sse4_1;
 
@@ -3750,7 +3732,7 @@ aom_variance8x8 = aom_variance8x8_c;
         aom_highbd_h_predictor_16x32 = aom_highbd_h_predictor_16x32_c;
         if (flags & HAS_SSE2) aom_highbd_h_predictor_16x32 = aom_highbd_h_predictor_16x32_sse2;
 
-#endif
+
         aom_fft2x2_float = aom_fft2x2_float_c;
         aom_fft4x4_float = aom_fft4x4_float_c;
         if (flags & HAS_SSE2) aom_fft4x4_float = aom_fft4x4_float_sse2;

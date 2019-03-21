@@ -890,11 +890,7 @@ void PerformEarlyLcuPartitionning(
         }
     }
 
-#if NEW_QPS
     context_ptr->qp_index = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->base_qindex;
-#else
-    context_ptr->qp_index = quantizer_to_qindex[context_ptr->qp];
-#endif
     uint32_t lambdaSse;
     uint32_t lambdaSad;
     (*av1_lambda_assignment_function_table[picture_control_set_ptr->parent_pcs_ptr->pred_structure])(
@@ -1275,9 +1271,6 @@ void Forward85CuToModeDecision(
 
         SbParams_t  *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
         MdcLcuData_t *resultsPtr = &picture_control_set_ptr->mdc_sb_array[sb_index];
-#if !REMOVE_INTRA_CONST
-        uint32_t cuIndexInRaterScan;   uint16_t cuVar;
-#endif
         resultsPtr->leaf_count = 0;
         uint8_t cu_index = 0;
         while (cu_index < CU_MAX_COUNT)
@@ -1294,20 +1287,8 @@ void Forward85CuToModeDecision(
 
                     break;
                 case 1:
-#if REMOVE_INTRA_CONST
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
-#else
-                    //OMK To revisit : add Varpart flag and move to MD
-                    cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
-                    cuVar = (picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][cuIndexInRaterScan]);
-                    if ((picture_control_set_ptr->slice_type == I_SLICE && cuVar > 40) || (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE&& picture_control_set_ptr->slice_type == I_SLICE && cuVar>40))
-                        split_flag = EB_TRUE;
-                    else {
-                        resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = cu_index;
-                        resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = split_flag = EB_TRUE;
-                    }
-#endif
                     break;
 
                 case 2:
@@ -3334,11 +3315,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 
         av1_set_quantizer(
             picture_control_set_ptr->parent_pcs_ptr,
-#if NEW_QPS
             picture_control_set_ptr->parent_pcs_ptr->base_qindex);
-#else
-            quantizer_to_qindex[picture_control_set_ptr->picture_qp]);
-#endif
         av1_build_quantizer(
             (aom_bit_depth_t)sequence_control_set_ptr->static_config.encoder_bit_depth,
             picture_control_set_ptr->parent_pcs_ptr->y_dc_delta_q,
@@ -3349,7 +3326,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             quants,
             dequants);
 
-#if MD_10BIT_FIX
         Quants *const quantsMd = &picture_control_set_ptr->parent_pcs_ptr->quantsMd;
         Dequants *const dequantsMd = &picture_control_set_ptr->parent_pcs_ptr->deqMd;
         av1_build_quantizer(
@@ -3361,7 +3337,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr->parent_pcs_ptr->v_ac_delta_q,
             quantsMd,
             dequantsMd);
-#endif
 
 #if REST_FAST_RATE_EST   
         // Hsan: collapse spare code 

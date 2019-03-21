@@ -23,23 +23,17 @@ extern "C" {
     /**************************************
      * Defines
      **************************************/
-#if IMPROVED_BIPRED_INJECTION || IMPROVED_UNIPRED_INJECTION
 #if ICOPY
 #define IBC_CAND 2 //two intra bc candidates
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (124+IBC_CAND) /* 61 Intra & 18+2x8+2x8 Inter*/
 #else
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               124// 61 Intra & 18+2x8+2x8 Inter
 #endif
-#else
-#define MODE_DECISION_CANDIDATE_MAX_COUNT               90//35//20 // 61 Intra & 18 Inter
-#endif
-#if INC_NFL12
+
 #if !INTRA_INTER_FAST_LOOP
 #define MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT        (MAX_NFL*6) //up to 6 depths
 #endif
-#else
-#define MODE_DECISION_CANDIDATE_BUFFER_MAX_COUNT        33
-#endif
+
 #if !INTRA_INTER_FAST_LOOP
 #define INDEPENDENT_INTRA_CHROMA_MODE_TOTAL_COUNT       4       // Planar, Vertical, Horizontal, DC
 #endif
@@ -223,11 +217,6 @@ extern "C" {
         uint8_t                         intra_chroma_left_mode;
         uint8_t                         intra_chroma_top_mode;
         int16_t                         pred_buf_q3[CFL_BUF_SQUARE]; // Hsan: both MD and EP to use pred_buf_q3 (kept 1, and removed the 2nd)
-#if INTRA_CORE_OPT
-        DECLARE_ALIGNED(16, uint8_t, left_data[MAX_MB_PLANE][MAX_TX_SIZE * 2 + 32]);
-        DECLARE_ALIGNED(16, uint8_t, above_data[MAX_MB_PLANE][MAX_TX_SIZE * 2 + 32]);
-        block_size  scaled_chroma_bsize;
-#endif
 
 #if REMOVED_DUPLICATE_INTER
         int16_t                           injected_mv_x_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV

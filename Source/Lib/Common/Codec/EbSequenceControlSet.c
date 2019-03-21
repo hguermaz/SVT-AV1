@@ -206,10 +206,9 @@ EbErrorType eb_sequence_control_set_ctor(
     sequence_control_set_ptr->still_picture = 0;
     sequence_control_set_ptr->timing_info_present = 0;
     sequence_control_set_ptr->operating_points_decoder_model_cnt = 0;
-#if AV1_UPGRADE
     sequence_control_set_ptr->decoder_model_info_present_flag = 0;
     sequence_control_set_ptr->display_model_info_present_flag = 0;
-#endif
+
     for (int32_t i = 0; i < MAX_NUM_OPERATING_POINTS; i++) {
         sequence_control_set_ptr->operating_point_idc[i] = 0;
         sequence_control_set_ptr->level[i].major = 0;
@@ -339,14 +338,12 @@ EbErrorType copy_sequence_control_set(
         dst->enc_dec_segment_row_count_array[i] = src->enc_dec_segment_row_count_array[i];
     }
 
-#if CDEF_M
     dst->cdef_segment_column_count = src->cdef_segment_column_count;
     dst->cdef_segment_row_count = src->cdef_segment_row_count;
-#endif
-#if REST_M
+
     dst->rest_segment_column_count = src->rest_segment_column_count;
     dst->rest_segment_row_count = src->rest_segment_row_count;
-#endif
+
 #if BASE_LAYER_REF
     dst->extra_frames_to_ref_islice = src->extra_frames_to_ref_islice;
     dst->max_frame_window_to_ref_islice = src->max_frame_window_to_ref_islice;

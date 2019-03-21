@@ -20,12 +20,11 @@
 #include "EbPictureControlSet.h"
 #include "EbPictureBufferDesc.h"
 
-#if CDEF_M
 void *aom_memalign(size_t align, size_t size);
 void aom_free(void *memblk);
 void *aom_malloc(size_t size);
 
-#endif
+
 EbErrorType av1_alloc_restoration_buffers(Av1Common *cm);
 
 #if ICOPY
@@ -858,7 +857,6 @@ EbErrorType picture_control_set_ctor(
 
     EB_CREATEMUTEX(EbHandle, object_ptr->intra_mutex, sizeof(EbHandle), EB_MUTEX);
 
-#if CDEF_M
     EB_CREATEMUTEX(EbHandle, object_ptr->cdef_search_mutex, sizeof(EbHandle), EB_MUTEX);
 
     //object_ptr->mse_seg[0] = (uint64_t(*)[64])aom_malloc(sizeof(**object_ptr->mse_seg) *  pictureLcuWidth * pictureLcuHeight);
@@ -876,12 +874,11 @@ EbErrorType picture_control_set_ctor(
         EB_MALLOC(uint16_t*, object_ptr->src[2],sizeof(*object_ptr->src)       * initDataPtr->picture_width * initDataPtr->picture_height * 3 / 2, EB_N_PTR);
         EB_MALLOC(uint16_t*,object_ptr->ref_coeff[2],sizeof(*object_ptr->ref_coeff) * initDataPtr->picture_width * initDataPtr->picture_height * 3 / 2, EB_N_PTR);
     }
-#endif
 
-#if REST_M
+
     EB_CREATEMUTEX(EbHandle, object_ptr->rest_search_mutex, sizeof(EbHandle), EB_MUTEX);
      
-#endif
+
 
     object_ptr->cu32x32_quant_coeff_num_map_array_stride = (uint16_t)((initDataPtr->picture_width + 32 - 1) / 32);
     uint16_t cu32x32QuantCoeffNumMapArraySize = (uint16_t)(((initDataPtr->picture_width + 32 - 1) / 32) * ((initDataPtr->picture_height + 32 - 1) / 32));
@@ -1132,7 +1129,6 @@ EbErrorType picture_parent_control_set_ctor(
 
     memset(&object_ptr->av1_cm->rst_frame, 0, sizeof(Yv12BufferConfig));
 
-#if REST_M
     int32_t ntiles[2];
     for (int32_t is_uv = 0; is_uv < 2; ++is_uv)
         ntiles[is_uv] = object_ptr->av1_cm->rst_info[is_uv].units_per_tile; //CHKN res_tiles_in_plane
@@ -1151,7 +1147,7 @@ EbErrorType picture_parent_control_set_ctor(
     memset(object_ptr->rusi_picture[1], 0, sizeof(RestUnitSearchInfo) * ntiles[1]);
     memset(object_ptr->rusi_picture[2], 0, sizeof(RestUnitSearchInfo) * ntiles[1]);
 
-#endif
+
     EB_MALLOC(Macroblock*, object_ptr->av1x, sizeof(Macroblock), EB_N_PTR);
 
     // Film grain noise model if film grain is applied

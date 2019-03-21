@@ -47,9 +47,7 @@ extern "C" {
         uint32_t                   tbSize);
 
     void generate_av1_mvp_table(
-#if TILES
         TileInfo                              *tile,
-#endif
       struct ModeDecisionContext_s            *context_ptr,
         CodingUnit_t                     *cu_ptr,
         const BlockGeom                   * blk_geom,
@@ -71,9 +69,8 @@ extern "C" {
         IntMv             ref_mv[2]);
 
     void enc_pass_av1_mv_pred(
-#if TILES
         TileInfo                               *tile,
-#endif
+
          struct ModeDecisionContext_s            *md_context_ptr,
         CodingUnit_t                     *cu_ptr,
         const BlockGeom                   * blk_geom,

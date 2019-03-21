@@ -19,7 +19,6 @@
 #include "EbRestoration.h"
 #include "EbRestorationPick.h"
 
-#if REST_M
 #include "EbRestProcess.h"
 
 
@@ -30,7 +29,7 @@ void av1_foreach_rest_unit_in_frame_seg(Av1Common *cm, int32_t plane,
     void *priv,
     PictureControlSet_t   *picture_control_set_ptr,
     uint32_t segment_index);
-#endif
+
 
 void av1_selfguided_restoration_c(const uint8_t *dgd8, int32_t width, int32_t height,
     int32_t dgd_stride, int32_t *flt0, int32_t *flt1,
@@ -72,20 +71,6 @@ static int64_t sse_restoration_unit(const RestorationTileLimits *limits,
         limits->v_start, limits->v_end - limits->v_start);
 }
 
-#if ! REST_M
-typedef struct {
-    // The best coefficients for Wiener or Sgrproj restoration
-    WienerInfo wiener;
-    SgrprojInfo sgrproj;
-
-    // The sum of squared errors for this rtype.
-    int64_t sse[RESTORE_SWITCHABLE_TYPES];
-
-    // The rtype to use for this unit given a frame rtype as
-    // index. Indices: WIENER, SGRPROJ, SWITCHABLE.
-    RestorationType best_rtype[RESTORE_TYPES - 1];
-} RestUnitSearchInfo;
-#endif
 
 typedef struct {
     const Yv12BufferConfig *src;
@@ -97,12 +82,11 @@ typedef struct {
     int32_t plane_width;
     int32_t plane_height;
     RestUnitSearchInfo *rusi;
-#if REST_M 
     RestUnitSearchInfo *rusi_pic;
     uint32_t  pic_num;
     Yv12BufferConfig * org_frame_to_show;
     int32_t *tmpbuf;
-#endif
+
 
     uint8_t *dgd_buffer;
     int32_t dgd_stride;
@@ -135,7 +119,6 @@ static void reset_rsc(RestSearchCtxt *rsc) {
     rsc->sse = 0;
     rsc->bits = 0;
 }
-#if REST_M
 static void init_rsc_seg(
     Yv12BufferConfig *org_fts,
     const Yv12BufferConfig *src, Av1Common *cm,
@@ -161,7 +144,7 @@ static void init_rsc_seg(
     assert(src->crop_widths[is_uv] == dgd->crop_widths[is_uv]);
     assert(src->crop_heights[is_uv] == dgd->crop_heights[is_uv]);
 }
-#endif
+
 static void init_rsc(const Yv12BufferConfig *src, Av1Common *cm,
     const Macroblock *x, int32_t plane, RestUnitSearchInfo *rusi,
     Yv12BufferConfig *dst, RestSearchCtxt *rsc) {
@@ -203,9 +186,7 @@ static int64_t try_restoration_unit(const RestSearchCtxt *rsc,
 
 
     av1_loop_restoration_filter_unit(
-#if REST_NEED_B
         1,
-#endif
         limits, rui, &rsi->boundaries, &rlbs, tile_rect, rsc->tile_stripe0,
         is_uv && cm->subsampling_x, is_uv && cm->subsampling_y, highbd, bit_depth,
         fts->buffers[plane], fts->strides[is_uv], rsc->dst->buffers[plane],
@@ -213,7 +194,6 @@ static int64_t try_restoration_unit(const RestSearchCtxt *rsc,
 
     return sse_restoration_unit(limits, rsc->src, rsc->dst, plane, highbd);
 }
-#if REST_M
 static int64_t try_restoration_unit_seg(const RestSearchCtxt *rsc,
     const RestorationTileLimits *limits,
     const AV1PixelRect *tile_rect,
@@ -234,9 +214,7 @@ static int64_t try_restoration_unit_seg(const RestSearchCtxt *rsc,
 
 
     av1_loop_restoration_filter_unit(
-#if REST_NEED_B
         1,
-#endif
         limits, rui, &rsi->boundaries, &rlbs, tile_rect, rsc->tile_stripe0,
         is_uv && cm->subsampling_x, is_uv && cm->subsampling_y, highbd, bit_depth,
         fts->buffers[plane], fts->strides[is_uv], rsc->dst->buffers[plane],
@@ -244,7 +222,7 @@ static int64_t try_restoration_unit_seg(const RestSearchCtxt *rsc,
 
     return sse_restoration_unit(limits, rsc->src, rsc->dst, plane, highbd);
 }
-#endif
+
 int64_t av1_lowbd_pixel_proj_error_c(const uint8_t *src8, int32_t width, int32_t height,
     int32_t src_stride, const uint8_t *dat8,
     int32_t dat_stride, int32_t *flt0,
@@ -1330,7 +1308,6 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
 #endif  // USE_WIENER_REFINEMENT_SEARCH
     return err;
 }
-#if REST_M
 static int64_t finer_tile_search_wiener_seg(const RestSearchCtxt *rsc,
     const RestorationTileLimits *limits,
     const AV1PixelRect *tile,
@@ -1441,7 +1418,7 @@ static int64_t finer_tile_search_wiener_seg(const RestSearchCtxt *rsc,
 #endif  // USE_WIENER_REFINEMENT_SEARCH
     return err;
 }
-#endif
+
 static void search_wiener(const RestorationTileLimits *limits,
     const AV1PixelRect *tile_rect, int32_t rest_unit_idx,
     void *priv) {
@@ -1737,10 +1714,6 @@ void av1_pick_filter_restoration(const Yv12BufferConfig *src, Yv12BufferConfig *
 
     aom_free(rusi);
 }
-
-
-#if REST_M
-
 
 
 static void search_sgrproj_seg(const RestorationTileLimits *limits,
@@ -2137,4 +2110,3 @@ void rest_finish_search(Macroblock *x, Av1Common *const cm)
 
     aom_free(rusi);
 }
-#endif

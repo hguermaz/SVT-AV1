@@ -19,11 +19,8 @@
 #include "EbEncDecProcess.h"
 #include "aom_dsp_rtcd.h"
 
-#if CDEF_M
  void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#else
-static void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#endif
+
     int32_t src_voffset, int32_t src_hoffset, int32_t sstride,
     int32_t vsize, int32_t hsize);
 
@@ -483,9 +480,8 @@ void av1_cdef_frame(
     PictureControlSet_t            *pCs
 )
 {
-#if FILT_PROC
     (void)context_ptr;
-#endif
+
     struct PictureParentControlSet_s     *pPcs = pCs->parent_pcs_ptr;
     Av1Common*   cm = pPcs->av1_cm;
 
@@ -494,19 +490,10 @@ void av1_cdef_frame(
 
 
     if (pPcs->is_used_as_reference_flag == EB_TRUE)
-#if FILT_PROC
         recon_picture_ptr = ((EbReferenceObject_t*)pCs->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
-#else
-        recon_picture_ptr = context_ptr->is16bit ?
-        ((EbReferenceObject_t*)pCs->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture16bit :
-        ((EbReferenceObject_t*)pCs->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
-#endif
     else
-#if FILT_PROC
         recon_picture_ptr = pCs->recon_picture_ptr;
-#else
-        recon_picture_ptr = context_ptr->is16bit ? pCs->recon_picture16bit_ptr : pCs->recon_picture_ptr;
-#endif
+
 
     EbByte  reconBufferY = &((recon_picture_ptr->buffer_y)[recon_picture_ptr->origin_x + recon_picture_ptr->origin_y * recon_picture_ptr->stride_y]);
     EbByte  reconBufferCb = &((recon_picture_ptr->bufferCb)[recon_picture_ptr->origin_x / 2 + recon_picture_ptr->origin_y / 2 * recon_picture_ptr->strideCb]);
@@ -1157,11 +1144,6 @@ void av1_cdef_frame16bit(
 
 ///-------search
 
-#if ! CDEF_M
-#define REDUCED_PRI_STRENGTHS 8
-#define REDUCED_TOTAL_STRENGTHS (REDUCED_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
-#define TOTAL_STRENGTHS (CDEF_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
-#endif
 static int32_t priconv[REDUCED_PRI_STRENGTHS] = { 0, 1, 2, 3, 5, 7, 10, 13 };
 
 /* Search for the best strength to add as an option, knowing we
@@ -1377,11 +1359,7 @@ static uint64_t joint_strength_search_dual(int32_t *best_lev0, int32_t *best_lev
 }
 
 /* FIXME: SSE-optimize this. */
-#if CDEF_M
  void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#else
- static void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
-#endif
     int32_t src_voffset, int32_t src_hoffset, int32_t sstride,
     int32_t vsize, int32_t hsize) {
     int32_t r, c;
@@ -1507,7 +1485,6 @@ uint64_t compute_cdef_dist(uint16_t *dst, int32_t dstride, uint16_t *src,
     }
     return sum >> 2 * coeff_shift;
 }
-#if CDEF_M
 void finish_cdef_search(
     EncDecContext_t                *context_ptr,
     SequenceControlSet_t           *sequence_control_set_ptr,
@@ -1707,7 +1684,7 @@ void finish_cdef_search(
     free(sb_index);
     free(selected_strength);
 }
-#endif
+
 
 void av1_cdef_search(
     EncDecContext_t                *context_ptr,
@@ -2215,7 +2192,6 @@ void av1_cdef_search16bit(
         uint16_t *ref_buffer = 0;
         int32_t ref_stride;
         switch (pli) {
-#if CDEF_10BIT_FIX
         case 0:
             ref_buffer = inputBufferY;
             ref_stride = input_picture_ptr->stride_y;
@@ -2234,26 +2210,6 @@ void av1_cdef_search16bit(
             in_buffer = reconBufferCr;
             in_stride = recon_picture_ptr->strideCr;
             break;
-#else
-        case 0:
-            ref_buffer = reconBufferY;
-            ref_stride = recon_picture_ptr->stride_y;
-            in_buffer = inputBufferY;
-            in_stride = input_picture_ptr->stride_y;
-            break;
-        case 1:
-            ref_buffer = reconBufferCb;
-            ref_stride = recon_picture_ptr->strideCb;
-            in_buffer = inputBufferCb;
-            in_stride = input_picture_ptr->strideCb;
-            break;
-        case 2:
-            ref_buffer = reconBufferCr;
-            ref_stride = recon_picture_ptr->strideCr;
-            in_buffer = inputBufferCr;
-            in_stride = input_picture_ptr->strideCr;
-            break;
-#endif
         }
 
         ///CHKN: allocate one frame 16bit for src and recon!!

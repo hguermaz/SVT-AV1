@@ -1643,13 +1643,6 @@ void ProductPerformFastLoop(
     int32_t bestFirstFastCostSearchCandidateIndex = INVALID_FAST_CANDIDATE_INDEX;
     //    SequenceControlSet_t           *sequence_control_set_ptr = ((SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr);
 
-#if INTRA_CORE_OPT
-    if (context_ptr->blk_geom->sq_size < 128) {
-        generate_intra_reference_samples(
-            picture_control_set_ptr->parent_pcs_ptr->av1_cm,
-            context_ptr);
-    }
-#endif
 
     {
 
@@ -2954,9 +2947,8 @@ void AV1PerformFullLoop(
             }
         }
 #else
-#if SHUT_CBF_FL_SKIP
         if(0)
-#endif
+
             if (picture_control_set_ptr->slice_type != I_SLICE) {
                 if (candidate_ptr->type == INTER_MODE) {
                     if (*candidateBuffer->full_cost_ptr < bestfullCost) {
@@ -3810,11 +3802,8 @@ void md_encode_block(
 #if NSQ_OPTIMASATION
         is_nsq_table_used, picture_control_set_ptr->parent_pcs_ptr->nsq_max_shapes_md,context_ptr,is_complete_sb ))
 #else
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
         context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#else
-        context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#endif
+
 #endif
     {
 #if !PF_N2_32X32

@@ -129,14 +129,12 @@ extern "C" {
         uint32_t                                me_segment_row_count_array[MAX_TEMPORAL_LAYERS];
         uint32_t                                enc_dec_segment_col_count_array[MAX_TEMPORAL_LAYERS];
         uint32_t                                enc_dec_segment_row_count_array[MAX_TEMPORAL_LAYERS];
-#if CDEF_M
         uint32_t                                cdef_segment_column_count;
         uint32_t                                cdef_segment_row_count;
-#endif
-#if REST_M
+
         uint32_t                                rest_segment_column_count;
         uint32_t                                rest_segment_row_count;
-#endif
+
         // Buffers
         uint32_t                                picture_control_set_pool_init_count;
         uint32_t                                picture_control_set_pool_init_count_child;
@@ -156,22 +154,19 @@ extern "C" {
         uint32_t                                mode_decision_configuration_fifo_init_count;
         uint32_t                                enc_dec_fifo_init_count;
         uint32_t                                entropy_coding_fifo_init_count;
-#if FILT_PROC
         uint32_t                                dlf_fifo_init_count;
         uint32_t                                cdef_fifo_init_count;
         uint32_t                                rest_fifo_init_count;
-#endif
+
         uint32_t                                picture_analysis_process_init_count;
         uint32_t                                motion_estimation_process_init_count;
         uint32_t                                source_based_operations_process_init_count;
         uint32_t                                mode_decision_configuration_process_init_count;
         uint32_t                                enc_dec_process_init_count;
         uint32_t                                entropy_coding_process_init_count;
-#if FILT_PROC
         uint32_t                                dlf_process_init_count;
         uint32_t                                cdef_process_init_count;
         uint32_t                                rest_process_init_count;
-#endif
         uint32_t                                total_process_init_count;
         
         uint16_t                                film_grain_random_seed;
@@ -235,10 +230,8 @@ extern "C" {
         int32_t                                 timing_info_present;
         int32_t                                 operating_points_decoder_model_cnt;
 
-#if AV1_UPGRADE
         int32_t                                 decoder_model_info_present_flag;
         int32_t                                 display_model_info_present_flag;
-#endif
         int32_t                                 film_grain_denoise_strength;
         int32_t                                 film_grain_params_present;  // To turn on/off film grain (on a sequence basis)
 

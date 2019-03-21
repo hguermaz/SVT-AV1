@@ -650,15 +650,13 @@ EbErrorType PreModeDecision(
     return return_error;
 }
 #endif
-#if IMPROVED_BIPRED_INJECTION || IMPROVED_UNIPRED_INJECTION
 
 #define BIPRED_3x3_REFINMENT_POSITIONS 8
 
 int8_t ALLOW_REFINEMENT_FLAG[BIPRED_3x3_REFINMENT_POSITIONS] = {  1, 0, 1, 0, 1,  0,  1, 0 };
 int8_t BIPRED_3x3_X_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { -1, -1, 0, 1, 1, 1, 0, -1 };
 int8_t BIPRED_3x3_Y_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { 0, 1, 1, 1, 0, -1, -1, -1 };
-#endif
-#if IMPROVED_UNIPRED_INJECTION
+
 void Unipred3x3CandidatesInjection(
     PictureControlSet_t            *picture_control_set_ptr,
     ModeDecisionContext_t          *context_ptr,
@@ -859,8 +857,7 @@ void Unipred3x3CandidatesInjection(
 
     return;
 }
-#endif
-#if IMPROVED_BIPRED_INJECTION
+
 void Bipred3x3CandidatesInjection(
     PictureControlSet_t            *picture_control_set_ptr,
     ModeDecisionContext_t          *context_ptr,
@@ -1081,7 +1078,7 @@ void Bipred3x3CandidatesInjection(
 
     return;
 }
-#endif
+
 
 uint8_t GetMaxDrlIndex(uint8_t  refmvCnt, PredictionMode   mode)
 {
@@ -1862,7 +1859,6 @@ void  inject_inter_candidates(
     }
 
     uint32_t max_number_of_pus_per_sb;
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
 
     max_number_of_pus_per_sb = picture_control_set_ptr->parent_pcs_ptr->max_number_of_pus_per_sb;
     
@@ -1881,20 +1877,7 @@ void  inject_inter_candidates(
     const uint32_t me2Nx2NTableOffset = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? 0 :
         get_me_info_index(max_number_of_pus_per_sb, context_ptr->blk_geom, geom_offset_x, geom_offset_y);
 #endif
-#else
-#if DISABLE_IN_LOOP_ME
-#if TEST5_DISABLE_NSQ_ME
-    const uint32_t me2Nx2NTableOffset = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4 || context_ptr->blk_geom->bwidth == 128 || context_ptr->blk_geom->bheight == 128 || context_ptr->blk_geom->shape != PART_N) ? 0 :
-        get_me_info_index(picture_control_set_ptr->parent_pcs_ptr->max_number_of_pus_per_sb, context_ptr->blk_geom, geom_offset_x, geom_offset_y);
-#else
-    const uint32_t me2Nx2NTableOffset = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4 || context_ptr->blk_geom->bwidth == 128 || context_ptr->blk_geom->bheight == 128) ? 0 :
-        get_me_info_index(picture_control_set_ptr->parent_pcs_ptr->max_number_of_pus_per_sb, context_ptr->blk_geom, geom_offset_x, geom_offset_y);
-#endif
-#else
-    const uint32_t me2Nx2NTableOffset = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? 0 :
-        get_me_info_index(picture_control_set_ptr->parent_pcs_ptr->max_number_of_pus_per_sb, context_ptr->blk_geom, geom_offset_x, geom_offset_y);
-#endif
-#endif
+
 
     MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr][me2Nx2NTableOffset];
     EbBool use_close_loop_me = picture_control_set_ptr->parent_pcs_ptr->enable_in_loop_motion_estimation_flag &&
@@ -1929,9 +1912,8 @@ void  inject_inter_candidates(
 #endif
 
     generate_av1_mvp_table(
-#if TILES
         &sb_ptr->tile_info,
-#endif
+
         context_ptr,
         context_ptr->cu_ptr,
         context_ptr->blk_geom,
@@ -2475,7 +2457,6 @@ void  inject_inter_candidates(
 #else
         if (allow_bipred) {
 #endif
-#if IMPROVED_BIPRED_INJECTION
             //----------------------
             // Bipred2Nx2N
             //----------------------
@@ -2491,11 +2472,10 @@ void  inject_inter_candidates(
                         close_loop_me_index,
                         me2Nx2NTableOffset,
                         &canTotalCnt);
-#endif
+
 #if BASE_LAYER_REF
             }
 #endif
-#if IMPROVED_UNIPRED_INJECTION
             //----------------------
             // Unipred2Nx2N
             //----------------------
@@ -2511,7 +2491,7 @@ void  inject_inter_candidates(
                         close_loop_me_index,
                         me2Nx2NTableOffset,
                         &canTotalCnt);
-#endif
+
         }
     }
     // update the total number of candidates injected
@@ -2881,9 +2861,8 @@ void  intra_bc_search(
     const Av1Common *const cm = pcs->parent_pcs_ptr->av1_cm;
     MvReferenceFrame ref_frame = INTRA_FRAME;
     generate_av1_mvp_table(
-#if TILES
         &sb_ptr->tile_info,
-#endif
+
         context_ptr,
         context_ptr->cu_ptr,
         context_ptr->blk_geom,

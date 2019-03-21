@@ -47,55 +47,16 @@ extern "C" {
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
-#define MEM_RED4                                        1 //  Reduce mem allocation when DISABLE_128X128_SB is ON
-#define FILT_PROC                                       1    // New Filtering processes.
-#define CDEF_M                                          1 // multi-threaded cdef
-#define REST_M                                          1 // multi-threaded restoration
-#define REST_NEED_B                                     1 // use boundary update in restoration
-#define NEW_PRED_STRUCT                                 1 // Ability to run 5-layer prediction structure. By Default 5L is used
-#define TILES                                           1
-
-#define INTRA_CORE_OPT                                  0
-#define ENABLE_INTRA_4x4                                1 //
-#define DISABLE_NSQ                                     1 //
-#define DISABLE_128X128_SB                              0
-#define ENABLE_INTER_4x4                                0 // optional
-#define DISABLE_4xN_Nx4                                 1 //
-#define DISABLE_128x128                                 0
-#define VCI_CANDIDATE_II                                1
-
-#if VCI_CANDIDATE_II
-#define INTRA_ASM                                       1
-#define CBF_ZERO_OFF                                    1 // Remove CBF zero feature due to VQ problems
-#define TX_TYPE_FIX                                     1 // Fix the Tx Type search for Inter blocks
-#define INC_NFL                                         1 // Set NFL to 4 for all sizes and temporal layers
-#define REMOVE_INTRA_CONST                              1 // Remove the constraints for INTRA injection
 
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
-#define M0_ME_QUARTER_PEL_SEARCH                        1 // F1
-#define SHUT_CBF_FL_SKIP                                1 // F2 Lossless
-#define V2_HME_ME_SR                                    1 // F3
-#define ME_64x64                                        1 // F4
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH           1 // F7
-#define M0_64x64_32x32_HALF_QUARTER_PEL                 1 // F8
-#define IMPROVED_UNIPRED_INJECTION                      1 // F11
-#define IMPROVED_BIPRED_INJECTION                       1 // F10
 #define M0_ME_SEARCH_BASE                               1 // F13
-#define INC_NFL12                                       1 // F14
-#define AV1_UPGRADE                                     1 // Upgrade to V1.0.0
-#define INTRAD_ASM                                      1 // asm for intra directionnal modes - Z1
-#define SUPPORT_10BIT                                   1 // Support for 10 Bit encodings
+
+
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass
-#define ME_HME_OQ                                       1 // Ported ME HME from EB32 OQ
-#if SUPPORT_10BIT
-#define INTRA_10BIT_SUPPORT                             1
-#define QT_10BIT_SUPPORT                                1
-#define CDEF_10BIT_FIX                                  1
-#define RS_10BIT_FIX                                    1
-#define MD_10BIT_FIX                                    1
-#define LF_10BIT_FIX                                    1
+
 #define INTERPOL_FILTER_SEARCH_10BIT_SUPPORT            1
-#endif
+
 #define BUG_FIX                                         1 // BUG fix related to transform type
 #define LIMIT_INTRA_INJ                                 1
 #define TURN_OFF_INTERPOL_FILTER_SEARCH                 1
@@ -106,7 +67,7 @@ extern "C" {
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 #endif
-#endif
+
 
 // NEW MACOS
 #define INTRINSIC_OPT_2                                 1 // Intrinsics opt work phase 2
@@ -123,7 +84,6 @@ extern "C" {
 #define TUNE_CHROMA_OFFSET                              0
 #define FAST_TX_SEARCH                                  1
 #define MACRO_BLOCK_CLEANUP                             1
-#define DISABLE_NSQ_FOR_NON_REF                         1
 #define FIX_INTER_DEPTH                                 1  // Fix interdepth depth cost when MDC cuts depths
 #define DISABLE_IN_LOOP_ME                              1
 #define EXTRA_ALLOCATION                                1
@@ -325,20 +285,13 @@ enum {
 /********************************************************/
 /****************** Pre-defined Values ******************/
 /********************************************************/
-#if  DISABLE_128X128_SB
-#define PAD_VALUE                                (64+32)
-#else
 #define PAD_VALUE                                (128+32)
-#endif
+
 
 //  Delta QP support
 #define ADD_DELTA_QP_SUPPORT                      0  // Add delta QP support - Please enable this flag and iproveSharpness (config) to test the QPM
-#if DISABLE_128X128_SB
-#define BLOCK_MAX_COUNT                           1101
-#else
 #define BLOCK_MAX_COUNT_SB_128                    4421  // TODO: reduce alloction for 64x64
 #define BLOCK_MAX_COUNT_SB_64                     1101  // TODO: reduce alloction for 64x64
-#endif
 #define MAX_TXB_COUNT                             4 // Maximum number of transform blocks.
 #define MAX_NFL                                   40
 #define MAX_LAD                                   120 // max lookahead-distance 2x60fps
@@ -3034,13 +2987,12 @@ static const uint8_t INTRA_AREA_TH_CLASS_1[MAX_HIERARCHICAL_LEVEL][MAX_TEMPORAL_
 };
 
 
-#if NEW_PRED_STRUCT
 #define NON_MOVING_SCORE_0     0
 #define NON_MOVING_SCORE_1    10
 #define NON_MOVING_SCORE_2    20
 #define NON_MOVING_SCORE_3    30
 #define INVALID_NON_MOVING_SCORE (uint8_t) ~0
-#endif
+
 // Picture split into regions for analysis (SCD, Dynamic GOP)
 #define CLASS_SUB_0_REGION_SPLIT_PER_WIDTH    1
 #define CLASS_SUB_0_REGION_SPLIT_PER_HEIGHT    1

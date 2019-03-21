@@ -348,9 +348,7 @@ extern "C" {
         uint32_t                      p_sad16x16[16];
         uint32_t                      p_sad8x8[64];
 
-#if M0_64x64_32x32_HALF_QUARTER_PEL
         uint8_t                       psub_pel_direction64x64;
-#endif                                
         uint8_t                       psub_pel_direction32x32[4];
         uint8_t                       psub_pel_direction16x16[16];
         uint8_t                       psub_pel_direction8x8[64];
@@ -405,9 +403,8 @@ extern "C" {
         EbBool useSubSadFracBipredSearch;
 #endif
 #endif
-#if M0_64x64_32x32_HALF_QUARTER_PEL
         EbBool                        fractional_search64x64;
-#endif
+
 
 #if M9_SUBPEL_SELECTION
         uint8_t                       fractional_search_model;

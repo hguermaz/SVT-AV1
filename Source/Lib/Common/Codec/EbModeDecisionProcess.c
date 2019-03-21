@@ -385,11 +385,7 @@ void reset_mode_decision(
 #endif
     // Asuming cb and cr offset to be the same for chroma QP in both slice and pps for lambda computation
     context_ptr->chroma_qp = context_ptr->qp;
-#if NEW_QPS
     context_ptr->qp_index = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->base_qindex;
-#else
-    context_ptr->qp_index = quantizer_to_qindex[context_ptr->qp];
-#endif
     (*av1_lambda_assignment_function_table[picture_control_set_ptr->parent_pcs_ptr->pred_structure])(
         &context_ptr->fast_lambda,
         &context_ptr->full_lambda,
@@ -402,39 +398,20 @@ void reset_mode_decision(
 
     // 64x64 CU
     context_ptr->buffer_depth_index_start[0] = 0;
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[0] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[0] = 5; // 3 NFL + 1 for temporary data
-#endif
+
     // 32x32 CU
     context_ptr->buffer_depth_index_start[1] = context_ptr->buffer_depth_index_start[0] + context_ptr->buffer_depth_index_width[0];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[1] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[1] = 6;
-#endif
     // 16x16 CU
     context_ptr->buffer_depth_index_start[2] = context_ptr->buffer_depth_index_start[1] + context_ptr->buffer_depth_index_width[1];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[2] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[2] = 6;
-#endif
     // 8x8 CU
     context_ptr->buffer_depth_index_start[3] = context_ptr->buffer_depth_index_start[2] + context_ptr->buffer_depth_index_width[2];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[3] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[3] = 6;
-#endif
     // 4x4 CU
     context_ptr->buffer_depth_index_start[4] = context_ptr->buffer_depth_index_start[3] + context_ptr->buffer_depth_index_width[3];
-#if INC_NFL12
     context_ptr->buffer_depth_index_width[4] = MAX_NFL + 1;
-#else
-    context_ptr->buffer_depth_index_width[4] = 5;
-#endif
 #endif
     // Slice Type
     slice_type =
@@ -529,11 +506,7 @@ void ModeDecisionConfigureLcu(
     /* Note(CHKN) : when Qp modulation varies QP on a sub-LCU(CU) basis,  Lamda has to change based on Cu->QP , and then this code has to move inside the CU loop in MD */
 
     // Lambda Assignement
-#if NEW_QPS
     context_ptr->qp_index = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->base_qindex;
-#else
-    context_ptr->qp_index = quantizer_to_qindex[context_ptr->qp];
-#endif
 
     (*av1_lambda_assignment_function_table[picture_control_set_ptr->parent_pcs_ptr->pred_structure])(
         &context_ptr->fast_lambda,
