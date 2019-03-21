@@ -71,10 +71,6 @@ extern "C" {
 #define TEST5_DISABLE_NSQ_ME                            0
 
 
-#define CONTENT_BASED_QPS                               1 // Adaptive QP Scaling (active for I only)
-#define ADAPTIVE_DEPTH_PARTITIONING                     1 // Added the ability to switch @ SB basis between: (1) all square up to 64x64,  (2) mdc up to 64x64, (3) mdc up to 64x64 only pred, (4) mdc up to 64x64 only pred + 1 NFL
-#if ADAPTIVE_DEPTH_PARTITIONING
-#define ADP_V1                                          0      
 #define ADP_STATS_PER_LAYER                             0
 #define OPEN_LOOP_EARLY_PARTITION                       1
 #if OPEN_LOOP_EARLY_PARTITION
@@ -82,7 +78,7 @@ extern "C" {
 #define MDC_FIX_0                                       1
 #define MDC_FIX_1                                       1
 #endif
-#endif
+
 #define M8_ADP                                          1
 #if M8_ADP
 #define FASTER_M8_ADP                                   1
@@ -3088,7 +3084,6 @@ typedef enum EbPictureDepthMode {
     PIC_OPEN_LOOP_DEPTH_MODE    = 7
 } EbPictureDepthMode;
 
-#if ADAPTIVE_DEPTH_PARTITIONING
 #define EB_SB_DEPTH_MODE              uint8_t
 #define SB_SQ_BLOCKS_DEPTH_MODE             1
 #define SB_SQ_NON4_BLOCKS_DEPTH_MODE        2
@@ -3100,20 +3095,7 @@ typedef enum EbPictureDepthMode {
 #define SB_PRED_OPEN_LOOP_DEPTH_MODE        4
 #define SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE  5
 #endif
-#else
-typedef enum EbLcuDepthMode {
 
-    LCU_FULL85_DEPTH_MODE = 1,
-    LCU_FULL84_DEPTH_MODE = 2,
-    LCU_BDP_DEPTH_MODE = 3,
-    LCU_LIGHT_BDP_DEPTH_MODE = 4,
-    LCU_OPEN_LOOP_DEPTH_MODE = 5,
-    LCU_LIGHT_OPEN_LOOP_DEPTH_MODE = 6,
-    LCU_AVC_DEPTH_MODE = 7,
-    LCU_PRED_OPEN_LOOP_DEPTH_MODE = 8,
-    LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE = 9
-} EbLcuDepthMode;
-#endif
 typedef enum EB_INTRA4x4_SEARCH_METHOD {
     INTRA4x4_OFF = 0,
     INTRA4x4_INLINE_SEARCH = 1,

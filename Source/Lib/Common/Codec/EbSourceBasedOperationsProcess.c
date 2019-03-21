@@ -134,10 +134,8 @@ void DerivePictureActivityStatistics(
 
     uint32_t               sb_index;
     for (sb_index = 0; sb_index < sb_total_count; ++sb_index) {
-#if CONTENT_BASED_QPS
         SbParams_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
         if (sb_params->is_complete_sb) 
-#endif
         { 
             nonMovingIndexMin = picture_control_set_ptr->non_moving_index_array[sb_index] < nonMovingIndexMin ?
                 picture_control_set_ptr->non_moving_index_array[sb_index] :
@@ -159,11 +157,7 @@ void DerivePictureActivityStatistics(
         }
 
     }
-#if CONTENT_BASED_QPS
     picture_control_set_ptr->non_moving_index_average = (uint16_t)(nonMovingIndexSum / complete_sb_count);
-#else
-    picture_control_set_ptr->non_moving_index_average = (uint16_t)(nonMovingIndexSum / sb_total_count);
-#endif
   
     picture_control_set_ptr->kf_zeromotion_pct = (non_moving_sb_count * 100) / complete_sb_count;
 

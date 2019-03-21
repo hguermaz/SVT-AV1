@@ -963,7 +963,6 @@ int32_t av1_compute_qdelta(double qstart, double qtarget,
 }
 #endif
 
-#if CONTENT_BASED_QPS
 typedef struct {
     // Rate targetting variables
     int base_frame_target;  // A baseline frame target before adjustment
@@ -1332,7 +1331,7 @@ static int adaptive_qindex_calc(
 
     return q;
 }
-#endif
+
 void* rate_control_kernel(void *input_ptr){
   
     // Context
@@ -1365,9 +1364,7 @@ void* rate_control_kernel(void *input_ptr){
 
     RATE_CONTROL_TASKTYPES       taskType;
     EbRateControlModel          *rc_model_ptr;
-#if CONTENT_BASED_QPS
     RATE_CONTROL                 rc;
-#endif
 
     rate_control_model_ctor(&rc_model_ptr);
 
@@ -1403,9 +1400,7 @@ void* rate_control_kernel(void *input_ptr){
 #if RC_UPDATE_TARGET_RATE
                 context_ptr->highLevelRateControlPtr->previousUpdatedBitConstraintPerSw = context_ptr->highLevelRateControlPtr->channelBitRatePerSw;
 #endif
-#if  CONTENT_BASED_QPS
                 av1_rc_init_minq_luts();
-#endif
                 int32_t totalFrameInInterval = sequence_control_set_ptr->intra_period_length;
                 uint32_t gopPeriod = (1 << picture_control_set_ptr->parent_pcs_ptr->hierarchical_levels);
                 context_ptr->frame_rate = sequence_control_set_ptr->frame_rate;
@@ -1491,7 +1486,6 @@ void* rate_control_kernel(void *input_ptr){
 #if NEW_QPS
                     const int32_t qindex = quantizer_to_qindex[(uint8_t)sequence_control_set_ptr->qp];
                     const double q_val = av1_convert_qindex_to_q(qindex, (aom_bit_depth_t)sequence_control_set_ptr->static_config.encoder_bit_depth);
-#if CONTENT_BASED_QPS
                     if (picture_control_set_ptr->slice_type == I_SLICE) {
                         int32_t new_qindex = adaptive_qindex_calc(
                             picture_control_set_ptr,
@@ -1505,19 +1499,7 @@ void* rate_control_kernel(void *input_ptr){
                                 (int32_t)(new_qindex));
                     }
  
-#else
-                    if (picture_control_set_ptr->slice_type == I_SLICE) {
-                        const int32_t delta_qindex = av1_compute_qdelta(
-                            q_val,
-                            q_val * 0.25,
-                            (aom_bit_depth_t)sequence_control_set_ptr->static_config.encoder_bit_depth);
-                        picture_control_set_ptr->parent_pcs_ptr->base_qindex =
-                            (uint8_t)CLIP3(
-                            (int32_t)quantizer_to_qindex[sequence_control_set_ptr->static_config.min_qp_allowed],
-                                (int32_t)quantizer_to_qindex[sequence_control_set_ptr->static_config.max_qp_allowed],
-                                (int32_t)(qindex + delta_qindex));
-                    }
-#endif
+
                     else {
                         const  double delta_rate_new[2][6] =
                                 { { 0.40, 0.7, 0.85, 1.0, 1.0, 1.0 },

@@ -57,7 +57,6 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
                                                             25,  25,  10 };
 
 #endif
-#if ADAPTIVE_DEPTH_PARTITIONING
 // Adaptive Depth Partitioning
 // Shooting states
 #define UNDER_SHOOTING                        0
@@ -127,60 +126,7 @@ uint32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,40,40,40,40,40,25,25,10
 uint32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,55,55,55,55,55,10,10,10,10,10,10 };
 #endif
 #endif
-#else
-// Shooting states
-#define UNDER_SHOOTING                        0
-#define OVER_SHOOTING                         1
-#define TBD_SHOOTING                          2
 
-
-// Set a cost to each search method (could be modified)
-// EB30 @ Revision 12879
-#define PRED_OPEN_LOOP_1_NFL_COST    97 // PRED_OPEN_LOOP_1_NFL_COST is ~03% faster than PRED_OPEN_LOOP_COST
-#define PRED_OPEN_LOOP_COST         100 // Let's assume PRED_OPEN_LOOP_COST costs ~100 U
-#define U_104                       104
-
-#define LIGHT_OPEN_LOOP_COST        106 // L_MDC is ~06% slower than PRED_OPEN_LOOP_COST
-#define U_108                       108
-#define U_109                       109
-#define OPEN_LOOP_COST              110 // F_MDC is ~10% slower than PRED_OPEN_LOOP_COST
-#define U_111                       111
-#define U_112                       112
-#define U_113                       113
-#define U_114                       114
-#define U_115                       115
-#define U_116                       116
-#define U_117                       117
-#define U_120                       120
-#define U_121                       121
-#define LIGHT_BDP_COST              123 // L_BDP is ~23% slower than PRED_OPEN_LOOP_COST
-#define U_125                       125
-#define U_127                       127
-#define BDP_COST                    129 // F_BDP is ~29% slower than PRED_OPEN_LOOP_COST
-#define U_130                       130
-#define U_133                       133
-#define U_134                       134
-#define AVC_COST                    138 // L_BDP is ~38% slower than PRED_OPEN_LOOP_COST
-#define U_145                       145
-#define U_150                       150
-#define FULL_SEARCH_COST            155 // FS    is ~55% slower than PRED_OPEN_LOOP_COST
-
-
-// ADP SB score Manipulation
-#define ADP_CLASS_SHIFT_DIST_0    50
-
-#define ADP_DARK_LCU_TH           25
-#define ADP_LIGHT_LCU_TH         225
-
-
-#define ADP_NON_MOVING_INDEX_TH_0 15
-#define ADP_NON_MOVING_INDEX_TH_1 30
-#define LUMINOSITY_CHANGE_TH       3
-
-
-
-#define VALID_SLOT_TH                        2
-#endif
 
 // Coefficient scaling and quantization with AV1 TX are tailored to
 // the AV1 TX transforms.  Regardless of the bit-depth of the input,
@@ -823,15 +769,9 @@ EbErrorType ModeDecisionConfigurationContextCtor(
     // Rate estimation
     EB_MALLOC(MdRateEstimationContext_t*, context_ptr->md_rate_estimation_ptr, sizeof(MdRateEstimationContext_t), EB_N_PTR);
 
-#if ADAPTIVE_DEPTH_PARTITIONING
     // Adaptive Depth Partitioning
     EB_MALLOC(uint32_t*, context_ptr->sb_score_array, sizeof(uint32_t) * sb_total_count, EB_N_PTR);
     EB_MALLOC(uint8_t *, context_ptr->sb_cost_array, sizeof(uint8_t) * sb_total_count, EB_N_PTR);
-#else
-    // Budgeting
-    EB_MALLOC(uint32_t*, context_ptr->lcuScoreArray, sizeof(uint32_t) * sb_total_count, EB_N_PTR);
-    EB_MALLOC(uint8_t *, context_ptr->lcuCostArray, sizeof(uint8_t) * sb_total_count, EB_N_PTR);
-#endif
 
 #if MDC_FIX_0
     // Open Loop Partitioning 
@@ -1210,7 +1150,6 @@ void forward_sq_blocks_to_md(
 
 
 
-#if ADAPTIVE_DEPTH_PARTITIONING
 void sb_forward_sq_blocks_to_md(
     SequenceControlSet_t *sequence_control_set_ptr,
     PictureControlSet_t  *picture_control_set_ptr,
@@ -1247,7 +1186,7 @@ void sb_forward_sq_blocks_to_md(
     }
     picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
 }
-#endif
+
 
 void Forward85CuToModeDecision(
     SequenceControlSet_t                   *sequence_control_set_ptr,
@@ -1389,56 +1328,6 @@ void Forward84CuToModeDecision(
 
 }
 
-#if !ADAPTIVE_DEPTH_PARTITIONING
-void PartitioningInitialization(
-    SequenceControlSet_t                   *sequence_control_set_ptr,
-    PictureControlSet_t                    *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t     *context_ptr) {
-
-    uint32_t                         slice_type;
-
-    // HG: to collapse
-    // MD Conf Rate Estimation Array from encodeContext
-    MdRateEstimationContext_t    *mdConfRateEstimationArray;
-
-    // Lambda Assignement
-    if (sequence_control_set_ptr->static_config.pred_structure == EB_PRED_RANDOM_ACCESS) {
-
-        if (picture_control_set_ptr->temporal_layer_index == 0) {
-
-            context_ptr->lambda = lambdaModeDecisionRaSad[context_ptr->qp];
-        }
-        else if (picture_control_set_ptr->temporal_layer_index < 3) {
-            context_ptr->lambda = lambdaModeDecisionRaSadQpScalingL1[context_ptr->qp];
-        }
-        else {
-            context_ptr->lambda = lambdaModeDecisionRaSadQpScalingL3[context_ptr->qp];
-        }
-    }
-    else {
-        if (picture_control_set_ptr->temporal_layer_index == 0) {
-            context_ptr->lambda = lambdaModeDecisionLdSad[context_ptr->qp];
-        }
-        else {
-            context_ptr->lambda = lambdaModeDecisionLdSadQpScaling[context_ptr->qp];
-        }
-    }
-
-    // Slice Type
-    slice_type =
-        (picture_control_set_ptr->parent_pcs_ptr->idr_flag == EB_TRUE) ? I_SLICE :
-        picture_control_set_ptr->slice_type;
-
-    // Increment the MD Rate Estimation array pointer to point to the right address based on the QP and slice type
-    mdConfRateEstimationArray = (MdRateEstimationContext_t*)sequence_control_set_ptr->encode_context_ptr->md_rate_estimation_array;
-    mdConfRateEstimationArray += slice_type * TOTAL_NUMBER_OF_QP_VALUES + context_ptr->qp;
-
-    // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
-    EB_MEMCPY(&(context_ptr->md_rate_estimation_ptr->splitFlagBits[0]), &(mdConfRateEstimationArray->splitFlagBits[0]), sizeof(MdRateEstimationContext_t)/*sizeof(EB_BitFraction)* MAX_SIZE_OF_MD_RATE_ESTIMATION_CASES*/);
-
-    picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
-}
-#endif
 /******************************************************
 * Derive MD parameters
 ******************************************************/
@@ -1680,7 +1569,6 @@ void AuraDetection(
     return;
 }
 
-#if ADAPTIVE_DEPTH_PARTITIONING
 /******************************************************
 * Load the cost of the different partitioning method into a local array and derive sensitive picture flag
     Input   : the offline derived cost per search method, detection signals
@@ -2157,17 +2045,12 @@ void set_target_budget_oq(
     if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0)
         budget = sequence_control_set_ptr->sb_tot_cnt * U_150;
     else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
-#if ADP_V1
-        budget = sequence_control_set_ptr->sb_tot_cnt * SB_OPEN_LOOP_COST;
-#else
+
         budget = sequence_control_set_ptr->sb_tot_cnt * U_130;
-#endif
     else
-#if ADP_V1
-        budget = sequence_control_set_ptr->sb_tot_cnt * PRED_OPEN_LOOP_COST;
-#else
+
         budget = sequence_control_set_ptr->sb_tot_cnt * U_120;
-#endif
+
 #endif
   
     context_ptr->budget = budget;
@@ -2264,783 +2147,7 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
     return return_error;
 }
 #endif
-#else
-EbErrorType DeriveDefaultSegments(
-    PictureControlSet_t                 *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr)
-{
-    EbErrorType                    return_error = EB_ErrorNone;
 
-    // @ BASE MDC is not considered as similar to BDP_L in term of speed
-    if (picture_control_set_ptr->temporal_layer_index == 0) {
-
-        if (context_ptr->depthSensitivePictureFlag && context_ptr->budget >= (uint32_t)(picture_control_set_ptr->parent_pcs_ptr->sb_total_count * LIGHT_BDP_COST)) {
-
-            if (context_ptr->budget > (uint32_t)(picture_control_set_ptr->parent_pcs_ptr->sb_total_count * BDP_COST)) {
-                context_ptr->numberOfSegments = 2;
-                context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-                context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_FULL84_DEPTH_MODE - 1];
-            }
-            else {
-                context_ptr->numberOfSegments = 2;
-                context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-                context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1];
-            }
-
-        }
-        else {
-            if (context_ptr->budget > (uint32_t)(picture_control_set_ptr->parent_pcs_ptr->sb_total_count * BDP_COST)) {
-
-                context_ptr->numberOfSegments = 2;
-
-                context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-
-                context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_FULL84_DEPTH_MODE - 1];
-            }
-            else if (context_ptr->budget > (uint32_t)(picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_120)) {
-                context_ptr->numberOfSegments = 4;
-
-                context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-                context_ptr->scoreTh[1] = (int8_t)((2 * 100) / context_ptr->numberOfSegments);
-                context_ptr->scoreTh[2] = (int8_t)((3 * 100) / context_ptr->numberOfSegments);
-
-                context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[2] = context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[3] = context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1];
-            }
-            else {
-                context_ptr->numberOfSegments = 5;
-
-                context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-                context_ptr->scoreTh[1] = (int8_t)((2 * 100) / context_ptr->numberOfSegments);
-                context_ptr->scoreTh[2] = (int8_t)((3 * 100) / context_ptr->numberOfSegments);
-                context_ptr->scoreTh[3] = (int8_t)((4 * 100) / context_ptr->numberOfSegments);
-
-                context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE - 1];
-                context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[2] = context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[3] = context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1];
-                context_ptr->intervalCost[4] = context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1];
-            }
-
-        }
-    }
-    else {
-
-        if (context_ptr->budget > (uint32_t)(picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_120)) {
-
-            context_ptr->numberOfSegments = 6;
-
-            context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[1] = (int8_t)((2 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[2] = (int8_t)((3 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[3] = (int8_t)((4 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[4] = (int8_t)((5 * 100) / context_ptr->numberOfSegments);
-
-            context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[2] = context_ptr->costDepthMode[LCU_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[3] = context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[4] = context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[5] = context_ptr->costDepthMode[LCU_FULL85_DEPTH_MODE - 1];
-        }
-        else if (context_ptr->budget > (uint32_t)(picture_control_set_ptr->parent_pcs_ptr->sb_total_count * U_115)) {
-
-            context_ptr->numberOfSegments = 5;
-
-            context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[1] = (int8_t)((2 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[2] = (int8_t)((3 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[3] = (int8_t)((4 * 100) / context_ptr->numberOfSegments);
-
-            context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[2] = context_ptr->costDepthMode[LCU_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[3] = context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[4] = context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1];
-
-        }
-        else if (context_ptr->budget > (uint32_t)(picture_control_set_ptr->parent_pcs_ptr->sb_total_count * OPEN_LOOP_COST)) {
-
-            context_ptr->numberOfSegments = 4;
-
-            context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[1] = (int8_t)((2 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[2] = (int8_t)((3 * 100) / context_ptr->numberOfSegments);
-
-            context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[2] = context_ptr->costDepthMode[LCU_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[3] = context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1];
-
-        }
-        else {
-
-            context_ptr->numberOfSegments = 4;
-
-            context_ptr->scoreTh[0] = (int8_t)((1 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[1] = (int8_t)((2 * 100) / context_ptr->numberOfSegments);
-            context_ptr->scoreTh[2] = (int8_t)((3 * 100) / context_ptr->numberOfSegments);
-
-            context_ptr->intervalCost[0] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE - 1];
-            context_ptr->intervalCost[1] = context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[2] = context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1];
-            context_ptr->intervalCost[3] = context_ptr->costDepthMode[LCU_OPEN_LOOP_DEPTH_MODE - 1];
-        }
-    }
-
-    return return_error;
-}
-
-
-
-
-
-/******************************************************
-* Set the target budget
-    Input   : cost per depth
-    Output  : budget per picture
-******************************************************/
-
-
-void SetTargetBudget(
-    SequenceControlSet_t                *sequence_control_set_ptr,
-    PictureControlSet_t                 *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr)
-{
-
-    uint32_t budget;
-    
-    if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE) {
-        if (picture_control_set_ptr->temporal_layer_index == 0)
-            budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
-        else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-            budget = picture_control_set_ptr->sb_total_count * U_150;
-        else
-            budget = picture_control_set_ptr->sb_total_count * U_145;
-    }
-    else
-
-        if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080p_RANGE) {
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * AVC_COST;
-            else
-                budget = picture_control_set_ptr->sb_total_count * U_134;
-
-        }
-        else {
-
-            if (picture_control_set_ptr->temporal_layer_index == 0)
-                budget = picture_control_set_ptr->sb_total_count * FULL_SEARCH_COST;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
-                budget = picture_control_set_ptr->sb_total_count * U_125;
-            else
-                budget = picture_control_set_ptr->sb_total_count * U_121;
-
-        }
-
-    
-    context_ptr->budget = budget;
-}
-
-/******************************************************
- * IsAvcPartitioningMode()
- * Returns TRUE for LCUs where only Depth2 & Depth3
- * (AVC Partitioning) are goind to be tested by MD
- * The SB is marked if Sharpe Edge or Potential Aura/Grass
- * or B-Logo or S-Logo or Potential Blockiness Area
- * Input: Sharpe Edge, Potential Aura/Grass, B-Logo, S-Logo, Potential Blockiness Area signals
- * Output: TRUE if one of the above is TRUE
- ******************************************************/
-EbBool IsAvcPartitioningMode(
-    SequenceControlSet_t  *sequence_control_set_ptr,
-    PictureControlSet_t   *picture_control_set_ptr,
-    LargestCodingUnit_t   *sb_ptr)
-{
-
-    uint32_t          sb_index = sb_ptr->index;
-    SbParams_t    *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
-    EB_SLICE        slice_type = picture_control_set_ptr->slice_type;
-    uint8_t           edge_block_num = picture_control_set_ptr->parent_pcs_ptr->edge_results_ptr[sb_index].edge_block_num;
-    SbStat_t      *sb_stat_ptr = &(picture_control_set_ptr->parent_pcs_ptr->sb_stat_array[sb_index]);
-    uint8_t           stationary_edge_over_time_flag = sb_stat_ptr->stationary_edge_over_time_flag;
-    uint8_t           aura_status_iii = sb_ptr->aura_status_iii;
-
-    // No refinment for sub-1080p
-    if (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_1080i_RANGE)
-        return EB_FALSE;
-
-    // Sharpe Edge
-    if (picture_control_set_ptr->parent_pcs_ptr->high_dark_low_light_area_density_flag && picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index > 0 && picture_control_set_ptr->parent_pcs_ptr->sharp_edge_sb_flag[sb_index] && !picture_control_set_ptr->parent_pcs_ptr->similar_colocated_sb_array_ii[sb_index]) {
-        return EB_TRUE;
-    }
-
-    // Potential Aura/Grass
-    if ((slice_type != I_SLICE && picture_control_set_ptr->high_intra_slection == 0) && (sb_params->is_complete_sb)) {
-        if (picture_control_set_ptr->scene_caracteristic_id == EB_FRAME_CARAC_0) {
-            if (picture_control_set_ptr->parent_pcs_ptr->grass_percentage_in_picture > 60 && aura_status_iii) {
-                return EB_TRUE;
-            }
-        }
-    }
-
-    // B-Logo
-    if (picture_control_set_ptr->parent_pcs_ptr->logo_pic_flag && edge_block_num)
-        return EB_TRUE;
-
-    // S-Logo
-    if (stationary_edge_over_time_flag > 0)
-        return EB_TRUE;
-
-    // Potential Blockiness Area
-    if (picture_control_set_ptr->parent_pcs_ptr->complex_sb_array[sb_ptr->index] == SB_COMPLEXITY_STATUS_2)
-
-        return EB_TRUE;
-
-    return EB_FALSE;
-}
-
-
-
-
-
-
-/******************************************************
-* Load the cost of the different partitioning method into a local array and derive sensitive picture flag
-    Input   : the offline derived cost per search method, detection signals
-    Output  : valid costDepthMode and valid sensitivePicture
-******************************************************/
-void ConfigureAdp(
-    PictureControlSet_t                 *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr)
-{
-
-    context_ptr->costDepthMode[LCU_FULL85_DEPTH_MODE - 1] = FULL_SEARCH_COST;
-    context_ptr->costDepthMode[LCU_FULL84_DEPTH_MODE - 1] = FULL_SEARCH_COST;
-    context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1] = BDP_COST;
-    context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1] = LIGHT_BDP_COST;
-    context_ptr->costDepthMode[LCU_OPEN_LOOP_DEPTH_MODE - 1] = OPEN_LOOP_COST;
-    context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1] = LIGHT_OPEN_LOOP_COST;
-    context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1] = AVC_COST;
-    context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1] = PRED_OPEN_LOOP_COST;
-    context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE - 1] = PRED_OPEN_LOOP_1_NFL_COST;
-
-
-    // Initialize the score based TH
-    context_ptr->scoreTh[0] = ~0;
-    context_ptr->scoreTh[1] = ~0;
-    context_ptr->scoreTh[2] = ~0;
-    context_ptr->scoreTh[3] = ~0;
-    context_ptr->scoreTh[4] = ~0;
-    context_ptr->scoreTh[5] = ~0;
-    context_ptr->scoreTh[6] = ~0;
-
-    // Initialize the predicted budget
-    context_ptr->predictedCost = (uint32_t)~0;
-
-    // Initialize the predicted budget
-    context_ptr->predictedCost = (uint32_t)~0;
-
-    // Derive the sensitive picture flag
-    context_ptr->depthSensitivePictureFlag = EB_FALSE;
-    EbBool luminosityChange = EB_FALSE;
-    // Derived for REF P & B & kept false otherwise (for temporal distance equal to 1 luminosity changes are easier to handle)
-    if (picture_control_set_ptr->slice_type != I_SLICE) {
-        if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag) {
-            EbReferenceObject_t  * refObjL0, *refObjL1;
-            refObjL0 = (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
-            refObjL1 = (picture_control_set_ptr->parent_pcs_ptr->slice_type == B_SLICE) ? (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr : (EbReferenceObject_t*)EB_NULL;
-            luminosityChange = ((ABS(picture_control_set_ptr->parent_pcs_ptr->average_intensity[0] - refObjL0->average_intensity) >= LUMINOSITY_CHANGE_TH) || (refObjL1 != EB_NULL && ABS(picture_control_set_ptr->parent_pcs_ptr->average_intensity[0] - refObjL1->average_intensity) >= LUMINOSITY_CHANGE_TH));
-        }
-    }
-    context_ptr->depthSensitivePictureFlag = (picture_control_set_ptr->parent_pcs_ptr->non_moving_index_average != INVALID_ZZ_COST &&
-        picture_control_set_ptr->parent_pcs_ptr->non_moving_index_average < ADP_NON_MOVING_INDEX_TH_1 && // could not seen by the eye if very active
-        ((picture_control_set_ptr->parent_pcs_ptr->non_moving_index_average >= ADP_NON_MOVING_INDEX_TH_0 && picture_control_set_ptr->parent_pcs_ptr->pic_noise_class >= PIC_NOISE_CLASS_3) || // potential complex picture: moderate activity and high variance (noise or a lot of edge)
-            picture_control_set_ptr->parent_pcs_ptr->high_dark_low_light_area_density_flag || // potential complex picture: light foreground and dark background (e.g. flash, light..)
-            luminosityChange)) ? // potential complex picture: luminosity Change (e.g. fade, light..)
-        EB_TRUE :
-        EB_FALSE;
-
-
-
-}
-
-
-/******************************************************
-* Assign a search method based on the allocated cost
-    Input   : allocated budget per LCU
-    Output  : search method per LCU
-******************************************************/
-void DeriveSearchMethod(
-    PictureControlSet_t                 *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr)
-{
-
-    uint32_t sb_index;
-
-    for (sb_index = 0; sb_index < picture_control_set_ptr->parent_pcs_ptr->sb_total_count; sb_index++) {
-
-        if (context_ptr->lcuCostArray[sb_index] == context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE - 1]) {
-            picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE;
-        }
-        else
-            if (context_ptr->lcuCostArray[sb_index] == context_ptr->costDepthMode[LCU_PRED_OPEN_LOOP_DEPTH_MODE - 1]) {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_PRED_OPEN_LOOP_DEPTH_MODE;
-            }
-            else if (context_ptr->lcuCostArray[sb_index] == context_ptr->costDepthMode[LCU_LIGHT_OPEN_LOOP_DEPTH_MODE - 1]) {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_LIGHT_OPEN_LOOP_DEPTH_MODE;
-            }
-            else if (context_ptr->lcuCostArray[sb_index] == context_ptr->costDepthMode[LCU_OPEN_LOOP_DEPTH_MODE - 1]) {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_OPEN_LOOP_DEPTH_MODE;
-            }
-            else if (context_ptr->lcuCostArray[sb_index] == context_ptr->costDepthMode[LCU_LIGHT_BDP_DEPTH_MODE - 1]) {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_LIGHT_BDP_DEPTH_MODE;
-            }
-            else if (context_ptr->lcuCostArray[sb_index] == context_ptr->costDepthMode[LCU_BDP_DEPTH_MODE - 1]) {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_BDP_DEPTH_MODE;
-            }
-            else if (context_ptr->lcuCostArray[sb_index] == context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1]) {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_AVC_DEPTH_MODE;
-            }
-            else if (picture_control_set_ptr->temporal_layer_index == 0) {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_FULL84_DEPTH_MODE;
-            }
-            else {
-                picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] = LCU_FULL85_DEPTH_MODE;
-            }
-
-    }
-
-}
-/******************************************************
-* Set SB budget
-    Input   : SB score, detection signals, iteration
-    Output  : predicted budget for the LCU
-******************************************************/
-void SetLcuBudget(
-    SequenceControlSet_t                *sequence_control_set_ptr,
-    PictureControlSet_t                 *picture_control_set_ptr,
-    LargestCodingUnit_t                 *sb_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr) {
-
-    uint32_t      sb_index = sb_ptr->index;
-    uint32_t      maxToMinScore, scoreToMin;
-
-    if (context_ptr->performRefinement && IsAvcPartitioningMode(sequence_control_set_ptr, picture_control_set_ptr, sb_ptr)) {
-
-        context_ptr->lcuCostArray[sb_index] = context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1];
-        context_ptr->predictedCost += context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1];
-
-    }
-    else {
-        context_ptr->lcuScoreArray[sb_index] = CLIP3(context_ptr->lcuMinScore, context_ptr->lcuMaxScore, context_ptr->lcuScoreArray[sb_index]);
-        scoreToMin = context_ptr->lcuScoreArray[sb_index] - context_ptr->lcuMinScore;
-        maxToMinScore = context_ptr->lcuMaxScore - context_ptr->lcuMinScore;
-
-        if ((scoreToMin <= (maxToMinScore * context_ptr->scoreTh[0]) / 100 && context_ptr->scoreTh[0] != 0) || context_ptr->numberOfSegments == 1 || context_ptr->scoreTh[1] == 100) {
-            context_ptr->lcuCostArray[sb_index] = context_ptr->intervalCost[0];
-            context_ptr->predictedCost += context_ptr->intervalCost[0];
-        }
-        else if ((scoreToMin <= (maxToMinScore * context_ptr->scoreTh[1]) / 100 && context_ptr->scoreTh[1] != 0) || context_ptr->numberOfSegments == 2 || context_ptr->scoreTh[2] == 100) {
-            context_ptr->lcuCostArray[sb_index] = context_ptr->intervalCost[1];
-            context_ptr->predictedCost += context_ptr->intervalCost[1];
-        }
-        else if ((scoreToMin <= (maxToMinScore * context_ptr->scoreTh[2]) / 100 && context_ptr->scoreTh[2] != 0) || context_ptr->numberOfSegments == 3 || context_ptr->scoreTh[3] == 100) {
-            context_ptr->lcuCostArray[sb_index] = context_ptr->intervalCost[2];
-            context_ptr->predictedCost += context_ptr->intervalCost[2];
-        }
-        else if ((scoreToMin <= (maxToMinScore * context_ptr->scoreTh[3]) / 100 && context_ptr->scoreTh[3] != 0) || context_ptr->numberOfSegments == 4 || context_ptr->scoreTh[4] == 100) {
-            context_ptr->lcuCostArray[sb_index] = context_ptr->intervalCost[3];
-            context_ptr->predictedCost += context_ptr->intervalCost[3];
-        }
-        else if ((scoreToMin <= (maxToMinScore * context_ptr->scoreTh[4]) / 100 && context_ptr->scoreTh[4] != 0) || context_ptr->numberOfSegments == 5 || context_ptr->scoreTh[5] == 100) {
-            context_ptr->lcuCostArray[sb_index] = context_ptr->intervalCost[4];
-            context_ptr->predictedCost += context_ptr->intervalCost[4];
-        }
-        else if ((scoreToMin <= (maxToMinScore * context_ptr->scoreTh[5]) / 100 && context_ptr->scoreTh[5] != 0) || context_ptr->numberOfSegments == 6 || context_ptr->scoreTh[6] == 100) {
-            context_ptr->lcuCostArray[sb_index] = context_ptr->intervalCost[5];
-            context_ptr->predictedCost += context_ptr->intervalCost[5];
-        }
-        else {
-            context_ptr->lcuCostArray[sb_index] = context_ptr->intervalCost[6];
-            context_ptr->predictedCost += context_ptr->intervalCost[6];
-        }
-        // Switch to AVC mode if the SB cost is higher than the AVC cost and the the SB is marked + adjust the current picture cost accordingly
-        if (IsAvcPartitioningMode(sequence_control_set_ptr, picture_control_set_ptr, sb_ptr) && context_ptr->lcuCostArray[sb_index] > context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1]) {
-            context_ptr->predictedCost -= (context_ptr->lcuCostArray[sb_index] - context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1]);
-            context_ptr->lcuCostArray[sb_index] = context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1];
-        }
-
-
-    }
-}
-
-/******************************************************
-* Loop multiple times over the LCUs in order to derive the optimal budget per LCU
-    Input   : budget per picture, ditortion, detection signals, iteration
-    Output  : optimal budget for each LCU
-******************************************************/
-void  DeriveOptimalBudgetPerLcu(
-    SequenceControlSet_t                *sequence_control_set_ptr,
-    PictureControlSet_t                 *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr) {
-
-
-    uint32_t sb_index;
-    // Initialize the deviation between the picture predicted cost & the target budget to 100,
-    uint32_t deviationToTarget = 1000;
-
-    // Set the adjustment step to 1 (could be increased for faster convergence),
-    int8_t  adjustementStep = 1;
-
-    // Set the initial shooting state & the final shooting state to TBD
-    uint32_t initialShooting = TBD_SHOOTING;
-    uint32_t finalShooting = TBD_SHOOTING;
-
-    uint8_t maxAdjustementIteration = 100;
-    uint8_t adjustementIteration = 0;
-
-    while (deviationToTarget != 0 && (initialShooting == finalShooting) && adjustementIteration <= maxAdjustementIteration) {
-
-        if (context_ptr->predictedCost < context_ptr->budget) {
-            initialShooting = UNDER_SHOOTING;
-        }
-        else {
-            initialShooting = OVER_SHOOTING;
-        }
-
-        // reset running cost
-        context_ptr->predictedCost = 0;
-
-        for (sb_index = 0; sb_index < picture_control_set_ptr->parent_pcs_ptr->sb_total_count; sb_index++) {
-
-            LargestCodingUnit_t* sb_ptr = picture_control_set_ptr->sb_ptr_array[sb_index];
-
-            SetLcuBudget(
-                sequence_control_set_ptr,
-                picture_control_set_ptr,
-                sb_ptr,
-                context_ptr);
-        }
-
-        // Compute the deviation between the predicted budget & the target budget
-        deviationToTarget = (ABS((int32_t)(context_ptr->predictedCost - context_ptr->budget)) * 1000) / context_ptr->budget;
-
-        // Derive shooting status
-        if (context_ptr->predictedCost < context_ptr->budget) {
-            context_ptr->scoreTh[0] = MAX((context_ptr->scoreTh[0] - adjustementStep), 0);
-            context_ptr->scoreTh[1] = MAX((context_ptr->scoreTh[1] - adjustementStep), 0);
-            context_ptr->scoreTh[2] = MAX((context_ptr->scoreTh[2] - adjustementStep), 0);
-            context_ptr->scoreTh[3] = MAX((context_ptr->scoreTh[3] - adjustementStep), 0);
-            context_ptr->scoreTh[4] = MAX((context_ptr->scoreTh[4] - adjustementStep), 0);
-            finalShooting = UNDER_SHOOTING;
-        }
-        else {
-            context_ptr->scoreTh[0] = (context_ptr->scoreTh[0] == 0) ? 0 : MIN(context_ptr->scoreTh[0] + adjustementStep, 100);
-            context_ptr->scoreTh[1] = (context_ptr->scoreTh[1] == 0) ? 0 : MIN(context_ptr->scoreTh[1] + adjustementStep, 100);
-            context_ptr->scoreTh[2] = (context_ptr->scoreTh[2] == 0) ? 0 : MIN(context_ptr->scoreTh[2] + adjustementStep, 100);
-            context_ptr->scoreTh[3] = (context_ptr->scoreTh[3] == 0) ? 0 : MIN(context_ptr->scoreTh[3] + adjustementStep, 100);
-            context_ptr->scoreTh[4] = (context_ptr->scoreTh[4] == 0) ? 0 : MIN(context_ptr->scoreTh[4] + adjustementStep, 100);
-            finalShooting = OVER_SHOOTING;
-        }
-
-        if (adjustementIteration == 0)
-            initialShooting = finalShooting;
-
-        adjustementIteration++;
-    }
-}
-
-
-/******************************************************
-* Compute the refinment cost
-    Input   : budget per picture, and the cost of the refinment
-    Output  : the refinment flag
-******************************************************/
-void ComputeRefinementCost(
-    SequenceControlSet_t                *sequence_control_set_ptr,
-    PictureControlSet_t                 *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr)
-{
-
-    uint32_t  sb_index;
-    uint32_t  refinementCost = 0;
-
-    for (sb_index = 0; sb_index < picture_control_set_ptr->parent_pcs_ptr->sb_total_count; sb_index++) {
-        LargestCodingUnit_t* sb_ptr = picture_control_set_ptr->sb_ptr_array[sb_index];
-        if (IsAvcPartitioningMode(sequence_control_set_ptr, picture_control_set_ptr, sb_ptr)) {
-            refinementCost += context_ptr->costDepthMode[LCU_AVC_DEPTH_MODE - 1];
-        }
-        // assumes the fastest mode will be used otherwise
-        else {
-            refinementCost += context_ptr->intervalCost[0];
-        }
-
-    }
-
-    // Shut the refinement if the refinement cost is higher than the allocated budget
-    if (refinementCost > context_ptr->budget) {
-        context_ptr->performRefinement = EB_FALSE;
-    }
-    else {
-        context_ptr->performRefinement = EB_TRUE;
-    }
-}
-/******************************************************
-* Compute the score of each LCU
-    Input   : distortion, detection signals
-    Output  : SB score
-******************************************************/
-void DeriveLcuScore(
-    SequenceControlSet_t               *sequence_control_set_ptr,
-    PictureControlSet_t                *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t *context_ptr)
-{
-    uint32_t  sb_index;
-    uint32_t  lcuScore;
-    uint32_t  distortion;
-
-    context_ptr->lcuMinScore = ~0u;
-    context_ptr->lcuMaxScore = 0u;
-
-    for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; sb_index++) {
-
-        SbParams_t sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
-
-        if (picture_control_set_ptr->slice_type == I_SLICE) {
-
-            if (sb_params.raster_scan_cu_validity[RASTER_SCAN_CU_INDEX_64x64] == EB_FALSE) {
-
-                uint8_t cu8x8Index;
-                uint8_t validCu8x8Count = 0;
-                distortion = 0;
-                for (cu8x8Index = 0; cu8x8Index < 64; cu8x8Index++) {
-                    if (sb_params.raster_scan_cu_validity[cu8x8Index]) {
-                        distortion += picture_control_set_ptr->parent_pcs_ptr->ois_cu8_results[sb_index]->sorted_ois_candidate[cu8x8Index][0].distortion;
-                        validCu8x8Count++;
-                    }
-                }
-                distortion = CLIP3(picture_control_set_ptr->parent_pcs_ptr->intra_complexity_min_pre, picture_control_set_ptr->parent_pcs_ptr->intra_complexity_max_pre, (distortion / validCu8x8Count) * 64);
-            }
-            else {
-                distortion = picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index]->sorted_ois_candidate[RASTER_SCAN_CU_INDEX_32x32_0][0].distortion +
-                    picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index]->sorted_ois_candidate[RASTER_SCAN_CU_INDEX_32x32_1][0].distortion +
-                    picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index]->sorted_ois_candidate[RASTER_SCAN_CU_INDEX_32x32_2][0].distortion +
-                    picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index]->sorted_ois_candidate[RASTER_SCAN_CU_INDEX_32x32_3][0].distortion;
-            }
-            lcuScore = distortion;
-
-        }
-        else {
-            if (sb_params.raster_scan_cu_validity[RASTER_SCAN_CU_INDEX_64x64] == EB_FALSE) {
-
-                uint8_t cu8x8Index;
-                uint8_t validCu8x8Count = 0;
-                distortion = 0;
-                for (cu8x8Index = RASTER_SCAN_CU_INDEX_8x8_0; cu8x8Index <= RASTER_SCAN_CU_INDEX_8x8_63; cu8x8Index++) {
-                    if (sb_params.raster_scan_cu_validity[cu8x8Index]) {
-                        distortion += picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cu8x8Index].distortionDirection[0].distortion;
-                        validCu8x8Count++;
-                    }
-                }
-                distortion = CLIP3(picture_control_set_ptr->parent_pcs_ptr->inter_complexity_min_pre, picture_control_set_ptr->parent_pcs_ptr->inter_complexity_max_pre, (distortion / validCu8x8Count) * 64);
-            }
-            else {
-                distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][RASTER_SCAN_CU_INDEX_64x64].distortionDirection[0].distortion;
-            }
-
-            lcuScore = distortion;
-
-            // Use uncovered area
-            if (picture_control_set_ptr->parent_pcs_ptr->failing_motion_sb_flag[sb_index]) {
-                lcuScore = picture_control_set_ptr->parent_pcs_ptr->inter_complexity_max_pre;
-            }
-            else {
-
-                // Use SB variance & activity
-                if (picture_control_set_ptr->parent_pcs_ptr->non_moving_index_array[sb_index] == ADP_NON_MOVING_INDEX_TH_1 && picture_control_set_ptr->parent_pcs_ptr->variance[sb_index][RASTER_SCAN_CU_INDEX_64x64] > IS_COMPLEX_LCU_VARIANCE_TH)
-                    lcuScore -= (((lcuScore - picture_control_set_ptr->parent_pcs_ptr->inter_complexity_min_pre) * ADP_CLASS_SHIFT_DIST_0) / 100);
-                // Use SB luminosity
-                if (picture_control_set_ptr->parent_pcs_ptr->yMean[sb_index][RASTER_SCAN_CU_INDEX_64x64] < ADP_DARK_LCU_TH || picture_control_set_ptr->parent_pcs_ptr->yMean[sb_index][RASTER_SCAN_CU_INDEX_64x64] > ADP_LIGHT_LCU_TH)
-                    lcuScore -= (((lcuScore - picture_control_set_ptr->parent_pcs_ptr->inter_complexity_min_pre) * ADP_CLASS_SHIFT_DIST_0) / 100);
-                else
-                    lcuScore += (((picture_control_set_ptr->parent_pcs_ptr->inter_complexity_max_pre - lcuScore) * ADP_CLASS_SHIFT_DIST_0) / 100);
-            }
-        }
-
-        context_ptr->lcuScoreArray[sb_index] = lcuScore;
-
-        // Track MIN & MAX SB scores
-        context_ptr->lcuMinScore = MIN(context_ptr->lcuScoreArray[sb_index], context_ptr->lcuMinScore);
-        context_ptr->lcuMaxScore = MAX(context_ptr->lcuScoreArray[sb_index], context_ptr->lcuMaxScore);
-    }
-
-
-
-}
-
-/******************************************************
-* BudgetingOutlierRemovalLcu
-    Input   : SB score histogram
-    Output  : Adjusted min & max SB score (to be used to clip the SB score @ SetLcuBudget)
- Performs outlier removal by:
- 1. dividing the total distance between the maximum lcuScore and the minimum lcuScore into NI intervals(NI = 10).
- For each lcuScore interval,
- 2. computing the number of LCUs NV with lcuScore belonging to the subject lcuScore interval.
- 3. marking the subject lcuScore interval as not valid if its NV represent less than validity threshold V_TH per - cent of the total number of the processed LCUs in the picture. (V_TH = 2)
- 4. computing the distance MIN_D from 0 and the index of the first, in incremental way, lcuScore interval marked as valid in the prior step.
- 5. computing the distance MAX_D from NI and the index of the first, in decreasing way, lcuScore interval marked as valid in the prior step.
- 6. adjusting the minimum and maximum lcuScore as follows :
-    MIN_SCORE = MIN_SCORE + MIN_D * I_Value.
-    MAX_SCORE = MAX_SCORE - MAX_D * I_Value.
-******************************************************/
-
-void PerformOutlierRemoval(
-    SequenceControlSet_t                *sequence_control_set_ptr,
-    PictureParentControlSet_t           *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr)
-{
-
-    uint32_t maxInterval = 0;
-    uint32_t subInterval = 0;
-    uint32_t lcuScoreHistogram[10] = { 0 };
-    uint32_t sb_index;
-    uint32_t lcuScore;
-    uint32_t processedlcuCount = 0;
-    int32_t slot = 0;
-
-    maxInterval = context_ptr->lcuMaxScore - context_ptr->lcuMinScore;
-    // Consider 10 bins
-    subInterval = maxInterval / 10;
-
-    // Count # of LCUs at each bin
-    for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; sb_index++) {
-
-        SbParams_t sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
-
-        if (sb_params.raster_scan_cu_validity[RASTER_SCAN_CU_INDEX_64x64]) {
-
-            processedlcuCount++;
-
-            lcuScore = context_ptr->lcuScoreArray[sb_index] + context_ptr->lcuMinScore;
-            if (lcuScore < (subInterval + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[0]++;
-            }
-            else if (lcuScore < ((2 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[1]++;
-            }
-            else if (lcuScore < ((3 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[2]++;
-            }
-            else if (lcuScore < ((4 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[3]++;
-            }
-            else if (lcuScore < ((5 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[4]++;
-            }
-            else if (lcuScore < ((6 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[5]++;
-            }
-            else if (lcuScore < ((7 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[6]++;
-            }
-            else if (lcuScore < ((8 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[7]++;
-            }
-            else if (lcuScore < ((9 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[8]++;
-            }
-            else if (lcuScore < ((10 * subInterval) + context_ptr->lcuMinScore)) {
-                lcuScoreHistogram[9]++;
-            }
-        }
-    }
-
-    // Zero-out the bin if percentage lower than VALID_SLOT_TH
-    for (slot = 0; slot < 10; slot++) {
-        if ((lcuScoreHistogram[slot] * 100 / processedlcuCount) < VALID_SLOT_TH) {
-            lcuScoreHistogram[slot] = 0;
-        }
-    }
-
-    // Ignore null bins
-    for (slot = 0; slot < 10; slot++) {
-        if (lcuScoreHistogram[slot]) {
-            context_ptr->lcuMinScore = context_ptr->lcuMinScore + (slot * subInterval);
-            break;
-        }
-    }
-
-    for (slot = 9; slot >= 0; slot--) {
-        if (lcuScoreHistogram[slot]) {
-            context_ptr->lcuMaxScore = context_ptr->lcuMaxScore - ((9 - slot) * subInterval);
-            break;
-        }
-    }
-}
-/******************************************************
-* Assign a search method for each LCU
-    Input   : SB score, detection signals
-    Output  : search method for each LCU
-******************************************************/
-void DeriveLcuMdMode(
-    SequenceControlSet_t                *sequence_control_set_ptr,
-    PictureControlSet_t                 *picture_control_set_ptr,
-    ModeDecisionConfigurationContext_t  *context_ptr) {
-
-    // Configure ADP
-    ConfigureAdp(
-        picture_control_set_ptr,
-        context_ptr);
-
-    // Set the target budget
-    SetTargetBudget(
-        sequence_control_set_ptr,
-        picture_control_set_ptr,
-        context_ptr);
-
-    // Set the percentage based thresholds
-    DeriveDefaultSegments(
-        picture_control_set_ptr,
-        context_ptr);
-
-    // Compute the cost of the refinements
-    ComputeRefinementCost(
-        sequence_control_set_ptr,
-        picture_control_set_ptr,
-        context_ptr);
-
-    // Derive SB score
-    DeriveLcuScore(
-        sequence_control_set_ptr,
-        picture_control_set_ptr,
-        context_ptr);
-
-    // Remove the outliers
-    PerformOutlierRemoval(
-        sequence_control_set_ptr,
-        picture_control_set_ptr->parent_pcs_ptr,
-        context_ptr);
-
-    // Perform Budgetting
-    DeriveOptimalBudgetPerLcu(
-        sequence_control_set_ptr,
-        picture_control_set_ptr,
-        context_ptr);
-
-    // Set the search method using the SB cost (mapping)
-    DeriveSearchMethod(
-        picture_control_set_ptr,
-        context_ptr);
-
-}
-#endif
 void forward_sq_non4_blocks_to_md(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr)
@@ -3108,7 +2215,6 @@ void forward_sq_non4_blocks_to_md(
 
 }
 
-#if ADAPTIVE_DEPTH_PARTITIONING
 void sb_forward_sq_non4_blocks_to_md(
     SequenceControlSet_t *sequence_control_set_ptr,
     PictureControlSet_t  *picture_control_set_ptr,
@@ -3146,7 +2252,7 @@ void sb_forward_sq_non4_blocks_to_md(
     }
     picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
 }
-#endif
+
 void forward_all_c_blocks_to_md(
     SequenceControlSet_t   *sequence_control_set_ptr,
     PictureControlSet_t    *picture_control_set_ptr){
@@ -3394,27 +2500,12 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
 #endif
         if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE) {
-#if ADAPTIVE_DEPTH_PARTITIONING
             derive_sb_md_mode(
                 sequence_control_set_ptr,
                 picture_control_set_ptr,
                 context_ptr);
-#else
-            DeriveLcuMdMode(
-                sequence_control_set_ptr,
-                picture_control_set_ptr,
-                context_ptr);
-#endif
-#if !ADAPTIVE_DEPTH_PARTITIONING
-            uint32_t sb_index;
-            // Rate estimation/QP
-            PartitioningInitialization(
-                sequence_control_set_ptr,
-                picture_control_set_ptr,
-                context_ptr);
-#endif
 
-#if ADAPTIVE_DEPTH_PARTITIONING
+
             for (int sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
                 if (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_SQ_BLOCKS_DEPTH_MODE) {
                     sb_forward_sq_blocks_to_md(
@@ -3437,35 +2528,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
                 }
             }
         }
-#else
-            // SB Loop : Partitionnig Decision
-            for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
 
-                if (picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_FULL85_DEPTH_MODE) {
-
-                    Forward85CuToModeDecisionLCU(
-                        sequence_control_set_ptr,
-                        picture_control_set_ptr,
-                        sb_index);
-                }
-                else if (picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_FULL84_DEPTH_MODE) {
-                    Forward84CuToModeDecisionLCU(
-                        sequence_control_set_ptr,
-                        picture_control_set_ptr,
-                        sb_index);
-                }
-                else if (picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_LIGHT_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_AVC_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_PRED_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_md_mode_array[sb_index] == LCU_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE) {
-
-                    // Predict the SB partitionning
-                    PerformEarlyLcuPartitionningLcu( // HT done
-                        context_ptr,
-                        sequence_control_set_ptr,
-                        picture_control_set_ptr,
-                        sb_index);
-                }
-            }
-        }
-#endif
         else  if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_ALL_DEPTH_MODE) {
 
             forward_all_blocks_to_md(

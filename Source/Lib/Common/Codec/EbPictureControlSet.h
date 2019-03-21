@@ -14141,11 +14141,7 @@ extern "C" {
 
         // MD
         EbEncMode                             enc_mode;
-#if ADAPTIVE_DEPTH_PARTITIONING
-        EB_SB_DEPTH_MODE                     *sb_depth_mode_array;
-#else
-        EbLcuDepthMode                       *sb_md_mode_array;
-#endif		
+        EB_SB_DEPTH_MODE                     *sb_depth_mode_array;		
         EbSbComplexityStatus                 *complex_sb_array;
         EbCu8x8Mode                           cu8x8_mode;
         EbBool                                use_src_ref;

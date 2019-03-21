@@ -681,17 +681,12 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
         else if (picture_control_set_ptr->enc_mode <= ENC_M5)
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
-#if ADAPTIVE_DEPTH_PARTITIONING
         else {
             if (picture_control_set_ptr->slice_type == I_SLICE)
                 picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
             else
                 picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
         }
-#else
-        else
-            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
-#endif
 
 #if SCENE_CONTENT_SETTINGS
     }

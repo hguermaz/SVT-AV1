@@ -1092,11 +1092,7 @@ EbErrorType picture_parent_control_set_ctor(
 
     EB_CREATEMUTEX(EbHandle, object_ptr->rc_distortion_histogram_mutex, sizeof(EbHandle), EB_MUTEX);
 
-#if ADAPTIVE_DEPTH_PARTITIONING
     EB_MALLOC(EB_SB_DEPTH_MODE*, object_ptr->sb_depth_mode_array, sizeof(EB_SB_DEPTH_MODE) * object_ptr->sb_total_count, EB_N_PTR);
-#else
-    EB_MALLOC(EbLcuDepthMode*, object_ptr->sb_md_mode_array, sizeof(EbLcuDepthMode) * object_ptr->sb_total_count, EB_N_PTR);
-#endif
 
     EB_MALLOC(Av1Common*, object_ptr->av1_cm, sizeof(Av1Common), EB_N_PTR);
 
