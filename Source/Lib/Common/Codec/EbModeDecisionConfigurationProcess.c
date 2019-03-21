@@ -1144,7 +1144,6 @@ void forward_all_blocks_to_md(
 
 }
 
-#if INJECT_ONLY_SQ
 void forward_sq_blocks_to_md(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr)
@@ -1210,7 +1209,7 @@ void forward_sq_blocks_to_md(
     picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
 
 }
-#endif
+
 
 
 #if ADAPTIVE_DEPTH_PARTITIONING

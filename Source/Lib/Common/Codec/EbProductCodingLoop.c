@@ -4306,7 +4306,6 @@ EB_EXTERN EbErrorType mode_decision_sb(
         cu_ptr->split_flag = (uint16_t)leafDataPtr->split_flag; //mdc indicates smallest or non valid CUs with split flag=
         cu_ptr->qp = context_ptr->qp;
         cu_ptr->best_d1_blk = blk_idx_mds;
-#if INJECT_ONLY_SQ
 
             if (leafDataPtr->tot_d1_blocks != 1)
             {
@@ -4319,16 +4318,6 @@ EB_EXTERN EbErrorType mode_decision_sb(
                         sb_origin_x,
                         sb_origin_y);
             }
-#else
-        if (blk_geom->shape == PART_N)
-            copy_neighbour_arrays(      //save a clean neigh in [1], encode uses [0], reload the clean in [0] after done last ns block in a partition
-                picture_control_set_ptr,
-                context_ptr,
-                0, 1,
-                blk_idx_mds,
-                sb_origin_x,
-                sb_origin_y);
-#endif
 
         md_encode_block(
             sequence_control_set_ptr,
@@ -7986,13 +7975,8 @@ EB_EXTERN EbErrorType in_loop_motion_estimation_sblock(
                 refPicPtr->stride_y,
                 searchAreaBuffer,
                 MAX_TATAL_SEARCH_AREA_WIDTH,
-#if FIX_ME_SR_10BIT
                 search_area_width + context_ptr->sb_side + ME_FILTER_TAP,
                 search_area_height + context_ptr->sb_side + ME_FILTER_TAP,
-#else
-                MAX_TATAL_SEARCH_AREA_WIDTH,
-                MAX_TATAL_SEARCH_AREA_HEIGHT,
-#endif
                 EB_FALSE,
                 asm_type);
 
