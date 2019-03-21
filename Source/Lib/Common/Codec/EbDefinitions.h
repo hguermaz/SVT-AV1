@@ -167,11 +167,11 @@ extern "C" {
 
 #if M9_SETTINGS
 // Adopted
-#define M9_FULL_LOOP_ESCAPE      1   // Enhanced full loop escape
-#define M9_HME                   1   // VP9 4K HME, HME (L0 only 48x32)
-#define M9_ME                    1   // VP9 4K ME, ME (16x9)
-#define M9_SUBPEL_SELECTION      1
-#define M9_CU_8x8                1
+#define M9_FULL_LOOP_ESCAPE      0   // Enhanced full loop escape
+#define M9_HME                   0   // VP9 4K HME, HME (L0 only 48x32)
+#define M9_ME                    0   // VP9 4K ME, ME (16x9)
+#define M9_SUBPEL_SELECTION      0
+#define M9_CU_8x8                0
 
 // Under testing
 #define M9_FRAC_ME_SEARCH_METHOD 0   // VP9 4K fractional search method; SUB_SAD_SEARCH vs. FULL_SAD_SEARCH 
@@ -188,8 +188,8 @@ extern "C" {
 
 #define OPT_LOSSLESS             0
 #define OPT_LOSSY                0
-#define FRAC_64x64_BUG_FIX       0              
 
+#define FRAC_64x64_BUG_FIX       1
 
 
 
