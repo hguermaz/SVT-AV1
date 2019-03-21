@@ -650,15 +650,13 @@ EbErrorType PreModeDecision(
     return return_error;
 }
 #endif
-#if IMPROVED_BIPRED_INJECTION || IMPROVED_UNIPRED_INJECTION
 
 #define BIPRED_3x3_REFINMENT_POSITIONS 8
 
 int8_t ALLOW_REFINEMENT_FLAG[BIPRED_3x3_REFINMENT_POSITIONS] = {  1, 0, 1, 0, 1,  0,  1, 0 };
 int8_t BIPRED_3x3_X_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { -1, -1, 0, 1, 1, 1, 0, -1 };
 int8_t BIPRED_3x3_Y_POS[BIPRED_3x3_REFINMENT_POSITIONS] = { 0, 1, 1, 1, 0, -1, -1, -1 };
-#endif
-#if IMPROVED_UNIPRED_INJECTION
+
 void Unipred3x3CandidatesInjection(
     PictureControlSet_t            *picture_control_set_ptr,
     ModeDecisionContext_t          *context_ptr,
@@ -859,8 +857,7 @@ void Unipred3x3CandidatesInjection(
 
     return;
 }
-#endif
-#if IMPROVED_BIPRED_INJECTION
+
 void Bipred3x3CandidatesInjection(
     PictureControlSet_t            *picture_control_set_ptr,
     ModeDecisionContext_t          *context_ptr,
@@ -1081,7 +1078,7 @@ void Bipred3x3CandidatesInjection(
 
     return;
 }
-#endif
+
 
 uint8_t GetMaxDrlIndex(uint8_t  refmvCnt, PredictionMode   mode)
 {
@@ -2460,7 +2457,6 @@ void  inject_inter_candidates(
 #else
         if (allow_bipred) {
 #endif
-#if IMPROVED_BIPRED_INJECTION
             //----------------------
             // Bipred2Nx2N
             //----------------------
@@ -2476,11 +2472,10 @@ void  inject_inter_candidates(
                         close_loop_me_index,
                         me2Nx2NTableOffset,
                         &canTotalCnt);
-#endif
+
 #if BASE_LAYER_REF
             }
 #endif
-#if IMPROVED_UNIPRED_INJECTION
             //----------------------
             // Unipred2Nx2N
             //----------------------
@@ -2496,7 +2491,7 @@ void  inject_inter_candidates(
                         close_loop_me_index,
                         me2Nx2NTableOffset,
                         &canTotalCnt);
-#endif
+
         }
     }
     // update the total number of candidates injected

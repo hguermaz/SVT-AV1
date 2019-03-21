@@ -50,8 +50,6 @@ extern "C" {
 
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH           1 // F7
-#define IMPROVED_UNIPRED_INJECTION                      1 // F11
-#define IMPROVED_BIPRED_INJECTION                       1 // F10
 #define M0_ME_SEARCH_BASE                               1 // F13
 #define INC_NFL12                                       1 // F14
 #define AV1_UPGRADE                                     1 // Upgrade to V1.0.0
