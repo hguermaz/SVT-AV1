@@ -1415,12 +1415,33 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // CHROMA_MODE_0  0     Chroma @ MD
     // CHROMA_MODE_1  1     Chroma blind @ MD + CFL @ EP
     // CHROMA_MODE_2  2     Chroma blind @ MD + no CFL @ EP
+#if M9_CHROMA
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) {
+        if (picture_control_set_ptr->enc_mode <= ENC_M4)
+            context_ptr->chroma_level = CHROMA_MODE_0;
+        else
+            context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
+            CHROMA_MODE_1 :
+            CHROMA_MODE_2;
+    }
+    else {
+        if (picture_control_set_ptr->enc_mode <= ENC_M4)
+            context_ptr->chroma_level = CHROMA_MODE_0;
+        else if (picture_control_set_ptr->enc_mode <= ENC_M8)
+            context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
+            CHROMA_MODE_1 :
+            CHROMA_MODE_2;
+        else
+            context_ptr->chroma_level = CHROMA_MODE_2;
+    }
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
         context_ptr->chroma_level = CHROMA_MODE_0;
     else 
         context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
             CHROMA_MODE_1 :
             CHROMA_MODE_2 ;
+#endif
 #endif
 
     
@@ -1458,10 +1479,19 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    Off
     // 1                    On but only INTRA
     // 2                    On both INTRA and INTER
+#if M9_FULL_LOOP_ESCAPE
+    if (picture_control_set_ptr->enc_mode <= ENC_M7)
+        context_ptr->full_loop_escape = 0;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M8)
+        context_ptr->full_loop_escape = 1;
+    else
+        context_ptr->full_loop_escape = 2;
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M7)
         context_ptr->full_loop_escape = 0;
     else
         context_ptr->full_loop_escape = 1;
+#endif
 
 #endif
 #if SHUT_GLOBAL_MV
@@ -1555,6 +1585,22 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->interpolation_filter_search_blk_size = 2;
     
 
+#if M9_PF
+    // Set PF MD
+    //if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
+    //    context_ptr->pf_md_mode = PF_OFF;
+    //else {
+    if (picture_control_set_ptr->enc_mode <= ENC_M8) {
+        context_ptr->pf_md_mode = PF_OFF;
+    }
+    else {
+        if (picture_control_set_ptr->temporal_layer_index > 0)
+            context_ptr->pf_md_mode = PF_N2;
+        else
+            context_ptr->pf_md_mode = PF_OFF;
+    }
+    //}
+#endif
 
     return return_error;
 }

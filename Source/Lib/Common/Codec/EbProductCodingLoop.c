@@ -175,6 +175,7 @@ void mode_decision_update_neighbor_arrays(
     uint8_t                    ref_frame_type = (uint8_t)context_ptr->cu_ptr->prediction_unit_array[0].ref_frame_type;
 
 
+#if !OPT_LOSSLESS
     neighbor_array_unit_mode_write32(
         context_ptr->interpolation_type_neighbor_array,
         context_ptr->cu_ptr->interp_filters,
@@ -183,12 +184,14 @@ void mode_decision_update_neighbor_arrays(
         bwdith,
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
     {
         struct PartitionContext partition;
         partition.above = partition_context_lookup[context_ptr->blk_geom->bsize].above;
         partition.left = partition_context_lookup[context_ptr->blk_geom->bsize].left;
 
+#if !OPT_LOSSLESS
         neighbor_array_unit_mode_write(
             context_ptr->leaf_partition_neighbor_array,
             (uint8_t*)(&partition), // NaderM
@@ -197,6 +200,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
         // Mode Type Update
         neighbor_array_unit_mode_write(
@@ -207,6 +211,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+#if !OPT_LOSSLESS
 #if M8_SKIP_BLK        
         // Intra Luma Mode Update
         neighbor_array_unit_mode_write(
@@ -217,6 +222,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 #endif
         // Intra Luma Mode Update
         neighbor_array_unit_mode_write(
@@ -276,6 +282,7 @@ void mode_decision_update_neighbor_arrays(
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
+#if !OPT_LOSSLESS
     //  Update skip_coeff_neighbor_array,
     neighbor_array_unit_mode_write(
         context_ptr->skip_coeff_neighbor_array,
@@ -285,6 +292,7 @@ void mode_decision_update_neighbor_arrays(
         bwdith,
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
 
 #if CHROMA_BLIND
     if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
@@ -656,6 +664,16 @@ void md_update_all_neighbour_arrays_multiple(
 // Based on the MDStage and the encodeMode
 // the NFL candidates numbers are set
 //*************************//
+#if NFL_PER_SQ_SIZE
+uint32_t nfl_cap_table[6] = {
+    NFL_CAP_4x4,
+    NFL_CAP_8x8,
+    NFL_CAP_16x16,
+    NFL_CAP_32x32,
+    NFL_CAP_64x64,
+    NFL_CAP_128x128
+};
+#endif
 #if ADAPTIVE_DEPTH_PARTITIONING
 void set_nfl(
     ModeDecisionContext_t     *context_ptr
@@ -666,6 +684,9 @@ void set_nfl(
     LargestCodingUnit_t       *sb_ptr) {
 #endif
 
+#if M9_NON_UNIFORM_NFL || NFL_PER_SQ_SIZE
+    uint8_t nfl_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
+#endif
     // NFL Level MD       Settings
     // 0                  MAX_NFL 40
     // 1                  30
@@ -719,6 +740,12 @@ void set_nfl(
             context_ptr->full_recon_search_count = 8;
         else
             context_ptr->full_recon_search_count = 6;
+#endif
+#if NFL_PER_SQ_SIZE
+    if (picture_control_set_ptr->slice_type != I_SLICE) {
+        uint32_t nfl_cap = nfl_cap_table[nfl_index];
+        context_ptr->full_recon_search_count = nfl_cap;
+    }
 #endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
@@ -2616,9 +2643,11 @@ void AV1PerformFullLoop(
     //      printf("NOPPPP");
 
     for (fullLoopCandidateIndex = 0; fullLoopCandidateIndex < fullCandidateTotalCount; ++fullLoopCandidateIndex) {
-
+#if M9_FULL_LOOP_ESCAPE
+        candidateIndex = (context_ptr->full_loop_escape == 2) ? context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex]: context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
+#else
         candidateIndex = context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
-
+#endif
 #if USED_NFL_FEATURE_BASED
         uint8_t best_fastLoop_candidate_index = context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex];
 #endif
@@ -4025,6 +4054,11 @@ void md_encode_block(
             context_ptr->full_recon_search_count,
 #else
             fullCandidateTotalCount,
+#endif
+#if M9_FULL_LOOP_ESCAPE
+            (context_ptr->full_loop_escape == 2) ? context_ptr->sorted_candidate_index_array : context_ptr->best_candidate_index_array,
+#else
+            context_ptr->best_candidate_index_array,
 #endif
             context_ptr->best_candidate_index_array,
             &best_intra_mode);
