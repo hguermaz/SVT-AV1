@@ -229,6 +229,7 @@ extern "C" {
 #define AOM_INTERP_EXTEND 4
 
 #define IMPROVE_1D_INTER_DEPTH_DECISION  1
+#define ENABLE_WARPED_MV                 1
 struct buf_2d {
     uint8_t *buf;
     uint8_t *buf0;
