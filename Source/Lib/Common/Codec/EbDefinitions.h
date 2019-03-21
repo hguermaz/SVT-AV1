@@ -163,7 +163,7 @@ extern "C" {
 
 
 // M9 settings toward 4K 60 fps
-#define M9_SETTINGS              1
+#define M9_SETTINGS              0
 
 #if M9_SETTINGS
 // Adopted
@@ -189,8 +189,6 @@ extern "C" {
 #define OPT_LOSSLESS             0
 #define OPT_LOSSY                0
 
-#define FRAC_64x64_BUG_FIX       1
-
 
 
 
@@ -206,6 +204,10 @@ extern "C" {
 #define   NFL_CAP_128x128 12
 #endif
 
+#endif
+
+#if !M9_SETTINGS
+#define FRAC_64x64_BUG_FIX                              1
 #endif
 
 #define FULL_LOOP_ESCAPE                                1
