@@ -4060,7 +4060,6 @@ void md_encode_block(
 #else
             context_ptr->best_candidate_index_array,
 #endif
-            context_ptr->best_candidate_index_array,
             &best_intra_mode);
 
         candidateBuffer = candidate_buffer_ptr_array[candidateIndex];
