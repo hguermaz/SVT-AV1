@@ -1643,13 +1643,6 @@ void ProductPerformFastLoop(
     int32_t bestFirstFastCostSearchCandidateIndex = INVALID_FAST_CANDIDATE_INDEX;
     //    SequenceControlSet_t           *sequence_control_set_ptr = ((SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr);
 
-#if INTRA_CORE_OPT
-    if (context_ptr->blk_geom->sq_size < 128) {
-        generate_intra_reference_samples(
-            picture_control_set_ptr->parent_pcs_ptr->av1_cm,
-            context_ptr);
-    }
-#endif
 
     {
 
