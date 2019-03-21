@@ -1019,9 +1019,7 @@ void ProductFullLoopTxSearch(
     if (allowed_tx_num == 0) {
         allowed_tx_mask[plane ? uv_tx_type : DCT_DCT] = 1;
     }
-#if BUG_FIX
     TxType best_tx_type = DCT_DCT;
-#endif
     for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
         tx_type = (TxType)tx_type_index;
         if (!allowed_tx_mask[tx_type]) continue;
@@ -1130,9 +1128,7 @@ void ProductFullLoopTxSearch(
             int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txSize)) * 2;
             tuFullDistortion[0][DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_RESIDUAL], shift);
             tuFullDistortion[0][DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_PREDICTION], shift);
-#if BUG_FIX
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
-#endif
             //LUMA-ONLY
             Av1TuEstimateCoeffBits(
 #if CABAC_UP
@@ -1172,11 +1168,8 @@ void ProductFullLoopTxSearch(
 
         if (y_full_cost < bestFullCost) {
             bestFullCost = y_full_cost;
-#if BUG_FIX
             best_tx_type = tx_type;
-#else
-            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
-#endif
+
         }
 
         //if (cpi->sf.adaptive_txb_search_level) {
@@ -1191,9 +1184,7 @@ void ProductFullLoopTxSearch(
 
 
     }
-#if BUG_FIX
     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = best_tx_type;
-#endif
     // For Inter blocks, transform type of chroma follows luma transfrom type
     if (is_inter)
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y];

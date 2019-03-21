@@ -51,22 +51,13 @@ extern "C" {
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH           1 // F7
 #define M0_ME_SEARCH_BASE                               1 // F13
-
-
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass
-
 #define INTERPOL_FILTER_SEARCH_10BIT_SUPPORT            1
-
-#define BUG_FIX                                         1 // BUG fix related to transform type
-#define LIMIT_INTRA_INJ                                 1
-#define TURN_OFF_INTERPOL_FILTER_SEARCH                 1
-#define TURN_OFF_TX_TYPE_SEARCH                         1
-#define TURN_OFF_NFL8                                   1 // Uses 8->4 NFL
-
-#define TURN_OFF_CFL                                    0 // turning CFL off is broken
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 #endif
+
+
 
 
 // NEW MACOS
