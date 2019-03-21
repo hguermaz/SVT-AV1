@@ -3545,9 +3545,6 @@ uint32_t compute64x_m_sad_avx2_intrin(
     return _mm_extract_epi32(xmm0, 0);
 }
 
-/*******************************************
-* GetEightHorizontalSearchPointResults_8x8_16x16_PU
-*******************************************/
 /*******************************************************************************
 * Requirement: p_best_sad8x8[i] must be less than 0x7FFFFFFF because signed comparison is used.
 *******************************************************************************/

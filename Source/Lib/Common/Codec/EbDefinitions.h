@@ -209,6 +209,10 @@ extern "C" {
 #if !M9_SETTINGS
 #define FRAC_64x64_BUG_FIX                              1
 #endif
+#define USE_SAD_ME                                      0
+#define USE_SAD_HMEL0                                   0
+#define USE_SAD_HMEL1                                   0
+#define USE_SAD_HMEL2                                   0
 
 #define FULL_LOOP_ESCAPE                                1
 #define SIMULATE_PF_N2                                  0
@@ -280,11 +284,11 @@ extern "C" {
 
 #define AOM_INTERP_EXTEND 4
 
-#define CFL_FIX         1 // Fixes to CFL and enabling CFL for 4x*
+#define CFL_FIX         0 // Fixes to CFL and enabling CFL for 4x*
 
-#define IMPROVE_1D_INTER_DEPTH_DECISION  1
-#define ENABLE_WARPED_MV                 1
-#define CABAC_UP                         1 // update cabac probabilities. txb CDFs.
+#define IMPROVE_1D_INTER_DEPTH_DECISION  0
+#define ENABLE_WARPED_MV                 0
+#define CABAC_UP                         0 // update cabac probabilities. txb CDFs.
 
 struct buf_2d {
     uint8_t *buf;

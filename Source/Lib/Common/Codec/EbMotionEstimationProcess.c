@@ -228,6 +228,20 @@ EbErrorType signal_derivation_me_kernel_oq(
     }
 #endif
 
+
+
+    context_ptr->me_context_ptr->hme_search_method = (picture_control_set_ptr->enc_mode == ENC_M0) ?
+        FULL_SAD_SEARCH :
+        SUB_SAD_SEARCH;
+
+#if USE_SAD_ME
+    context_ptr->me_context_ptr->me_search_method = (picture_control_set_ptr->enc_mode == ENC_M0) ?
+        FULL_SAD_SEARCH :
+        SUB_SAD_SEARCH;
+#else
+    context_ptr->me_context_ptr->me_search_method = SUB_SAD_SEARCH  ;
+#endif
+
     return return_error;
 };
 /************************************************

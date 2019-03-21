@@ -412,6 +412,8 @@ extern "C" {
 #if M9_SUBPEL_SELECTION
         uint8_t                       fractional_search_model;
 #endif
+        uint8_t                       hme_search_method;
+        uint8_t                       me_search_method;
         // ME
 #if QUICK_ME_CLEANUP
         uint16_t                      search_area_width;
