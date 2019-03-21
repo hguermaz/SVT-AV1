@@ -1105,6 +1105,10 @@ void ProductFullLoop(
 
         //LUMA-ONLY
         Av1TuEstimateCoeffBits(
+#if CABAC_UP
+            0,//allow_update_cdf,
+            NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
             picture_control_set_ptr,
             candidateBuffer,
             context_ptr->cu_ptr,
@@ -1364,6 +1368,10 @@ void ProductFullLoopTxSearch(
 #endif
             //LUMA-ONLY
             Av1TuEstimateCoeffBits(
+#if CABAC_UP
+                0,//allow_update_cdf,
+                NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
                 picture_control_set_ptr,
                 candidateBuffer,
                 context_ptr->cu_ptr,
@@ -1602,6 +1610,10 @@ void encode_pass_tx_search(
         const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
 
         Av1TuEstimateCoeffBits(
+#if CABAC_UP
+            0,//allow_update_cdf,
+            NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
             picture_control_set_ptr,
             candidateBuffer,
             context_ptr->cu_ptr,
@@ -1828,6 +1840,10 @@ void encode_pass_tx_search_hbd(
         const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
 
         Av1TuEstimateCoeffBits(
+#if CABAC_UP
+            0,//allow_update_cdf,
+            NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
             picture_control_set_ptr,
             candidateBuffer,
             context_ptr->cu_ptr,
@@ -2173,6 +2189,10 @@ void CuFullDistortionFastTuMode_R(
 
             //CHROMA-ONLY
             Av1TuEstimateCoeffBits(
+#if CABAC_UP
+                0,//allow_update_cdf,
+                NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
                 picture_control_set_ptr,
                 candidateBuffer,
                 context_ptr->cu_ptr,

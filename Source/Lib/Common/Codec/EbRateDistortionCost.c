@@ -157,6 +157,10 @@ static const PredictionMode fimode_to_intradir[FILTER_INTRA_MODES] = {
 };
 // TODO(angiebird): use this function whenever it's possible
 int32_t Av1TransformTypeRateEstimation(
+#if CABAC_UP
+    uint8_t        allow_update_cdf,
+    FRAME_CONTEXT *fc,
+#endif
     struct ModeDecisionCandidateBuffer_s    *candidate_buffer_ptr,
     EbBool                                  is_inter,
     EbBool                                  useFilterIntraFlag,
@@ -177,7 +181,22 @@ int32_t Av1TransformTypeRateEstimation(
         const int32_t ext_tx_set = get_ext_tx_set(transform_size, is_inter, reduced_tx_set_used);
         if (is_inter) {
             if (ext_tx_set > 0)
+#if CABAC_UP
+            {
+                if (allow_update_cdf) {
+
+                    const TxSetType tx_set_type =
+                        get_ext_tx_set_type(transform_size, is_inter, reduced_tx_set_used);
+
+                    update_cdf(fc->inter_ext_tx_cdf[ext_tx_set][square_tx_size],
+                        av1_ext_tx_ind[tx_set_type][transform_type],
+                        av1_num_ext_tx_set[tx_set_type]);
+                }
                 return candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->interTxTypeFacBits[ext_tx_set][square_tx_size][transform_type];
+            }
+#else
+                return candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->interTxTypeFacBits[ext_tx_set][square_tx_size][transform_type];
+#endif
         }
         else {
             if (ext_tx_set > 0) {
@@ -187,6 +206,17 @@ int32_t Av1TransformTypeRateEstimation(
                 else
                     intra_dir = candidate_buffer_ptr->candidate_ptr->pred_mode;
                 ASSERT(intra_dir < INTRA_MODES);
+#if CABAC_UP
+                const TxSetType tx_set_type =
+                    get_ext_tx_set_type(transform_size, is_inter, reduced_tx_set_used);
+
+                if (allow_update_cdf) {
+                    update_cdf(
+                        fc->intra_ext_tx_cdf[ext_tx_set][square_tx_size][intra_dir],
+                        av1_ext_tx_ind[tx_set_type][transform_type],
+                        av1_num_ext_tx_set[tx_set_type]);
+                }
+#endif
                 return candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->intraTxTypeFacBits[ext_tx_set][square_tx_size][intra_dir][transform_type];
             }
         }
@@ -229,7 +259,96 @@ static INLINE int32_t get_eob_pos_token(const int32_t eob, int32_t *const extra)
 
     return t;
 }
+#if CABAC_UP
+#define TX_SIZE TxSize
+static INLINE TX_SIZE get_txsize_entropy_ctx(TX_SIZE txsize) {
+    return (TX_SIZE)((txsize_sqr_map[txsize] + txsize_sqr_up_map[txsize] + 1) >>
+        1);
+}
+void av1_update_eob_context(int eob, TX_SIZE tx_size, TX_CLASS tx_class,
+    PLANE_TYPE plane, FRAME_CONTEXT *ec_ctx,
+    uint8_t allow_update_cdf) {
+    int eob_extra;
+    const int eob_pt = get_eob_pos_token(eob, &eob_extra);
+    TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
 
+    const int eob_multi_size = txsize_log2_minus4[tx_size];
+    const int eob_multi_ctx = (tx_class == TX_CLASS_2D) ? 0 : 1;
+
+
+    switch (eob_multi_size) {
+    case 0:
+#if CONFIG_ENTROPY_STATS
+        ++counts->eob_multi16[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
+        if (allow_update_cdf)
+            update_cdf(ec_ctx->eob_flag_cdf16[plane][eob_multi_ctx], eob_pt - 1, 5);
+        break;
+    case 1:
+#if CONFIG_ENTROPY_STATS
+        ++counts->eob_multi32[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
+        if (allow_update_cdf)
+            update_cdf(ec_ctx->eob_flag_cdf32[plane][eob_multi_ctx], eob_pt - 1, 6);
+        break;
+    case 2:
+#if CONFIG_ENTROPY_STATS
+        ++counts->eob_multi64[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
+        if (allow_update_cdf)
+            update_cdf(ec_ctx->eob_flag_cdf64[plane][eob_multi_ctx], eob_pt - 1, 7);
+        break;
+    case 3:
+#if CONFIG_ENTROPY_STATS
+        ++counts->eob_multi128[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
+        if (allow_update_cdf) {
+            update_cdf(ec_ctx->eob_flag_cdf128[plane][eob_multi_ctx], eob_pt - 1,
+                8);
+        }
+        break;
+    case 4:
+#if CONFIG_ENTROPY_STATS
+        ++counts->eob_multi256[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
+        if (allow_update_cdf) {
+            update_cdf(ec_ctx->eob_flag_cdf256[plane][eob_multi_ctx], eob_pt - 1,
+                9);
+        }
+        break;
+    case 5:
+#if CONFIG_ENTROPY_STATS
+        ++counts->eob_multi512[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
+        if (allow_update_cdf) {
+            update_cdf(ec_ctx->eob_flag_cdf512[plane][eob_multi_ctx], eob_pt - 1,
+                10);
+        }
+        break;
+    case 6:
+    default:
+#if CONFIG_ENTROPY_STATS
+        ++counts->eob_multi1024[cdf_idx][plane][eob_multi_ctx][eob_pt - 1];
+#endif
+        if (allow_update_cdf) {
+            update_cdf(ec_ctx->eob_flag_cdf1024[plane][eob_multi_ctx], eob_pt - 1,
+                11);
+        }
+        break;
+    }
+
+    if (k_eob_offset_bits[eob_pt] > 0) {
+        int eob_ctx = eob_pt - 3;
+        int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+        int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+#if CONFIG_ENTROPY_STATS
+        counts->eob_extra[cdf_idx][txs_ctx][plane][eob_pt][bit]++;
+#endif  // CONFIG_ENTROPY_STATS
+        if (allow_update_cdf)
+            update_cdf(ec_ctx->eob_extra_cdf[txs_ctx][plane][eob_ctx], bit, 2);
+    }
+}
+#endif
 static int32_t get_eob_cost(int32_t eob, const LV_MAP_EOB_COST *txb_eob_costs,
     const LV_MAP_COEFF_COST *txb_costs, TxType tx_type) {
     int32_t eob_extra;
@@ -403,6 +522,10 @@ static INLINE int32_t get_br_ctx(const uint8_t *const levels,
 }
 
 static INLINE int32_t av1_cost_skip_txb(
+#if CABAC_UP
+    uint8_t        allow_update_cdf,
+    FRAME_CONTEXT *ec_ctx,
+#endif
     struct ModeDecisionCandidateBuffer_s    *candidate_buffer_ptr,
     TxSize                                  transform_size,
     PLANE_TYPE                               plane_type,
@@ -410,10 +533,20 @@ static INLINE int32_t av1_cost_skip_txb(
 {
     const TxSize txs_ctx = (TxSize)((txsize_sqr_map[transform_size] + txsize_sqr_up_map[transform_size] + 1) >> 1);
     const LV_MAP_COEFF_COST *const coeff_costs = &candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->coeffFacBits[txs_ctx][plane_type];
+   
+#if CABAC_UP   
+    if (allow_update_cdf) {
+        update_cdf(ec_ctx->txb_skip_cdf[txs_ctx][txb_skip_ctx], 1, 2);
+    }
+#endif 
     return coeff_costs->txb_skip_cost[txb_skip_ctx][1];
 }
 // Note: don't call this function when eob is 0.
 uint64_t av1_cost_coeffs_txb(
+#if CABAC_UP
+    uint8_t        allow_update_cdf,
+    FRAME_CONTEXT *ec_ctx,
+#endif
     struct ModeDecisionCandidateBuffer_s    *candidate_buffer_ptr,
     const tran_low_t                        *const qcoeff,
     uint16_t                                   eob,
@@ -450,13 +583,21 @@ uint64_t av1_cost_coeffs_txb(
     assert(eob > 0);
     cost = coeff_costs->txb_skip_cost[txb_skip_ctx][0];
 
-
+#if CABAC_UP   
+    if (allow_update_cdf) {
+        update_cdf(ec_ctx->txb_skip_cdf[txs_ctx][txb_skip_ctx], eob == 0, 2);
+    }
+#endif 
     av1_txb_init_levels(qcoeff, width, height, levels); // NM - Needs to be optimized - to be combined with the quantisation.
 
 
     // Transform type bit estimation
     cost += plane_type > PLANE_TYPE_Y ? 0 :
         Av1TransformTypeRateEstimation(
+#if CABAC_UP
+            allow_update_cdf,
+            ec_ctx,
+#endif
             candidate_buffer_ptr,
             candidate_buffer_ptr->candidate_ptr->type == INTER_MODE ? EB_TRUE : EB_FALSE,
             EB_FALSE, // NM - Hardcoded to false for the moment until we support the intra filtering
@@ -467,7 +608,11 @@ uint64_t av1_cost_coeffs_txb(
     // Transform ebo bit estimation
     int32_t eob_cost = get_eob_cost(eob, eobBits, coeff_costs, transform_type);
     cost += eob_cost;
-
+#if CABAC_UP
+    if (allow_update_cdf)
+        av1_update_eob_context(eob, transform_size, tx_class,
+            plane_type, ec_ctx, allow_update_cdf);
+#endif
     // Transform non-zero coeff bit estimation
     av1_get_nz_map_contexts(
         levels,
@@ -476,6 +621,84 @@ uint64_t av1_cost_coeffs_txb(
         transform_size,
         tx_class,
         coeff_contexts); // NM - Assembly version is available in AOM
+
+#if CABAC_UP
+    if (allow_update_cdf)
+    {
+        for (int c = eob - 1; c >= 0; --c) {
+            const int pos = scan[c];
+            const int coeff_ctx = coeff_contexts[pos];
+            const tran_low_t v = qcoeff[pos];
+            const tran_low_t level = abs(v);
+
+            if (allow_update_cdf) {
+                if (c == eob - 1) {
+                    assert(coeff_ctx < 4);
+                    update_cdf(
+                        ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type][coeff_ctx],
+                        AOMMIN(level, 3) - 1, 3);
+                }
+                else {
+                    update_cdf(ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx],
+                        AOMMIN(level, 3), 4);
+                }
+            }
+
+            {
+                if (c == eob - 1) {
+                    assert(coeff_ctx < 4);
+#if CONFIG_ENTROPY_STATS
+                    ++td->counts->coeff_base_eob_multi[cdf_idx][txsize_ctx][plane_type]
+                        [coeff_ctx][AOMMIN(level, 3) - 1];
+                }
+                else {
+                    ++td->counts->coeff_base_multi[cdf_idx][txsize_ctx][plane_type]
+                        [coeff_ctx][AOMMIN(level, 3)];
+#endif
+                }
+            }
+
+            if (level > NUM_BASE_LEVELS) {
+                const int base_range = level - 1 - NUM_BASE_LEVELS;
+                const int br_ctx = get_br_ctx(levels, pos, bwl, tx_class);
+
+                for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+
+                    const int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
+                    if (allow_update_cdf) {
+                        update_cdf(ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)]
+                            [plane_type][br_ctx],
+                            k, BR_CDF_SIZE);
+                    }
+                    for (int lps = 0; lps < BR_CDF_SIZE - 1; lps++) {
+#if CONFIG_ENTROPY_STATS
+                        ++td->counts->coeff_lps[AOMMIN(txsize_ctx, TX_32X32)][plane_type][lps]
+                            [br_ctx][lps == k];
+#endif  // CONFIG_ENTROPY_STATS
+                        if (lps == k) break;
+                    }
+#if CONFIG_ENTROPY_STATS
+                    ++td->counts->coeff_lps_multi[cdf_idx][AOMMIN(txsize_ctx, TX_32X32)]
+                        [plane_type][br_ctx][k];
+#endif
+                    if (k < BR_CDF_SIZE - 1) break;
+                }
+            }
+        }
+
+        if (qcoeff[0] != 0) {
+            const int dc_sign = (qcoeff[0] < 0) ? 1 : 0;
+            if (allow_update_cdf)
+                update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], dc_sign, 2);
+        }
+
+
+        //TODO: CHKN  for 128x128 where we need more than one TXb, we need to update the txb_context(dc_sign+skip_ctx) in a Txb basis.
+
+        return 0;
+    }
+
+#endif
 
     for (c = eob - 1; c >= 0; --c) {
 
@@ -1653,6 +1876,10 @@ EbErrorType av1_inter_fast_cost(
 
 
 EbErrorType Av1TuEstimateCoeffBits(
+#if CABAC_UP
+    uint8_t        allow_update_cdf,
+    FRAME_CONTEXT *ec_ctx,
+#endif
     PictureControlSet_t                    *picture_control_set_ptr,
     struct ModeDecisionCandidateBuffer_s   *candidate_buffer_ptr,
     CodingUnit_t                           *cu_ptr,
@@ -1696,6 +1923,10 @@ EbErrorType Av1TuEstimateCoeffBits(
             coeff_buffer = (int32_t*)&coeff_buffer_sb->buffer_y[tuOriginIndex * sizeof(int32_t)];
 
             *y_tu_coeff_bits = av1_cost_coeffs_txb(
+#if CABAC_UP
+                allow_update_cdf,
+                ec_ctx,
+#endif
                 candidate_buffer_ptr,
                 coeff_buffer,
                 (uint16_t)yEob,
@@ -1707,6 +1938,10 @@ EbErrorType Av1TuEstimateCoeffBits(
         }
         else {
             *y_tu_coeff_bits = av1_cost_skip_txb(
+#if CABAC_UP
+                allow_update_cdf,
+                ec_ctx,
+#endif
                 candidate_buffer_ptr,
                 txsize,
                 PLANE_TYPE_Y,
@@ -1723,6 +1958,10 @@ EbErrorType Av1TuEstimateCoeffBits(
 
 
             *cb_tu_coeff_bits = av1_cost_coeffs_txb(
+#if CABAC_UP
+                allow_update_cdf,
+                ec_ctx,
+#endif
                 candidate_buffer_ptr,
                 coeff_buffer,
                 (uint16_t)cbEob,
@@ -1735,6 +1974,10 @@ EbErrorType Av1TuEstimateCoeffBits(
         }
         else {
             *cb_tu_coeff_bits = av1_cost_skip_txb(
+#if CABAC_UP
+                allow_update_cdf,
+                ec_ctx,
+#endif
                 candidate_buffer_ptr,
                 txsize_uv,
                 PLANE_TYPE_UV,
@@ -1750,6 +1993,10 @@ EbErrorType Av1TuEstimateCoeffBits(
             coeff_buffer = (int32_t*)&coeff_buffer_sb->bufferCr[tuChromaOriginIndex * sizeof(int32_t)];
 
             *cr_tu_coeff_bits = av1_cost_coeffs_txb(
+#if CABAC_UP
+                allow_update_cdf,
+                ec_ctx,
+#endif
                 candidate_buffer_ptr,
                 coeff_buffer,
                 (uint16_t)crEob,
@@ -1762,6 +2009,10 @@ EbErrorType Av1TuEstimateCoeffBits(
         }
         else {
             *cr_tu_coeff_bits = av1_cost_skip_txb(
+#if CABAC_UP
+                allow_update_cdf,
+                ec_ctx,
+#endif
                 candidate_buffer_ptr,
                 txsize_uv,
                 PLANE_TYPE_UV,

@@ -282,6 +282,8 @@ extern "C" {
 
 #define IMPROVE_1D_INTER_DEPTH_DECISION  1
 #define ENABLE_WARPED_MV                 1
+#define CABAC_UP                         1 // update cabac probabilities. txb CDFs.
+
 struct buf_2d {
     uint8_t *buf;
     uint8_t *buf0;

@@ -3193,7 +3193,11 @@ EB_EXTERN void AV1EncodePass(
 #endif
 
 
-
+#if CABAC_UP
+    uint8_t allow_update_cdf = picture_control_set_ptr->update_cdf;
+    FRAME_CONTEXT *fc = &picture_control_set_ptr->ec_ctx_array[tbAddr];
+    Av1Common *cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;
+#endif
 
 
     uint32_t final_cu_itr = 0;
@@ -3689,6 +3693,51 @@ EB_EXTERN void AV1EncodePass(
                                     eobs[context_ptr->txb_itr],
                                     cuPlane);
 
+#if  CABAC_UP 
+                                if(allow_update_cdf)
+                                {
+
+                                    ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+#if INTRA_INTER_FAST_LOOP
+                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+#else
+                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
+#endif
+                                    ModeDecisionCandidateBuffer_t          *candidateBuffer;
+
+                                    // Set the Candidate Buffer
+                                    candidateBuffer = candidate_buffer_ptr_array[0];
+                                    // Rate estimation function uses the values from CandidatePtr. The right values are copied from cu_ptr to CandidatePtr
+                                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
+                                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
+                                    candidateBuffer->candidate_ptr->type = cu_ptr->prediction_mode_flag;
+                                    candidateBuffer->candidate_ptr->pred_mode = cu_ptr->pred_mode;
+
+                                    const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
+
+                                    Av1TuEstimateCoeffBits(
+                                        1,//allow_update_cdf,
+                                        &picture_control_set_ptr->ec_ctx_array[tbAddr],
+                                        picture_control_set_ptr,
+                                        candidateBuffer,
+                                        cu_ptr,
+                                        coeff1dOffset,
+                                        context_ptr->coded_area_sb_uv,
+                                        coeff_est_entropy_coder_ptr,
+                                        coeff_buffer_sb,
+                                        eobs[context_ptr->txb_itr][0],
+                                        eobs[context_ptr->txb_itr][1],
+                                        eobs[context_ptr->txb_itr][2],
+                                        &y_tu_coeff_bits,
+                                        &cb_tu_coeff_bits,
+                                        &cr_tu_coeff_bits,
+                                        context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+                                        context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
+                                        context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
+                                        asm_type);
+
+                                }
+#endif
                                 //intra mode
                                 Av1EncodeGenerateReconFunctionPtr[is16bit](
                                     context_ptr,
@@ -3700,7 +3749,6 @@ EB_EXTERN void AV1EncodePass(
                                     blk_geom->has_uv ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
                                     eobs[context_ptr->txb_itr],
                                     asm_type);
-
 
 
                             }
@@ -4058,6 +4106,10 @@ EB_EXTERN void AV1EncodePass(
                                     const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
 
                                     Av1TuEstimateCoeffBits(
+#if CABAC_UP
+                                        0,//allow_update_cdf,
+                                        NULL,
+#endif
                                         picture_control_set_ptr,
                                         candidateBuffer,
                                         cu_ptr,
@@ -4116,6 +4168,59 @@ EB_EXTERN void AV1EncodePass(
 
                                 y_full_distortion[DIST_CALC_RESIDUAL] += yTuFullDistortion[DIST_CALC_RESIDUAL];
                                 y_full_distortion[DIST_CALC_PREDICTION] += yTuFullDistortion[DIST_CALC_PREDICTION];
+
+#if CABAC_UP 
+                                if (allow_update_cdf) {
+                                    ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+#if INTRA_INTER_FAST_LOOP
+                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+#else
+                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
+#endif
+                                    ModeDecisionCandidateBuffer_t          *candidateBuffer;
+
+                                    // Set the Candidate Buffer
+                                    candidateBuffer = candidate_buffer_ptr_array[0];
+                                    // Rate estimation function uses the values from CandidatePtr. The right values are copied from cu_ptr to CandidatePtr
+                                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = cu_ptr->transform_unit_array[tuIt].transform_type[PLANE_TYPE_Y];
+                                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[tuIt].transform_type[PLANE_TYPE_UV];
+                                    candidateBuffer->candidate_ptr->type = cu_ptr->prediction_mode_flag;
+                                    candidateBuffer->candidate_ptr->pred_mode = cu_ptr->pred_mode;
+
+                                    const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
+
+                                    //CHKN add updating eobs[] after CBF decision
+                                    if (cu_ptr->transform_unit_array[context_ptr->txb_itr].y_has_coeff == EB_FALSE)
+                                        eobs[context_ptr->txb_itr][0] = 0;
+                                    if (context_ptr->blk_geom->has_uv) {
+                                        if (cu_ptr->transform_unit_array[context_ptr->txb_itr].u_has_coeff == EB_FALSE)
+                                            eobs[context_ptr->txb_itr][1] = 0;
+                                        if (cu_ptr->transform_unit_array[context_ptr->txb_itr].v_has_coeff == EB_FALSE)
+                                            eobs[context_ptr->txb_itr][2] = 0;
+                                    }
+
+                                    Av1TuEstimateCoeffBits(
+                                        1,//allow_update_cdf,
+                                        &picture_control_set_ptr->ec_ctx_array[tbAddr],
+                                        picture_control_set_ptr,
+                                        candidateBuffer,
+                                        cu_ptr,
+                                        coeff1dOffset,
+                                        context_ptr->coded_area_sb_uv,
+                                        coeff_est_entropy_coder_ptr,
+                                        coeff_buffer_sb,
+                                        eobs[context_ptr->txb_itr][0],
+                                        eobs[context_ptr->txb_itr][1],
+                                        eobs[context_ptr->txb_itr][2],
+                                        &y_tu_coeff_bits,
+                                        &cb_tu_coeff_bits,
+                                        &cr_tu_coeff_bits,
+                                        context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+                                        context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
+                                        context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
+                                        asm_type);
+                                }
+#endif
 
                             }
                             context_ptr->coded_area_sb += blk_geom->tx_width[tuIt] * blk_geom->tx_height[tuIt];
@@ -4189,6 +4294,50 @@ EB_EXTERN void AV1EncodePass(
                                 eobs[context_ptr->txb_itr],
                                 cuPlane);
 
+#if CABAC_UP
+                            if (allow_update_cdf) {
+
+                                ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+#if INTRA_INTER_FAST_LOOP
+                                ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+#else
+                                ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
+#endif
+                                ModeDecisionCandidateBuffer_t          *candidateBuffer;
+
+                                // Set the Candidate Buffer
+                                candidateBuffer = candidate_buffer_ptr_array[0];
+                                // Rate estimation function uses the values from CandidatePtr. The right values are copied from cu_ptr to CandidatePtr
+                                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = cu_ptr->transform_unit_array[tuIt].transform_type[PLANE_TYPE_Y];
+                                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[tuIt].transform_type[PLANE_TYPE_UV];
+                                candidateBuffer->candidate_ptr->type = cu_ptr->prediction_mode_flag;
+                                candidateBuffer->candidate_ptr->pred_mode = cu_ptr->pred_mode;
+
+                                const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
+
+
+                                Av1TuEstimateCoeffBits(
+                                    1,//allow_update_cdf,
+                                    &picture_control_set_ptr->ec_ctx_array[tbAddr],
+                                    picture_control_set_ptr,
+                                    candidateBuffer,
+                                    cu_ptr,
+                                    coeff1dOffset,
+                                    context_ptr->coded_area_sb_uv,
+                                    coeff_est_entropy_coder_ptr,
+                                    coeff_buffer_sb,
+                                    eobs[context_ptr->txb_itr][0],
+                                    eobs[context_ptr->txb_itr][1],
+                                    eobs[context_ptr->txb_itr][2],
+                                    &y_tu_coeff_bits,
+                                    &cb_tu_coeff_bits,
+                                    &cr_tu_coeff_bits,
+                                    context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+                                    context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
+                                    context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
+                                    asm_type);
+                            }
+#endif
 
 
                         }

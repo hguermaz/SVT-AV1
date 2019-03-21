@@ -459,6 +459,11 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
         ((sequence_control_set_ptr->max_input_luma_width + 64) / 128) :
         ((sequence_control_set_ptr->max_input_luma_width + 32) / 64);
 
+#if CABAC_SERIAL
+    encDecSegH = 1;
+    encDecSegW = 1;
+#endif
+
     uint32_t meSegH     = (((sequence_control_set_ptr->max_input_luma_height + 32) / BLOCK_SIZE_64) < 6) ? 1 : 6;
     uint32_t meSegW     = (((sequence_control_set_ptr->max_input_luma_width + 32) / BLOCK_SIZE_64) < 10) ? 1 : 10;
     int32_t return_ppcs = set_parent_pcs(&sequence_control_set_ptr->static_config);

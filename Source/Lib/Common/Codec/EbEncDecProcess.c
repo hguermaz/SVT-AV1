@@ -1608,6 +1608,12 @@ void move_cu_data(
     CodingUnit_t *src_cu,
     CodingUnit_t *dst_cu);
 
+#if CABAC_UP
+void av1_estimate_syntax_rate___partial(
+    MdRateEstimationContext_t      *md_rate_estimation_array,
+    EbBool                          is_i_slice,
+    FRAME_CONTEXT                  *fc);
+#endif
 /******************************************************
  * EncDec Kernel
  ******************************************************/
@@ -1749,6 +1755,49 @@ void* EncDecKernel(void *input_ptr)
                     mdcPtr = &picture_control_set_ptr->mdc_sb_array[sb_index];
                     context_ptr->sb_index = sb_index;
                     context_ptr->md_context->cu_use_ref_src_flag = (picture_control_set_ptr->parent_pcs_ptr->use_src_ref) && (picture_control_set_ptr->parent_pcs_ptr->edge_results_ptr[sb_index].edge_block_num == EB_FALSE || picture_control_set_ptr->parent_pcs_ptr->sb_flat_noise_array[sb_index]) ? EB_TRUE : EB_FALSE;
+
+#if CABAC_UP
+                    if (picture_control_set_ptr->update_cdf)
+                    {
+                        MdRateEstimationContext_t* md_rate_estimation_array = sequence_control_set_ptr->encode_context_ptr->md_rate_estimation_array;
+                        md_rate_estimation_array += picture_control_set_ptr->slice_type * TOTAL_NUMBER_OF_QP_VALUES + context_ptr->md_context->qp;
+
+                        //this is temp, copy all default tables
+                        picture_control_set_ptr->rate_est_array[sb_index] = *md_rate_estimation_array;
+#if CABAC_SERIAL
+                        if (sb_index == 0) {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = *picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc;
+                        }
+                        else {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = picture_control_set_ptr->ec_ctx_array[sb_index - 1];
+                    }
+#else
+                        if (sb_origin_x == 0) {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = *picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc;
+                        }
+                        else {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = picture_control_set_ptr->ec_ctx_array[sb_index - 1];
+                        }
+#endif
+
+                        //construct the tables using the latest CDFs : Coeff Only here ---to check if I am using all the uptodate CDFs here
+                        av1_estimate_syntax_rate___partial(
+                            &picture_control_set_ptr->rate_est_array[sb_index],
+                            picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE,
+                            &picture_control_set_ptr->ec_ctx_array[sb_index]);
+
+                        av1_estimate_coefficients_rate(
+                            &picture_control_set_ptr->rate_est_array[sb_index],
+                            &picture_control_set_ptr->ec_ctx_array[sb_index]);
+
+                        //let the candidate point to the new rate table.
+                        uint32_t  candidateIndex;
+                        for (candidateIndex = 0; candidateIndex < MODE_DECISION_CANDIDATE_MAX_COUNT; ++candidateIndex) {
+                            context_ptr->md_context->fast_candidate_ptr_array[candidateIndex]->md_rate_estimation_ptr = &picture_control_set_ptr->rate_est_array[sb_index];
+                        }
+
+                    }
+#endif
 
                     // Configure the LCU
                     ModeDecisionConfigureLcu(

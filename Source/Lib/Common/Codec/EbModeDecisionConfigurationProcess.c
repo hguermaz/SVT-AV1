@@ -2286,6 +2286,10 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
 
     context_ptr->adp_level = picture_control_set_ptr->parent_pcs_ptr->enc_mode;
 
+#if CABAC_UP  
+    picture_control_set_ptr->update_cdf = picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M0 ? 1 : 0;
+#endif
+
     return return_error;
 }
 #endif
@@ -3263,6 +3267,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr,
             context_ptr);
 #endif
+
 
 
         context_ptr->qp = picture_control_set_ptr->picture_qp;
