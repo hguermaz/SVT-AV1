@@ -890,11 +890,7 @@ void PerformEarlyLcuPartitionning(
         }
     }
 
-#if NEW_QPS
     context_ptr->qp_index = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->base_qindex;
-#else
-    context_ptr->qp_index = quantizer_to_qindex[context_ptr->qp];
-#endif
     uint32_t lambdaSse;
     uint32_t lambdaSad;
     (*av1_lambda_assignment_function_table[picture_control_set_ptr->parent_pcs_ptr->pred_structure])(
@@ -3319,11 +3315,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 
         av1_set_quantizer(
             picture_control_set_ptr->parent_pcs_ptr,
-#if NEW_QPS
             picture_control_set_ptr->parent_pcs_ptr->base_qindex);
-#else
-            quantizer_to_qindex[picture_control_set_ptr->picture_qp]);
-#endif
         av1_build_quantizer(
             (aom_bit_depth_t)sequence_control_set_ptr->static_config.encoder_bit_depth,
             picture_control_set_ptr->parent_pcs_ptr->y_dc_delta_q,

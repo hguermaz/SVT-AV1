@@ -25,9 +25,8 @@
 #include "aom_dsp_rtcd.h"
 #include "EbTransforms.h"
 
-#if INTRA_10BIT_SUPPORT
 void *aom_memset16(void *dest, int32_t val, size_t length);
-#endif
+
 
 #if ICOPY
 int32_t is_inter_block(const MbModeInfo *mbmi);
@@ -5752,10 +5751,9 @@ static int32_t has_bottom_left(const Av1Common *cm, block_size bsize, int32_t mi
 static intra_pred_fn pred[INTRA_MODES][TX_SIZES_ALL];
 static intra_pred_fn dc_pred[2][2][TX_SIZES_ALL];
 
-#if INTRA_10BIT_SUPPORT
 static intra_high_pred_fn pred_high[INTRA_MODES][TX_SIZES_ALL];
 static intra_high_pred_fn dc_pred_high[2][2][TX_SIZES_ALL];
-#endif
+
 
 
 
@@ -5930,7 +5928,6 @@ static INLINE void smooth_h_predictor(uint8_t *dst, ptrdiff_t stride, int32_t bw
         dst += stride;
     }
 }
-#if INTRA_10BIT_SUPPORT
 #undef DC_MULTIPLIER_1X2
 #undef DC_MULTIPLIER_1X4
 
@@ -6306,7 +6303,7 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int32_t 
 //
 //#undef HIGHBD_DC_MULTIPLIER_1X2
 //#undef HIGHBD_DC_MULTIPLIER_1X4
-#endif
+
 
 #define intra_pred_sized(type, width, height)                  \
   void aom_##type##_predictor_##width##x##height##_c(          \
@@ -6521,7 +6518,6 @@ intra_pred_sized(paeth, 32, 64)
 intra_pred_sized(paeth, 64, 16)
 intra_pred_sized(paeth, 64, 32)
 #endif
-#if INTRA_10BIT_SUPPORT
 #define intra_pred_highbd_sized(type, width, height)                        \
   void aom_highbd_##type##_predictor_##width##x##height##_c(                \
       uint16_t *dst, ptrdiff_t stride, const uint16_t *above,               \
@@ -6755,7 +6751,7 @@ intra_pred_highbd_sized(paeth, 64, 16)
 intra_pred_highbd_sized(paeth, 64, 32)
 #endif
 
-#endif
+
 
 intra_pred_fn_c  dc_pred_c[2][2];
 intra_highbd_pred_fn_c  highbd_dc_pred_c[2][2];
@@ -7003,7 +6999,6 @@ void init_intra_dc_predictors_c_internal(void)
     dc_pred[1][1][TX_64X32] = aom_dc_predictor_64x32_c;
 
 
-#if INTRA_10BIT_SUPPORT
 
     pred_high[V_PRED][TX_4X4] = aom_highbd_v_predictor_4x4_c;
     pred_high[V_PRED][TX_8X8] = aom_highbd_v_predictor_8x8_c;
@@ -7241,7 +7236,7 @@ void init_intra_dc_predictors_c_internal(void)
     dc_pred_high[1][1][TX_64X32] = aom_highbd_dc_predictor_64x32_c;
 
 
-#endif
+
 #else
 
     pred[V_PRED][TX_4X4] = aom_v_predictor_4x4;
@@ -7500,7 +7495,6 @@ void init_intra_dc_predictors_c_internal(void)
     dc_pred[1][1][TX_64X32] = aom_dc_predictor_64x32;
 
 
-#if INTRA_10BIT_SUPPORT
 
     pred_high[V_PRED][TX_4X4] = aom_highbd_v_predictor_4x4;
     pred_high[V_PRED][TX_8X8] = aom_highbd_v_predictor_8x8;
@@ -7753,7 +7747,7 @@ void init_intra_dc_predictors_c_internal(void)
     dc_pred_high[1][1][TX_64X16] = aom_highbd_dc_predictor_64x16;
     dc_pred_high[1][1][TX_64X32] = aom_highbd_dc_predictor_64x32;
 
-#endif
+
 #endif
 
 
@@ -7769,13 +7763,8 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TxSize tx_size,
 
     if (angle > 0 && angle < 90) {
 
-#if INTRAD_ASM
         av1_dr_prediction_z1(dst, stride, bw, bh, above, left, upsample_above, dx,
             dy);
-#else
-        av1_dr_prediction_z1(dst, stride, bw, bh, above, left, upsample_above, dx,
-            dy);
-#endif
 
     }
     else if (angle > 90 && angle < 180) {
@@ -7803,7 +7792,6 @@ static void filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
     p_above[-1] = (uint8_t)s;
     p_left[-1] = (uint8_t)s;
 }
-#if INTRA_10BIT_SUPPORT
 
 // Directional prediction, zone 1: 0 < angle < 90
 void av1_highbd_dr_prediction_z1_c(uint16_t *dst, ptrdiff_t stride, int32_t bw,
@@ -8007,7 +7995,7 @@ void av1_upsample_intra_edge_high_c(uint16_t *p, int32_t sz, int32_t bd) {
         p[2 * i] = in[i + 2];
     }
 }
-#endif
+
 
 void av1_upsample_intra_edge_c(uint8_t *p, int32_t sz) {
     // interpolate half-sample positions
@@ -8525,7 +8513,6 @@ static void build_intra_predictors(
         pred[mode][tx_size](dst, dst_stride, above_row, left_col);
     }
 }
-#if INTRA_10BIT_SUPPORT
 static void build_intra_predictors_high(
     #if !ICOPY
     CodingUnit_t            *cu_ptr,
@@ -8767,7 +8754,7 @@ static void build_intra_predictors_high(
         pred_high[mode][tx_size](dst, dst_stride, above_row, left_col, bd);
     }
 }
-#endif
+
 
 
 #if !OIS_BASED_INTRA
@@ -9237,7 +9224,6 @@ extern void av1_predict_intra_block(
         have_bottom_left ? AOMMIN(txhpx, yd) : 0, plane);
 }
 
-#if INTRA_10BIT_SUPPORT
 void av1_predict_intra_block_16bit(
     TileInfo * tile,
 
@@ -9482,7 +9468,7 @@ void av1_predict_intra_block_16bit(
         have_left ? AOMMIN(txhpx, yd + txhpx) : 0,
         have_bottom_left ? AOMMIN(txhpx, yd) : 0, plane, EB_10BIT);
 }
-#endif
+
 /** IntraPrediction()
 is the main function to compute intra prediction for a PU
 */

@@ -62,7 +62,6 @@ extern void av1_predict_intra_block(
     uint32_t bl_org_x_mb,
     uint32_t bl_org_y_mb);
 
-#if INTRA_10BIT_SUPPORT
 void av1_predict_intra_block_16bit(
     TileInfo               *tile,
 
@@ -87,7 +86,7 @@ void av1_predict_intra_block_16bit(
     block_size bsize,
     uint32_t bl_org_x_pict,
     uint32_t bl_org_y_pict);
-#endif
+
 
 /*******************************************
 * set Penalize Skip Flag
@@ -3317,7 +3316,6 @@ EB_EXTERN void AV1EncodePass(
                              //      printf("CHEDD");
 
 
-#if INTRA_10BIT_SUPPORT
 
                             uint32_t cu_originy_uv = (context_ptr->cu_origin_y >> 3 << 3) >> 1;
                             uint32_t cu_originx_uv = (context_ptr->cu_origin_x >> 3 << 3) >> 1;
@@ -3577,69 +3575,7 @@ EB_EXTERN void AV1EncodePass(
                             }
 #endif
 
-#else
-                            uint8_t    topNeighArray[64 * 2 + 1];
-                            uint8_t    leftNeighArray[64 * 2 + 1];
-                            PredictionMode mode;
 
-                            int32_t size = cu_stats->size * 2;
-
-                            for (int32_t plane = 0; plane <= 2; ++plane) {
-                                if (plane == 0) {
-
-                                    if (context_ptr->cu_origin_y != 0)
-                                        memcpy(topNeighArray + 1, ep_luma_recon_neighbor_array->topArray + context_ptr->cu_origin_x, size);
-                                    if (context_ptr->cu_origin_x != 0)
-                                        memcpy(leftNeighArray + 1, ep_luma_recon_neighbor_array->leftArray + context_ptr->cu_origin_y, size);
-                                    if (context_ptr->cu_origin_y != 0 && context_ptr->cu_origin_x != 0)
-                                        topNeighArray[0] = leftNeighArray[0] = ep_luma_recon_neighbor_array->topLeftArray[MAX_PICTURE_HEIGHT_SIZE + context_ptr->cu_origin_x - context_ptr->cu_origin_y];
-                                }
-                                else if (plane == 1) {
-                                    if (context_ptr->cu_origin_y != 0)
-                                        memcpy(topNeighArray + 1, ep_cb_recon_neighbor_array->topArray + context_ptr->cu_origin_x / 2, size / 2);
-                                    if (context_ptr->cu_origin_x != 0)
-                                        memcpy(leftNeighArray + 1, ep_cb_recon_neighbor_array->leftArray + context_ptr->cu_origin_y / 2, size / 2);
-                                    if (context_ptr->cu_origin_y != 0 && context_ptr->cu_origin_x != 0)
-                                        topNeighArray[0] = leftNeighArray[0] = ep_cb_recon_neighbor_array->topLeftArray[MAX_PICTURE_HEIGHT_SIZE / 2 + context_ptr->cu_origin_x / 2 - context_ptr->cu_origin_y / 2];
-                                }
-                                else {
-                                    if (context_ptr->cu_origin_y != 0)
-                                        memcpy(topNeighArray + 1, ep_cr_recon_neighbor_array->topArray + context_ptr->cu_origin_x / 2, size / 2);
-                                    if (context_ptr->cu_origin_x != 0)
-                                        memcpy(leftNeighArray + 1, ep_cr_recon_neighbor_array->leftArray + context_ptr->cu_origin_y / 2, size / 2);
-                                    if (context_ptr->cu_origin_y != 0 && context_ptr->cu_origin_x != 0)
-                                        topNeighArray[0] = leftNeighArray[0] = ep_cr_recon_neighbor_array->topLeftArray[MAX_PICTURE_HEIGHT_SIZE / 2 + context_ptr->cu_origin_x / 2 - context_ptr->cu_origin_y / 2];
-
-                                }
-                                if (plane)
-                                    mode = (pu_ptr->intra_chroma_mode == UV_CFL_PRED) ? (PredictionMode)UV_DC_PRED : (PredictionMode)pu_ptr->intra_chroma_mode;
-                                else
-                                    mode = cu_ptr->pred_mode; //PredictionMode mode,
-
-                                av1_predict_intra_block(
-                                    context_ptr,
-                                    cu_ptr,
-                                    picture_control_set_ptr->parent_pcs_ptr->av1_cm,                  //const Av1Common *cm,
-                                    plane ? cu_stats->size / 2 : cu_stats->size,                  //int32_t wpx,
-                                    plane ? cu_stats->size / 2 : cu_stats->size,                  //int32_t hpx,
-                                    plane ? tx_size_Chroma : tx_size,                           //TxSize tx_size,
-                                    mode,                                                       //PredictionMode mode,
-                                    plane ? 0 : pu_ptr->angle_delta[PLANE_TYPE_Y],                //int32_t angle_delta,
-                                    0,                                                          //int32_t use_palette,
-                                    FILTER_INTRA_MODES,                                         //CHKN FILTER_INTRA_MODE filter_intra_mode,
-                                    topNeighArray + 1,
-                                    leftNeighArray + 1,
-                                    recon_buffer,                                                //uint8_t *dst,
-                                                                                                //int32_t dst_stride,
-                                    0,                                                          //int32_t col_off,
-                                    0,                                                          //int32_t row_off,
-                                    plane,                                                      //int32_t plane,
-                                    plane ? cu_stats->size / 2 : cu_stats->size,                  //uint32_t puSize,
-                                    plane ? context_ptr->cu_origin_x / 2 : context_ptr->cu_origin_x,  //uint32_t cuOrgX,
-                                    plane ? context_ptr->cu_origin_y / 2 : context_ptr->cu_origin_y   //uint32_t cuOrgY
-                                );
-                            }
-#endif
 
                             // Encode Transform Unit -INTRA-
                             {

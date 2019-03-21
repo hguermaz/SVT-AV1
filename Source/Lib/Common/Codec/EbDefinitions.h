@@ -51,19 +51,17 @@ extern "C" {
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH           1 // F7
 #define M0_ME_SEARCH_BASE                               1 // F13
-#define INTRAD_ASM                                      1 // asm for intra directionnal modes - Z1
-#define SUPPORT_10BIT                                   1 // Support for 10 Bit encodings
+
+
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass
-#define ME_HME_OQ                                       1 // Ported ME HME from EB32 OQ
-#if SUPPORT_10BIT
-#define INTRA_10BIT_SUPPORT                             1
+
 #define QT_10BIT_SUPPORT                                1
 #define CDEF_10BIT_FIX                                  1
 #define RS_10BIT_FIX                                    1
 #define MD_10BIT_FIX                                    1
 #define LF_10BIT_FIX                                    1
 #define INTERPOL_FILTER_SEARCH_10BIT_SUPPORT            1
-#endif
+
 #define BUG_FIX                                         1 // BUG fix related to transform type
 #define LIMIT_INTRA_INJ                                 1
 #define TURN_OFF_INTERPOL_FILTER_SEARCH                 1

@@ -5452,7 +5452,6 @@ void intra_mode_angular_av1_z3_16bit_64x64_avx2(const uint32_t size, uint16_t *r
     Predict_Z1_16bit_64x64(&ref_samples[toLeftOffset], dstT, 64, dy, bd);
     transpose_16bit(dstT, 64, dst, rowStride*prediction_buffer_stride, 64, 64);
 }
-#if INTRAD_ASM
 //#define PERM4x64(c0, c1, c2, c3) c0 + (c1 << 2) + (c2 << 4) + (c3 << 6)
 //#define PERM2x128(c0, c1) c0 + (c1 << 4)
 
@@ -10548,7 +10547,7 @@ void av1_highbd_dr_prediction_z3_avx2(uint16_t *dst, ptrdiff_t stride, int32_t b
     return;
 }
 
-#endif
+
 
 #if ENABLE_PAETH
 static INLINE __m256i paeth_pred(const __m256i *left, const __m256i *top,

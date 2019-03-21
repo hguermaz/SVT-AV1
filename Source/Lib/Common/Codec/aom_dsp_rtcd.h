@@ -155,11 +155,9 @@ extern "C" {
     void av1_filter_intra_edge_sse4_1(uint8_t *p, int32_t sz, int32_t strength);
     RTCD_EXTERN void(*av1_filter_intra_edge)(uint8_t *p, int32_t sz, int32_t strength);
 
-#if INTRA_10BIT_SUPPORT
     void av1_filter_intra_edge_high_c(uint16_t *p, int32_t sz, int32_t strength);
     void av1_filter_intra_edge_high_sse4_1(uint16_t *p, int32_t sz, int32_t strength);
     RTCD_EXTERN void(*av1_filter_intra_edge_high)(uint16_t *p, int32_t sz, int32_t strength);
-#endif
 
     void av1_fwd_txfm2d_4x16_c(int16_t *input, int32_t *output, uint32_t input_stride, TxType transform_type, uint8_t  bit_depth);
     void av1_fwd_txfm2d_4x16_avx2(int16_t *input, int32_t *output, uint32_t inputStride, TxType transform_type, uint8_t  bit_depth);
@@ -446,12 +444,10 @@ extern "C" {
     RTCD_EXTERN void(*av1_upsample_intra_edge)(uint8_t *p, int32_t sz);
 
 
-#if INTRA_10BIT_SUPPORT
     // AMIR
     //void av1_upsample_intra_edge_high_c(uint16_t *p, int32_t sz, int32_t bd);
     //void av1_upsample_intra_edge_high_sse4_1(uint16_t *p, int32_t sz, int32_t bd);
     //RTCD_EXTERN void(*av1_upsample_intra_edge_high)(uint16_t *p, int32_t sz, int32_t bd);
-#endif
 /* DC_PRED top */
 
     void aom_dc_predictor_4x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
@@ -1641,7 +1637,6 @@ extern "C" {
     void aom_fft8x8_float_avx2(const float *input, float *temp, float *output);
     RTCD_EXTERN void(*aom_fft8x8_float)(const float *input, float *temp, float *output);
 
-#if INTRA_10BIT_SUPPORT
     void aom_highbd_dc_128_predictor_16x16_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int32_t bd);
     void aom_highbd_dc_128_predictor_16x16_avx2(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int32_t bd);
     RTCD_EXTERN void(*aom_highbd_dc_128_predictor_16x16)(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int32_t bd);
@@ -2396,7 +2391,7 @@ extern "C" {
     void av1_txb_init_levels_avx2(const tran_low_t *const coeff, const int32_t width, const int32_t height, uint8_t *const levels);
     RTCD_EXTERN void(*av1_txb_init_levels)(const tran_low_t *const coeff, const int32_t width, const int32_t height, uint8_t *const levels);
 
-#endif
+
 
     void aom_dsp_rtcd(void);
 
@@ -2466,11 +2461,8 @@ extern "C" {
         if (flags & HAS_AVX2) subtract_average = subtract_average_avx2;
 
 
-#if INTRA_10BIT_SUPPORT
         av1_filter_intra_edge = av1_filter_intra_edge_high_c_old;
-#else
-        av1_filter_intra_edge = av1_filter_intra_edge_high_c;
-#endif
+
         if (flags & HAS_SSE4_1) av1_filter_intra_edge = av1_filter_intra_edge_sse4_1;
 
         eb_smooth_v_predictor = smooth_v_predictor_c;
