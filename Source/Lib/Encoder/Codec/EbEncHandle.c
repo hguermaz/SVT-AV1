@@ -95,11 +95,10 @@
 #include "EbEncDecResults.h"
 #include "EbEntropyCodingResults.h"
 #include "EbPredictionStructure.h"
-#if FILT_PROC
 #include "EbDlfProcess.h"
 #include "EbCdefProcess.h"
 #include "EbRestProcess.h"
-#endif
+
 
 #ifdef _WIN32
 #include <windows.h>
@@ -566,11 +565,9 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
     sequence_control_set_ptr->motion_estimation_fifo_init_count           = 300;
     sequence_control_set_ptr->entropy_coding_fifo_init_count              = 300;
     sequence_control_set_ptr->enc_dec_fifo_init_count                     = 300;
-#if FILT_PROC    
     sequence_control_set_ptr->dlf_fifo_init_count                         = 300;
     sequence_control_set_ptr->cdef_fifo_init_count                        = 300;
     sequence_control_set_ptr->rest_fifo_init_count                        = 300;
-#endif
     //#====================== Processes number ======================
     sequence_control_set_ptr->total_process_init_count                    = 0;
 
@@ -590,11 +587,10 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
     sequence_control_set_ptr->total_process_init_count += (sequence_control_set_ptr->entropy_coding_process_init_count               = MAX(MIN(3, coreCount), coreCount / 12));
 #endif
 
-#if FILT_PROC
     sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->dlf_process_init_count                           = MAX(MIN(40, coreCount), coreCount));
     sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->cdef_process_init_count                          = MAX(MIN(40, coreCount), coreCount));
     sequence_control_set_ptr->total_process_init_count +=(sequence_control_set_ptr->rest_process_init_count                          = MAX(MIN(40, coreCount), coreCount));
-#endif
+
 
     sequence_control_set_ptr->total_process_init_count += 6; // single processes count
     printf("Number of logical cores available: %u\nNumber of PPCS %u\n", coreCount, inputPic);
@@ -754,11 +750,10 @@ static EbErrorType eb_enc_handle_ctor(
     encHandlePtr->encDecThreadHandleArray = (EbHandle*)EB_NULL;
     encHandlePtr->entropyCodingThreadHandleArray = (EbHandle*)EB_NULL;
     encHandlePtr->packetizationThreadHandle = (EbHandle)EB_NULL;
-#if FILT_PROC
     encHandlePtr->dlfThreadHandleArray = (EbHandle*)EB_NULL;
     encHandlePtr->cdefThreadHandleArray = (EbHandle*)EB_NULL;
     encHandlePtr->restThreadHandleArray = (EbHandle*)EB_NULL;
-#endif
+
     // Contexts
     encHandlePtr->resourceCoordinationContextPtr = (EbPtr)EB_NULL;
     encHandlePtr->pictureAnalysisContextPtrArray = (EbPtr*)EB_NULL;
@@ -771,11 +766,9 @@ static EbErrorType eb_enc_handle_ctor(
     encHandlePtr->modeDecisionConfigurationContextPtrArray = (EbPtr*)EB_NULL;
     encHandlePtr->encDecContextPtrArray = (EbPtr*)EB_NULL;
     encHandlePtr->entropyCodingContextPtrArray = (EbPtr*)EB_NULL;
-#if FILT_PROC
     encHandlePtr->dlfContextPtrArray = (EbPtr*)EB_NULL;
     encHandlePtr->cdefContextPtrArray = (EbPtr*)EB_NULL;
     encHandlePtr->restContextPtrArray = (EbPtr*)EB_NULL;
-#endif
     encHandlePtr->packetizationContextPtr = (EbPtr)EB_NULL;
 
     // System Resource Managers
@@ -804,7 +797,6 @@ static EbErrorType eb_enc_handle_ctor(
     encHandlePtr->encDecTasksProducerFifoPtrArray = (EbFifo_t**)EB_NULL;
     encHandlePtr->encDecResultsProducerFifoPtrArray = (EbFifo_t**)EB_NULL;
     encHandlePtr->entropyCodingResultsProducerFifoPtrArray = (EbFifo_t**)EB_NULL;
-#if FILT_PROC
     encHandlePtr->dlfResultsProducerFifoPtrArray = (EbFifo_t**)EB_NULL;
     encHandlePtr->cdefResultsProducerFifoPtrArray = (EbFifo_t**)EB_NULL;
     encHandlePtr->restResultsProducerFifoPtrArray = (EbFifo_t**)EB_NULL;
@@ -812,7 +804,7 @@ static EbErrorType eb_enc_handle_ctor(
     encHandlePtr->dlfResultsConsumerFifoPtrArray = (EbFifo_t**)EB_NULL;
     encHandlePtr->cdefResultsConsumerFifoPtrArray = (EbFifo_t**)EB_NULL;
     encHandlePtr->restResultsConsumerFifoPtrArray = (EbFifo_t**)EB_NULL;
-#endif
+
     // Inter-Process Consumer Fifos
     encHandlePtr->input_buffer_consumer_fifo_ptr_array = (EbFifo_t**)EB_NULL;
     encHandlePtr->output_stream_buffer_consumer_fifo_ptr_dbl_array = (EbFifo_t***)EB_NULL;
@@ -858,7 +850,6 @@ EbErrorType EbOutputBufferHeaderCtor(
     EbPtr objectInitDataPtr);
 
 
-#if FILT_PROC
 
 EbErrorType DlfResultsCtor(
     EbPtr *object_dbl_ptr,
@@ -900,7 +891,7 @@ EbErrorType RestResultsCtor(
 
     return EB_ErrorNone;
 }
-#endif
+
 #if ICOPY
 void init_fn_ptr(void);
 #endif
@@ -1376,11 +1367,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
         return_error = eb_system_resource_ctor(
             &encHandlePtr->pictureDemuxResultsResourcePtr,
             encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->picture_demux_fifo_init_count,
-#if FILT_PROC
             encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->source_based_operations_process_init_count + encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->rest_process_init_count,
-#else
-            encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->source_based_operations_process_init_count + encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->enc_dec_process_init_count,
-#endif
             EB_PictureManagerProcessInitCount,
             &encHandlePtr->pictureDemuxResultsProducerFifoPtrArray,
             &encHandlePtr->pictureDemuxResultsConsumerFifoPtrArray,
@@ -1465,11 +1452,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
             &encHandlePtr->encDecResultsResourcePtr,
             encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->enc_dec_fifo_init_count,
             encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->enc_dec_process_init_count,
-#if FILT_PROC
             encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->dlf_process_init_count,
-#else
-            encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->entropy_coding_process_init_count,
-#endif
             &encHandlePtr->encDecResultsProducerFifoPtrArray,
             &encHandlePtr->encDecResultsConsumerFifoPtrArray,
             EB_TRUE,
@@ -1480,7 +1463,6 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
         }
     }
 
-#if FILT_PROC
     //DLF results
     {
         EntropyCodingResultsInitData_t dlfResultInitData;
@@ -1536,7 +1518,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
             return EB_ErrorInsufficientResources;
         }
     }
-#endif
+
 
     // Entropy Coding Results
     {
@@ -1745,7 +1727,6 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
         }
     }
 
-#if FILT_PROC
     // Dlf Contexts
     EB_MALLOC(EbPtr*, encHandlePtr->dlfContextPtrArray, sizeof(EbPtr) * encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->dlf_process_init_count, EB_N_PTR);
 
@@ -1800,7 +1781,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
             return EB_ErrorInsufficientResources;
         }
     }
-#endif
+
 
     // Entropy Coding Contexts
     EB_MALLOC(EbPtr*, encHandlePtr->entropyCodingContextPtrArray, sizeof(EbPtr) * encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->entropy_coding_process_init_count, EB_N_PTR);
@@ -1808,11 +1789,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
     for (processIndex = 0; processIndex < encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->entropy_coding_process_init_count; ++processIndex) {
         return_error = entropy_coding_context_ctor(
             (EntropyCodingContext_t**)&encHandlePtr->entropyCodingContextPtrArray[processIndex],
-#if FILT_PROC
             encHandlePtr->restResultsConsumerFifoPtrArray[processIndex],
-#else
-            encHandlePtr->encDecResultsConsumerFifoPtrArray[processIndex],
-#endif
             encHandlePtr->entropyCodingResultsProducerFifoPtrArray[processIndex],
             encHandlePtr->rateControlTasksProducerFifoPtrArray[RateControlPortLookup(RATE_CONTROL_INPUT_PORT_ENTROPY_CODING, processIndex)],
             is16bit);
@@ -1887,7 +1864,6 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
         EB_CREATETHREAD(EbHandle, encHandlePtr->encDecThreadHandleArray[processIndex], sizeof(EbHandle), EB_THREAD, EncDecKernel, encHandlePtr->encDecContextPtrArray[processIndex]);
     }
 
-#if FILT_PROC
     // Dlf Process
     EB_MALLOC(EbHandle*, encHandlePtr->dlfThreadHandleArray, sizeof(EbHandle) * encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->dlf_process_init_count, EB_N_PTR);
 
@@ -1909,7 +1885,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
     for (processIndex = 0; processIndex < encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->rest_process_init_count; ++processIndex) {
         EB_CREATETHREAD(EbHandle, encHandlePtr->restThreadHandleArray[processIndex], sizeof(EbHandle), EB_THREAD, rest_kernel, encHandlePtr->restContextPtrArray[processIndex]);
     }
-#endif
+
     // Entropy Coding Process
     EB_MALLOC(EbHandle*, encHandlePtr->entropyCodingThreadHandleArray, sizeof(EbHandle) * encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->entropy_coding_process_init_count, EB_N_PTR);
 

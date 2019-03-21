@@ -16,7 +16,6 @@
 
 #include <stdlib.h>
 #include "EbDefinitions.h"
-#if FILT_PROC
 #include "EbDlfProcess.h"
 #include "EbEncDecResults.h"
 #include "EbEncDecTasks.h"
@@ -278,4 +277,3 @@ void* dlf_kernel(void *input_ptr)
 
     return EB_NULL;
 }
-#endif

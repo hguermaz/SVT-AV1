@@ -16,7 +16,6 @@
 
 #include <stdlib.h>
 #include "EbDefinitions.h"
-#if FILT_PROC
 #include "EbRestProcess.h"
 #include "EbEncDecResults.h"
 
@@ -479,4 +478,3 @@ void* rest_kernel(void *input_ptr)
 
     return EB_NULL;
 }
-#endif

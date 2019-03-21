@@ -483,9 +483,8 @@ void av1_cdef_frame(
     PictureControlSet_t            *pCs
 )
 {
-#if FILT_PROC
     (void)context_ptr;
-#endif
+
     struct PictureParentControlSet_s     *pPcs = pCs->parent_pcs_ptr;
     Av1Common*   cm = pPcs->av1_cm;
 
@@ -494,19 +493,10 @@ void av1_cdef_frame(
 
 
     if (pPcs->is_used_as_reference_flag == EB_TRUE)
-#if FILT_PROC
         recon_picture_ptr = ((EbReferenceObject_t*)pCs->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
-#else
-        recon_picture_ptr = context_ptr->is16bit ?
-        ((EbReferenceObject_t*)pCs->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture16bit :
-        ((EbReferenceObject_t*)pCs->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
-#endif
     else
-#if FILT_PROC
         recon_picture_ptr = pCs->recon_picture_ptr;
-#else
-        recon_picture_ptr = context_ptr->is16bit ? pCs->recon_picture16bit_ptr : pCs->recon_picture_ptr;
-#endif
+
 
     EbByte  reconBufferY = &((recon_picture_ptr->buffer_y)[recon_picture_ptr->origin_x + recon_picture_ptr->origin_y * recon_picture_ptr->stride_y]);
     EbByte  reconBufferCb = &((recon_picture_ptr->bufferCb)[recon_picture_ptr->origin_x / 2 + recon_picture_ptr->origin_y / 2 * recon_picture_ptr->strideCb]);

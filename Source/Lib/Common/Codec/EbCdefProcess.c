@@ -16,7 +16,6 @@
 
 #include <stdlib.h>
 #include "EbDefinitions.h"
-#if FILT_PROC
 #include "EbCdefProcess.h"
 #include "EbEncDecResults.h"
 #include "EbEncDecTasks.h"
@@ -685,4 +684,3 @@ void* cdef_kernel(void *input_ptr)
 
     return EB_NULL;
 }
-#endif

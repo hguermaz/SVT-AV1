@@ -22,7 +22,6 @@ extern "C" {
 
     } EncDecResults_t;
 
-#if FILT_PROC
     typedef struct DlfResults_s
     {
         EbObjectWrapper_t      *picture_control_set_wrapper_ptr;
@@ -48,7 +47,7 @@ extern "C" {
         uint32_t                  completed_lcu_row_count;
 
     } RestResults_t;
-#endif
+
     typedef struct EncDecResultsInitData_s
     {
         uint32_t         junk;
