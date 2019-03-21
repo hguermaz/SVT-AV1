@@ -216,11 +216,11 @@ extern "C" {
             get_eight_horizontal_search_point_results_8x8_16x16_pu_avx2_intrin,
         } , 
         {
-            // Hsan: use the kernel above but after adding the ability to use SAD
+            // Hsan: use the kernel above after adding the ability to use SAD
             // C
-            GetEightHorizontalSearchPointResults_8x8_16x16_PU,
+            sad_8x8_16x16_0,
             // C
-            GetEightHorizontalSearchPointResults_8x8_16x16_PU,
+            sad_8x8_16x16_0,
         } 
     };
 
@@ -233,11 +233,11 @@ extern "C" {
             get_eight_horizontal_search_point_results_32x32_64x64_pu_avx2_intrin,
         } ,
         {
-           // Hsan: use the kernel above but after adding the ability to use SAD
+           // Hsan: use the kernel above after adding the ability to use SAD
            // C
-           GetEightHorizontalSearchPointResults_32x32_64x64,
+           sad_32x32_64x64_0,
            // C
-           GetEightHorizontalSearchPointResults_32x32_64x64,
+           sad_32x32_64x64_0,
         }
     };
 

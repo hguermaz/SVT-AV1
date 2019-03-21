@@ -128,7 +128,7 @@ static EB_EXTSADCALCULATION8X8AND16X16_TYPE ExtSadCalculation_8x8_16x16_funcPtrA
         ext_sad_calculation_8x8_16x16_avx2_intrin
     } ,
     {
-        // Hsan: use the kernel above but after adding the ability to use SAD
+        // Hsan: use the kernel above after adding the ability to use SAD
         // C
         ext_full_sad_calculation_8x8_16x16,
         // C
@@ -150,11 +150,11 @@ static EB_SADCALCULATION8X8AND16X16_TYPE SadCalculation_8x8_16x16_funcPtrArray[2
         sad_calculation_8x8_16x16_sse2_intrin,
     } ,
     {
-        // Hsan: use the kernel above but after adding the ability to use SAD
+        // Hsan: use the kernel above after adding the ability to use SAD
         // C
-        GetEightHorizontalSearchPointResults_8x8_16x16_PU,
+        sad_8x8_16x16_1,
         // C
-        GetEightHorizontalSearchPointResults_8x8_16x16_PU,
+        sad_8x8_16x16_1,
     }
 };
 static EB_SADCALCULATION32X32AND64X64_TYPE SadCalculation_32x32_64x64_funcPtrArray[2][ASM_TYPE_TOTAL] = {
@@ -165,11 +165,11 @@ static EB_SADCALCULATION32X32AND64X64_TYPE SadCalculation_32x32_64x64_funcPtrArr
         sad_calculation_32x32_64x64_sse2_intrin,
     } ,
     {
-        // Hsan: use the kernel above but after adding the ability to use SAD
+        // Hsan: use the kernel above after adding the ability to use SAD
         // C
-        GetEightHorizontalSearchPointResults_32x32_64x64,
+        sad_32x32_64x64_1,
         // C
-        GetEightHorizontalSearchPointResults_32x32_64x64,
+        sad_32x32_64x64_1,
     }
 };
 
