@@ -48,7 +48,6 @@ extern "C" {
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
 
-#define DISABLE_128X128_SB                              0
 #define ENABLE_INTER_4x4                                0 // optional
 #define DISABLE_4xN_Nx4                                 1 //
 #define DISABLE_128x128                                 0
@@ -314,20 +313,13 @@ enum {
 /********************************************************/
 /****************** Pre-defined Values ******************/
 /********************************************************/
-#if  DISABLE_128X128_SB
-#define PAD_VALUE                                (64+32)
-#else
 #define PAD_VALUE                                (128+32)
-#endif
+
 
 //  Delta QP support
 #define ADD_DELTA_QP_SUPPORT                      0  // Add delta QP support - Please enable this flag and iproveSharpness (config) to test the QPM
-#if DISABLE_128X128_SB
-#define BLOCK_MAX_COUNT                           1101
-#else
 #define BLOCK_MAX_COUNT_SB_128                    4421  // TODO: reduce alloction for 64x64
 #define BLOCK_MAX_COUNT_SB_64                     1101  // TODO: reduce alloction for 64x64
-#endif
 #define MAX_TXB_COUNT                             4 // Maximum number of transform blocks.
 #define MAX_NFL                                   40
 #define MAX_LAD                                   120 // max lookahead-distance 2x60fps

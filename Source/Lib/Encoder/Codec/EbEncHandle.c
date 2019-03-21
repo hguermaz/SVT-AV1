@@ -2187,11 +2187,7 @@ void CopyApiFromApp(
 
     // SB Definitions
 #if !DISABLE_128_SB_FOR_SUB_720
-#if DISABLE_128X128_SB
-    sequence_control_set_ptr->static_config.super_block_size = 64;
-#else
     sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode == ENC_M0) ? 128 : 64;
-#endif
 #endif
     sequence_control_set_ptr->static_config.pred_structure = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
@@ -2765,11 +2761,8 @@ EbErrorType eb_svt_enc_init_parameter(
     // Latency
     config_ptr->injector_frame_rate = 60 << 16;
     config_ptr->speed_control_flag = 0;
-#if    DISABLE_128X128_SB
-    config_ptr->super_block_size = 64;
-#else
     config_ptr->super_block_size = 128;
-#endif
+
     config_ptr->sb_sz = 64;
     config_ptr->partition_depth = (uint8_t)EB_MAX_LCU_DEPTH;
     //config_ptr->latencyMode = 0;
