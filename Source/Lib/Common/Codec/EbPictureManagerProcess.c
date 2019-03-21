@@ -187,7 +187,6 @@ void* picture_manager_kernel(void *input_ptr)
                 picture_control_set_ptr = (PictureParentControlSet_t*)queueEntryPtr->parentPcsWrapperPtr->object_ptr;
 
                 predPositionPtr = picture_control_set_ptr->pred_struct_ptr->predStructEntryPtrArray[picture_control_set_ptr->pred_struct_index];
-#if NEW_PRED_STRUCT
                 // If there was a change in the number of temporal layers, then cleanup the Reference Queue's Dependent Counts
                 if (picture_control_set_ptr->hierarchical_layers_diff != 0) {
 
@@ -325,7 +324,6 @@ void* picture_manager_kernel(void *input_ptr)
                         referenceQueueIndex = (referenceQueueIndex == REFERENCE_QUEUE_MAX_DEPTH - 1) ? 0 : referenceQueueIndex + 1;
                     }
                 }
-#endif
                 // If there was an I-frame or Scene Change, then cleanup the Reference Queue's Dependent Counts
                 if (picture_control_set_ptr->slice_type == I_SLICE)
                 {

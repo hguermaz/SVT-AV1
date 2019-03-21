@@ -304,7 +304,6 @@ EbErrorType ReleasePrevPictureFromReorderQueue(
 
     return return_error;
 }
-#if NEW_PRED_STRUCT
 
 /***************************************************************************************************
 * Initializes mini GOP activity array
@@ -593,7 +592,7 @@ EbBool is_supposedly_4L_reference_frame(
     }
 }
 
-#endif
+
 
 /***************************************************************************************************
 * Generates mini GOP RPSs
@@ -1435,7 +1434,6 @@ void  Av1GenerateRpsInfo(
         if (pictureIndex == context_ptr->miniGopEndIndex[0])
             context_ptr->miniGopToggle = 1 - context_ptr->miniGopToggle;
     }
-#if NEW_PRED_STRUCT
     else if (picture_control_set_ptr->hierarchical_levels == 4)//RPS for 4L GOP
     {
 
@@ -1667,7 +1665,7 @@ void  Av1GenerateRpsInfo(
         context_ptr->miniGopToggle = 1 - context_ptr->miniGopToggle;
 
     }
-#endif
+
     else
     {
         printf("Error: Not supported GOP structure!");
@@ -1939,11 +1937,10 @@ void* picture_decision_kernel(void *input_ptr)
 
                 picture_control_set_ptr->pred_structure = EB_PRED_RANDOM_ACCESS;
 
-#if NEW_PRED_STRUCT
                 picture_control_set_ptr->hierarchical_layers_diff = 0;
 
                 picture_control_set_ptr->init_pred_struct_position_flag = EB_FALSE;
-#endif
+
                 picture_control_set_ptr->target_bit_rate = sequence_control_set_ptr->static_config.target_bit_rate;
 
                 ReleasePrevPictureFromReorderQueue(
@@ -2011,7 +2008,6 @@ void* picture_decision_kernel(void *input_ptr)
                         sequence_control_set_ptr->static_config.hierarchical_levels : 
                         encode_context_ptr->previous_mini_gop_hierarchical_levels;
 
-#if NEW_PRED_STRUCT
                     {
                         if (encode_context_ptr->pre_assignment_buffer_count > 1)
                         {
@@ -2034,7 +2030,7 @@ void* picture_decision_kernel(void *input_ptr)
                                 encode_context_ptr);
                         }
                     }
-#endif
+
                     GenerateMiniGopRps(
                         context_ptr,
                         encode_context_ptr);
@@ -2044,7 +2040,6 @@ void* picture_decision_kernel(void *input_ptr)
                     for (miniGopIndex = 0; miniGopIndex < context_ptr->totalNumberOfMiniGops; ++miniGopIndex) {
 
                         preAssignmentBufferFirstPassFlag = EB_TRUE;
-#if NEW_PRED_STRUCT
                         {
                             update_base_layer_reference_queue_dependent_count(
                                 context_ptr,
@@ -2055,7 +2050,7 @@ void* picture_decision_kernel(void *input_ptr)
                             // Keep track of the number of hierarchical levels of the latest implemented mini GOP
                             encode_context_ptr->previous_mini_gop_hierarchical_levels = context_ptr->miniGopHierarchicalLevels[miniGopIndex];
                         }
-#endif
+
                         // 1st Loop over Pictures in the Pre-Assignment Buffer
                         for (pictureIndex = context_ptr->miniGopStartIndex[miniGopIndex]; pictureIndex <= context_ptr->miniGopEndIndex[miniGopIndex]; ++pictureIndex) {
 
@@ -2120,12 +2115,10 @@ void* picture_decision_kernel(void *input_ptr)
                                     (encode_context_ptr->pre_assignment_buffer_eos_flag) ? P_SLICE :
                                     B_SLICE;
                             }
-#if NEW_PRED_STRUCT
                             // If mini GOP switch, reset position
                             encode_context_ptr->pred_struct_position = (picture_control_set_ptr->init_pred_struct_position_flag) ?
                                 picture_control_set_ptr->pred_struct_ptr->initPicIndex :
                                 encode_context_ptr->pred_struct_position;
-#endif
 
                             // If Intra, reset position
                             if (picture_control_set_ptr->idr_flag == EB_TRUE) {
@@ -2278,11 +2271,7 @@ void* picture_decision_kernel(void *input_ptr)
                                 picture_control_set_ptr,
                                 encode_context_ptr,
                                 context_ptr,
-#if NEW_PRED_STRUCT
                                 pictureIndex - context_ptr->miniGopStartIndex[miniGopIndex]);
-#else
-                                pictureIndex);
-#endif
                             picture_control_set_ptr->allow_comp_inter_inter = 0;
                             picture_control_set_ptr->is_skip_mode_allowed = 0;
 

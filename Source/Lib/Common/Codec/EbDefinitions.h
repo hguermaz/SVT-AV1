@@ -47,7 +47,6 @@ extern "C" {
 #define MR_MODE                                         0
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
-#define NEW_PRED_STRUCT                                 1 // Ability to run 5-layer prediction structure. By Default 5L is used
 #define TILES                                           1
 
 #define INTRA_CORE_OPT                                  0
@@ -3029,13 +3028,12 @@ static const uint8_t INTRA_AREA_TH_CLASS_1[MAX_HIERARCHICAL_LEVEL][MAX_TEMPORAL_
 };
 
 
-#if NEW_PRED_STRUCT
 #define NON_MOVING_SCORE_0     0
 #define NON_MOVING_SCORE_1    10
 #define NON_MOVING_SCORE_2    20
 #define NON_MOVING_SCORE_3    30
 #define INVALID_NON_MOVING_SCORE (uint8_t) ~0
-#endif
+
 // Picture split into regions for analysis (SCD, Dynamic GOP)
 #define CLASS_SUB_0_REGION_SPLIT_PER_WIDTH    1
 #define CLASS_SUB_0_REGION_SPLIT_PER_HEIGHT    1

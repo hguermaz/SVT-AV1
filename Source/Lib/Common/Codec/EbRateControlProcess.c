@@ -1519,23 +1519,14 @@ void* rate_control_kernel(void *input_ptr){
                     }
 #endif
                     else {
-#if NEW_PRED_STRUCT                    
                         const  double delta_rate_new[2][6] =
                                 { { 0.40, 0.7, 0.85, 1.0, 1.0, 1.0 },
                                 { 0.35, 0.6, 0.8,  0.9, 1.0, 1.0 } };
 
-#else
-                       const double delta_rate_new[6] = { 0.40, 0.7, 0.85, 1.0, 1.0, 1.0 };
-
-#endif
                         const int32_t delta_qindex = av1_compute_qdelta(
                             q_val,
-#if NEW_PRED_STRUCT
                             q_val * delta_rate_new[picture_control_set_ptr->parent_pcs_ptr->hierarchical_levels == 4][picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index],
-
-#else
-                            q_val * delta_rate_new[picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index],
-#endif     
+    
                             (aom_bit_depth_t)sequence_control_set_ptr->static_config.encoder_bit_depth);
 
                         picture_control_set_ptr->parent_pcs_ptr->base_qindex =
