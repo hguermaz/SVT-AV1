@@ -2804,9 +2804,7 @@ static void PU_HalfPelRefinement(
 *******************************************/
 void HalfPelSearch_LCU(
     SequenceControlSet_t    *sequence_control_set_ptr,             // input parameter, Sequence control set Ptr
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
     PictureParentControlSet_t *picture_control_set_ptr,
-#endif
     MeContext_t             *context_ptr,                        // input/output parameter, ME context Ptr, used to get/update ME results
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
     uint8_t                   *refBuffer,
@@ -2973,11 +2971,7 @@ void HalfPelSearch_LCU(
         }
     }
 #if !TEST5_DISABLE_NSQ_ME
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
     if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
-#else
-    if (sequence_control_set_ptr->static_config.ext_block_flag) {
-#endif
 
         // 64x32
         for (pu_index = 0; pu_index < 2; ++pu_index) {
@@ -7360,11 +7354,7 @@ EbErrorType MotionEstimateLcu(
 #if TEST5_DISABLE_NSQ_ME
                     if(0){
 #else
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
                     if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
-#else
-                    if (sequence_control_set_ptr->static_config.ext_block_flag) {
-#endif
 #endif
                         uint8_t refPicIndex = 0;
 
@@ -7529,9 +7519,7 @@ EbErrorType MotionEstimateLcu(
                         // Half-Pel Refinement [8 search positions]
                         HalfPelSearch_LCU(
                             sequence_control_set_ptr,
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
                             picture_control_set_ptr,
-#endif
                             context_ptr,
 #if M0_HIGH_PRECISION_INTERPOLATION
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
@@ -7581,15 +7569,12 @@ EbErrorType MotionEstimateLcu(
                             enableHalfPel8x8,
 #endif
                             enableQuarterPel,
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
 #if TEST5_DISABLE_NSQ_ME
                             EB_FALSE);
 #else
                             picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE);
 #endif
-#else
-                            sequence_control_set_ptr->static_config.ext_block_flag);
-#endif
+
 #endif
 
                     }
@@ -7662,15 +7647,12 @@ EbErrorType MotionEstimateLcu(
         totalMeCandidateIndex = candidateIndex;
 
         if (numOfListToSearch) {
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
 #if TEST5_DISABLE_NSQ_ME
             if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21){
 #else
             if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21 || (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE)) {
 #endif
-#else
-            if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21 || sequence_control_set_ptr->static_config.ext_block_flag) {
-#endif
+
                 BiPredictionSearch(
                     context_ptr,
                     pu_index,

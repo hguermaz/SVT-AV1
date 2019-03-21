@@ -48,9 +48,6 @@ extern "C" {
 #define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
     ////
 
-#define INTRA_CORE_OPT                                  0
-#define ENABLE_INTRA_4x4                                1 //
-#define DISABLE_NSQ                                     1 //
 #define DISABLE_128X128_SB                              0
 #define ENABLE_INTER_4x4                                0 // optional
 #define DISABLE_4xN_Nx4                                 1 //
@@ -116,7 +113,6 @@ extern "C" {
 #define TUNE_CHROMA_OFFSET                              0
 #define FAST_TX_SEARCH                                  1
 #define MACRO_BLOCK_CLEANUP                             1
-#define DISABLE_NSQ_FOR_NON_REF                         1
 #define FIX_INTER_DEPTH                                 1  // Fix interdepth depth cost when MDC cuts depths
 #define DISABLE_IN_LOOP_ME                              1
 #define EXTRA_ALLOCATION                                1

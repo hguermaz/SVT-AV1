@@ -34,9 +34,6 @@
 extern void av1_predict_intra_block(
     TileInfo                    *tile,
 
-#if INTRA_CORE_OPT
-    ModeDecisionContext_t                  *md_context_ptr,
-#endif
     STAGE                       stage,
     #if !ICOPY
     uint8_t                     intra_luma_left_mode,
@@ -56,10 +53,8 @@ extern void av1_predict_intra_block(
     uint8_t* topNeighArray,
     uint8_t* leftNeighArray,
     EbPictureBufferDesc_t  *recon_buffer,
-#if !INTRA_CORE_OPT
     int32_t col_off,
     int32_t row_off,
-#endif
     int32_t plane,
     block_size bsize,
     uint32_t bl_org_x_pict,
@@ -3550,9 +3545,6 @@ EB_EXTERN void AV1EncodePass(
                                     // If that's the case then you should ensure than the 1st chroma prediction uses UV_DC_PRED (that's the default configuration for CHROMA_MODE_1 if CFL applicable (set @ fast loop candidates injection) then MD assumes chroma mode always UV_DC_PRED)
                                     av1_predict_intra_block(
                                         &sb_ptr->tile_info,
-#if INTRA_CORE_OPT
-                                        NULL,
-#endif
                                         ED_STAGE,
                                         #if !ICOPY
                                         cu_ptr->prediction_unit_array[0].intra_luma_left_mode,
@@ -3573,10 +3565,8 @@ EB_EXTERN void AV1EncodePass(
                                         leftNeighArray + 1,
                                         recon_buffer,                                                //uint8_t *dst,
                                         //int32_t dst_stride,
-#if !INTRA_CORE_OPT
                                         0,                                                          //int32_t col_off,
                                         0,                                                          //int32_t row_off,
-#endif
                                         plane,                                                      //int32_t plane,
                                         blk_geom->bsize,                  //uint32_t puSize,
                                         context_ptr->cu_origin_x,

@@ -3803,11 +3803,8 @@ void md_encode_block(
 #if NSQ_OPTIMASATION
         is_nsq_table_used, picture_control_set_ptr->parent_pcs_ptr->nsq_max_shapes_md,context_ptr,is_complete_sb ))
 #else
-#if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
         context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#else
-        context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-#endif
+
 #endif
     {
 #if !PF_N2_32X32
