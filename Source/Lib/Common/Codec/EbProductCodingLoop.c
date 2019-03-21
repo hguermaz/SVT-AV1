@@ -1264,7 +1264,7 @@ void generate_intra_reference_samples(
     const Av1Common         *cm,
     ModeDecisionContext_t   *md_context_ptr);
 
-#if INTRA_INTER_FAST_LOOP
+#if INTRA_INTER_FAST_LOOP 
 void perform_fast_loop(
     PictureControlSet_t                 *picture_control_set_ptr,
     ModeDecisionContext_t               *context_ptr,
@@ -1608,7 +1608,6 @@ void ProductPerformFastLoop(
                 {
 #endif
                     // Fast Cost Calc
-#if REST_FAST_RATE_EST
 #if TWO_FAST_LOOP        
                   
                     candidateBuffer->sub_sampled_pred = EB_FALSE;
@@ -1720,17 +1719,7 @@ void ProductPerformFastLoop(
                         context_ptr->intra_luma_top_mode);
 #endif
 
-#else
-                    Av1ProductFastCostFuncTable[type](
-                        context_ptr,
-                        cu_ptr,
-                        candidateBuffer,
-                        cu_ptr->qp,
-                        lumaFastDistortion,
-                        0,
-                        context_ptr->fast_lambda,
-                        picture_control_set_ptr);
-#endif
+
 
                     // Keep track of the candidate index of the best  (src - src) candidate
                     if (*(candidateBuffer->fast_cost_ptr) <= bestFirstFastCostSearchCandidateCost) {
@@ -1864,7 +1853,6 @@ void ProductPerformFastLoop(
             }
 
             // Fast Cost Calc
-#if REST_FAST_RATE_EST
             *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type] (
                 cu_ptr, 
                 candidateBuffer->candidate_ptr,
@@ -1879,17 +1867,7 @@ void ProductPerformFastLoop(
                 context_ptr->cu_origin_x >> MI_SIZE_LOG2,
                 context_ptr->intra_luma_left_mode,
                 context_ptr->intra_luma_top_mode);
-#else
-            Av1ProductFastCostFuncTable[candidate_ptr->type](
-                context_ptr,
-                cu_ptr,
-                candidateBuffer,
-                cu_ptr->qp,
-                lumaFastDistortion,
-                chromaFastDistortion,
-                context_ptr->fast_lambda,
-                picture_control_set_ptr);
-#endif
+
 
             (*secondFastCostSearchCandidateTotalCount)++;
         }

@@ -863,11 +863,7 @@ void PredictionPartitionLoop(
     MdcpLocalCodingUnit_t   *cu_ptr;
 
     SbParams_t *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
-#if !MDC_FIX_0
-    uint32_t      cuInterSad = 0;
-    uint64_t      cuInterRate = 0;
-    uint64_t      cuInterCost = 0;
-#endif
+
 
     uint32_t      cuIndexInRaterScan;
     uint32_t      cu_index = 0;
@@ -903,7 +899,6 @@ void PredictionPartitionLoop(
                 if (picture_control_set_ptr->slice_type != I_SLICE) {
 
                     MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexInRaterScan];
-#if MDC_FIX_0            
                     // Initialize the mdc candidate (only av1 rate estimation inputs)
                     // Hsan: mode, direction, .. could be modified toward better early inter depth decision (e.g. NEARESTMV instead of NEWMV)
                     context_ptr->mdc_candidate_ptr->md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
@@ -994,19 +989,7 @@ void PredictionPartitionLoop(
                         (tbOriginX + context_ptr->blk_geom->origin_x) >> MI_SIZE_LOG2,
                         DC_PRED,        // Hsan: neighbor not generated @ open loop partitioning
                         DC_PRED);       // Hsan: neighbor not generated @ open loop partitioning
-#else
-                    cuInterRate = MdcInterCuRate(
-                        mePuResult->distortionDirection[0].direction,
-                        mePuResult->xMvL0,
-                        mePuResult->yMvL0,
-                        mePuResult->xMvL1,
-                        mePuResult->yMvL1);
-                    cuInterSad = mePuResult->distortionDirection[0].distortion;
 
-
-                    cuInterCost = (cuInterSad << COST_PRECISION) + ((context_ptr->lambda * cuInterRate + MD_OFFSET) >> MD_SHIFT);
-                    cu_ptr->earlyCost = cuInterCost;
-#endif
                 }
 
                 if (endDepth == 2) {

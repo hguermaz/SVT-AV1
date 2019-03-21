@@ -72,7 +72,6 @@ extern "C" {
 #define ADP_STATS_PER_LAYER                             0
 
 
-#define REST_FAST_RATE_EST                              1
 #define MDC_FIX_1                                       1
 
 #define M8_ADP                                          1
