@@ -2947,9 +2947,8 @@ void AV1PerformFullLoop(
             }
         }
 #else
-#if SHUT_CBF_FL_SKIP
         if(0)
-#endif
+
             if (picture_control_set_ptr->slice_type != I_SLICE) {
                 if (candidate_ptr->type == INTER_MODE) {
                     if (*candidateBuffer->full_cost_ptr < bestfullCost) {

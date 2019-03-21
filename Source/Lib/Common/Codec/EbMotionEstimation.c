@@ -2830,7 +2830,6 @@ void HalfPelSearch_LCU(
     uint32_t poshBufferIndex;
     uint32_t posjBufferIndex;
 
-#if M0_64x64_32x32_HALF_QUARTER_PEL
     if (context_ptr->fractional_search64x64)
         PU_HalfPelRefinement(
             sequence_control_set_ptr,
@@ -2852,9 +2851,7 @@ void HalfPelSearch_LCU(
             context_ptr->p_best_sad64x64,
             context_ptr->p_best_mv64x64,
             &context_ptr->psub_pel_direction64x64);
-#else
-    //no PU 64x64, Half Pel Refinement
-#endif
+
     if (enableHalfPel32x32)
     {
         // 32x32 [4 partitions]
@@ -3920,7 +3917,6 @@ static void QuarterPelSearch_LCU(
     int16_t  x_mv, y_mv;
     uint32_t  nidx;
 
-#if M0_64x64_32x32_HALF_QUARTER_PEL
     if (context_ptr->fractional_search64x64) {
         x_mv = _MVXT(*context_ptr->p_best_mv64x64);
         y_mv = _MVYT(*context_ptr->p_best_mv64x64);
@@ -3967,9 +3963,7 @@ static void QuarterPelSearch_LCU(
             context_ptr->p_best_mv64x64,
             context_ptr->psub_pel_direction64x64);
     }
-#else
-    //no PU 64x64, Half Pel Refinement
-#endif
+
 #if M9_SUBPEL_SELECTION
     if (enableQuarterPel && enable_half_pel32x32)
 #else
@@ -6906,11 +6900,10 @@ EbErrorType MotionEstimateLcu(
     EbBool                    enableQuarterPel = EB_FALSE;
     EbBool                 oneQuadrantHME =  EB_FALSE;
 
-#if M0_64x64_32x32_HALF_QUARTER_PEL
 #if !M9_FRAC_ME_SEARCH_64x64
     context_ptr->fractional_search64x64 = EB_TRUE;
 #endif
-#endif
+
     oneQuadrantHME = sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE ? 0 : oneQuadrantHME;
 #if M0_ME_SEARCH_BASE
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE ) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
