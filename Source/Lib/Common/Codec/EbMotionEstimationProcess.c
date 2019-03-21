@@ -617,10 +617,19 @@ void* MotionEstimationKernel(void *input_ptr)
                             uint8_t  *framePtr = &sixteenthDecimatedPicturePtr->buffer_y[bufferIndex];
                             uint8_t  *localPtr = context_ptr->me_context_ptr->sixteenth_sb_buffer;
 #if USE_SAD_HMEL0 
-                            for (lcuRow = 0; lcuRow < (sb_height >> 2); lcuRow += 1) {
-                                EB_MEMCPY(localPtr, framePtr, (sb_width >> 2) * sizeof(uint8_t));
-                                localPtr += 16;
-                                framePtr += sixteenthDecimatedPicturePtr->stride_y;
+                            if (context_ptr->me_context_ptr->hme_search_method == FULL_SAD_SEARCH) {
+                                for (lcuRow = 0; lcuRow < (sb_height >> 2); lcuRow += 1) {
+                                    EB_MEMCPY(localPtr, framePtr, (sb_width >> 2) * sizeof(uint8_t));
+                                    localPtr += 16;
+                                    framePtr += sixteenthDecimatedPicturePtr->stride_y;
+                                }
+                            }
+                            else {
+                                for (lcuRow = 0; lcuRow < (sb_height >> 2); lcuRow += 2) {
+                                    EB_MEMCPY(localPtr, framePtr, (sb_width >> 2) * sizeof(uint8_t));
+                                    localPtr += 16;
+                                    framePtr += sixteenthDecimatedPicturePtr->stride_y << 1;
+                                }
                             }
 #else
                             for (lcuRow = 0; lcuRow < (sb_height >> 2); lcuRow += 2) {
