@@ -163,7 +163,7 @@ extern "C" {
 
 
 // M9 settings toward 4K 60 fps
-#define M9_SETTINGS              0
+#define M9_SETTINGS              1
 
 #if M9_SETTINGS
 // Adopted
@@ -287,11 +287,11 @@ extern "C" {
 
 #define AOM_INTERP_EXTEND 4
 
-#define CFL_FIX         1 // Fixes to CFL and enabling CFL for 4x*
+#define CFL_FIX         0 // Fixes to CFL and enabling CFL for 4x*
 
-#define IMPROVE_1D_INTER_DEPTH_DECISION  1
-#define ENABLE_WARPED_MV                 1
-#define CABAC_UP                         1 // update cabac probabilities. txb CDFs.
+#define IMPROVE_1D_INTER_DEPTH_DECISION  0
+#define ENABLE_WARPED_MV                 0
+#define CABAC_UP                         0 // update cabac probabilities. txb CDFs.
 
 struct buf_2d {
     uint8_t *buf;
