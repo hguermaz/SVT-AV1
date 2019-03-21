@@ -441,7 +441,6 @@ extern "C" {
     RTCD_EXTERN void(*aom_highbd_8_mse16x16)(const uint8_t *src_ptr, int32_t  source_stride, const uint8_t *ref_ptr, int32_t  recon_stride, uint32_t *sse);
 #endif
 
-#if INTRA_ASM
     void av1_upsample_intra_edge_c(uint8_t *p, int32_t sz);
     void av1_upsample_intra_edge_sse4_1(uint8_t *p, int32_t sz);
     RTCD_EXTERN void(*av1_upsample_intra_edge)(uint8_t *p, int32_t sz);
@@ -1340,7 +1339,7 @@ extern "C" {
     void aom_highbd_paeth_predictor_8x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
     #define aom_highbd_paeth_predictor_8x8 aom_highbd_paeth_predictor_8x8_c
 #endif
-#endif
+
 
 #if AOM_SAD_PORTING
     uint32_t aom_sad128x128_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
@@ -2402,7 +2401,6 @@ extern "C" {
     void aom_dsp_rtcd(void);
 
 
-
 #ifdef RTCD_C
 
     static void setup_rtcd_internal(EbAsm asm_type)
@@ -2581,7 +2579,6 @@ extern "C" {
         //aom_highbd_8_mse16x16 = aom_highbd_8_mse16x16_c;
         if (flags & HAS_SSE2) aom_highbd_8_mse16x16 = aom_highbd_8_mse16x16_sse2;
 
-#if INTRA_ASM
         av1_upsample_intra_edge = av1_upsample_intra_edge_c;
         if (flags & HAS_SSE4_1) av1_upsample_intra_edge = av1_upsample_intra_edge_sse4_1;
 
@@ -3750,7 +3747,7 @@ aom_variance8x8 = aom_variance8x8_c;
         aom_highbd_h_predictor_16x32 = aom_highbd_h_predictor_16x32_c;
         if (flags & HAS_SSE2) aom_highbd_h_predictor_16x32 = aom_highbd_h_predictor_16x32_sse2;
 
-#endif
+
         aom_fft2x2_float = aom_fft2x2_float_c;
         aom_fft4x4_float = aom_fft4x4_float_c;
         if (flags & HAS_SSE2) aom_fft4x4_float = aom_fft4x4_float_sse2;

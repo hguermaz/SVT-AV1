@@ -10,9 +10,7 @@
 #include "EbIntrinMacros_SSE2.h"
 #include "EbIntraPrediction_AVX2.h"
 #include "lpf_common_sse2.h"
-#if INTRA_ASM
 #include "aom_dsp_rtcd.h"
-#endif
 #ifndef _mm256_setr_m128i
 #define _mm256_setr_m128i(/* __m128i */ hi, /* __m128i */ lo) \
     _mm256_insertf128_si256(_mm256_castsi128_si256(lo), (hi), 0x1)
@@ -1721,7 +1719,6 @@ void aom_dc_top_predictor_64x64_avx2(uint8_t *dst, ptrdiff_t stride,
     __m256i row = _mm256_shuffle_epi8(sum, zero);
     row_store_64xh(&row, 64, dst, stride);
 }
-#if INTRA_ASM
 void aom_dc_top_predictor_32x32_avx2(uint8_t *dst, ptrdiff_t stride,
     const uint8_t *above,
     const uint8_t *left) {
@@ -2061,7 +2058,7 @@ void aom_v_predictor_64x32_avx2(uint8_t *dst, ptrdiff_t stride,
     row_store_32x2xh(&row0, &row1, 32, dst, stride);
 }
 
-#endif
+
 void intra_mode_dc_64x64_av1_avx2_intrin(
     EbBool        isLeftAvailble,
     EbBool        isAboveAvailble,
@@ -2097,7 +2094,6 @@ void intra_mode_dc_64x64_av1_avx2_intrin(
             ref_samples + topOffset, ref_samples + leftOffset);
     }
 }
-#if INTRA_ASM
 void aom_dc_predictor_32x32_avx2(uint8_t *dst, ptrdiff_t stride,
     const uint8_t *above, const uint8_t *left) {
     const __m256i sum_above = dc_sum_32(above);
@@ -2110,7 +2106,7 @@ void aom_dc_predictor_32x32_avx2(uint8_t *dst, ptrdiff_t stride,
     __m256i row = _mm256_shuffle_epi8(sum_left, zero);
     row_store_32xh(&row, 32, dst, stride);
 }
-#endif
+
 /***************************************************************************************************************************************************************************/
 /***************************************************************************************intra_mode_angular_2_avx2_intrin***************************************************************************************/
 void intra_mode_angular_2_avx2_intrin(

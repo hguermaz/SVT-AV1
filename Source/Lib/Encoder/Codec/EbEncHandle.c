@@ -923,9 +923,6 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
         encHandlePtr->sequence_control_set_instance_array[0]->encode_context_ptr->asm_type = encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->static_config.asm_type;
     }
 
-#if !INTRA_ASM
-    init_intra_predictors_internal();
-#endif
     setup_rtcd_internal(encHandlePtr->sequence_control_set_instance_array[0]->encode_context_ptr->asm_type);
     asmSetConvolveAsmTable();
 
@@ -933,9 +930,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
 
     asmSetConvolveHbdAsmTable();
 
-#if  INTRA_ASM
     init_intra_predictors_internal();
-#endif
     EbSequenceControlSetInitData_t scs_init;
     scs_init.sb_size = encHandlePtr->sequence_control_set_instance_array[0]->sequence_control_set_ptr->static_config.super_block_size;
 
