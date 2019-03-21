@@ -342,10 +342,9 @@ EbErrorType copy_sequence_control_set(
     dst->cdef_segment_column_count = src->cdef_segment_column_count;
     dst->cdef_segment_row_count = src->cdef_segment_row_count;
 
-#if REST_M
     dst->rest_segment_column_count = src->rest_segment_column_count;
     dst->rest_segment_row_count = src->rest_segment_row_count;
-#endif
+
 #if BASE_LAYER_REF
     dst->extra_frames_to_ref_islice = src->extra_frames_to_ref_islice;
     dst->max_frame_window_to_ref_islice = src->max_frame_window_to_ref_islice;

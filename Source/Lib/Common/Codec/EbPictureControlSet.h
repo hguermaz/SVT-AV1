@@ -13759,13 +13759,12 @@ extern "C" {
         uint16_t *ref_coeff[3];  //input video in 16bit form
 
 
-#if REST_M
         uint32_t                              tot_seg_searched_rest;
         EbHandle                              rest_search_mutex;
         uint16_t                              rest_segments_total_count;
         uint8_t                               rest_segments_column_count;
         uint8_t                               rest_segments_row_count;            
-#endif
+
         // Mode Decision Config
         MdcLcuData_t                         *mdc_sb_array;
 
@@ -14324,9 +14323,7 @@ extern "C" {
         aom_film_grain_t                      film_grain_params;
         struct aom_denoise_and_model_t       *denoise_and_model;
         EbBool                                enable_in_loop_motion_estimation_flag;
-#if REST_M       
         RestUnitSearchInfo                   *rusi_picture[3];//for 3 planes
-#endif
 #if FAST_CDEF
         int8_t                                cdef_filter_mode;
         int32_t                               cdef_frame_strength;

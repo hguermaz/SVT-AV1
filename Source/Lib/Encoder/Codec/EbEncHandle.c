@@ -532,7 +532,6 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
     sequence_control_set_ptr->cdef_segment_column_count = meSegW;
     sequence_control_set_ptr->cdef_segment_row_count    = meSegH;
 
-#if REST_M
     //since restoration unit size is same for Luma and Chroma, Luma segments and chroma segments do not correspond to the same area!
     //to keep proper processing, segments have to be configured based on chroma resolution.
     uint32_t unit_size                                  = 256;
@@ -540,7 +539,7 @@ EbErrorType LoadDefaultBufferConfigurationSettings(
     uint32_t rest_seg_h                                 = MAX((sequence_control_set_ptr->max_input_luma_height/2 + (unit_size >> 1)) / unit_size, 1);
     sequence_control_set_ptr->rest_segment_column_count = MIN(rest_seg_w,6);
     sequence_control_set_ptr->rest_segment_row_count    = MIN(rest_seg_h,4);
-#endif
+
     //#====================== Data Structures and Picture Buffers ======================
     sequence_control_set_ptr->picture_control_set_pool_init_count       = inputPic + sequence_control_set_ptr->static_config.look_ahead_distance + SCD_LAD;
     sequence_control_set_ptr->picture_control_set_pool_init_count_child = MAX(MAX(MIN(3, coreCount/2), coreCount / 6), 1);

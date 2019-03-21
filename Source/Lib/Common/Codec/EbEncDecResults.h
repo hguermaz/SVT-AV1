@@ -34,9 +34,7 @@ extern "C" {
     {
         EbObjectWrapper_t      *picture_control_set_wrapper_ptr;
        
-#if REST_M
         uint32_t          segment_index;
-#endif
 
     } CdefResults_t;
     typedef struct RestResults_s

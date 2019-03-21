@@ -132,10 +132,9 @@ extern "C" {
         uint32_t                                cdef_segment_column_count;
         uint32_t                                cdef_segment_row_count;
 
-#if REST_M
         uint32_t                                rest_segment_column_count;
         uint32_t                                rest_segment_row_count;
-#endif
+
         // Buffers
         uint32_t                                picture_control_set_pool_init_count;
         uint32_t                                picture_control_set_pool_init_count_child;

@@ -559,7 +559,6 @@ void* cdef_kernel(void *input_ptr)
 
         }
 
-#if REST_M
 
         //restoration prep
 
@@ -600,20 +599,7 @@ void* cdef_kernel(void *input_ptr)
             eb_post_full_object(cdef_results_wrapper_ptr);
 
         }
-#else
 
-
-        // Get Empty Cdef Results to Rest
-        eb_get_empty_object(
-            context_ptr->cdef_output_fifo_ptr,
-            &cdefResultsWrapperPtr);
-        cdef_results_ptr = (struct CdefResults_s*)cdefResultsWrapperPtr->object_ptr;
-        cdef_results_ptr->pictureControlSetWrapperPtr = dlf_results_ptr->pictureControlSetWrapperPtr;
-        cdef_results_ptr->completedLcuRowIndexStart = 0;
-        cdef_results_ptr->completedLcuRowCount =  ((sequence_control_set_ptr->luma_height + sequence_control_set_ptr->sb_size_pix - 1) >> lcuSizeLog2);
-        // Post Cdef Results
-        eb_post_full_object(cdefResultsWrapperPtr);
-#endif
 
         }
         eb_release_mutex(picture_control_set_ptr->cdef_search_mutex);
