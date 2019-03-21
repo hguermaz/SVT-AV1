@@ -758,9 +758,7 @@ void ProductFullLoop(
         else {
             pf_md_mode = DEFAULT_SHAPE;
         }
-//#if PF_N2_32X32_TX_SEARCH
-//        pf_md_mode = DEFAULT_SHAPE;
-//#endif
+
 #endif
         // Y: T Q iQ
         av1_estimate_transform(
@@ -779,37 +777,6 @@ void ProductFullLoop(
             pf_md_mode);
 #else
             context_ptr->pf_md_mode);
-#endif
-#if SIMULATE_PF_N2     
-        int32_t* transCoeffBuffer = &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tuTransCoeff2Nx2NPtr->buffer_y)[txb_1d_offset]);
-        int32_t tu_size;
-        switch (context_ptr->blk_geom->txsize[txb_itr]) {
-        case TX_64X64:
-            tu_size = 64;
-            break;
-        case TX_32X32:
-            tu_size = 32;
-            break;
-        case TX_16X16:
-            tu_size = 16;
-            break;
-        case TX_8X8:
-            tu_size = 8;
-            break;
-        case TX_4X4:
-            tu_size = 4;
-            break;
-        default: assert(0); break;
-        }
-
-        if(tu_size == 32)
-        {
-            for (int i = 0; i < (tu_size* tu_size); i++) {
-                if (i % tu_size >= (tu_size >> 1) || i / tu_size >= (tu_size >> 1)) {
-                    transCoeffBuffer[i] = 0;
-                }
-            }
-        }
 #endif
         av1_quantize_inv_quantize(
             picture_control_set_ptr,
@@ -1029,18 +996,6 @@ void ProductFullLoopTxSearch(
         {
             tuOriginIndex = context_ptr->blk_geom->origin_x + (context_ptr->blk_geom->origin_y * candidateBuffer->residual_ptr->stride_y);
             y_tu_coeff_bits = 0;
-#if PF_N2_32X32_TX_SEARCH
-            EbPfMode pf_md_mode;
-            if (context_ptr->blk_geom->txsize[txb_itr] == TX_32X32) {
-                pf_md_mode = N2_SHAPE;
-            }
-            else {
-                pf_md_mode = DEFAULT_SHAPE;
-            }
-#if PF_N2_32X32_TX_SEARCH
-            pf_md_mode = DEFAULT_SHAPE;
-#endif
-#endif
 
             // Y: T Q iQ
             av1_estimate_transform(
@@ -1056,11 +1011,8 @@ void ProductFullLoopTxSearch(
                 tx_type,
                 asm_type,
                 PLANE_TYPE_Y,
-#if PF_N2_32X32_TX_SEARCH
-                pf_md_mode);
-#else
                 context_ptr->pf_md_mode);
-#endif
+
 
             av1_quantize_inv_quantize(
                 picture_control_set_ptr,
@@ -1248,18 +1200,6 @@ void encode_pass_tx_search(
 
         y_tu_coeff_bits = 0;
 
-#if PF_N2_32X32_TX_SEARCH
-        EbPfMode pf_md_mode;
-        if (context_ptr->blk_geom->txsize[context_ptr->txb_itr] == TX_32X32) {
-            pf_md_mode = N2_SHAPE;
-        }
-        else {
-            pf_md_mode = DEFAULT_SHAPE;
-        }
-#if PF_N2_32X32_TX_SEARCH
-        pf_md_mode = DEFAULT_SHAPE;
-#endif
-#endif
 
         av1_estimate_transform(
             ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
@@ -1273,11 +1213,8 @@ void encode_pass_tx_search(
             tx_type,
             asm_type,
             PLANE_TYPE_Y,
-#if PF_N2_32X32_TX_SEARCH
-            pf_md_mode);
-#else
             context_ptr->trans_coeff_shape_luma);
-#endif
+
 
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
@@ -1473,18 +1410,6 @@ void encode_pass_tx_search_hbd(
 
         y_tu_coeff_bits = 0;
 
-#if PF_N2_32X32_TX_SEARCH
-        EbPfMode pf_md_mode;
-        if (context_ptr->blk_geom->txsize[context_ptr->txb_itr] == TX_32X32) {
-            pf_md_mode = N2_SHAPE;
-        }
-        else {
-            pf_md_mode = DEFAULT_SHAPE;
-        }
-#if PF_N2_32X32_TX_SEARCH
-        pf_md_mode = DEFAULT_SHAPE;
-#endif
-#endif
 
         av1_estimate_transform(
             ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
@@ -1498,11 +1423,7 @@ void encode_pass_tx_search_hbd(
             tx_type,
             asm_type,
             PLANE_TYPE_Y,
-#if PF_N2_32X32_TX_SEARCH
-            pf_md_mode);
-#else
             context_ptr->trans_coeff_shape_luma);
-#endif
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
             ((int32_t*)transform16bit->buffer_y) + coeff1dOffset,
@@ -1708,9 +1629,7 @@ void FullLoop_R(
             else {
                 pf_md_mode = DEFAULT_SHAPE;
             }
-//#if PF_N2_32X32_TX_SEARCH
-//            pf_md_mode = DEFAULT_SHAPE;
-//#endif
+
 #endif
             av1_estimate_transform(
                 chromaResidualPtr,
@@ -1771,9 +1690,6 @@ void FullLoop_R(
             else {
                 pf_md_mode = DEFAULT_SHAPE;
             }
-//#if PF_N2_32X32_TX_SEARCH
-//            pf_md_mode = DEFAULT_SHAPE;
-//#endif
 #endif
             av1_estimate_transform(
                 chromaResidualPtr,

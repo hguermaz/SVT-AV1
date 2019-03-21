@@ -73,7 +73,6 @@ extern "C" {
 
 
 
-#define FASTER_M8_ADP                                   1
 
 
 // M9 settings toward 4K 60 fps
@@ -131,13 +130,9 @@ extern "C" {
 #define USE_SAD_HMEL2                                   1
 #endif
 
-#define FULL_LOOP_ESCAPE                                1
-#define SIMULATE_PF_N2                                  0
-#define PF_N2_32X32_TX_SEARCH                           0
 #if M9_PF
 #define PF_N2_32X32                                     1
 #endif
-#define SHUT_GLOBAL_MV                                  1
 
 #define REMOVED_DUPLICATE_INTER                         1
 #define REMOVED_DUPLICATE_INTER_L1                      1

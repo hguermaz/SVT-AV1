@@ -2281,9 +2281,7 @@ void  inject_inter_candidates(
 #endif
     }
 
-#if SHUT_GLOBAL_MV
     if (context_ptr->global_mv_injection) {
-#endif
         /**************
          GLOBALMV L0
         ************* */
@@ -2424,9 +2422,7 @@ void  inject_inter_candidates(
             }
 #endif
         }
-#if SHUT_GLOBAL_MV
     }
-#endif
     // Warped Motion
     if (picture_control_set_ptr->parent_pcs_ptr->allow_warped_motion &&
         has_overlappable_candidates(context_ptr->cu_ptr) &&
