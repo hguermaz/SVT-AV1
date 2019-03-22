@@ -1315,11 +1315,7 @@ void perform_fast_loop(
             // Distortion
             // Y
             if (use_ssd) {
-#if TRACK_FAST_DISTORTION
                 candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
-#else
-                lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
-#endif
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
@@ -1329,11 +1325,7 @@ void perform_fast_loop(
 
             }
             else {
-#if TRACK_FAST_DISTORTION
                 candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
-#else
-                lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
-#endif
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
@@ -2032,9 +2024,7 @@ void AV1PerformFullLoop(
 #else
         candidateIndex = context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
 #endif
-#if USED_NFL_FEATURE_BASED
         uint8_t best_fastLoop_candidate_index = context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex];
-#endif
 
         // initialize TU Split
         y_full_distortion[DIST_CALC_RESIDUAL] = 0;
@@ -2068,9 +2058,7 @@ void AV1PerformFullLoop(
         candidate_ptr->skip_flag = EB_FALSE;
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FULL_LOOP) {
             context_ptr->skip_interpolation_search = 0;
-#if USED_NFL_FEATURE_BASED
             context_ptr->skip_interpolation_search = (best_fastLoop_candidate_index > NFL_IT_TH) ? 1 : context_ptr->skip_interpolation_search;
-#endif
             if (candidate_ptr->type != INTRA_MODE) {
 
             ProductPredictionFunTable[candidate_ptr->type](
@@ -2131,9 +2119,7 @@ void AV1PerformFullLoop(
             *candidateBuffer->fast_cost_ptr,
             picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
 
-#if USED_NFL_FEATURE_BASED
         tx_search_skip_fag = ( picture_control_set_ptr->parent_pcs_ptr->skip_tx_search && best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
-#endif
         if (!tx_search_skip_fag){
 
                 ProductFullLoopTxSearch(
@@ -2260,9 +2246,6 @@ void AV1PerformFullLoop(
         candidateBuffer->cr_distortion[DIST_CALC_PREDICTION] = crFullDistortion[DIST_CALC_PREDICTION];
         candidateBuffer->cr_coeff_bits = cr_coeff_bits;
         candidateBuffer->candidate_ptr->full_distortion = (uint32_t)(y_full_distortion[0]);
-#if !TRACK_FAST_DISTORTION
-        candidateBuffer->candidate_ptr->luma_distortion = (uint32_t)(y_full_distortion[0]);
-#endif
 
         candidateBuffer->y_coeff_bits = y_coeff_bits;
 
@@ -2604,9 +2587,6 @@ void inter_depth_tx_search(
         candidateBuffer->cr_coeff_bits = cr_coeff_bits;
 
         candidateBuffer->candidate_ptr->full_distortion = (uint32_t)(y_full_distortion[0]);
-#if !TRACK_FAST_DISTORTION
-        candidateBuffer->candidate_ptr->luma_distortion = (uint32_t)(y_full_distortion[0]);
-#endif
 
         candidateBuffer->y_coeff_bits = y_coeff_bits;
         candidate_ptr->full_distortion = (uint32_t)(y_full_distortion[0]);

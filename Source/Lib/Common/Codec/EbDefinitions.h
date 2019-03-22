@@ -137,11 +137,9 @@ extern "C" {
 //#define TRACK_FAST_DISTORTION                           1
 
 
-#define USED_NFL_FEATURE_BASED                          1
-#if USED_NFL_FEATURE_BASED
+//#define USED_NFL_FEATURE_BASED                          1
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
-#endif
 
 #define ENABLE_PAETH                                    1
 #define TWO_FAST_LOOP                                   0
