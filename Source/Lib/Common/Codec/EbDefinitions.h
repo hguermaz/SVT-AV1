@@ -150,7 +150,6 @@ extern "C" {
 
 
 
-#define SHUT_FULL_DENOISE                               1
 
 
 #define ICOPY       1 //Intra Block Copy
