@@ -249,9 +249,6 @@ static void ResetEncDec(
 {
     EB_SLICE                     slice_type;
     MdRateEstimationContext_t   *md_rate_estimation_array;
-#if !REST_FAST_RATE_EST
-    uint32_t                       entropyCodingQp;
-#endif
     context_ptr->is16bit = (EbBool)(sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
 
 
@@ -300,41 +297,8 @@ static void ResetEncDec(
         context_ptr->reference_object_write_ptr = (EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr;
     else
         context_ptr->reference_object_write_ptr = (EbReferenceObject_t*)EB_NULL;
-#if !REST_FAST_RATE_EST
-    entropyCodingQp = picture_control_set_ptr->parent_pcs_ptr->base_qindex;
-#endif
     if (segment_index == 0) {
-#if !REST_FAST_RATE_EST
-        // Reset CABAC Contexts
-        ResetEntropyCoder(
-            sequence_control_set_ptr->encode_context_ptr,
-            picture_control_set_ptr->coeff_est_entropy_coder_ptr,
-            entropyCodingQp,
-            picture_control_set_ptr->slice_type);
-#endif
         ResetEncodePassNeighborArrays(picture_control_set_ptr);
-
-#if !REST_FAST_RATE_EST
-        // Initial Rate Estimatimation of the syntax elements
-        if (!md_rate_estimation_array->initialized)
-            av1_estimate_syntax_rate(
-                md_rate_estimation_array,
-                picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE,
-                picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
-
-        // Initial Rate Estimatimation of the Motion vectors
-        av1_estimate_mv_rate(
-#if ICOPY
-            picture_control_set_ptr,
-#endif
-            md_rate_estimation_array,
-            &picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc->nmvc);
-
-        // Initial Rate Estimatimation of the quantized coefficients
-        av1_estimate_coefficients_rate(
-            md_rate_estimation_array,
-            picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
-#endif
     }
 
 
