@@ -48,10 +48,6 @@
 #define LOW_MEAN_THLD1                   40
 #define HIGH_MEAN_THLD1                  210
 #define NORM_FACTOR                      10 // Used ComplexityClassifier32x32
-#if !INTRA_INTER_FAST_LOOP
-const uint32_t    THRESHOLD_NOISE[MAX_TEMPORAL_LAYERS] = { 33, 28, 27, 26, 26, 26 }; // [Temporal Layer Index]  // Used ComplexityClassifier32x32
-// Outlier removal threshold per depth {2%, 2%, 4%, 4%}
-#endif
 const int8_t  MinDeltaQPdefault[3] = {
     -4, -3, -2
 };
@@ -167,57 +163,6 @@ void DerivePictureActivityStatistics(
 
     return;
 }
-#if !INTRA_INTER_FAST_LOOP
-/***************************************************
-* complexity Classification
-***************************************************/
-void ComplexityClassifier32x32(
-    SequenceControlSet_t      *sequence_control_set_ptr,
-    PictureParentControlSet_t *picture_control_set_ptr) {
-
-
-    //No need to have Threshold depending on TempLayer. Higher Temoral Layer would have smaller classes
-    //TODO: add more classes using above threshold when needed.
-
-
-    uint32_t          sb_index;
-    SbParams_t     *sb_params;
-    uint8_t           noiseClass;
-
-    for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
-
-
-        picture_control_set_ptr->cmplx_status_sb[sb_index] = CMPLX_LOW;
-
-        if (picture_control_set_ptr->temporal_layer_index >= 1 && picture_control_set_ptr->slice_type == B_SLICE) {
-
-            sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
-
-
-            if (sb_params->is_complete_sb) {
-
-                noiseClass = CMPLX_LOW;
-
-                uint32_t         blkIt;
-
-                for (blkIt = 0; blkIt < 4; blkIt++) {
-
-
-                    uint32_t distortion = picture_control_set_ptr->me_results[sb_index][1 + blkIt].distortionDirection[0].distortion;
-
-                    if ((((uint32_t)(distortion)) >> NORM_FACTOR) > THRESHOLD_NOISE[picture_control_set_ptr->temporal_layer_index])
-
-
-                        noiseClass++;
-                }
-
-
-                picture_control_set_ptr->cmplx_status_sb[sb_index] = noiseClass > 0 ? CMPLX_NOISE : CMPLX_LOW;
-            }
-        }
-    }
-}
-#endif
 
 
 
@@ -1174,12 +1119,6 @@ void* source_based_operations_kernel(void *input_ptr)
         GrassSkinPicture(
             context_ptr,
             picture_control_set_ptr);
-#if !INTRA_INTER_FAST_LOOP
-        // Complexity Classification
-        ComplexityClassifier32x32(
-            sequence_control_set_ptr,
-            picture_control_set_ptr);
-#endif
         // Get Empty Results Object
         eb_get_empty_object(
             context_ptr->picture_demux_results_output_fifo_ptr,

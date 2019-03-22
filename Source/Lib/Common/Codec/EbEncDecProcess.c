@@ -1338,7 +1338,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->decouple_intra_inter_fast_loop = 1;
 
-#if INTRA_INTER_FAST_LOOP
     // Set the search method when decoupled fast loop is used 
     // Hsan: FULL_SAD_SEARCH not supported
 #if SCENE_CONTENT_SETTINGS
@@ -1354,7 +1353,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
     else
         context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
-#endif
     // Set the full loop escape level
     // Level                Settings
     // 0                    Off

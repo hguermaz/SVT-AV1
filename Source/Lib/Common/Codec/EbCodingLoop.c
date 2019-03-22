@@ -3078,11 +3078,7 @@ EB_EXTERN void AV1EncodePass(
                                 {
 
                                     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
-#if INTRA_INTER_FAST_LOOP
                                     ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
-#else
-                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
-#endif
                                     ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                     // Set the Candidate Buffer
@@ -3463,11 +3459,7 @@ EB_EXTERN void AV1EncodePass(
                                 if (!zeroLumaCbfMD) {
 
                                     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
-#if INTRA_INTER_FAST_LOOP
                                     ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
-#else
-                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
-#endif
                                     ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                     // Set the Candidate Buffer
@@ -3546,11 +3538,7 @@ EB_EXTERN void AV1EncodePass(
 #if CABAC_UP 
                                 if (allow_update_cdf) {
                                     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
-#if INTRA_INTER_FAST_LOOP
                                     ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
-#else
-                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
-#endif
                                     ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                     // Set the Candidate Buffer
@@ -3672,11 +3660,7 @@ EB_EXTERN void AV1EncodePass(
                             if (allow_update_cdf) {
 
                                 ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
-#if INTRA_INTER_FAST_LOOP
                                 ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
-#else
-                                ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
-#endif
                                 ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                 // Set the Candidate Buffer

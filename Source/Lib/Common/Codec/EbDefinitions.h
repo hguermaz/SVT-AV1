@@ -123,25 +123,12 @@ extern "C" {
 #define PF_N2_32X32                                     1
 #endif
 
-#define REMOVED_DUPLICATE_INTER_L1                      1
-#define REMOVED_DUPLICATE_INTER_BIPRED                  1
-#define INTRA_INTER_FAST_LOOP                           1
-#if INTRA_INTER_FAST_LOOP
-#define USE_SSE_FL                                      1
-#endif
-#define TRACK_FAST_DISTORTION                           1
 
-
-#define USED_NFL_FEATURE_BASED                          1
-#if USED_NFL_FEATURE_BASED
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
-#endif
 
-#define ENABLE_PAETH                                    1
-#if !INTRA_INTER_FAST_LOOP
-#define TWO_FAST_LOOP                                   1
-#endif
+
+#define TWO_FAST_LOOP                                   0
 #define ENABLE_EOB_ZERO_CHECK                           1
 #define DISABLE_128_SB_FOR_SUB_720                      1
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference

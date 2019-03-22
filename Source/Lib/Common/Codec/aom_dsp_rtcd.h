@@ -1172,7 +1172,6 @@ extern "C" {
     void aom_h_predictor_8x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     void aom_h_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     RTCD_EXTERN void(*aom_h_predictor_8x4)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
-#if ENABLE_PAETH
     void aom_paeth_predictor_16x16_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     void aom_paeth_predictor_16x16_ssse3(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     void aom_paeth_predictor_16x16_avx2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
@@ -1321,7 +1320,7 @@ extern "C" {
 
     void aom_highbd_paeth_predictor_8x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
     #define aom_highbd_paeth_predictor_8x8 aom_highbd_paeth_predictor_8x8_c
-#endif
+
 
 
 #if AOM_SAD_PORTING
@@ -2629,7 +2628,6 @@ extern "C" {
 
         av1_txb_init_levels = av1_txb_init_levels_c;
         if (flags & HAS_AVX2) av1_txb_init_levels = av1_txb_init_levels_avx2;
-#if ENABLE_PAETH
     aom_paeth_predictor_16x16 = aom_paeth_predictor_16x16_c;
     if (flags & HAS_SSSE3) aom_paeth_predictor_16x16 = aom_paeth_predictor_16x16_ssse3;
     if (flags & HAS_AVX2) aom_paeth_predictor_16x16 = aom_paeth_predictor_16x16_avx2;
@@ -2678,7 +2676,7 @@ extern "C" {
     if (flags & HAS_SSSE3) aom_paeth_predictor_8x4 = aom_paeth_predictor_8x4_ssse3;
     aom_paeth_predictor_8x8 = aom_paeth_predictor_8x8_c;
     if (flags & HAS_SSSE3) aom_paeth_predictor_8x8 = aom_paeth_predictor_8x8_ssse3;
-#endif
+
 #else
         aom_highbd_dc_128_predictor_16x16 = aom_highbd_dc_128_predictor_16x16_c;
         aom_highbd_dc_128_predictor_16x32 = aom_highbd_dc_128_predictor_16x32_c;
