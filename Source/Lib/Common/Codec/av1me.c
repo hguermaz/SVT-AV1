@@ -125,7 +125,6 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
 
 }
 #if 1
- #if FIX_SAD
  #define sadMxh(m)                                                          \
   unsigned int aom_sad##m##xh_c(const uint8_t *a, int a_stride,            \
                                 const uint8_t *b, int b_stride, int width, \
@@ -147,29 +146,7 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
                                     const uint8_t *ref, int ref_stride) {     \
 return NxMSadKernelSubSampled_funcPtrArray[ASM_AVX2][m >> 3]((uint8_t *)src, src_stride, (uint8_t *)ref, ref_stride, n, m);  \
 }
-#else
-#define sadMxh(m)                                                          \
-  unsigned int aom_sad##m##xh_c(const uint8_t *a, int a_stride,            \
-                                const uint8_t *b, int b_stride, int width, \
-                                int height) {                              \
-    return NxMSadKernelSubSampled_funcPtrArray[ASM_AVX2][width >> 3]((uint8_t *)a, a_stride, (uint8_t *)b, b_stride, width, height);  \
-  }
-#define sadMxNx4D(m, n)                                                    \
-  void aom_sad##m##x##n##x4d_c(const uint8_t *src, int src_stride,         \
-                               const uint8_t *const ref_array[],           \
-                               int ref_stride, uint32_t *sad_array) {      \
-    int i;                                                                 \
-    for (i = 0; i < 4; ++i) {                                              \
-      sad_array[i] =                                                       \
-          NxMSadKernelSubSampled_funcPtrArray[ASM_AVX2][m >> 3]((uint8_t *)src, src_stride, (uint8_t *)(ref_array[i]), ref_stride, m, n);   \
-    }                                                                      \
-  }
-#define sadMxN(m, n)                                                          \
-  unsigned int aom_sad##m##x##n##_c(const uint8_t *src, int src_stride,       \
-                                    const uint8_t *ref, int ref_stride) {     \
-return NxMSadKernelSubSampled_funcPtrArray[ASM_AVX2][m >> 3]((uint8_t *)src, src_stride, (uint8_t *)ref, ref_stride, m, n);  \
-}
-#endif
+
 #else
 #define sadMxh(m)                                                          \
   unsigned int aom_sad##m##xh_c(const uint8_t *a, int a_stride,            \
@@ -985,11 +962,9 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
     UNUSED (var_max);
     UNUSED (rd);
 
-#if IBC_MODES
     int32_t ibc_shift = 0;
     if (pcs->parent_pcs_ptr->ibc_mode > 0)
         ibc_shift = 1;
-#endif
 
     SPEED_FEATURES * sf = &pcs->sf;
     sf->exhaustive_searches_thresh = (1 << 25);
@@ -1039,9 +1014,7 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
           exhuastive_thr >>=
               10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
 
-#if IBC_MODES
           exhuastive_thr = exhuastive_thr << ibc_shift;
-#endif
 
           if (var > exhuastive_thr)
           {

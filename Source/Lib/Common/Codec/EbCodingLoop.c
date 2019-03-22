@@ -2750,7 +2750,6 @@ EB_EXTERN void AV1EncodePass(
 
                                 EbPictureBufferDesc_t * ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
 
-#if ICOPY_10B
                                 if (is16bit)
                                     ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture16bit;
 
@@ -2773,7 +2772,6 @@ EB_EXTERN void AV1EncodePass(
                                         (uint8_t)sequence_control_set_ptr->static_config.encoder_bit_depth,
                                         asm_type);
                                 else
-#endif
                                 av1_inter_prediction(
                                     picture_control_set_ptr,
                                     cu_ptr->interp_filters,
@@ -3227,9 +3225,7 @@ EB_EXTERN void AV1EncodePass(
                                     cu_ptr->prediction_unit_array->ref_frame_type,
                                     cu_ptr,
                                     &context_ptr->mv_unit,
-#if ICOPY_10B
                                     0,// use_intrabc,
-#endif
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,

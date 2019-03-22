@@ -836,10 +836,8 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->allow_screen_content_tools = picture_control_set_ptr->sc_content_detected;
         picture_control_set_ptr->allow_intrabc =  picture_control_set_ptr->sc_content_detected;
 
-#if IBC_MODES
         //IBC Modes:   0:Slow   1:Fast   2:Faster
         picture_control_set_ptr->ibc_mode = 0;
-#endif
 
         //turn OFF intra bc for some specific modes
         if (picture_control_set_ptr->enc_mode >= ENC_M3)
@@ -2260,12 +2258,10 @@ void* picture_decision_kernel(void *input_ptr)
                                     picture_control_set_ptr->av1_cm->ref_frame_sign_bias[BWDREF_FRAME] = 1;
                             }
 
-#if SC_DETECT_GOP
                             if (picture_control_set_ptr->slice_type == I_SLICE)
                                 context_ptr->last_i_picture_sc_detection = picture_control_set_ptr->sc_content_detected;
                             else
                                 picture_control_set_ptr->sc_content_detected = context_ptr->last_i_picture_sc_detection;
-#endif
 
                             // ME Kernel Multi-Processes Signal(s) derivation
                             signal_derivation_multi_processes_oq(

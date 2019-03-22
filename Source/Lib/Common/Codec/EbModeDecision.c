@@ -2216,15 +2216,9 @@ void  intra_bc_search(
 
     /* pointer to current frame */
     Yv12BufferConfig cur_buf;
-#if ICOPY_10B
     link_Eb_to_aom_buffer_desc_8bit(
         pcs->parent_pcs_ptr->enhanced_picture_ptr,
         &cur_buf);
-#else
-    LinkEbToAomBufferDesc(
-        pcs->parent_pcs_ptr->enhanced_picture_ptr,
-        &cur_buf);
-#endif
     struct buf_2d yv12_mb[MAX_MB_PLANE];
     av1_setup_pred_block(bsize, yv12_mb, &cur_buf, mi_row, mi_col);
     for (int i = 0; i < num_planes; ++i) {
@@ -2241,15 +2235,10 @@ void  intra_bc_search(
     };
 
     //up to two dv candidates will be generated
-#if IBC_MODES
     enum IntrabcMotionDirection max_dir = pcs->parent_pcs_ptr->ibc_mode > 1 ? IBC_MOTION_LEFT : IBC_MOTION_DIRECTIONS;
 
     for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
         dir < max_dir; ++dir) {
-#else
-    for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
-        dir < IBC_MOTION_DIRECTIONS; ++dir) {
-#endif
 
         const MvLimits tmp_mv_limits = x->mv_limits;
 

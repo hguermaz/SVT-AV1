@@ -4425,7 +4425,6 @@ void av1_predict_intra_block_16bit(
         chroma_up_available = (mirow - 1) > tile->mi_row_start;
 
     
-#if ICOPY_10B
 
     int mi_stride = cm->mi_stride;
     const int32_t offset = mirow * mi_stride + micol;
@@ -4472,7 +4471,6 @@ void av1_predict_intra_block_16bit(
         xd->chroma_left_mbmi = chroma_left_mi;
     }
 
-#endif
     //CHKN  const MbModeInfo *const mbmi = xd->mi[0];
     const int32_t txwpx = tx_size_wide[tx_size];
     const int32_t txhpx = tx_size_high[tx_size];
