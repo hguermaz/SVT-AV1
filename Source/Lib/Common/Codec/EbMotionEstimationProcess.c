@@ -636,7 +636,9 @@ void* MotionEstimationKernel(void *input_ptr)
                 }
             }
         }
-
+#if M9_INTRA
+        if (0)
+#endif
         // *** OPEN LOOP INTRA CANDIDATE SEARCH CODE ***
         {
 

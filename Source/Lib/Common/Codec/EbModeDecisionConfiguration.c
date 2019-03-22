@@ -387,7 +387,7 @@ void RefinementPredictionLoop(
     } // End while 1 CU Loop
 }
 
-
+#if !OMARK
 void PrePredictionRefinement(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,
@@ -446,8 +446,7 @@ void PrePredictionRefinement(
         *startDepth = DEPTH_16;
     }
 }
-
-
+#endif
 void ForwardCuToModeDecision(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,

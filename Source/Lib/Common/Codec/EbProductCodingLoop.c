@@ -1432,7 +1432,7 @@ void perform_fast_loop(
         *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr);
 
 }
-
+#if !OMARK
 void ProductConfigureChroma(
     PictureControlSet_t                 *picture_control_set_ptr,
     ModeDecisionContext_t               *context_ptr,
@@ -1449,6 +1449,7 @@ void ProductConfigureChroma(
 
     context_ptr->chroma_weight = (picture_control_set_ptr->parent_pcs_ptr->failing_motion_sb_flag[lcuAddr]) ? chroma_weight << 1 : chroma_weight;
 }
+#endif
 #if !PF_N2_32X32
 void ProductDerivePartialFrequencyN2Flag(
     SequenceControlSet_t               *sequence_control_set_ptr,
@@ -3152,7 +3153,7 @@ void md_encode_block(
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
 #if M9_INTRA
-        if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode >= 4 && picture_control_set_ptr->slice_type == I_SLICE) 
+        if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode >= 5 && picture_control_set_ptr->slice_type == I_SLICE) 
          
             context_ptr->full_recon_search_count = 1;
 #endif
@@ -3454,11 +3455,12 @@ EB_EXTERN EbErrorType mode_decision_sb(
     context_ptr->sb_ptr = sb_ptr;
     context_ptr->group_of8x8_blocks_count = 0;
     context_ptr->group_of16x16_blocks_count = 0;
-
+#if !OMARK
     ProductConfigureChroma(
         picture_control_set_ptr,
         context_ptr,
         sb_ptr);
+#endif
     Initialize_cu_data_structure(
         context_ptr,
         sequence_control_set_ptr,

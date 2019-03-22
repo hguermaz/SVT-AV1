@@ -166,7 +166,7 @@ void DerivePictureActivityStatistics(
 
 
 
-
+#if !OMARK
 /******************************************************
 * Pre-MD Uncovered Area Detection
 ******************************************************/
@@ -307,6 +307,8 @@ void DetectUncoveredLcu(
 }
 
 
+
+#endif
 /******************************************************
 * Calculates AC Energy
 ******************************************************/
@@ -372,6 +374,7 @@ void CalculateAcEnergy(
         picture_control_set_ptr->sb_y_src_mean_cu_array[sb_index][4] = 100000000;
     }
 }
+#if !OMARK
 
 void LumaContrastDetectorLcu(
     SourceBasedOperationsContext_t *context_ptr,
@@ -439,7 +442,7 @@ void LumaContrastDetectorPicture(
         picture_control_set_ptr->intra_coded_block_probability = (uint8_t)(context_ptr->depth1_block_num != 0 ? context_ptr->to_be_intra_coded_probability * 100 / context_ptr->depth1_block_num : 0);
     }
 }
-
+#endif
 void GrassLcu(
     SourceBasedOperationsContext_t        *context_ptr,
     SequenceControlSet_t                *sequence_control_set_ptr,
@@ -957,14 +960,14 @@ void* source_based_operations_kernel(void *input_ptr)
         context_ptr->sb_cmplx_contrast_count = 0;
         context_ptr->sb_high_contrast_count = 0;
         context_ptr->complete_sb_count = 0;
-
+#if !OMARK
         context_ptr->count_of_moving_sbs = 0;
         context_ptr->countOfNonMovingLcus = 0;
         context_ptr->y_non_moving_mean = 0;
         context_ptr->y_moving_mean = 0;
         context_ptr->to_be_intra_coded_probability = 0;
         context_ptr->depth1_block_num = 0;
-
+#endif
         // Reset the cu 32x32 array for Clean Sparse flag
         EB_MEMSET(picture_control_set_ptr->cu32x32_clean_sparse_coeff_map_array, 0, picture_control_set_ptr->cu32x32_clean_sparse_coeff_map_array_size);
 
@@ -1014,20 +1017,20 @@ void* source_based_operations_kernel(void *input_ptr)
                     sb_index);
             }
 
-
+#if !OMARK
             // Luma Contrast detection
             LumaContrastDetectorLcu(
                 context_ptr,
                 sequence_control_set_ptr,
                 picture_control_set_ptr,
                 sb_index);
-
+#endif
             // AC energy computation
             CalculateAcEnergy(
                 sequence_control_set_ptr,
                 picture_control_set_ptr,
                 sb_index);
-
+#if !OMARK
             // Failing Motion Detection
             picture_control_set_ptr->failing_motion_sb_flag[sb_index] = EB_FALSE;
 
@@ -1049,7 +1052,7 @@ void* source_based_operations_kernel(void *input_ptr)
                         sb_index);
                 }
             }
-
+#endif
             // Uncovered area detection II
 
             // Temporal high contrast classifier
@@ -1075,10 +1078,11 @@ void* source_based_operations_kernel(void *input_ptr)
         }
 
         /*********************************************Picture-based operations**********************************************************/
+#if !OMARK
         LumaContrastDetectorPicture(
             context_ptr,
             picture_control_set_ptr);
-
+#endif
         if (picture_control_set_ptr->slice_type == I_SLICE) {
             DetectCu32x32CleanSparsePicture(
                 picture_control_set_ptr);

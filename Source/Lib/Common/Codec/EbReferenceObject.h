@@ -28,7 +28,9 @@ typedef struct EbReferenceObject_s {
     uint8_t                         intra_coded_area_sb[MAX_NUMBER_OF_TREEBLOCKS_PER_PICTURE];//percentage of intra coded area 0-100%
     uint32_t                        non_moving_index_array[MAX_NUMBER_OF_TREEBLOCKS_PER_PICTURE];//array to hold non-moving blocks in reference frames
     uint32_t                        picSampleValue[MAX_NUMBER_OF_REGIONS_IN_WIDTH][MAX_NUMBER_OF_REGIONS_IN_HEIGHT][3];// [Y U V];
+#if !OMARK
     EbBool                          penalizeSkipflag;
+#endif
     uint8_t                         tmpLayerIdx;
     EbBool                          isSceneChange;
     uint16_t                        pic_avg_variance;

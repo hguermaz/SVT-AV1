@@ -165,7 +165,9 @@ extern "C" {
         uint8_t                         sorted_candidate_index_array[MAX_NFL];
         uint16_t                        cu_origin_x;
         uint16_t                        cu_origin_y;
+#if !OMARK
         uint64_t                        chroma_weight;
+#endif
         uint8_t                         sb_sz;
         uint32_t                        sb_origin_x;
         uint32_t                        sb_origin_y;

@@ -1052,11 +1052,11 @@ EbErrorType picture_parent_control_set_ctor(
     EB_MALLOC(EdgeLcuResults_t*, object_ptr->edge_results_ptr, sizeof(EdgeLcuResults_t) * object_ptr->sb_total_count, EB_N_PTR);
 
     EB_MALLOC(uint8_t*, object_ptr->sharp_edge_sb_flag, sizeof(EbBool) * object_ptr->sb_total_count, EB_N_PTR);
-
+#if !OMARK
     EB_MALLOC(uint8_t*, object_ptr->failing_motion_sb_flag, sizeof(EbBool) * object_ptr->sb_total_count, EB_N_PTR);
 
     EB_MALLOC(EbBool*, object_ptr->uncovered_area_sb_flag, sizeof(EbBool) * object_ptr->sb_total_count, EB_N_PTR);
-
+#endif
     EB_MALLOC(EbBool*, object_ptr->sb_homogeneous_area_array, sizeof(EbBool) * object_ptr->sb_total_count, EB_N_PTR);
 
     EB_MALLOC(uint64_t**, object_ptr->var_of_var32x32_based_sb_array, sizeof(uint64_t*) * object_ptr->sb_total_count, EB_N_PTR);

@@ -1800,11 +1800,11 @@ EbErrorType QpmDeriveBeaAndSkipQpmFlagLcu(
 
 
     context_ptr->skip_qpm_flag = sequence_control_set_ptr->static_config.improve_sharpness ? EB_FALSE : EB_TRUE;
-
+#if !OMARK
     if ((picture_control_set_ptr->parent_pcs_ptr->logo_pic_flag == EB_FALSE) && ((picture_control_set_ptr->parent_pcs_ptr->pic_noise_class >= PIC_NOISE_CLASS_3_1) || (picture_control_set_ptr->parent_pcs_ptr->high_dark_low_light_area_density_flag) || (picture_control_set_ptr->parent_pcs_ptr->intra_coded_block_probability > 90))) {
         context_ptr->skip_qpm_flag = EB_TRUE;
     }
-
+#endif
     if (sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE) {
         context_ptr->skip_qpm_flag = EB_TRUE;
     }
@@ -2423,12 +2423,16 @@ EB_EXTERN void AV1EncodePass(
             if (!(picture_control_set_ptr->parent_pcs_ptr->is_pan ||
                 (picture_control_set_ptr->parent_pcs_ptr->non_moving_index_average < 10 && sb_ptr->aura_status_iii) ||
                 (sb_stat_ptr->cu_stat_array[0].skin_area) ||
+#if !OMARK
                 (picture_control_set_ptr->parent_pcs_ptr->intra_coded_block_probability > 90) ||
+#endif
                 (picture_control_set_ptr->parent_pcs_ptr->high_dark_area_density_flag))) {
 
                 if (picture_control_set_ptr->slice_type != I_SLICE &&
                     picture_control_set_ptr->temporal_layer_index == 0 &&
+#if !OMARK
                     picture_control_set_ptr->parent_pcs_ptr->intra_coded_block_probability > 60 &&
+#endif
                     !picture_control_set_ptr->parent_pcs_ptr->is_tilt &&
                     picture_control_set_ptr->parent_pcs_ptr->pic_homogenous_over_time_sb_percentage > 40)
                 {
