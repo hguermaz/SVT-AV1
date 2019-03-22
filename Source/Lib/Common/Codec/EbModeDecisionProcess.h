@@ -245,9 +245,7 @@ extern "C" {
         uint8_t                           decoupled_fast_loop_search_method; 
         uint8_t                           decouple_intra_inter_fast_loop;
 #endif
-#if FULL_LOOP_ESCAPE
         uint8_t                           full_loop_escape;
-#endif
 #if SHUT_GLOBAL_MV
         uint8_t                           global_mv_injection;
 #endif

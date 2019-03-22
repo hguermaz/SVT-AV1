@@ -652,12 +652,7 @@ uint32_t nfl_cap_table[6] = {
 #endif
 void set_nfl(
     ModeDecisionContext_t     *context_ptr
-#if M8_ADP    
     ){
-#else
-    PictureControlSet_t       *picture_control_set_ptr,
-    LargestCodingUnit_t       *sb_ptr) {
-#endif
 
 #if M9_NON_UNIFORM_NFL || NFL_PER_SQ_SIZE
     uint8_t nfl_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
@@ -671,7 +666,6 @@ void set_nfl(
     // 5                  6
     // 6                  4  
     // 7                  3 
-#if M8_ADP
     
     switch (context_ptr->nfl_level) {
    case 0:
@@ -703,19 +697,7 @@ void set_nfl(
         break;
     }
 
-#else
-    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_ptr->index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)
-        context_ptr->full_recon_search_count = 1;
-    else
-        if (context_ptr->nfl_level == 0)
-            context_ptr->full_recon_search_count = MAX_NFL;
-        else if (context_ptr->nfl_level == 1)
-            context_ptr->full_recon_search_count = 10;
-        else if (context_ptr->nfl_level == 2)
-            context_ptr->full_recon_search_count = 8;
-        else
-            context_ptr->full_recon_search_count = 6;
-#endif
+
 #if NFL_PER_SQ_SIZE
     if (picture_control_set_ptr->slice_type != I_SLICE) {
         uint32_t nfl_cap = nfl_cap_table[nfl_index];
@@ -1608,7 +1590,6 @@ void ProductPerformFastLoop(
                 {
 #endif
                     // Fast Cost Calc
-#if REST_FAST_RATE_EST
 #if TWO_FAST_LOOP        
                   
                     candidateBuffer->sub_sampled_pred = EB_FALSE;
@@ -1718,18 +1699,6 @@ void ProductPerformFastLoop(
                         context_ptr->cu_origin_x >> MI_SIZE_LOG2,
                         context_ptr->intra_luma_left_mode,
                         context_ptr->intra_luma_top_mode);
-#endif
-
-#else
-                    Av1ProductFastCostFuncTable[type](
-                        context_ptr,
-                        cu_ptr,
-                        candidateBuffer,
-                        cu_ptr->qp,
-                        lumaFastDistortion,
-                        0,
-                        context_ptr->fast_lambda,
-                        picture_control_set_ptr);
 #endif
 
                     // Keep track of the candidate index of the best  (src - src) candidate
@@ -1864,7 +1833,6 @@ void ProductPerformFastLoop(
             }
 
             // Fast Cost Calc
-#if REST_FAST_RATE_EST
             *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidate_ptr->type] (
                 cu_ptr, 
                 candidateBuffer->candidate_ptr,
@@ -1879,17 +1847,6 @@ void ProductPerformFastLoop(
                 context_ptr->cu_origin_x >> MI_SIZE_LOG2,
                 context_ptr->intra_luma_left_mode,
                 context_ptr->intra_luma_top_mode);
-#else
-            Av1ProductFastCostFuncTable[candidate_ptr->type](
-                context_ptr,
-                cu_ptr,
-                candidateBuffer,
-                cu_ptr->qp,
-                lumaFastDistortion,
-                chromaFastDistortion,
-                context_ptr->fast_lambda,
-                picture_control_set_ptr);
-#endif
 
             (*secondFastCostSearchCandidateTotalCount)++;
         }
@@ -2486,11 +2443,7 @@ void AV1PerformFullLoop(
     uint64_t                 ref_fast_cost,
     EbAsm                    asm_type)
 {
-#if FULL_LOOP_ESCAPE
     uint32_t       best_inter_luma_zero_coeff;
-#else
-    //uint32_t      prevRootCbf;
-#endif
     uint64_t      bestfullCost;
     uint32_t      fullLoopCandidateIndex;
     uint8_t       candidateIndex;
@@ -2504,12 +2457,8 @@ void AV1PerformFullLoop(
     uint64_t      y_coeff_bits;
     uint64_t        cb_coeff_bits = 0;
     uint64_t        cr_coeff_bits = 0;
-#if FULL_LOOP_ESCAPE
     best_inter_luma_zero_coeff = 1;
     bestfullCost = 0xFFFFFFFFull;
-#else
-    bestfullCost = 0xFFFFFFFFull;
-#endif
 
     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->candidate_buffer_ptr_array;
 #if INTRA_INTER_FAST_LOOP
@@ -2543,7 +2492,6 @@ void AV1PerformFullLoop(
         candidate_ptr = candidateBuffer->candidate_ptr;//this is the FastCandidateStruct
 
 
-#if FULL_LOOP_ESCAPE
         if (picture_control_set_ptr->slice_type != I_SLICE) {
             if ((candidate_ptr->type == INTRA_MODE || context_ptr->full_loop_escape == 2) && best_inter_luma_zero_coeff == 0) {
                 // Update # of NFL
@@ -2551,7 +2499,6 @@ void AV1PerformFullLoop(
                 return;
             }
         }
-#endif
 
         candidate_ptr->full_distortion = 0;
 
@@ -2787,7 +2734,6 @@ void AV1PerformFullLoop(
 
         candidate_ptr->full_distortion = (uint32_t)(y_full_distortion[0]);
 
-#if FULL_LOOP_ESCAPE
         if (context_ptr->full_loop_escape) 
         {
             if (picture_control_set_ptr->slice_type != I_SLICE) {
@@ -2800,18 +2746,7 @@ void AV1PerformFullLoop(
 
             }
         }
-#else
-        if(0)
 
-            if (picture_control_set_ptr->slice_type != I_SLICE) {
-                if (candidate_ptr->type == INTER_MODE) {
-                    if (*candidateBuffer->full_cost_ptr < bestfullCost) {
-                        //prevRootCbf = candidate_ptr->yCbf;
-                        bestfullCost = *candidateBuffer->full_cost_ptr;
-                    }
-                }
-            }
-#endif
     }//end for( full loop)
 }
 
@@ -3680,12 +3615,7 @@ void md_encode_block(
 #endif
         set_nfl(
             context_ptr
-#if M8_ADP
         );
-#else
-            picture_control_set_ptr,
-            context_ptr->sb_ptr);
-#endif
 
 
         ProductGenerateMdCandidatesCu(

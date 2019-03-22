@@ -239,15 +239,6 @@ extern "C" {
         int32_t                                 extra_frames_to_ref_islice;
         int32_t                                 max_frame_window_to_ref_islice;
 #endif
-
-#if ADP_STATS_PER_LAYER
-        uint64_t                                total_count[5];
-        uint64_t                                sq_search_count[5];
-        uint64_t                                sq_non4_search_count[5];
-        uint64_t                                mdc_count[5];
-        uint64_t                                pred_count[5];
-        uint64_t                                pred1_nfl_count[5];
-#endif
     } SequenceControlSet_t;
 
     typedef struct EbSequenceControlSetInitData_s
