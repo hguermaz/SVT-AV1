@@ -7070,11 +7070,7 @@ EB_EXTERN EbErrorType in_loop_motion_estimation_sblock(
 
     context_ptr->fractionalSearchMethod = SSD_SEARCH; // all in-loop
 
-#if M0_ME_SEARCH_BASE
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#else
-    numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) || (picture_control_set_ptr->temporal_layer_index == 0) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#endif
 
     // Uni-Prediction motion estimation loop
     // List Loop

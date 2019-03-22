@@ -6836,11 +6836,7 @@ EbErrorType MotionEstimateLcu(
 #endif
 
     oneQuadrantHME = sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE ? 0 : oneQuadrantHME;
-#if M0_ME_SEARCH_BASE
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE ) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#else
-    numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) || (picture_control_set_ptr->temporal_layer_index == 0) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
-#endif
 
     EbBool is_nsq_table_used = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE &&
                                 picture_control_set_ptr->nsq_search_level >= NSQ_SEARCH_LEVEL1 &&

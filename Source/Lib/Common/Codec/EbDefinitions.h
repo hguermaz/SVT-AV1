@@ -50,9 +50,7 @@ extern "C" {
 
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH           1 // F7
-#define M0_ME_SEARCH_BASE                               1 // F13
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass
-#define INTERPOL_FILTER_SEARCH_10BIT_SUPPORT            1
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 #endif
