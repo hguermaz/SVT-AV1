@@ -134,7 +134,7 @@ extern "C" {
 #define PF_N2_32X32                                     1
 #endif
 
-#define TRACK_FAST_DISTORTION                           1
+//#define TRACK_FAST_DISTORTION                           1
 
 
 #define USED_NFL_FEATURE_BASED                          1
