@@ -640,17 +640,17 @@ void md_update_all_neighbour_arrays_multiple(
 #if NFL_PER_SQ_SIZE
 uint32_t nfl_ref[6] = {
     4, // 4x4
-    4, // 8x8
+    2, // 8x8
     4, // 16x16
     4, // 32x32
-    4, // 64x64
+    3, // 64x64
     4, // 128x128
 };
 uint32_t nfl_non_ref[6] = {
     2, // 4x4
     2, // 8x8
-    2, // 16x16
-    2, // 32x32
+    3, // 16x16
+    3, // 32x32
     2, // 64x64
     2, // 128x128
 };
