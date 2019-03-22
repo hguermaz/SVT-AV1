@@ -134,13 +134,10 @@ extern "C" {
 #define PF_N2_32X32                                     1
 #endif
 
-//#define TRACK_FAST_DISTORTION                           1
-//#define USED_NFL_FEATURE_BASED                          1
 
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
 
-//#define ENABLE_PAETH                                    1
 
 #define TWO_FAST_LOOP                                   0
 #define ENABLE_EOB_ZERO_CHECK                           1
