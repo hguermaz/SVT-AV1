@@ -140,7 +140,6 @@ extern "C" {
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
 
-#define ENABLE_PAETH                                    1
 #if !INTRA_INTER_FAST_LOOP
 #define TWO_FAST_LOOP                                   1
 #endif
