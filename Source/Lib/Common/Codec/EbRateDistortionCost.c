@@ -762,9 +762,7 @@ uint64_t av1_intra_fast_cost(
     uint64_t                 luma_distortion,
     uint64_t                 chroma_distortion,
     uint64_t                 lambda,
-#if USE_SSE_FL
     EbBool                   use_ssd,
-#endif
     PictureControlSet_t     *picture_control_set_ptr,
     CandidateMv             *ref_mv_stack,
     const BlockGeom         *blk_geom,
@@ -917,7 +915,6 @@ uint64_t av1_intra_fast_cost(
     // Keep the Fast Luma and Chroma rate for future use
     candidate_ptr->fast_luma_rate = lumaRate;
     candidate_ptr->fast_chroma_rate = chromaRate;
-#if USE_SSE_FL // cost
     if (use_ssd) {
 
         int32_t current_q_index = MAX(0, MIN(QINDEX_RANGE - 1, picture_control_set_ptr->parent_pcs_ptr->base_qindex));
@@ -949,7 +946,7 @@ uint64_t av1_intra_fast_cost(
         return(RDCOST(lambda, rate, totalDistortion));
     }
     else {
-#endif
+
         lumaSad = (LUMA_WEIGHT * luma_distortion) << AV1_COST_PRECISION;
         chromaSad = chroma_distortion << AV1_COST_PRECISION;
         totalDistortion = lumaSad + chromaSad;
@@ -958,9 +955,7 @@ uint64_t av1_intra_fast_cost(
 
         // Assign fast cost
         return(RDCOST(lambda, rate, totalDistortion));
-#if USE_SSE_FL
     }
-#endif
 #if ICOPY
     }
 #endif
@@ -1213,9 +1208,7 @@ uint64_t av1_inter_fast_cost(
     uint64_t                 luma_distortion,
     uint64_t                 chroma_distortion,
     uint64_t                 lambda,
-#if USE_SSE_FL
     EbBool                   use_ssd,
-#endif
     PictureControlSet_t     *picture_control_set_ptr,
     CandidateMv             *ref_mv_stack,
     const BlockGeom         *blk_geom,
@@ -1497,7 +1490,6 @@ uint64_t av1_inter_fast_cost(
     candidate_ptr->fast_luma_rate = lumaRate;
     candidate_ptr->fast_chroma_rate = chromaRate;
 
-#if USE_SSE_FL // cost
     if (use_ssd) {
 
         int32_t current_q_index = MAX(0, MIN(QINDEX_RANGE - 1, picture_control_set_ptr->parent_pcs_ptr->base_qindex));
@@ -1535,7 +1527,7 @@ uint64_t av1_inter_fast_cost(
         return(RDCOST(lambda, rate, totalDistortion));
     }
     else {
-#endif
+
         lumaSad = (LUMA_WEIGHT * luma_distortion) << AV1_COST_PRECISION;
         chromaSad = chroma_distortion << AV1_COST_PRECISION;
         totalDistortion = lumaSad + chromaSad;
@@ -1555,9 +1547,7 @@ uint64_t av1_inter_fast_cost(
             }
         }
         return(RDCOST(lambda, rate, totalDistortion));
-#if USE_SSE_FL
     }
-#endif
 }
 
 

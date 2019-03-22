@@ -134,7 +134,6 @@ extern "C" {
 #define PF_N2_32X32                                     1
 #endif
 
-#define USE_SSE_FL                                      1
 #define TRACK_FAST_DISTORTION                           1
 
 
