@@ -1323,7 +1323,6 @@ extern "C" {
 
 
 
-#if AOM_SAD_PORTING
     uint32_t aom_sad128x128_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
     uint32_t aom_sad128x128_avx2(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
     RTCD_EXTERN uint32_t(*aom_sad128x128)(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
@@ -1587,7 +1586,6 @@ extern "C" {
     unsigned int aom_variance128x128_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
     unsigned int aom_variance128x128_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
     RTCD_EXTERN unsigned int(*aom_variance128x128)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
-#endif /* AOM_SAD_PORTING*/
 
     void aom_ifft16x16_float_avx2(const float *input, float *temp, float *output);
     RTCD_EXTERN void(*aom_ifft16x16_float)(const float *input, float *temp, float *output);
@@ -3028,7 +3026,6 @@ extern "C" {
         aom_h_predictor_8x4 = aom_h_predictor_8x4_c;
         if (flags & HAS_SSE2) aom_h_predictor_8x4 = aom_h_predictor_8x4_sse2;
 
-#if AOM_SAD_PORTING
         //SAD
         aom_sad4x4 = aom_sad4x4_c;
         if (flags & HAS_AVX2) aom_sad4x4 = aom_sad4x4_avx2;
@@ -3164,7 +3161,6 @@ extern "C" {
         if (flags & HAS_AVX2) aom_variance128x64 = aom_variance128x64_avx2;
         aom_variance128x128 = aom_variance128x128_c;
         if (flags & HAS_AVX2) aom_variance128x128 = aom_variance128x128_avx2;
-#endif /* AOM_SAD_PORTING */
 
         //QIQ
         aom_quantize_b_64x64 = aom_quantize_b_64x64_c_II;
