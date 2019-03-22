@@ -71,7 +71,6 @@ extern "C" {
 #define TEST5_DISABLE_NSQ_ME                            0
 
 
-#define ADP_STATS_PER_LAYER                             0
 #define OPEN_LOOP_EARLY_PARTITION                       1
 #if OPEN_LOOP_EARLY_PARTITION
 #define REST_FAST_RATE_EST                              1
