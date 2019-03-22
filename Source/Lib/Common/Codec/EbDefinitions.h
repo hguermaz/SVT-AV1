@@ -135,7 +135,6 @@ extern "C" {
 #endif
 
 #define INTRA_INTER_FAST_LOOP                           1
-#define USE_SSE_FL                                      1
 #define TRACK_FAST_DISTORTION                           1
 
 
