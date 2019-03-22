@@ -44,13 +44,6 @@ const uint32_t parentIndex[85] = { 0, 0, 0, 2, 2, 2, 2, 0, 7, 7, 7, 7, 0, 12, 12
 23, 23, 23, 23, 0, 28, 28, 28, 28, 0, 33, 33, 33, 33, 0, 38, 38, 38, 38, 0, 0,
 44, 44, 44, 44, 0, 49, 49, 49, 49, 0, 54, 54, 54, 54, 0, 59, 59, 59, 59, 0, 0,
 65, 65, 65, 65, 0, 70, 70, 70, 70, 0, 75, 75, 75, 75, 0, 80, 80, 80, 80 };
-#if !OIS_BASED_INTRA
-uint8_t GetNumOfIntraModesFromOisPoint(
-    PictureParentControlSet_t   *picture_control_set_ptr,
-    uint32_t                       meSad,
-    uint32_t                       oisDcSad
-);
-#endif
 extern uint32_t stage1ModesArray[];
 
 uint8_t GetMaxDrlIndex(uint8_t  refmvCnt, PredictionMode   mode);
@@ -1989,7 +1982,6 @@ static INLINE TxType av1_get_tx_type(
 }
 
 
-#if OIS_BASED_INTRA
 
 void  inject_intra_candidates_ois(
     PictureControlSet_t            *picture_control_set_ptr,
@@ -2076,7 +2068,6 @@ void  inject_intra_candidates_ois(
             candidate_array[can_total_cnt].intra_chroma_mode =  disable_cfl_flag ? intra_luma_to_chroma[intra_mode] : 
                                                                 context_ptr->chroma_level == CHROMA_MODE_0 ? UV_CFL_PRED : UV_DC_PRED;
 
-#endif
             candidate_array[can_total_cnt].cfl_alpha_signs = 0;
             candidate_array[can_total_cnt].cfl_alpha_idx = 0;
             candidate_array[can_total_cnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidate_array[can_total_cnt].intra_chroma_mode);

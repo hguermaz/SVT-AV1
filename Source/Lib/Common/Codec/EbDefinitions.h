@@ -134,7 +134,7 @@ extern "C" {
 
 #define NSQ_TAB_SIZE                                    6
 
-#define OIS_BASED_INTRA                                 1
+//#define OIS_BASED_INTRA                                 1
 
 #define SHUT_FULL_DENOISE                               1
 
@@ -3828,7 +3828,6 @@ static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
 };
 #endif
-#if OIS_BASED_INTRA
 static const uint16_t ep_to_pa_block_index[BLOCK_MAX_COUNT_SB_64] = {
     0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,
 
@@ -3924,7 +3923,6 @@ static const uint16_t ep_to_pa_block_index[BLOCK_MAX_COUNT_SB_64] = {
     83,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,
     84,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0   
 };
-#endif
 #ifdef __cplusplus
 }
 #endif

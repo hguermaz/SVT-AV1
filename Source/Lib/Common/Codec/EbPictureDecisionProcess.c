@@ -798,13 +798,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (sc_content_detected) {
 
         if (picture_control_set_ptr->enc_mode == ENC_M0)
-#if CHROMA_BLIND_IF_SEARCH
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
         else if (MR_MODE)
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#else
-            picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#endif
 
 
     }
@@ -814,11 +810,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (MR_MODE)
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
     else if (picture_control_set_ptr->enc_mode == ENC_M0)
-#if CHROMA_BLIND_IF_SEARCH
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
-#else
-        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#endif
     else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         if (picture_control_set_ptr->is_used_as_reference_flag)
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
@@ -1089,21 +1081,16 @@ EbErrorType signal_derivation_multi_processes_oq(
                     picture_control_set_ptr->intra_pred_mode = 1;
                 else
                     picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
             else if (picture_control_set_ptr->enc_mode <= ENC_M6)
-#else
-            else
-#endif
+
                 if (picture_control_set_ptr->temporal_layer_index == 0)
                     picture_control_set_ptr->intra_pred_mode = 2;
                 else
                     picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
             else if (picture_control_set_ptr->enc_mode <= ENC_M7)
                 picture_control_set_ptr->intra_pred_mode = 4;
             else
                 picture_control_set_ptr->intra_pred_mode = 5;
-#endif
         }
         else {
 #endif
@@ -1117,16 +1104,11 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->intra_pred_mode = 1;
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
         else if (picture_control_set_ptr->enc_mode <= ENC_M6) 
-#else
-        else
-#endif
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->intra_pred_mode = 2;
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
         else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
             picture_control_set_ptr->intra_pred_mode = 4;
 #if M9_INTRA
@@ -1138,7 +1120,6 @@ EbErrorType signal_derivation_multi_processes_oq(
         else
             picture_control_set_ptr->intra_pred_mode = 5;
 
-#endif
 #endif
 #if SCENE_CONTENT_SETTINGS
         }
