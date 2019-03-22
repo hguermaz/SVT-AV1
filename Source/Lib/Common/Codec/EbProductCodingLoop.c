@@ -33,31 +33,7 @@
 #include "EbCodingLoop.h"
 
 #define TH_NFL_BIAS             7
-#if !OIS_BASED_INTRA
-extern void av1_predict_intra_block_md(
-    ModeDecisionContext_t       *cu_ptr,
-    const Av1Common *cm,
 
-    int32_t wpx,
-    int32_t hpx,
-    TxSize tx_size,
-    PredictionMode mode,
-    int32_t angle_delta,
-    int32_t use_palette,
-    FILTER_INTRA_MODE filter_intra_mode,
-    uint8_t* topNeighArray,
-    uint8_t* leftNeighArray,
-    EbPictureBufferDesc_t  *recon_buffer,
-    int32_t col_off,
-    int32_t row_off,
-    int32_t plane,
-    block_size bsize,
-    uint32_t cuOrgX,
-    uint32_t cuOrgY,
-    uint32_t OrgX,
-    uint32_t OrgY
-);
-#endif
 EbErrorType ProductGenerateMdCandidatesCu(
     LargestCodingUnit_t             *sb_ptr,
     ModeDecisionContext_t           *context_ptr,
@@ -1210,11 +1186,7 @@ void ProductMdFastPuPrediction(
     UNUSED(bestFirstFastCostSearchCandidateIndex);
     context_ptr->pu_itr = 0;
     // Prediction
-#if CHROMA_BLIND_IF_SEARCH
     context_ptr->skip_interpolation_search = picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level >= IT_SEARCH_FAST_LOOP_UV_BLIND ? 0 : 1;
-#else
-    context_ptr->skip_interpolation_search = picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FAST_LOOP ? 0 : 1;
-#endif
     candidateBuffer->candidate_ptr->interp_filters = 0;
 
 #if ICOPY

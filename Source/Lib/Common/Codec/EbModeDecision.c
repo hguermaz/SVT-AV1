@@ -2678,7 +2678,6 @@ EbErrorType ProductGenerateMdCandidatesCu(
     //----------------------
     // Intra
     if (context_ptr->blk_geom->sq_size < 128) {
-#if OIS_BASED_INTRA
         if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode >= 4 && context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N)
             inject_intra_candidates_ois(
                 picture_control_set_ptr,
@@ -2686,7 +2685,6 @@ EbErrorType ProductGenerateMdCandidatesCu(
                 sb_ptr,
                 &canTotalCnt);
         else 
-#endif
             if (inject_intra_candidate)
             inject_intra_candidates(
                 picture_control_set_ptr,

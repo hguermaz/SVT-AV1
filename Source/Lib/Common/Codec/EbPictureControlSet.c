@@ -972,7 +972,6 @@ EbErrorType picture_parent_control_set_ctor(
             }
         }
     }
-#if OIS_BASED_INTRA
         EB_MALLOC(ois_sb_results_t**, object_ptr->ois_sb_results, sizeof(ois_sb_results_t*) * object_ptr->sb_total_count, EB_N_PTR);
         
     for (sb_index = 0; sb_index < object_ptr->sb_total_count; ++sb_index) {
@@ -987,38 +986,7 @@ EbErrorType picture_parent_control_set_ctor(
             object_ptr->ois_sb_results[sb_index]->ois_candidate_array[cuIdx] = &contigousCand[cuIdx*MAX_OIS_CANDIDATES];
         }
     }
-#else
-    uint32_t maxOisCand = MAX_OPEN_LOOP_INTRA_CANDIDATES ;
 
-    EB_MALLOC(OisCu32Cu16Results_t**, object_ptr->ois_cu32_cu16_results, sizeof(OisCu32Cu16Results_t*) * object_ptr->sb_total_count, EB_N_PTR);
-
-    for (sb_index = 0; sb_index < object_ptr->sb_total_count; ++sb_index) {
-
-        EB_MALLOC(OisCu32Cu16Results_t*, object_ptr->ois_cu32_cu16_results[sb_index], sizeof(OisCu32Cu16Results_t), EB_N_PTR);
-
-        OisCandidate_t* contigousCand;
-        EB_MALLOC(OisCandidate_t*, contigousCand, sizeof(OisCandidate_t) * maxOisCand * 21, EB_N_PTR);
-
-        uint32_t cuIdx;
-        for (cuIdx = 0; cuIdx < 21; ++cuIdx) {
-            object_ptr->ois_cu32_cu16_results[sb_index]->sorted_ois_candidate[cuIdx] = &contigousCand[cuIdx*maxOisCand];
-        }
-    }
-
-    EB_MALLOC(OisCu8Results_t**, object_ptr->ois_cu8_results, sizeof(OisCu8Results_t*) * object_ptr->sb_total_count, EB_N_PTR);
-    for (sb_index = 0; sb_index < object_ptr->sb_total_count; ++sb_index) {
-
-        EB_MALLOC(OisCu8Results_t*, object_ptr->ois_cu8_results[sb_index], sizeof(OisCu8Results_t), EB_N_PTR);
-
-        OisCandidate_t* contigousCand;
-        EB_MALLOC(OisCandidate_t*, contigousCand, sizeof(OisCandidate_t) * maxOisCand * 64, EB_N_PTR);
-
-        uint32_t cuIdx;
-        for (cuIdx = 0; cuIdx < 64; ++cuIdx) {
-            object_ptr->ois_cu8_results[sb_index]->sorted_ois_candidate[cuIdx] = &contigousCand[cuIdx*maxOisCand];
-        }
-    }
-#endif
     // Motion Estimation Results
     object_ptr->max_number_of_pus_per_sb = (initDataPtr->ext_block_flag) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
     EB_MALLOC(MeCuResults_t**, object_ptr->me_results, sizeof(MeCuResults_t*) * object_ptr->sb_total_count, EB_N_PTR);
