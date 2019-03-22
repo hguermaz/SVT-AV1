@@ -1780,7 +1780,7 @@ void derive_sb_score(
 Input   : cost per depth
 Output  : budget per picture
 ******************************************************/
-#if M9_ADP
+#if VP9_ADP
 void set_target_budget_layer_based(
     SequenceControlSet_t               *sequence_control_set_ptr,
     PictureControlSet_t                *picture_control_set_ptr,
@@ -1869,7 +1869,7 @@ void derive_sb_md_mode(
 
 
     // Set the target budget
-#if M9_ADP
+#if VP9_ADP
     if(context_ptr->adp_level <= ENC_M8)
         set_target_budget_complexity_based(
             sequence_control_set_ptr,
