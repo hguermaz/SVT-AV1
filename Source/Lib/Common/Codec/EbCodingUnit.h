@@ -72,7 +72,6 @@ extern "C" {
         /*D67_PRED      */   2, 0, -2,                                                          // EB_INTRA_MODE_28 -> EB_INTRA_MODE_30
         /*D45_PRED      */   3, 2, 0, -2,                                                       // EB_INTRA_MODE_31 -> EB_INTRA_MODE_34
     };
-#if IMPROVE_CHROMA_MODE
     static const uint32_t intra_luma_to_chroma[INTRA_MODES] = {                                                                            // EB_INTRA_PLANAR
        UV_DC_PRED,        // Average of above and left pixels
        UV_V_PRED,         // Vertical
@@ -88,23 +87,6 @@ extern "C" {
        UV_SMOOTH_H_PRED,  // Horizontal interpolation
        UV_PAETH_PRED,     // Predict from the direction of smallest gradient
     };
-#else
-    static const uint32_t intra_luma_to_chroma[INTRA_MODES] = {                                                                            // EB_INTRA_PLANAR
-        /*DC_PRED       */  UV_DC_PRED,
-        /*V_PRED        */  UV_SMOOTH_PRED,
-        /*H_PRED        */  UV_SMOOTH_PRED,
-        /*D45_PRED      */  UV_D45_PRED,
-        /*D135_PRED     */  UV_D135_PRED,
-        /*D113_PRED     */  UV_D135_PRED,
-        /*D157_PRED     */  UV_D135_PRED,
-        /*D203_PRED     */  UV_SMOOTH_PRED,
-        /*D67_PRED      */  UV_D45_PRED,
-        /*SMOOTH_PRED   */  UV_SMOOTH_PRED,
-        /*SMOOTH_V_PRED */  UV_SMOOTH_PRED,
-        /*SMOOTH_H_PRED */  UV_SMOOTH_PRED,
-        /*PAETH_PRED    */  UV_PAETH_PRED,
-    };
-#endif
     static const TxType chroma_transform_type[14] = {
         /*UV_DC_PRED,          */   DCT_DCT   ,
         /*UV_V_PRED,           */   ADST_DCT  ,

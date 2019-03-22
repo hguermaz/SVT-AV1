@@ -134,8 +134,6 @@ extern "C" {
 
 #define NSQ_TAB_SIZE                                    6
 
-#define IMPROVE_CHROMA_MODE                             1
-#define CHROMA_BLIND_IF_SEARCH                          1
 #define OIS_BASED_INTRA                                 1
 
 #define SHUT_FULL_DENOISE                               1
@@ -537,9 +535,7 @@ typedef enum INTERPOLATION_SEARCH_LEVEL {
     IT_SEARCH_OFF,
     IT_SEARCH_INTER_DEPTH,
     IT_SEARCH_FULL_LOOP,
-#if CHROMA_BLIND_IF_SEARCH
     IT_SEARCH_FAST_LOOP_UV_BLIND,
-#endif
     IT_SEARCH_FAST_LOOP,
 } INTERPOLATION_SEARCH_LEVEL;
 
