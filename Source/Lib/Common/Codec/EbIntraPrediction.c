@@ -2433,7 +2433,6 @@ static INLINE void highbd_h_predictor(uint16_t *dst, ptrdiff_t stride, int32_t b
         dst += stride;
     }
 }
-#if ENABLE_PAETH
 static INLINE int abs_diff(int a, int b) { return (a > b) ? a - b : b - a; }
 static INLINE uint16_t paeth_predictor_single(uint16_t left, uint16_t top,
                                               uint16_t top_left) {
@@ -2474,7 +2473,7 @@ static INLINE void highbd_paeth_predictor(uint16_t *dst, ptrdiff_t stride,
     dst += stride;
   }
 }
-#endif
+
 //static INLINE void highbd_paeth_predictor(uint16_t *dst, ptrdiff_t stride,
 //    int32_t bw, int32_t bh, const uint16_t *above,
 //    const uint16_t *left, int32_t bd) {
@@ -2975,7 +2974,6 @@ intra_pred_sized(smooth_v, 32, 16)
 intra_pred_sized(smooth_v, 32, 64)
 intra_pred_sized(smooth_v, 64, 16)
 intra_pred_sized(smooth_v, 64, 32)
-#if ENABLE_PAETH
 intra_pred_sized(paeth, 2, 2)
 intra_pred_sized(paeth, 4, 4)
 intra_pred_sized(paeth, 8, 8)
@@ -2996,7 +2994,7 @@ intra_pred_sized(paeth, 32, 16)
 intra_pred_sized(paeth, 32, 64)
 intra_pred_sized(paeth, 64, 16)
 intra_pred_sized(paeth, 64, 32)
-#endif
+
 #define intra_pred_highbd_sized(type, width, height)                        \
   void aom_highbd_##type##_predictor_##width##x##height##_c(                \
       uint16_t *dst, ptrdiff_t stride, const uint16_t *above,               \
@@ -3207,7 +3205,6 @@ intra_pred_highbd_sized(smooth_v, 32, 64)
 intra_pred_highbd_sized(smooth_v, 64, 16)
 intra_pred_highbd_sized(smooth_v, 64, 32)
 
-#if ENABLE_PAETH
 intra_pred_highbd_sized(paeth, 2, 2)
 intra_pred_highbd_sized(paeth, 4, 4)
 intra_pred_highbd_sized(paeth, 8, 8)
@@ -3228,7 +3225,7 @@ intra_pred_highbd_sized(paeth, 32, 16)
 intra_pred_highbd_sized(paeth, 32, 64)
 intra_pred_highbd_sized(paeth, 64, 16)
 intra_pred_highbd_sized(paeth, 64, 32)
-#endif
+
 
 
 
@@ -3381,7 +3378,6 @@ void init_intra_dc_predictors_c_internal(void)
     pred[SMOOTH_H_PRED][TX_64X32] = aom_smooth_h_predictor_64x32;
 
 
-#if ENABLE_PAETH
     pred[PAETH_PRED][TX_4X4] = aom_paeth_predictor_4x4;
     pred[PAETH_PRED][TX_8X8] = aom_paeth_predictor_8x8;
     pred[PAETH_PRED][TX_16X16] = aom_paeth_predictor_16x16;
@@ -3406,7 +3402,7 @@ void init_intra_dc_predictors_c_internal(void)
 
     pred[PAETH_PRED][TX_64X16] = aom_paeth_predictor_64x16;
     pred[PAETH_PRED][TX_64X32] = aom_paeth_predictor_64x32;
-#endif
+
     dc_pred[0][0][TX_4X4] = aom_dc_128_predictor_4x4;
     dc_pred[0][0][TX_8X8] = aom_dc_128_predictor_8x8;
     dc_pred[0][0][TX_16X16] = aom_dc_128_predictor_16x16;
@@ -3633,7 +3629,6 @@ void init_intra_dc_predictors_c_internal(void)
     pred_high[SMOOTH_H_PRED][TX_64X16] = aom_highbd_smooth_h_predictor_64x16;
     pred_high[SMOOTH_H_PRED][TX_64X32] = aom_highbd_smooth_h_predictor_64x32;
 
-#if ENABLE_PAETH
     pred_high[PAETH_PRED][TX_4X4] = aom_highbd_paeth_predictor_4x4;
     pred_high[PAETH_PRED][TX_8X8] = aom_highbd_paeth_predictor_8x8;
     pred_high[PAETH_PRED][TX_16X16] = aom_highbd_paeth_predictor_16x16;
@@ -3658,7 +3653,7 @@ void init_intra_dc_predictors_c_internal(void)
 
     pred_high[PAETH_PRED][TX_64X16] = aom_highbd_paeth_predictor_64x16;
     pred_high[PAETH_PRED][TX_64X32] = aom_highbd_paeth_predictor_64x32;
-#endif
+
     dc_pred_high[0][0][TX_4X4] = aom_highbd_dc_128_predictor_4x4;
     dc_pred_high[0][0][TX_8X8] = aom_highbd_dc_128_predictor_8x8;
     dc_pred_high[0][0][TX_16X16] = aom_highbd_dc_128_predictor_16x16;

@@ -1199,11 +1199,7 @@ void ProductMdFastPuPrediction(
     UNUSED(bestFirstFastCostSearchCandidateIndex);
     context_ptr->pu_itr = 0;
     // Prediction
-#if CHROMA_BLIND_IF_SEARCH
     context_ptr->skip_interpolation_search = picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level >= IT_SEARCH_FAST_LOOP_UV_BLIND ? 0 : 1;
-#else
-    context_ptr->skip_interpolation_search = picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FAST_LOOP ? 0 : 1;
-#endif
 
     candidateBuffer->candidate_ptr->interp_filters = 0;
 
@@ -2031,9 +2027,7 @@ void AV1PerformFullLoop(
 #else
         candidateIndex = context_ptr->best_candidate_index_array[fullLoopCandidateIndex];
 #endif
-#if USED_NFL_FEATURE_BASED
         uint8_t best_fastLoop_candidate_index = context_ptr->sorted_candidate_index_array[fullLoopCandidateIndex];
-#endif
 
         // initialize TU Split
         y_full_distortion[DIST_CALC_RESIDUAL] = 0;
@@ -2067,9 +2061,7 @@ void AV1PerformFullLoop(
         candidate_ptr->skip_flag = EB_FALSE;
         if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level == IT_SEARCH_FULL_LOOP) {
             context_ptr->skip_interpolation_search = 0;
-#if USED_NFL_FEATURE_BASED
             context_ptr->skip_interpolation_search = (best_fastLoop_candidate_index > NFL_IT_TH) ? 1 : context_ptr->skip_interpolation_search;
-#endif
             if (candidate_ptr->type != INTRA_MODE) {
 
             ProductPredictionFunTable[candidate_ptr->type](
@@ -2130,9 +2122,7 @@ void AV1PerformFullLoop(
             *candidateBuffer->fast_cost_ptr,
             picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
 
-#if USED_NFL_FEATURE_BASED
         tx_search_skip_fag = ( picture_control_set_ptr->parent_pcs_ptr->skip_tx_search && best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
-#endif
         if (!tx_search_skip_fag){
 
                 ProductFullLoopTxSearch(
@@ -2422,10 +2412,8 @@ void move_cu_data(
 *   performs CL (LCU)
 *******************************************/
 EbBool allowed_ns_cu(
-#if NSQ_OPTIMASATION
     EbBool                             is_nsq_table_used,
     uint8_t                            nsq_max_shapes_md,
-#endif
     ModeDecisionContext_t              *context_ptr,
     uint8_t                            is_complete_sb){
   
@@ -2437,7 +2425,6 @@ EbBool allowed_ns_cu(
         }
     }
 
-#if NSQ_OPTIMASATION
     if (is_nsq_table_used) {
         if (context_ptr->blk_geom->shape != PART_N) {
             ret = 0;
@@ -2448,7 +2435,6 @@ EbBool allowed_ns_cu(
             }
         }
     }
-#endif
     return ret;
 }
 
@@ -2752,7 +2738,6 @@ void inter_depth_tx_search(
     }
 }
 
-#if NSQ_OPTIMASATION
 /****************************************************
 * generate the the size in pixel for partition code
 ****************************************************/
@@ -3036,7 +3021,7 @@ void  order_nsq_table(
         }
     }
 }
-#endif
+
 #if M8_SKIP_BLK
 uint8_t check_skip_sub_blks(
     PictureControlSet_t              *picture_control_set_ptr,
@@ -3091,7 +3076,6 @@ void md_encode_block(
     CodingUnit_t *  cu_ptr = context_ptr->cu_ptr;
     candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
 
-#if NSQ_OPTIMASATION
     EbBool is_nsq_table_used = (picture_control_set_ptr->slice_type == !I_SLICE &&
         picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE &&
         picture_control_set_ptr->parent_pcs_ptr->nsq_search_level >= NSQ_SEARCH_LEVEL1 &&
@@ -3107,17 +3091,11 @@ void md_encode_block(
                 context_ptr->leaf_partition_neighbor_array);
         }
     }
-#endif
 
     uint8_t                            is_complete_sb = sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb;
 
     if (allowed_ns_cu(
-#if NSQ_OPTIMASATION
         is_nsq_table_used, picture_control_set_ptr->parent_pcs_ptr->nsq_max_shapes_md,context_ptr,is_complete_sb ))
-#else
-        context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-
-#endif
     {
 #if !PF_N2_32X32
         // Set PF Mode - should be done per TU (and not per CU) to avoid the correction

@@ -162,9 +162,7 @@ extern "C" {
         uint8_t                         pu_itr;
         uint8_t                         cu_size_log2;
         uint8_t                         best_candidate_index_array[MAX_NFL + 2];
-#if USED_NFL_FEATURE_BASED
         uint8_t                         sorted_candidate_index_array[MAX_NFL];
-#endif
         uint16_t                        cu_origin_x;
         uint16_t                        cu_origin_y;
         uint64_t                        chroma_weight;
@@ -218,9 +216,7 @@ extern "C" {
         uint8_t                           parent_sq_has_coeff[MAX_PARENT_SQ];
         uint8_t                           parent_sq_pred_mode[MAX_PARENT_SQ];
         uint8_t                           chroma_level;
-#if NSQ_OPTIMASATION
         PART                              nsq_table[NSQ_TAB_SIZE];
-#endif
         uint8_t                           decoupled_fast_loop_search_method; 
         uint8_t                           decouple_intra_inter_fast_loop;
         uint8_t                           full_loop_escape;

@@ -2711,12 +2711,8 @@ EbErrorType av1_encode_tu_calc_cost(
         yNonZeroCbfRate = *y_tu_coeff_bits; // yNonZeroCbfLumaFlagBitsNum is already calculated inside y_tu_coeff_bits
 
         yZeroCbfRate = yZeroCbfLumaFlagBitsNum;
-#if ENABLE_EOB_ZERO_CHECK
         TransformUnit_t       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
         if (txb_ptr->transform_type[PLANE_TYPE_Y] != DCT_DCT) {
-#else
-        if (1) {
-#endif
             yZeroCbfCost = 0xFFFFFFFFFFFFFFFFull;
 
         }

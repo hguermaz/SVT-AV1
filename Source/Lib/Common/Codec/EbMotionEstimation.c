@@ -435,7 +435,6 @@ void ext_sad_calculation_32x32_64x64(
 }
 
 
-#if NSQ_OPTIMASATION
 #define BLK_NUM 5
 /**********************************************************
 Calcualte the best SAD from Rect H, V and H4, V4 partitions
@@ -774,7 +773,6 @@ void nsq_me_analysis(
     }
     p_nsq_8x8[60] = p_nsq_8x8[61] = p_nsq_8x8[62] = p_nsq_8x8[63] = p_nsq_16x16[15];
 }
-#endif
 /****************************************************
 Calcualte SAD for Rect H, V and H4, V4 partitions
 
@@ -1576,7 +1574,6 @@ static EB_EXTSADCALCULATION_TYPE ExtSadCalculation_funcPtrArray[ASM_TYPE_TOTAL] 
     ExtSadCalculation
 };
 
-#if NSQ_OPTIMASATION
 /*******************************************
 * nsq_get_analysis_results_block returns the
 * the best partition for each sq_block based 
@@ -1617,7 +1614,7 @@ static void nsq_get_analysis_results_block(
         p_best_nsq_16x16,
         p_best_nsq_8x8);
 }
-#endif
+
 /*******************************************
 * open_loop_me_get_search_point_results_block
 *******************************************/
@@ -6859,11 +6856,9 @@ EbErrorType MotionEstimateLcu(
     numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) || (picture_control_set_ptr->temporal_layer_index == 0) ? (uint32_t)REF_LIST_0 : (uint32_t)REF_LIST_1;
 #endif
 
-#if NSQ_OPTIMASATION 
     EbBool is_nsq_table_used = (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE &&
                                 picture_control_set_ptr->nsq_search_level >= NSQ_SEARCH_LEVEL1 &&
                                 picture_control_set_ptr->nsq_search_level < NSQ_SEARCH_FULL) ? EB_TRUE : EB_FALSE;
-#endif
 
 #if TEST5_DISABLE_NSQ_ME
     is_nsq_table_used = EB_FALSE;
@@ -6888,11 +6883,7 @@ EbErrorType MotionEstimateLcu(
             refPicPtr = (EbPictureBufferDesc_t*)referenceObject->inputPaddedPicturePtr;
             quarterRefPicPtr = (EbPictureBufferDesc_t*)referenceObject->quarterDecimatedPicturePtr;
             sixteenthRefPicPtr = (EbPictureBufferDesc_t*)referenceObject->sixteenthDecimatedPicturePtr;
-#if BASE_LAYER_REF
             if (picture_control_set_ptr->temporal_layer_index > 0 || listIndex == 0 || ((ref0Poc != ref1Poc) && (listIndex == 1))) {
-#else
-            if (picture_control_set_ptr->temporal_layer_index > 0 || listIndex == 0) {
-#endif
                 // A - The MV center for Tier0 search could be either (0,0), or HME
                 // A - Set HME MV Center
                 if (context_ptr->update_hme_search_center_flag)
@@ -7511,7 +7502,6 @@ EbErrorType MotionEstimateLcu(
 
 
                     }
-#if NSQ_OPTIMASATION 
                     if (is_nsq_table_used) {
                         context_ptr->p_best_nsq64x64 = &(context_ptr->p_sb_best_nsq[listIndex][0][ME_TIER_ZERO_PU_64x64]);
                         context_ptr->p_best_nsq32x32 = &(context_ptr->p_sb_best_nsq[listIndex][0][ME_TIER_ZERO_PU_32x32_0]);
@@ -7519,7 +7509,6 @@ EbErrorType MotionEstimateLcu(
                         context_ptr->p_best_nsq8x8 = &(context_ptr->p_sb_best_nsq[listIndex][0][ME_TIER_ZERO_PU_8x8_0]);
                         nsq_get_analysis_results_block(context_ptr);
                     }
-#endif
 #if !M9_SUBPEL_SELECTION
                 }
 #endif
@@ -7601,12 +7590,10 @@ EbErrorType MotionEstimateLcu(
         MeCuResults_t * mePuResult = &picture_control_set_ptr->me_results[sb_index][pu_index];
         mePuResult->totalMeCandidateIndex = totalMeCandidateIndex;
 
-#if NSQ_OPTIMASATION
         uint8_t l0_nsq = is_nsq_table_used ? context_ptr->p_sb_best_nsq[0][0][nIdx] : 0;
         uint8_t l1_nsq = is_nsq_table_used ? context_ptr->p_sb_best_nsq[1][0][nIdx] : 0;
         mePuResult->me_nsq[0] = l0_nsq;
         mePuResult->me_nsq[1] = l1_nsq;
-#endif
         if (totalMeCandidateIndex == 3) {
 
             uint32_t L0Sad = context_ptr->p_sb_best_sad[0][0][nIdx];
