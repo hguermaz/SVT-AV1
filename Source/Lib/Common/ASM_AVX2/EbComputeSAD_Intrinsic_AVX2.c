@@ -5350,6 +5350,7 @@ static INLINE void aom_sad16xhx4d_calc_avx2(
     res[3] = (uint32_t)_mm_cvtsi128_si32(xmm0);
 }
 
+#if AOM_SAD_PORTING
 void aom_sad16x4x4d_avx2(
     const uint8_t *src, int src_stride,
     const uint8_t *const ref[4], int ref_stride,
@@ -5942,3 +5943,4 @@ void aom_sad128x128x4d_avx2(const uint8_t *src, int src_stride,
     res[2] = sum0[2] + sum1[2];
     res[3] = sum0[3] + sum1[3];
 }
+#endif //AOM_SAD_PORTING

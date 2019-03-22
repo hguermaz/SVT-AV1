@@ -11,7 +11,9 @@
 #include "EbDefinitions.h"
 #include "EbRateControlProcess.h"
 #include "EbSequenceControlSet.h"
+#if MDC_FIX_0
 #include "EbModeDecision.h"
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,8 +62,11 @@ extern "C" {
 
         // Adaptive Depth Partitioning
         uint32_t                             *sb_score_array;
+#if M8_ADP
         uint8_t                               cost_depth_mode[SB_PRED_OPEN_LOOP_DEPTH_MODE];
-
+#else
+        uint8_t                               cost_depth_mode[SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE];
+#endif
         uint8_t                              *sb_cost_array;
         uint32_t                              predicted_cost;
         uint32_t                              budget;
@@ -70,12 +75,16 @@ extern "C" {
         uint8_t                               number_of_segments;
         uint32_t                              sb_min_score;
         uint32_t                              sb_max_score;
+#if M8_ADP
         uint32_t                              sb_average_score;
+#endif
 
+#if MDC_FIX_0
         const BlockGeom                      *blk_geom;
         ModeDecisionCandidate_t              *mdc_candidate_ptr;
         CandidateMv                          *mdc_ref_mv_stack;
         CodingUnit_t                         *mdc_cu_ptr;
+#endif
         uint8_t                               qp_index;
 
         // Multi - Mode signal(s)

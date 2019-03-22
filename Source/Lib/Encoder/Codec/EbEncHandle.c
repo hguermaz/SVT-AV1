@@ -350,7 +350,7 @@ void EbSetThreadManagementParameters(EbSvtAv1EncConfiguration   *config_ptr) {
             uint32_t num_lp_per_group = num_logical_processors / num_groups;
             if (config_ptr->target_socket == -1) {
                 if (config_ptr->logical_processors > num_lp_per_group) {
-                    alternate_groups = EB_TRUE;
+                    alternate_groups = TRUE;
                     SVT_LOG("SVT [WARNING]: -lp(logical processors) setting is ignored. Run on both sockets. \n");
                 }
                 else {
@@ -2156,7 +2156,9 @@ void SetParamBasedOnInput(
     derive_input_resolution(
         sequence_control_set_ptr,
         sequence_control_set_ptr->luma_width*sequence_control_set_ptr->luma_height);
+ #if DISABLE_128_SB_FOR_SUB_720
     sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode <= ENC_M1 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
+#endif
 }
 
 void CopyApiFromApp(
@@ -2174,6 +2176,9 @@ void CopyApiFromApp(
     sequence_control_set_ptr->general_interlaced_source_flag = 0;
 
     // SB Definitions
+#if !DISABLE_128_SB_FOR_SUB_720
+    sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode == ENC_M0) ? 128 : 64;
+#endif
     sequence_control_set_ptr->static_config.pred_structure = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
 

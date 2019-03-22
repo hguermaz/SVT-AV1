@@ -249,6 +249,9 @@ static void ResetEncDec(
 {
     EB_SLICE                     slice_type;
     MdRateEstimationContext_t   *md_rate_estimation_array;
+#if !REST_FAST_RATE_EST
+    uint32_t                       entropyCodingQp;
+#endif
     context_ptr->is16bit = (EbBool)(sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
 
 
@@ -297,10 +300,41 @@ static void ResetEncDec(
         context_ptr->reference_object_write_ptr = (EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr;
     else
         context_ptr->reference_object_write_ptr = (EbReferenceObject_t*)EB_NULL;
+#if !REST_FAST_RATE_EST
+    entropyCodingQp = picture_control_set_ptr->parent_pcs_ptr->base_qindex;
+#endif
     if (segment_index == 0) {
-
+#if !REST_FAST_RATE_EST
+        // Reset CABAC Contexts
+        ResetEntropyCoder(
+            sequence_control_set_ptr->encode_context_ptr,
+            picture_control_set_ptr->coeff_est_entropy_coder_ptr,
+            entropyCodingQp,
+            picture_control_set_ptr->slice_type);
+#endif
         ResetEncodePassNeighborArrays(picture_control_set_ptr);
 
+#if !REST_FAST_RATE_EST
+        // Initial Rate Estimatimation of the syntax elements
+        if (!md_rate_estimation_array->initialized)
+            av1_estimate_syntax_rate(
+                md_rate_estimation_array,
+                picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE,
+                picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
+
+        // Initial Rate Estimatimation of the Motion vectors
+        av1_estimate_mv_rate(
+#if ICOPY
+            picture_control_set_ptr,
+#endif
+            md_rate_estimation_array,
+            &picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc->nmvc);
+
+        // Initial Rate Estimatimation of the quantized coefficients
+        av1_estimate_coefficients_rate(
+            md_rate_estimation_array,
+            picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc);
+#endif
     }
 
 
@@ -1340,6 +1374,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->decouple_intra_inter_fast_loop = 1;
 
+#if INTRA_INTER_FAST_LOOP
     // Set the search method when decoupled fast loop is used 
     // Hsan: FULL_SAD_SEARCH not supported
 #if SCENE_CONTENT_SETTINGS
@@ -1355,7 +1390,8 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
     else
         context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
-
+#endif
+#if FULL_LOOP_ESCAPE
     // Set the full loop escape level
     // Level                Settings
     // 0                    Off
@@ -1375,6 +1411,8 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->full_loop_escape = 1;
 #endif
 
+#endif
+#if SHUT_GLOBAL_MV
     // Set global MV injection
     // Level                Settings
     // 0                    Injection off (Hsan: but not derivation as used by MV ref derivation)
@@ -1383,7 +1421,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->global_mv_injection = 1;
     else
         context_ptr->global_mv_injection = 0;
-
+#endif
     
     // Set warped motion injection
     // Level                Settings
@@ -1600,10 +1638,11 @@ void* EncDecKernel(void *input_ptr)
                 sequence_control_set_ptr,
                 segment_index);
 
+#if M8_ADP
             if (picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr != NULL) {
                 ((EbReferenceObject_t  *)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->average_intensity = picture_control_set_ptr->parent_pcs_ptr->average_intensity[0];
             }
-
+#endif
 
             if (sequence_control_set_ptr->static_config.improve_sharpness) {
                 QpmDeriveWeightsMinAndMax(

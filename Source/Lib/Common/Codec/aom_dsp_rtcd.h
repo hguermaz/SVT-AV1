@@ -1172,6 +1172,7 @@ extern "C" {
     void aom_h_predictor_8x4_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     void aom_h_predictor_8x4_sse2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     RTCD_EXTERN void(*aom_h_predictor_8x4)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
+#if ENABLE_PAETH
     void aom_paeth_predictor_16x16_c(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     void aom_paeth_predictor_16x16_ssse3(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
     void aom_paeth_predictor_16x16_avx2(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
@@ -1320,9 +1321,10 @@ extern "C" {
 
     void aom_highbd_paeth_predictor_8x8_c(uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd);
     #define aom_highbd_paeth_predictor_8x8 aom_highbd_paeth_predictor_8x8_c
+#endif
 
 
-
+#if AOM_SAD_PORTING
     uint32_t aom_sad128x128_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
     uint32_t aom_sad128x128_avx2(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
     RTCD_EXTERN uint32_t(*aom_sad128x128)(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
@@ -1586,6 +1588,7 @@ extern "C" {
     unsigned int aom_variance128x128_c(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
     unsigned int aom_variance128x128_avx2(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
     RTCD_EXTERN unsigned int(*aom_variance128x128)(const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse);
+#endif /* AOM_SAD_PORTING*/
 
     void aom_ifft16x16_float_avx2(const float *input, float *temp, float *output);
     RTCD_EXTERN void(*aom_ifft16x16_float)(const float *input, float *temp, float *output);
@@ -2558,7 +2561,9 @@ extern "C" {
         av1_upsample_intra_edge = av1_upsample_intra_edge_c;
         if (flags & HAS_SSE4_1) av1_upsample_intra_edge = av1_upsample_intra_edge_sse4_1;
 
-  
+    
+#if INTRINSIC_OPT_2
+
         aom_highbd_smooth_v_predictor_16x16 = aom_highbd_smooth_v_predictor_16x16_c;
         if (flags & HAS_AVX2) aom_highbd_smooth_v_predictor_16x16 = aom_highbd_smooth_v_predictor_16x16_avx2;
         aom_highbd_smooth_v_predictor_16x32 = aom_highbd_smooth_v_predictor_16x32_c;
@@ -2624,6 +2629,7 @@ extern "C" {
 
         av1_txb_init_levels = av1_txb_init_levels_c;
         if (flags & HAS_AVX2) av1_txb_init_levels = av1_txb_init_levels_avx2;
+#if ENABLE_PAETH
     aom_paeth_predictor_16x16 = aom_paeth_predictor_16x16_c;
     if (flags & HAS_SSSE3) aom_paeth_predictor_16x16 = aom_paeth_predictor_16x16_ssse3;
     if (flags & HAS_AVX2) aom_paeth_predictor_16x16 = aom_paeth_predictor_16x16_avx2;
@@ -2672,7 +2678,95 @@ extern "C" {
     if (flags & HAS_SSSE3) aom_paeth_predictor_8x4 = aom_paeth_predictor_8x4_ssse3;
     aom_paeth_predictor_8x8 = aom_paeth_predictor_8x8_c;
     if (flags & HAS_SSSE3) aom_paeth_predictor_8x8 = aom_paeth_predictor_8x8_ssse3;
+#endif
+#else
+        aom_highbd_dc_128_predictor_16x16 = aom_highbd_dc_128_predictor_16x16_c;
+        aom_highbd_dc_128_predictor_16x32 = aom_highbd_dc_128_predictor_16x32_c;
+        aom_highbd_dc_128_predictor_16x4 = aom_highbd_dc_128_predictor_16x4_c;
+        aom_highbd_dc_128_predictor_16x64 = aom_highbd_dc_128_predictor_16x64_c;
+        aom_highbd_dc_128_predictor_16x8 = aom_highbd_dc_128_predictor_16x8_c;
+        aom_highbd_dc_128_predictor_32x16 = aom_highbd_dc_128_predictor_32x16_c;
+        aom_highbd_dc_128_predictor_32x32 = aom_highbd_dc_128_predictor_32x32_c;
+        aom_highbd_dc_128_predictor_32x64 = aom_highbd_dc_128_predictor_32x64_c;
+        aom_highbd_dc_128_predictor_32x8 = aom_highbd_dc_128_predictor_32x8_c;
+        aom_highbd_dc_128_predictor_4x16 = aom_highbd_dc_128_predictor_4x16_c;
+        aom_highbd_dc_128_predictor_8x32 = aom_highbd_dc_128_predictor_8x32_c;
 
+
+        aom_highbd_dc_left_predictor_16x16 = aom_highbd_dc_left_predictor_16x16_c;
+        aom_highbd_dc_left_predictor_16x32 = aom_highbd_dc_left_predictor_16x32_c;
+        aom_highbd_dc_left_predictor_16x4 = aom_highbd_dc_left_predictor_16x4_c;
+        aom_highbd_dc_left_predictor_16x64 = aom_highbd_dc_left_predictor_16x64_c;
+        aom_highbd_dc_left_predictor_16x8 = aom_highbd_dc_left_predictor_16x8_c;
+        aom_highbd_dc_left_predictor_32x16 = aom_highbd_dc_left_predictor_32x16_c;
+        aom_highbd_dc_left_predictor_32x32 = aom_highbd_dc_left_predictor_32x32_c;
+        aom_highbd_dc_left_predictor_32x64 = aom_highbd_dc_left_predictor_32x64_c;
+        aom_highbd_dc_left_predictor_32x8 = aom_highbd_dc_left_predictor_32x8_c;
+        aom_highbd_dc_left_predictor_4x16 = aom_highbd_dc_left_predictor_4x16_c;
+        aom_highbd_dc_left_predictor_8x32 = aom_highbd_dc_left_predictor_8x32_c;
+
+
+        aom_highbd_dc_predictor_16x16 = aom_highbd_dc_predictor_16x16_c;
+        aom_highbd_dc_predictor_16x32 = aom_highbd_dc_predictor_16x32_c;
+        aom_highbd_dc_predictor_16x4 = aom_highbd_dc_predictor_16x4_c;
+        aom_highbd_dc_predictor_16x64 = aom_highbd_dc_predictor_16x64_c;
+        aom_highbd_dc_predictor_16x8 = aom_highbd_dc_predictor_16x8_c;
+        aom_highbd_dc_predictor_32x16 = aom_highbd_dc_predictor_32x16_c;
+        aom_highbd_dc_predictor_32x32 = aom_highbd_dc_predictor_32x32_c;
+        aom_highbd_dc_predictor_32x64 = aom_highbd_dc_predictor_32x64_c;
+        aom_highbd_dc_predictor_32x8 = aom_highbd_dc_predictor_32x8_c;
+        aom_highbd_dc_predictor_4x16 = aom_highbd_dc_predictor_4x16_c;
+        aom_highbd_dc_predictor_64x16 = aom_highbd_dc_predictor_64x16_c;
+        aom_highbd_dc_predictor_64x32 = aom_highbd_dc_predictor_64x32_c;
+        aom_highbd_dc_predictor_64x64 = aom_highbd_dc_predictor_64x64_c;
+        aom_highbd_dc_predictor_8x32 = aom_highbd_dc_predictor_8x32_c;
+
+        aom_highbd_dc_top_predictor_16x16 = aom_highbd_dc_top_predictor_16x16_c;
+        aom_highbd_dc_top_predictor_16x32 = aom_highbd_dc_top_predictor_16x32_c;
+        aom_highbd_dc_top_predictor_16x4 = aom_highbd_dc_top_predictor_16x4_c;
+        aom_highbd_dc_top_predictor_16x64 = aom_highbd_dc_top_predictor_16x64_c;
+        aom_highbd_dc_top_predictor_16x8 = aom_highbd_dc_top_predictor_16x8_c;
+        aom_highbd_dc_top_predictor_32x16 = aom_highbd_dc_top_predictor_32x16_c;
+        aom_highbd_dc_top_predictor_32x32 = aom_highbd_dc_top_predictor_32x32_c;
+        aom_highbd_dc_top_predictor_32x64 = aom_highbd_dc_top_predictor_32x64_c;
+        aom_highbd_dc_top_predictor_32x8 = aom_highbd_dc_top_predictor_32x8_c;
+        aom_highbd_dc_top_predictor_4x16 = aom_highbd_dc_top_predictor_4x16_c;
+
+
+        aom_highbd_smooth_v_predictor_16x16 = aom_highbd_smooth_v_predictor_16x16_c;
+        aom_highbd_smooth_v_predictor_16x32 = aom_highbd_smooth_v_predictor_16x32_c;
+        aom_highbd_smooth_v_predictor_16x4 = aom_highbd_smooth_v_predictor_16x4_c;
+        aom_highbd_smooth_v_predictor_16x64 = aom_highbd_smooth_v_predictor_16x64_c;
+        aom_highbd_smooth_v_predictor_16x8 = aom_highbd_smooth_v_predictor_16x8_c;
+        aom_highbd_smooth_v_predictor_32x16 = aom_highbd_smooth_v_predictor_32x16_c;
+        aom_highbd_smooth_v_predictor_32x32 = aom_highbd_smooth_v_predictor_32x32_c;
+        aom_highbd_smooth_v_predictor_32x64 = aom_highbd_smooth_v_predictor_32x64_c;
+        aom_highbd_smooth_v_predictor_32x8 = aom_highbd_smooth_v_predictor_32x8_c;
+        aom_highbd_smooth_v_predictor_4x16 = aom_highbd_smooth_v_predictor_4x16_c;
+        aom_highbd_smooth_v_predictor_4x4 = aom_highbd_smooth_v_predictor_4x4_c;
+        aom_highbd_smooth_v_predictor_4x8 = aom_highbd_smooth_v_predictor_4x8_c;
+        aom_highbd_smooth_v_predictor_64x16 = aom_highbd_smooth_v_predictor_64x16_c;
+        aom_highbd_smooth_v_predictor_64x32 = aom_highbd_smooth_v_predictor_64x32_c;
+        aom_highbd_smooth_v_predictor_64x64 = aom_highbd_smooth_v_predictor_64x64_c;
+        aom_highbd_smooth_v_predictor_8x16 = aom_highbd_smooth_v_predictor_8x16_c;
+        aom_highbd_smooth_v_predictor_8x32 = aom_highbd_smooth_v_predictor_8x32_c;
+        aom_highbd_smooth_v_predictor_8x4 = aom_highbd_smooth_v_predictor_8x4_c;
+        aom_highbd_smooth_v_predictor_8x8 = aom_highbd_smooth_v_predictor_8x8_c;
+
+        cfl_predict_lbd = cfl_predict_lbd_c;
+        cfl_predict_hbd = cfl_predict_hbd_c;
+
+        av1_dr_prediction_z1 = av1_dr_prediction_z1_c;
+        av1_dr_prediction_z2 = av1_dr_prediction_z2_c;
+        av1_dr_prediction_z3 = av1_dr_prediction_z3_c;
+
+        av1_highbd_dr_prediction_z1 = av1_highbd_dr_prediction_z1_c;
+        av1_highbd_dr_prediction_z2 = av1_highbd_dr_prediction_z2_c;
+        av1_highbd_dr_prediction_z3 = av1_highbd_dr_prediction_z3_c;
+        ResidualKernel = residual_kernel_c;
+
+        av1_txb_init_levels = av1_txb_init_levels_c;
+#endif
         aom_dc_predictor_4x4 = aom_dc_predictor_4x4_c;
         if (flags & HAS_SSE2) aom_dc_predictor_4x4 = aom_dc_predictor_4x4_sse2;
         aom_dc_predictor_8x8 = aom_dc_predictor_8x8_c;
@@ -3026,7 +3120,9 @@ extern "C" {
         aom_h_predictor_8x4 = aom_h_predictor_8x4_c;
         if (flags & HAS_SSE2) aom_h_predictor_8x4 = aom_h_predictor_8x4_sse2;
 
+#if AOM_SAD_PORTING
         //SAD
+#if INTRINSIC_OPT_2
         aom_sad4x4 = aom_sad4x4_c;
         if (flags & HAS_AVX2) aom_sad4x4 = aom_sad4x4_avx2;
         aom_sad4x4x4d = aom_sad4x4x4d_c;
@@ -3115,8 +3211,55 @@ extern "C" {
         if (flags & HAS_AVX2) aom_sad8x4 = aom_sad8x4_avx2;
         aom_sad8x4x4d = aom_sad8x4x4d_c;
         if (flags & HAS_AVX2) aom_sad8x4x4d = aom_sad8x4x4d_avx2;
+#else
+        aom_sad4x4 = aom_sad4x4_c;
+        aom_sad4x4x4d = aom_sad4x4x4d_c;
+        aom_sad4x16 = aom_sad4x16_c;
+        aom_sad4x16x4d = aom_sad4x16x4d_c;
+        aom_sad4x8 = aom_sad4x8_c;
+        aom_sad4x8x4d = aom_sad4x8x4d_c;
+        aom_sad64x128 = aom_sad64x128_c;
+        aom_sad64x128x4d = aom_sad64x128x4d_c;
+        aom_sad64x16 = aom_sad64x16_c;
+        aom_sad64x16x4d = aom_sad64x16x4d_c;
+        aom_sad64x32 = aom_sad64x32_c;
+        aom_sad64x32x4d = aom_sad64x32x4d_c;
+        aom_sad64x64 = aom_sad64x64_c;
+        aom_sad64x64x4d = aom_sad64x64x4d_c;
+        aom_sad8x16 = aom_sad8x16_c;
+        aom_sad8x16x4d = aom_sad8x16x4d_c;
+        aom_sad8x32 = aom_sad8x32_c;
+        aom_sad8x32x4d = aom_sad8x32x4d_c;
+        aom_sad8x8 = aom_sad8x8_c;
+        aom_sad8x8x4d = aom_sad8x8x4d_c;
+        aom_sad16x4 = aom_sad16x4_c;
+        aom_sad16x4x4d = aom_sad16x4x4d_c;
+        aom_sad32x8 = aom_sad32x8_c;
+        aom_sad32x8x4d = aom_sad32x8x4d_c;
+        aom_sad16x64 = aom_sad16x64_c;
+        aom_sad16x64x4d = aom_sad16x64x4d_c;
+        aom_sad128x128 = aom_sad128x128_c;
+        aom_sad128x128x4d = aom_sad128x128x4d_c;
+        aom_sad128x64 = aom_sad128x64_c;
+        aom_sad128x64x4d = aom_sad128x64x4d_c;
+        aom_sad32x16 = aom_sad32x16_c;
+        aom_sad32x16x4d = aom_sad32x16x4d_c;
+        aom_sad16x32 = aom_sad16x32_c;
+        aom_sad16x32x4d = aom_sad16x32x4d_c;
+        aom_sad32x64 = aom_sad32x64_c;
+        aom_sad32x64x4d = aom_sad32x64x4d_c;
+        aom_sad32x32 = aom_sad32x32_c;
+        aom_sad32x32x4d = aom_sad32x32x4d_c;
+        aom_sad16x16 = aom_sad16x16_c;
+        aom_sad16x16x4d = aom_sad16x16x4d_c;
+        aom_sad16x8 = aom_sad16x8_c;
+        aom_sad16x8x4d = aom_sad16x8x4d_c;
+        aom_sad8x4 = aom_sad8x4_c;
+        aom_sad8x4x4d = aom_sad8x4x4d_c;
+#endif
 
 //VARIANCE
+#if INTRINSIC_OPT_2
         aom_variance4x4 = aom_variance4x4_c;
         if (flags & HAS_AVX2) aom_variance4x4 = aom_variance4x4_sse2;
         aom_variance4x8 = aom_variance4x8_c;
@@ -3161,14 +3304,47 @@ extern "C" {
         if (flags & HAS_AVX2) aom_variance128x64 = aom_variance128x64_avx2;
         aom_variance128x128 = aom_variance128x128_c;
         if (flags & HAS_AVX2) aom_variance128x128 = aom_variance128x128_avx2;
+#else
+        aom_variance4x4 = aom_variance4x4_c;
+        aom_variance4x8 = aom_variance4x8_c;
+        aom_variance4x16 = aom_variance4x16_c;
+        aom_variance8x4 = aom_variance8x4_c;
+        aom_variance8x8 = aom_variance8x8_c;
+        aom_variance8x16 = aom_variance8x16_c;
+        aom_variance8x32 = aom_variance8x32_c;
+        aom_variance16x4 = aom_variance16x4_c;
+        aom_variance16x8 = aom_variance16x8_c;
+        aom_variance16x16 = aom_variance16x16_c;
+        aom_variance16x32 = aom_variance16x32_c;
+        aom_variance16x64 = aom_variance16x64_c;
+        aom_variance32x8 = aom_variance32x8_c;
+        aom_variance32x16 = aom_variance32x16_c
+        aom_variance32x32 = aom_variance32x32_c;
+        aom_variance32x64 = aom_variance32x64_c;
+        aom_variance64x16 = aom_variance64x16_c;
+        aom_variance64x32 = aom_variance64x32_c;
+        aom_variance64x64 = aom_variance64x64_c;
+        aom_variance64x128 = aom_variance64x128_c;
+        aom_variance128x64 = aom_variance128x64_c;
+        aom_variance128x128 = aom_variance128x128_c;
+aom_variance8x8 = aom_variance8x8_c;
+#endif
+#endif /* AOM_SAD_PORTING */
 
         //QIQ
+#if INTRINSIC_OPT_2
         aom_quantize_b_64x64 = aom_quantize_b_64x64_c_II;
         if (flags & HAS_AVX2) aom_quantize_b_64x64 = aom_highbd_quantize_b_64x64_avx2;
 
         aom_highbd_quantize_b_64x64 = aom_highbd_quantize_b_64x64_c;
         if (flags & HAS_AVX2) aom_highbd_quantize_b_64x64 = aom_highbd_quantize_b_64x64_avx2;
+#else
+        aom_quantize_b_64x64 = aom_quantize_b_64x64_c_II;
+        aom_highbd_quantize_b_64x64 = aom_highbd_quantize_b_64x64_c;
+
+#endif
         // transform
+#if INTRINSIC_OPT_2
         av1_fwd_txfm2d_16x8 = av1_fwd_txfm2d_16x8_c;
         if (flags & HAS_AVX2) av1_fwd_txfm2d_16x8 = av1_fwd_txfm2d_16x8_avx2;
         av1_fwd_txfm2d_8x16 = av1_fwd_txfm2d_8x16_c;
@@ -3183,6 +3359,14 @@ extern "C" {
         if (flags & HAS_AVX2) av1_fwd_txfm2d_8x4 = av1_fwd_txfm2d_8x4_avx2;
         av1_fwd_txfm2d_4x8 = av1_fwd_txfm2d_4x8_c;
         if (flags & HAS_AVX2) av1_fwd_txfm2d_4x8 = av1_fwd_txfm2d_4x8_avx2;
+#else
+        av1_fwd_txfm2d_16x8 = av1_fwd_txfm2d_16x8_c;
+        av1_fwd_txfm2d_8x16 = av1_fwd_txfm2d_8x16_c;
+        av1_fwd_txfm2d_16x4 = av1_fwd_txfm2d_16x4_c;
+        av1_fwd_txfm2d_4x16 = av1_fwd_txfm2d_4x16_c;
+        av1_fwd_txfm2d_8x4 = av1_fwd_txfm2d_8x4_c;
+        av1_fwd_txfm2d_4x8 = av1_fwd_txfm2d_4x8_c;
+#endif
 
         av1_fwd_txfm2d_32x16 = av1_fwd_txfm2d_32x16_c;
         if (flags & HAS_AVX2) av1_fwd_txfm2d_32x16 = av1_fwd_txfm2d_32x16_avx2;
@@ -3205,7 +3389,9 @@ extern "C" {
         av1_fwd_txfm2d_32x32 = Av1TransformTwoD_32x32_c;
         if (flags & HAS_AVX2) av1_fwd_txfm2d_32x32 = av1_fwd_txfm2d_32x32_avx2;
         av1_fwd_txfm2d_16x16 = Av1TransformTwoD_16x16_c;
+#if INTRINSIC_OPT_2
         if (flags & HAS_AVX2) av1_fwd_txfm2d_16x16 = av1_fwd_txfm2d_16x16_avx2;
+#endif
         av1_fwd_txfm2d_8x8 = Av1TransformTwoD_8x8_c;
         if (flags & HAS_AVX2) av1_fwd_txfm2d_8x8 = av1_fwd_txfm2d_8x8_avx2;
         av1_fwd_txfm2d_4x4 = Av1TransformTwoD_4x4_c;

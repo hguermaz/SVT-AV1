@@ -216,8 +216,13 @@ void cdef_seg_search(
                     stride[pli], ysize, xsize);
                 gi_step = get_cdef_gi_step(pPcs->cdef_filter_mode);
                 mid_gi = pPcs->cdf_ref_frame_strenght;
+#if ADD_CDEF_FILTER_LEVEL
                 start_gi = pPcs->use_ref_frame_cdef_strength && pPcs->cdef_filter_mode == 1 ? (AOMMAX(0, mid_gi - gi_step)) : 0;
                 end_gi = pPcs->use_ref_frame_cdef_strength ? AOMMIN(total_strengths, mid_gi + gi_step) : pPcs->cdef_filter_mode == 1 ? 8 : total_strengths;
+#else
+                start_gi = 0;
+                end_gi = pPcs->use_ref_frame_cdef_strength ? AOMMIN(total_strengths, mid_gi + gi_step) : total_strengths;
+#endif
 
                 for (gi = start_gi; gi < end_gi; gi++) {
 
@@ -391,8 +396,13 @@ void cdef_seg_search16bit(
                     stride_src[pli], ysize, xsize);
                 gi_step = get_cdef_gi_step(pPcs->cdef_filter_mode);
                 mid_gi = pPcs->cdf_ref_frame_strenght;
+#if ADD_CDEF_FILTER_LEVEL
                 start_gi = pPcs->use_ref_frame_cdef_strength && pPcs->cdef_filter_mode == 1 ? (AOMMAX(0, mid_gi - gi_step)) : 0;
                 end_gi = pPcs->use_ref_frame_cdef_strength ? AOMMIN(total_strengths, mid_gi + gi_step) : pPcs->cdef_filter_mode == 1 ? 8 : total_strengths;
+#else
+                start_gi = 0;
+                end_gi = pPcs->use_ref_frame_cdef_strength ? AOMMIN(total_strengths, mid_gi + gi_step) : total_strengths;
+#endif
 
                 for (gi = start_gi; gi < end_gi; gi++) {
 

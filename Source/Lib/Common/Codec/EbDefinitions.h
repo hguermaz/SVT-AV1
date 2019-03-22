@@ -50,11 +50,16 @@ extern "C" {
 
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH           1 // F7
+#define M0_ME_SEARCH_BASE                               1 // F13
 #define NEW_QPS                                         1 // New QPS based on AOM 1Pass
+#define INTERPOL_FILTER_SEARCH_10BIT_SUPPORT            1
 #if M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 #endif
 // NEW MACOS
+#define INTRINSIC_OPT_2                                 1 // Intrinsics opt work phase 2
+#define DIS_EDGE_FIL                                    0 // disable intra edge filter - to be removed after fixing the neigbor array for intra 4xN and Nx4
+#define USE_INLOOP_ME_FULL_SAD                          0 // To switch between full SAD and subsampled-SAD for in-loop-me subpel.
 
 
 
@@ -62,10 +67,22 @@ extern "C" {
 #define NO_ENCDEC                                       0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
 
 
+#define ENCDEC_TX_SEARCH                                1
+#define TEST5_DISABLE_NSQ_ME                            0
+
+
 #define ADP_STATS_PER_LAYER                             0
+#define OPEN_LOOP_EARLY_PARTITION                       1
+#if OPEN_LOOP_EARLY_PARTITION
+#define REST_FAST_RATE_EST                              1
+#define MDC_FIX_0                                       1
+#define MDC_FIX_1                                       1
+#endif
 
-
-
+#define M8_ADP                                          1
+#if M8_ADP
+#define FASTER_M8_ADP                                   1
+#endif
 
 
 // M9 settings toward 4K 60 fps
@@ -123,35 +140,71 @@ extern "C" {
 #define USE_SAD_HMEL2                                   1
 #endif
 
+#define FULL_LOOP_ESCAPE                                1
+#define SIMULATE_PF_N2                                  0
+#define PF_N2_32X32_TX_SEARCH                           0
 #if M9_PF
 #define PF_N2_32X32                                     1
 #endif
+#define SHUT_GLOBAL_MV                                  1
 
+#define REMOVED_DUPLICATE_INTER                         1
+#define REMOVED_DUPLICATE_INTER_L1                      1
+#define REMOVED_DUPLICATE_INTER_BIPRED                  1
 #define INTRA_INTER_FAST_LOOP                           1
+#if INTRA_INTER_FAST_LOOP
+#define USE_SSE_FL                                      1
+#endif
+#define TRACK_FAST_DISTORTION                           1
 
 
+#define USED_NFL_FEATURE_BASED                          1
+#if USED_NFL_FEATURE_BASED
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
+#endif
 
+#define ENABLE_PAETH                                    1
 #if !INTRA_INTER_FAST_LOOP
 #define TWO_FAST_LOOP                                   1
 #endif
+#define ENABLE_EOB_ZERO_CHECK                           1
+#define DISABLE_128_SB_FOR_SUB_720                      1
+#define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
+#if BASE_LAYER_REF
 #define MAX_FRAMES_TO_REF_I                             64
+#endif
 
+#define NSQ_OPTIMASATION                                1
 
+#if NSQ_OPTIMASATION
 #define NSQ_TAB_SIZE                                    6
+#endif
 
+#define IMPROVE_CHROMA_MODE                             1
+#define CHROMA_BLIND_IF_SEARCH                          1
+#define OIS_BASED_INTRA                                 1
 
-
+#define SHUT_FULL_DENOISE                               1
 
 
 #define ICOPY       1 //Intra Block Copy
 
+#if ICOPY
 #define IBC_EARLY_0 1
+#define HASH_ME     0
+#define HASH_X      1
+#define IBC_SW_WAVEFRONT    1
+#define FIX_SAD   1
+#define SC_DETECT_GOP       1  //make all frames in the GOP use the I frame screen content detection status
+#define ADD_VAR_SC_DETECT   1
+#define IBC_MODES           1  //add two intermediates modes for ibc    
 #define ICOPY_10B           1  //10b path
+#endif
 
 #define AOM_SAD_PORTING 1
 
+#define ADD_CDEF_FILTER_LEVEL                           1
 
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
@@ -531,10 +584,13 @@ typedef enum INTERPOLATION_SEARCH_LEVEL {
     IT_SEARCH_OFF,
     IT_SEARCH_INTER_DEPTH,
     IT_SEARCH_FULL_LOOP,
+#if CHROMA_BLIND_IF_SEARCH
     IT_SEARCH_FAST_LOOP_UV_BLIND,
+#endif
     IT_SEARCH_FAST_LOOP,
 } INTERPOLATION_SEARCH_LEVEL;
 
+#if NSQ_OPTIMASATION
 typedef enum NSQ_SEARCH_LEVEL {
     NSQ_SEARCH_OFF,
     NSQ_SEARCH_LEVEL1,
@@ -545,7 +601,16 @@ typedef enum NSQ_SEARCH_LEVEL {
     NSQ_SEARCH_LEVEL6,
     NSQ_SEARCH_FULL
 } NSQ_SEARCH_LEVEL;
-
+#else
+typedef enum NSQ_SEARCH_LEVEL {
+    NSQ_SEARCH_OFF,
+    NSQ_SEARCH_BASE_ON_SQ_TYPE,
+    NSQ_SEARCH_BASE_ON_SQ_COEFF,
+    NSQ_INTER_SEARCH_BASE_ON_SQ_MVMODE,
+    NSQ_INTER_SEARCH_BASE_ON_SQ_INTRAMODE,
+    NSQ_SEARCH_FULL
+} NSQ_SEARCH_LEVEL;
+#endif
 #define MAX_PARENT_SQ     6
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
     DIST,
@@ -3023,9 +3088,13 @@ typedef enum EbPictureDepthMode {
 #define SB_SQ_BLOCKS_DEPTH_MODE             1
 #define SB_SQ_NON4_BLOCKS_DEPTH_MODE        2
 #define SB_OPEN_LOOP_DEPTH_MODE             3
+#if M8_ADP
 #define SB_FAST_OPEN_LOOP_DEPTH_MODE        4
 #define SB_PRED_OPEN_LOOP_DEPTH_MODE        5
-
+#else
+#define SB_PRED_OPEN_LOOP_DEPTH_MODE        4
+#define SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE  5
+#endif
 
 typedef enum EB_INTRA4x4_SEARCH_METHOD {
     INTRA4x4_OFF = 0,
@@ -3825,6 +3894,7 @@ static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
 };
 #endif
+#if OIS_BASED_INTRA
 static const uint16_t ep_to_pa_block_index[BLOCK_MAX_COUNT_SB_64] = {
     0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,
 
@@ -3920,7 +3990,7 @@ static const uint16_t ep_to_pa_block_index[BLOCK_MAX_COUNT_SB_64] = {
     83,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,
     84,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0   
 };
-
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -1516,8 +1516,12 @@ void Av1UnPackReferenceBlock(
 }
 
 
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
 EbErrorType AV1InterPrediction10BitMD(
     uint32_t                                interp_filters,
+#else
+EbErrorType AV1MDInterPrediction(
+#endif
     PictureControlSet_t                     *picture_control_set_ptr,
     uint8_t                                  ref_frame_type,
     ModeDecisionContext_t                   *md_context_ptr,
@@ -1555,7 +1559,9 @@ EbErrorType AV1InterPrediction10BitMD(
     int32_t src_stride;
     int32_t dst_stride;
     ConvolveParams conv_params;
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
     InterpFilterParams filter_params_x, filter_params_y;
+#endif
 
     const BlockGeom * blk_geom = get_blk_geom_mds(cu_ptr->mds_idx);
 
@@ -1817,8 +1823,10 @@ EbErrorType AV1InterPrediction10BitMD(
         src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
         conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstY, 128, is_compound, EB_8BIT);
 
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         av1_get_convolve_filter_params(interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
+#endif
 
         Av1UnPackReferenceBlock(
             src_ptr,
@@ -1838,9 +1846,13 @@ EbErrorType AV1InterPrediction10BitMD(
             dst_stride,
             bwidth,
             bheight,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
             &filter_params_x,
             &filter_params_y,
-
+#else
+            &av1RegularFilter,
+            &av1RegularFilter,
+#endif
             subpel_x,
             subpel_y,
             &conv_params);
@@ -1858,9 +1870,11 @@ EbErrorType AV1InterPrediction10BitMD(
             subpel_y = mv_q4.row & SUBPEL_MASK;
             src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
             conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstCb, 64, is_compound, EB_8BIT);
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
             av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                 &filter_params_y, blk_geom->bwidth_uv, blk_geom->bheight_uv);
 
+#endif
 
             Av1UnPackReferenceBlock(
                 src_ptr,
@@ -1889,8 +1903,13 @@ EbErrorType AV1InterPrediction10BitMD(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
+#else
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params);
@@ -1935,8 +1954,13 @@ EbErrorType AV1InterPrediction10BitMD(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
+#else
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params);
@@ -1964,9 +1988,11 @@ EbErrorType AV1InterPrediction10BitMD(
         src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
         conv_params = get_conv_params_no_round(0, (mv_unit->predDirection == BI_PRED) ? 1 : 0, 0, tmp_dstY, 128, is_compound, EB_8BIT);
 
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         av1_get_convolve_filter_params(interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
 
+#endif
 
         Av1UnPackReferenceBlock(
             src_ptr,
@@ -1986,8 +2012,13 @@ EbErrorType AV1InterPrediction10BitMD(
             dst_stride,
             bwidth,
             bheight,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
             &filter_params_x,
             &filter_params_y,
+#else
+            &av1RegularFilter,
+            &av1RegularFilter,
+#endif
             subpel_x,
             subpel_y,
             &conv_params);
@@ -2006,8 +2037,10 @@ EbErrorType AV1InterPrediction10BitMD(
             conv_params = get_conv_params_no_round(0, (mv_unit->predDirection == BI_PRED) ? 1 : 0, 0, tmp_dstCb, 64, is_compound, EB_8BIT);
 
 
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
             av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                 &filter_params_y, blk_geom->bwidth_uv, blk_geom->bheight_uv);
+#endif
             Av1UnPackReferenceBlock(
                 src_ptr,
                 ref_pic_list1->strideCb,
@@ -2026,9 +2059,13 @@ EbErrorType AV1InterPrediction10BitMD(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
-
+#else
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params);
@@ -2062,8 +2099,13 @@ EbErrorType AV1InterPrediction10BitMD(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
+#else
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                puSize > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params);
@@ -2110,8 +2152,9 @@ EbErrorType av1_inter_prediction_hbd(
     int32_t src_stride;
     int32_t dst_stride;
     ConvolveParams conv_params;
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
     InterpFilterParams filter_params_x, filter_params_y;
-
+#endif
 
     const BlockGeom * blk_geom = get_blk_geom_mds(cu_ptr->mds_idx);
 
@@ -2348,8 +2391,10 @@ EbErrorType av1_inter_prediction_hbd(
         subpel_y = mv_q4.row & SUBPEL_MASK;
         src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
         conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstY, 128, is_compound, bit_depth);
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         av1_get_convolve_filter_params(cu_ptr->interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
+#endif
 
         convolveHbd[subpel_x != 0][subpel_y != 0][is_compound](
             src_ptr,
@@ -2358,8 +2403,13 @@ EbErrorType av1_inter_prediction_hbd(
             dst_stride,
             bwidth,
             bheight,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
             &filter_params_x,
             &filter_params_y,
+#else
+            &av1RegularFilter,
+            &av1RegularFilter,
+#endif
             subpel_x,
             subpel_y,
             &conv_params,
@@ -2399,8 +2449,13 @@ EbErrorType av1_inter_prediction_hbd(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
+#else
+                bwidth > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                bheight > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params,
@@ -2433,8 +2488,13 @@ EbErrorType av1_inter_prediction_hbd(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
+#else
+                bwidth > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                bheight > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params,
@@ -2461,8 +2521,10 @@ EbErrorType av1_inter_prediction_hbd(
 
         src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
         conv_params = get_conv_params_no_round(0, (mv_unit->predDirection == BI_PRED) ? 1 : 0, 0, tmp_dstY, 128, is_compound, bit_depth);
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         av1_get_convolve_filter_params(cu_ptr->interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
+#endif
 
         convolveHbd[subpel_x != 0][subpel_y != 0][is_compound](
             src_ptr,
@@ -2471,8 +2533,13 @@ EbErrorType av1_inter_prediction_hbd(
             dst_stride,
             bwidth,
             bheight,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
             &filter_params_x,
             &filter_params_y,
+#else
+            &av1RegularFilter,
+            &av1RegularFilter,
+#endif
             subpel_x,
             subpel_y,
             &conv_params,
@@ -2491,8 +2558,10 @@ EbErrorType av1_inter_prediction_hbd(
             subpel_y = mv_q4.row & SUBPEL_MASK;
             src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
             conv_params = get_conv_params_no_round(0, (mv_unit->predDirection == BI_PRED) ? 1 : 0, 0, tmp_dstCb, 64, is_compound, bit_depth);
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
             av1_get_convolve_filter_params(cu_ptr->interp_filters, &filter_params_x,
                 &filter_params_y, blk_geom->bwidth_uv, blk_geom->bheight_uv);
+#endif
 
             convolveHbd[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
@@ -2501,8 +2570,13 @@ EbErrorType av1_inter_prediction_hbd(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
+#else
+                bwidth > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                bheight > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params,
@@ -2526,8 +2600,13 @@ EbErrorType av1_inter_prediction_hbd(
                 dst_stride,
                 blk_geom->bwidth_uv,
                 blk_geom->bheight_uv,
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
                 &filter_params_x,
                 &filter_params_y,
+#else
+                bwidth > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+                bheight > 8 ? &av1RegularFilter : &av1RegularFilterW4,
+#endif
                 subpel_x,
                 subpel_y,
                 &conv_params,
@@ -3560,9 +3639,13 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 
 
     const Av1Common *cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;//&cpi->common;
+#if CHROMA_BLIND_IF_SEARCH
     EbBool use_uv = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0 &&
         picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level != IT_SEARCH_FAST_LOOP_UV_BLIND) ? EB_TRUE : EB_FALSE;
     const int32_t num_planes = use_uv ? MAX_MB_PLANE : 1;
+#else
+    const int32_t num_planes = MAX_MB_PLANE;
+#endif
 
     int32_t i;
     int32_t tmp_rate;
@@ -3605,7 +3688,11 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
         prediction_ptr,
         md_context_ptr->blk_geom->origin_x,
         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
         use_uv,
+#else
+        md_context_ptr->chroma_level == CHROMA_MODE_0,
+#endif
         asm_type);
 
 
@@ -3683,7 +3770,12 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
                         use_uv,
+#else
+                        md_context_ptr->chroma_level == CHROMA_MODE_0,
+
+#endif
                         asm_type);
 
                     model_rd_for_sb(
@@ -3758,7 +3850,12 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
                         use_uv,
+#else
+                        md_context_ptr->chroma_level == CHROMA_MODE_0,
+
+#endif
                         asm_type);
 
 
@@ -3836,7 +3933,11 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
                         use_uv,
+#else
+                        md_context_ptr->chroma_level == CHROMA_MODE_0,
+#endif
                         asm_type);
 
                     model_rd_for_sb(
@@ -3885,6 +3986,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
     //  return 0;
 }
 
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
 /*static*/ void interpolation_filter_search_HBD(
     PictureControlSet_t *picture_control_set_ptr,
     EbPictureBufferDesc_t *prediction_ptr,
@@ -3910,9 +4012,13 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 
     const Av1Common *cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;//&cpi->common;
 
+#if CHROMA_BLIND_IF_SEARCH
     EbBool use_uv = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0 &&
         picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level != IT_SEARCH_FAST_LOOP_UV_BLIND) ? EB_TRUE : EB_FALSE;
     const int32_t num_planes = use_uv ? MAX_MB_PLANE : 1;
+#else
+    const int32_t num_planes = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0) ? MAX_MB_PLANE : 1;
+#endif
     int32_t i;
     int32_t tmp_rate;
     int64_t tmp_dist;
@@ -3955,7 +4061,11 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
         prediction_ptr,
         md_context_ptr->blk_geom->origin_x,
         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
         use_uv,
+#else
+        md_context_ptr->chroma_level == CHROMA_MODE_0,
+#endif
         asm_type);
 
     model_rd_for_sb(
@@ -4032,7 +4142,11 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
                         use_uv,
+#else
+                        md_context_ptr->chroma_level == CHROMA_MODE_0,
+#endif
                         asm_type);
 
                     model_rd_for_sb(
@@ -4108,7 +4222,11 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
                         use_uv,
+#else
+                        md_context_ptr->chroma_level == CHROMA_MODE_0,
+#endif
                         asm_type);
 
 
@@ -4187,7 +4305,11 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
+#if CHROMA_BLIND_IF_SEARCH
                         use_uv,
+#else
+                        md_context_ptr->chroma_level == CHROMA_MODE_0,
+#endif
                         asm_type);
 
                     model_rd_for_sb(
@@ -4237,7 +4359,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 }
 
 
-
+#endif
 
 EbErrorType inter_pu_prediction_av1(
     ModeDecisionContext_t                  *md_context_ptr,
@@ -4392,6 +4514,7 @@ EbErrorType inter_pu_prediction_av1(
     uint16_t capped_size = md_context_ptr->interpolation_filter_search_blk_size == 0 ? 4 : 
                            md_context_ptr->interpolation_filter_search_blk_size == 1 ? 8 : 16 ;
     if (is16bit) {
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
         if (!md_context_ptr->skip_interpolation_search) {
             if (md_context_ptr->blk_geom->bwidth > capped_size && md_context_ptr->blk_geom->bheight > capped_size)
@@ -4410,9 +4533,13 @@ EbErrorType inter_pu_prediction_av1(
                     &skip_sse_sb);
         }
 
-
+#endif
+#if INTERPOL_FILTER_SEARCH_10BIT_SUPPORT
         AV1InterPrediction10BitMD(
             candidate_buffer_ptr->candidate_ptr->interp_filters,
+#else
+        AV1MDInterPrediction(
+#endif
             picture_control_set_ptr,
             candidate_buffer_ptr->candidate_ptr->ref_frame_type,
             md_context_ptr,

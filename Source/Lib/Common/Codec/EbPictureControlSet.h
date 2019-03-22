@@ -13975,7 +13975,9 @@ extern "C" {
         EbBool                                eos_coming;
         uint8_t                               picture_qp;
         uint64_t                              picture_number;
+#if BASE_LAYER_REF
         uint64_t                              last_islice_picture_number;
+#endif
         EbPicnoiseClass                       pic_noise_class;
         EB_SLICE                              slice_type;
         uint8_t                               pred_struct_index;
@@ -14092,6 +14094,9 @@ extern "C" {
         int32_t                               intra_max_distance[4];
         int32_t                               inter_min_distance[4];
         int32_t                               inter_max_distance[4];
+#if !INTRA_INTER_FAST_LOOP
+        uint8_t                              *cmplx_status_sb;            // used by EncDecProcess()
+#endif
         // Histograms
         uint32_t                          ****picture_histogram;
         uint64_t                              average_intensity_per_region[MAX_NUMBER_OF_REGIONS_IN_WIDTH][MAX_NUMBER_OF_REGIONS_IN_HEIGHT][3];
@@ -14115,7 +14120,12 @@ extern "C" {
         EbHandle                              rc_distortion_histogram_mutex;
         
         // Open loop Intra candidate Search Results
+#if OIS_BASED_INTRA
         ois_sb_results_t                    **ois_sb_results;
+#else
+        OisCu32Cu16Results_t                **ois_cu32_cu16_results;
+        OisCu8Results_t                     **ois_cu8_results;
+#endif
         // Dynamic GOP
         EbPred                                pred_structure;
         uint8_t                               hierarchical_levels;
@@ -14301,11 +14311,15 @@ extern "C" {
         uint8_t                               skip_tx_search;
         uint8_t                               interpolation_search_level;
         uint8_t                               nsq_search_level;
+#if NSQ_OPTIMASATION
         uint8_t                               nsq_max_shapes_md; // max number of shapes to be tested in MD
+#endif
 #if ICOPY
         uint8_t                              sc_content_detected;
 #endif
+#if IBC_MODES
         uint8_t                              ibc_mode;
+#endif
     } PictureParentControlSet_t;
 
 

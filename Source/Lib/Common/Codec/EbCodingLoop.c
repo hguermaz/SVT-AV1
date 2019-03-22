@@ -104,7 +104,9 @@ void av1_predict_intra_block_16bit(
 #define S4  4*4
 
 typedef void(*EB_AV1_ENCODE_LOOP_FUNC_PTR)(
+#if ENCDEC_TX_SEARCH
     PictureControlSet_t    *picture_control_set_ptr,
+#endif
     EncDecContext_t       *context_ptr,
     LargestCodingUnit_t   *sb_ptr,
     uint32_t                 origin_x,
@@ -550,7 +552,9 @@ void encode_pass_tx_search(
 *
 **********************************************************/
 static void Av1EncodeLoop(
+#if ENCDEC_TX_SEARCH
     PictureControlSet_t    *picture_control_set_ptr,
+#endif
     EncDecContext_t       *context_ptr,
     LargestCodingUnit_t   *sb_ptr,
     uint32_t                 origin_x,   //pic based tx org x
@@ -1031,7 +1035,9 @@ void encode_pass_tx_search_hbd(
 *
 **********************************************************/
 static void Av1EncodeLoop16bit(
+#if ENCDEC_TX_SEARCH
     PictureControlSet_t    *picture_control_set_ptr,
+#endif
     EncDecContext_t       *context_ptr,
     LargestCodingUnit_t   *sb_ptr,
     uint32_t                 origin_x,
@@ -1861,10 +1867,22 @@ EbErrorType Av1QpModulationLcu(
 
 
             
+#if OIS_BASED_INTRA
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->parent_pcs_ptr->ois_sb_results[sb_index];
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->sorted_ois_candidate[from_1101_to_85[cu_index]];
             distortion = OisCuPtr[ois_sb_results_ptr->best_distortion_index[from_1101_to_85[cu_index]]].distortion;
 
+#else
+
+            OisCu32Cu16Results_t  *oisCu32Cu16ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index];
+            //OisCu8Results_t         *oisCu8ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu8_results[sb_index];
+
+            distortion =
+                oisCu32Cu16ResultsPtr->sorted_ois_candidate[1][0].distortion +
+                oisCu32Cu16ResultsPtr->sorted_ois_candidate[2][0].distortion +
+                oisCu32Cu16ResultsPtr->sorted_ois_candidate[3][0].distortion +
+                oisCu32Cu16ResultsPtr->sorted_ois_candidate[4][0].distortion;
+#endif
 
 
             distortion = (uint32_t)CLIP3(picture_control_set_ptr->parent_pcs_ptr->intra_complexity_min[0], picture_control_set_ptr->parent_pcs_ptr->intra_complexity_max[0], distortion);
@@ -2045,10 +2063,70 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
 
 
 
+#if OIS_BASED_INTRA
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->parent_pcs_ptr->ois_sb_results[sb_index];
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[ep_to_pa_block_index[cu_index]];
             distortion = OisCuPtr[ois_sb_results_ptr->best_distortion_index[ep_to_pa_block_index[cu_index]]].distortion;
+#else
 
+            OisCu32Cu16Results_t  *oisCu32Cu16ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index];
+            OisCu8Results_t         *oisCu8ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu8_results[sb_index];
+
+            if (cu_size > 32) {
+                distortion =
+                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[1][0].distortion +
+                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[2][0].distortion +
+                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[3][0].distortion +
+                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[4][0].distortion;
+            }
+            else if (cu_size == 32) {
+                const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth + me2Nx2NOffset[context_ptr->cu_stats->depth];
+                distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
+            }
+            else {
+                if (cu_size > 8) {
+                    const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth + me2Nx2NOffset[context_ptr->cu_stats->depth];
+                    distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
+                }
+                else {
+
+
+                    if (use16x16Stat) {
+
+                        const CodedUnitStats_t  *cu_stats = GetCodedUnitStats(ParentBlockIndex[cu_index]);
+                        const uint32_t me2Nx2NTableOffset = cu_stats->cuNumInDepth + me2Nx2NOffset[cu_stats->depth];
+
+                        distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
+                    }
+                    else {
+
+
+
+                        const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth;
+
+                        if (oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].valid_distortion) {
+                            distortion = oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
+                        }
+                        else {
+
+                            const CodedUnitStats_t  *cu_stats = GetCodedUnitStats(ParentBlockIndex[cu_index]);
+                            const uint32_t me2Nx2NTableOffset = cu_stats->cuNumInDepth + me2Nx2NOffset[cu_stats->depth];
+
+                            if (oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].valid_distortion) {
+                                distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
+                            }
+                            else {
+                                distortion = 0;
+                            }
+                        }
+
+                    }
+
+
+                }
+            }
+
+#endif
 
 
 
@@ -2973,7 +3051,9 @@ EB_EXTERN void AV1EncodePass(
 
 
                                 Av1EncodeLoopFunctionTable[is16bit](
+#if ENCDEC_TX_SEARCH
                                     picture_control_set_ptr,
+#endif
                                     context_ptr,
                                     sb_ptr,
                                     context_ptr->cu_origin_x,
@@ -2998,7 +3078,11 @@ EB_EXTERN void AV1EncodePass(
                                 {
 
                                     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+#if INTRA_INTER_FAST_LOOP
                                     ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+#else
+                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
+#endif
                                     ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                     // Set the Candidate Buffer
@@ -3113,7 +3197,9 @@ EB_EXTERN void AV1EncodePass(
                 // Inter
                 else if (cu_ptr->prediction_mode_flag == INTER_MODE) {
 
+#if ENCDEC_TX_SEARCH
                     context_ptr->is_inter = 1;
+#endif
 
                     EbReferenceObject_t* refObj0 = (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
                     EbReferenceObject_t* refObj1 = picture_control_set_ptr->slice_type == B_SLICE ?
@@ -3314,7 +3400,9 @@ EB_EXTERN void AV1EncodePass(
                             if (!zeroLumaCbfMD)
                                 //inter mode  1
                                 Av1EncodeLoopFunctionTable[is16bit](
+#if ENCDEC_TX_SEARCH
                                     picture_control_set_ptr,
+#endif
                                     context_ptr,
                                     sb_ptr,
                                     txb_origin_x,   //pic org
@@ -3375,7 +3463,11 @@ EB_EXTERN void AV1EncodePass(
                                 if (!zeroLumaCbfMD) {
 
                                     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+#if INTRA_INTER_FAST_LOOP
                                     ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+#else
+                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
+#endif
                                     ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                     // Set the Candidate Buffer
@@ -3454,7 +3546,11 @@ EB_EXTERN void AV1EncodePass(
 #if CABAC_UP 
                                 if (allow_update_cdf) {
                                     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+#if INTRA_INTER_FAST_LOOP
                                     ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+#else
+                                    ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
+#endif
                                     ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                     // Set the Candidate Buffer
@@ -3550,7 +3646,9 @@ EB_EXTERN void AV1EncodePass(
                             //inter mode  2
 
                             Av1EncodeLoopFunctionTable[is16bit](
+#if ENCDEC_TX_SEARCH
                                 picture_control_set_ptr,
+#endif
                                 context_ptr,
                                 sb_ptr,
                                 txb_origin_x, //pic offset
@@ -3574,7 +3672,11 @@ EB_EXTERN void AV1EncodePass(
                             if (allow_update_cdf) {
 
                                 ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+#if INTRA_INTER_FAST_LOOP
                                 ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+#else
+                                ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->md_context->buffer_depth_index_start[0]]);
+#endif
                                 ModeDecisionCandidateBuffer_t          *candidateBuffer;
 
                                 // Set the Candidate Buffer
