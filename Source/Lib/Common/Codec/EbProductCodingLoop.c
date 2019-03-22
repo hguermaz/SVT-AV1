@@ -641,22 +641,30 @@ void md_update_all_neighbour_arrays_multiple(
 // the NFL candidates numbers are set
 //*************************//
 #if NFL_PER_SQ_SIZE
-uint32_t nfl_cap_table[6] = {
-    NFL_CAP_4x4,
-    NFL_CAP_8x8,
-    NFL_CAP_16x16,
-    NFL_CAP_32x32,
-    NFL_CAP_64x64,
-    NFL_CAP_128x128
+uint32_t nfl_ref[6] = {
+    4, // 4x4
+    4, // 8x8
+    4, // 16x16
+    4, // 32x32
+    4, // 64x64
+    4, // 128x128
+};
+uint32_t nfl_non_ref[6] = {
+    2, // 4x4
+    2, // 8x8
+    2, // 16x16
+    2, // 32x32
+    2, // 64x64
+    2, // 128x128
 };
 #endif
 void set_nfl(
+#if NFL_PER_SQ_SIZE
+    PictureControlSet_t       *picture_control_set_ptr,
+#endif
     ModeDecisionContext_t     *context_ptr
     ){
 
-#if M9_NON_UNIFORM_NFL || NFL_PER_SQ_SIZE
-    uint8_t nfl_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
-#endif
     // NFL Level MD       Settings
     // 0                  MAX_NFL 40
     // 1                  30
@@ -699,9 +707,15 @@ void set_nfl(
 
 
 #if NFL_PER_SQ_SIZE
-    if (picture_control_set_ptr->slice_type != I_SLICE) {
-        uint32_t nfl_cap = nfl_cap_table[nfl_index];
-        context_ptr->full_recon_search_count = nfl_cap;
+    uint8_t nfl_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
+    if (picture_control_set_ptr->slice_type == I_SLICE) {
+        context_ptr->full_recon_search_count = 6;
+    }
+    else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag) {
+        context_ptr->full_recon_search_count = nfl_ref[nfl_index];
+    }
+    else {
+        context_ptr->full_recon_search_count = nfl_non_ref[nfl_index];
     }
 #endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
@@ -3614,6 +3628,9 @@ void md_encode_block(
                                                   lcuAddr);     
 #endif
         set_nfl(
+#if NFL_PER_SQ_SIZE
+            picture_control_set_ptr,
+#endif
             context_ptr
         );
 
