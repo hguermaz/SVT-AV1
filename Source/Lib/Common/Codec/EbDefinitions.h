@@ -128,18 +128,11 @@ extern "C" {
 #define NFL_IT_TH                                       2 // To be tuned
 
 
-#define ENABLE_EOB_ZERO_CHECK                           1
-#define DISABLE_128_SB_FOR_SUB_720                      1
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
-#if BASE_LAYER_REF
 #define MAX_FRAMES_TO_REF_I                             64
-#endif
 
-#define NSQ_OPTIMASATION                                1
 
-#if NSQ_OPTIMASATION
 #define NSQ_TAB_SIZE                                    6
-#endif
 
 #define IMPROVE_CHROMA_MODE                             1
 #define CHROMA_BLIND_IF_SEARCH                          1
@@ -550,7 +543,6 @@ typedef enum INTERPOLATION_SEARCH_LEVEL {
     IT_SEARCH_FAST_LOOP,
 } INTERPOLATION_SEARCH_LEVEL;
 
-#if NSQ_OPTIMASATION
 typedef enum NSQ_SEARCH_LEVEL {
     NSQ_SEARCH_OFF,
     NSQ_SEARCH_LEVEL1,
@@ -561,16 +553,7 @@ typedef enum NSQ_SEARCH_LEVEL {
     NSQ_SEARCH_LEVEL6,
     NSQ_SEARCH_FULL
 } NSQ_SEARCH_LEVEL;
-#else
-typedef enum NSQ_SEARCH_LEVEL {
-    NSQ_SEARCH_OFF,
-    NSQ_SEARCH_BASE_ON_SQ_TYPE,
-    NSQ_SEARCH_BASE_ON_SQ_COEFF,
-    NSQ_INTER_SEARCH_BASE_ON_SQ_MVMODE,
-    NSQ_INTER_SEARCH_BASE_ON_SQ_INTRAMODE,
-    NSQ_SEARCH_FULL
-} NSQ_SEARCH_LEVEL;
-#endif
+
 #define MAX_PARENT_SQ     6
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
     DIST,

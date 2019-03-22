@@ -696,7 +696,6 @@ EbErrorType signal_derivation_multi_processes_oq(
 
    
 
-#if NSQ_OPTIMASATION
     // NSQ search Level                               Settings
     // NSQ_SEARCH_OFF                                 OFF
     // NSQ_SEARCH_LEVEL1                              Allow only NSQ Inter-NEAREST/NEAR/GLOBAL if parent SQ has no coeff + reordering nsq_table number and testing only 1 NSQ SHAPE
@@ -781,19 +780,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
         
 
-#else
-    // NSQ search Level                               Settings
-   // 0                                              OFF
-   // 1                                              Allow only NSQ Intra-FULL if parent SQ is intra-coded and vice versa.
-   // 2                                              Allow only NSQ Inter-NEAREST/NEAR/GLOBAL if parent SQ has no coeff
-   // 3                                              Allow only NSQ Intra-FULL and Inter-NEWMV if parent SQ is NEWMV
-   // 4                                              Allow only NSQ Inter-FULL and Intra-Z3 if parent SQ is intra-coded
-   // 5                                              Allow NSQ Intra-FULL and Inter-FULL
-    if (!MR_MODE)
-        picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_BASE_ON_SQ_COEFF;
-    else
-        picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_FULL;
-#endif
+
 
     if (picture_control_set_ptr->nsq_search_level == NSQ_SEARCH_OFF) {
         if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;

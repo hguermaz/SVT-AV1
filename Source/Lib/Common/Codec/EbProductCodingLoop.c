@@ -2423,10 +2423,8 @@ void move_cu_data(
 *   performs CL (LCU)
 *******************************************/
 EbBool allowed_ns_cu(
-#if NSQ_OPTIMASATION
     EbBool                             is_nsq_table_used,
     uint8_t                            nsq_max_shapes_md,
-#endif
     ModeDecisionContext_t              *context_ptr,
     uint8_t                            is_complete_sb){
   
@@ -2438,7 +2436,6 @@ EbBool allowed_ns_cu(
         }
     }
 
-#if NSQ_OPTIMASATION
     if (is_nsq_table_used) {
         if (context_ptr->blk_geom->shape != PART_N) {
             ret = 0;
@@ -2449,7 +2446,6 @@ EbBool allowed_ns_cu(
             }
         }
     }
-#endif
     return ret;
 }
 
@@ -2753,7 +2749,6 @@ void inter_depth_tx_search(
     }
 }
 
-#if NSQ_OPTIMASATION
 /****************************************************
 * generate the the size in pixel for partition code
 ****************************************************/
@@ -3037,7 +3032,6 @@ void  order_nsq_table(
         }
     }
 }
-#endif
 #if M8_SKIP_BLK
 uint8_t check_skip_sub_blks(
     PictureControlSet_t              *picture_control_set_ptr,
@@ -3091,7 +3085,6 @@ void md_encode_block(
     const uint32_t cuChromaOriginIndex = ROUND_UV(blk_geom->origin_x) / 2 + ROUND_UV(blk_geom->origin_y) / 2 * SB_STRIDE_UV;
     CodingUnit_t *  cu_ptr = context_ptr->cu_ptr;
     candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
-#if NSQ_OPTIMASATION
     EbBool is_nsq_table_used = (picture_control_set_ptr->slice_type == !I_SLICE &&
         picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE &&
         picture_control_set_ptr->parent_pcs_ptr->nsq_search_level >= NSQ_SEARCH_LEVEL1 &&
@@ -3107,17 +3100,11 @@ void md_encode_block(
                 context_ptr->leaf_partition_neighbor_array);
         }
     }
-#endif
 
     uint8_t                            is_complete_sb = sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb;
 
     if (allowed_ns_cu(
-#if NSQ_OPTIMASATION
         is_nsq_table_used, picture_control_set_ptr->parent_pcs_ptr->nsq_max_shapes_md,context_ptr,is_complete_sb ))
-#else
-        context_ptr, sequence_control_set_ptr->sb_geom[lcuAddr].is_complete_sb))
-
-#endif
     {
 #if !PF_N2_32X32
         // Set PF Mode - should be done per TU (and not per CU) to avoid the correction

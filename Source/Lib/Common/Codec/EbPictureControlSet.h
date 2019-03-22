@@ -13975,9 +13975,7 @@ extern "C" {
         EbBool                                eos_coming;
         uint8_t                               picture_qp;
         uint64_t                              picture_number;
-#if BASE_LAYER_REF
         uint64_t                              last_islice_picture_number;
-#endif
         EbPicnoiseClass                       pic_noise_class;
         EB_SLICE                              slice_type;
         uint8_t                               pred_struct_index;
@@ -14305,9 +14303,7 @@ extern "C" {
         uint8_t                               skip_tx_search;
         uint8_t                               interpolation_search_level;
         uint8_t                               nsq_search_level;
-#if NSQ_OPTIMASATION
         uint8_t                               nsq_max_shapes_md; // max number of shapes to be tested in MD
-#endif
 #if ICOPY
         uint8_t                              sc_content_detected;
 #endif
