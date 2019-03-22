@@ -868,7 +868,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 5                                            64 step refinement
     SequenceControlSet_t                    *sequence_control_set_ptr;
     sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
-#if ADD_CDEF_FILTER_LEVEL
     if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
 #if  M9_CDEF
         //if (picture_control_set_ptr->sc_content_detected) {
@@ -901,19 +900,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else
         picture_control_set_ptr->cdef_filter_mode = 0;
-#else
-    if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
-        if (picture_control_set_ptr->enc_mode <= ENC_M3)
-            picture_control_set_ptr->cdef_filter_mode = 3;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M7)
-            picture_control_set_ptr->cdef_filter_mode = 1;
-        else
-            picture_control_set_ptr->cdef_filter_mode = 1;
-    }
-    else
-        picture_control_set_ptr->cdef_filter_mode = 0;
-
-#endif
 
     // SG Level                                    Settings
     // 0                                            OFF
