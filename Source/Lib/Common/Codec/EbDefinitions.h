@@ -139,7 +139,6 @@ extern "C" {
 #define NFL_IT_TH                                       2 // To be tuned
 
 
-#define TWO_FAST_LOOP                                   0
 #define ENABLE_EOB_ZERO_CHECK                           1
 #define DISABLE_128_SB_FOR_SUB_720                      1
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference

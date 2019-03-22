@@ -1168,17 +1168,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     picture_control_set_ptr->skip_sub_blks =   0;
 
 #endif
-#if TWO_FAST_LOOP
-		// Intra candidates are procsssed in a first fast loop , the best is injected into the second fast loop with Inter candidates.  
-        // two fast loops                       Settings
-        // 0                                    OFF : disable_angle_prediction
-        // 1                                    ON
-        if (picture_control_set_ptr->slice_type == I_SLICE) 
-            picture_control_set_ptr->enable_two_fast_loops = 0;
-        else 
-            picture_control_set_ptr->enable_two_fast_loops = 1;
-          
-#endif
 
 #if M9_CU_8x8
         if (picture_control_set_ptr->enc_mode <= ENC_M8)
