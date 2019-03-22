@@ -146,7 +146,6 @@ extern "C" {
         int32_t                           mi_row,
         int32_t                           mi_col);
 
-#if ICOPY
     void av1_find_best_ref_mvs_from_stack(int allow_hp,
         CandidateMv ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
         MacroBlockD * xd,
@@ -158,7 +157,6 @@ extern "C" {
     int av1_is_dv_valid(const MV dv,
         const MacroBlockD *xd, int mi_row, int mi_col,
         block_size bsize, int mib_size_log2);
-#endif
 
 #ifdef __cplusplus
 }

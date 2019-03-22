@@ -164,11 +164,7 @@ static INLINE PredictionMode compound_ref1_mode(PredictionMode mode) {
 
 
 /*static INLINE*/ int32_t is_inter_block(const MbModeInfo *mbmi) {
-#if ICOPY
     return (mbmi->use_intrabc || (mbmi->ref_frame[0] > INTRA_FRAME));
-#else
-    return /*is_intrabc_block(mbmi) ||*/ mbmi->ref_frame[0] > INTRA_FRAME;
-#endif
 }
 
 static int32_t have_newmv_in_inter_mode(PredictionMode mode) {
@@ -236,11 +232,7 @@ static MvReferenceFrame ref_frame_map[TOTAL_COMP_REFS][2] = {
     { ALTREF2_FRAME, ALTREF_FRAME }
 };
 
-#if ICOPY
 void clamp_mv(
-#else
-static void clamp_mv(
-#endif
     MV *mv,
     int32_t min_col,
     int32_t max_col,
@@ -1393,9 +1385,7 @@ void update_av1_mi_map(
 
 
                 }
-#if ICOPY
                 miPtr[miX + miY * mi_stride].mbmi.use_intrabc = cu_ptr->av1xd->use_intrabc;
-#endif
 
                 miPtr[miX + miY * mi_stride].mbmi.ref_frame[0] = rf[0];
                 miPtr[miX + miY * mi_stride].mbmi.ref_frame[1] = rf[1];
@@ -1467,9 +1457,7 @@ void update_mi_map(
 
                     miPtr[miX + miY * mi_stride].mbmi.sb_type = blk_geom->bsize;
                 }
-#if ICOPY
                 miPtr[miX + miY * mi_stride].mbmi.use_intrabc = cu_ptr->av1xd->use_intrabc;
-#endif
                 miPtr[miX + miY * mi_stride].mbmi.ref_frame[0] = rf[0];
                 miPtr[miX + miY * mi_stride].mbmi.ref_frame[1] = rf[1];
                 if (cu_ptr->prediction_unit_array->inter_pred_direction_index == UNI_PRED_LIST_0) {
@@ -2053,7 +2041,6 @@ void av1_count_overlappable_neighbors(
         count_overlappable_nb_left(cm, xd, mi_row, MAX_SIGNED_VALUE);
 }
 
-#if ICOPY
 #define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels
 #define INTRABC_DELAY_SB64  (INTRABC_DELAY_PIXELS / 64)
 
@@ -2219,4 +2206,3 @@ void av1_find_best_ref_mvs_from_stack(int allow_hp,
     *near_mv = av1_get_ref_mv_from_stack(ref_idx, ref_frames, 1, ref_mv_stack/*mbmi_ext*/, xd);
     lower_mv_precision(&near_mv->as_mv, allow_hp, is_integer);
 }
-#endif

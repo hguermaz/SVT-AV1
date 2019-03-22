@@ -1189,11 +1189,7 @@ void ProductMdFastPuPrediction(
     context_ptr->skip_interpolation_search = picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level >= IT_SEARCH_FAST_LOOP_UV_BLIND ? 0 : 1;
     candidateBuffer->candidate_ptr->interp_filters = 0;
 
-#if ICOPY
     ProductPredictionFunTable[candidateBuffer->candidate_ptr->use_intrabc ? INTER_MODE : modeType](
-#else
-    ProductPredictionFunTable[modeType](
-#endif
         context_ptr,
         picture_control_set_ptr,
         candidateBuffer,

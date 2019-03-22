@@ -13,7 +13,6 @@
 #include <math.h>
 #include <stdio.h>
 #include "EbDefinitions.h"
-#if ICOPY
 #include "EbCodingUnit.h"
 #include "av1me.h"
 #include "EbPictureControlSet.h"
@@ -1197,4 +1196,3 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
   return 0;//CHKN  var;
 }
 
-#endif

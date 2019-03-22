@@ -26,7 +26,6 @@
 #include "EbModeDecisionConfiguration.h"
 #include "EbReferenceObject.h"
 #include "EbModeDecisionProcess.h"
-#if ICOPY
 #include "av1me.h"
 
 
@@ -56,7 +55,6 @@ static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
 static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
                                                             25,  25,  10 };
 
-#endif
 // Adaptive Depth Partitioning
 // Shooting states
 #define UNDER_SHOOTING                        0
@@ -2261,9 +2259,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 
         // Initial Rate Estimatimation of the Motion vectors
         av1_estimate_mv_rate(
-#if ICOPY
             picture_control_set_ptr,
-#endif
             md_rate_estimation_array,
             &picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc->nmvc);
 
@@ -2337,7 +2333,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
         }
 
-#if ICOPY
         if (picture_control_set_ptr->parent_pcs_ptr->allow_intrabc)
         {
             int i;
@@ -2460,7 +2455,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 
             av1_init3smotion_compensation(&picture_control_set_ptr->ss_cfg, picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr->stride_y);
         }
-#endif
 
         // Derive MD parameters
         SetMdSettings( // HT Done

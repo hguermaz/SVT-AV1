@@ -136,9 +136,7 @@ extern "C" {
 
 
 
-#define ICOPY       1 //Intra Block Copy
 
-#if ICOPY
 #define IBC_EARLY_0 1
 #define HASH_ME     0
 #define HASH_X      1
@@ -148,7 +146,6 @@ extern "C" {
 #define ADD_VAR_SC_DETECT   1
 #define IBC_MODES           1  //add two intermediates modes for ibc    
 #define ICOPY_10B           1  //10b path
-#endif
 
 #define AOM_SAD_PORTING 1
 

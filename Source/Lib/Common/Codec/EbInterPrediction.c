@@ -963,7 +963,6 @@ int32_t is_inter_block(const MbModeInfo *mbmi);
 block_size scale_chroma_bsize(block_size bsize, int32_t subsampling_x,
     int32_t subsampling_y);
 
-#if ICOPY
 // A special 2-tap bilinear filter for IntraBC chroma. IntraBC uses full pixel
 // MV for luma. If sub-sampling exists, chroma may possibly use half-pel MV.
 DECLARE_ALIGNED(256, static const int16_t, av1_intrabc_bilinear_filter[2]) = {
@@ -996,7 +995,6 @@ static void convolve_2d_for_intrabc(const uint8_t *src, int src_stride,
             (InterpFilterParams *)filter_params_y, 0, 0, conv_params);
     }
 }
-#endif
 #if ICOPY_10B
 static void highbd_convolve_2d_for_intrabc(const uint16_t *src, int src_stride,
     uint16_t *dst, int dst_stride, int w,
@@ -1031,9 +1029,7 @@ EbErrorType av1_inter_prediction(
     CodingUnit_t                           *cu_ptr,
     uint8_t                                 ref_frame_type,
     MvUnit_t                               *mv_unit,
-#if ICOPY
     uint8_t                                  use_intrabc,
-#endif
     uint16_t                                pu_origin_x,
     uint16_t                                pu_origin_y,
     uint8_t                                 bwidth,
@@ -1099,9 +1095,7 @@ EbErrorType av1_inter_prediction(
             av1_set_ref_frame(rf, ref_frame_type);
             for (miY = 0; miY < (blk_geom->bheight >> MI_SIZE_LOG2); miY++) {
                 for (miX = 0; miX < (blk_geom->bwidth >> MI_SIZE_LOG2); miX++) {
-#if ICOPY
                     miPtr[miX + miY * xd->mi_stride].mbmi.use_intrabc = use_intrabc;
-#endif
                     miPtr[miX + miY * xd->mi_stride].mbmi.ref_frame[0] = rf[0];
                     if (mv_unit->predDirection == UNI_PRED_LIST_0) {
                         miPtr[miX + miY * xd->mi_stride].mbmi.mv[0].as_mv.col = mv_unit->mv[REF_LIST_0].x;
@@ -1134,11 +1128,7 @@ EbErrorType av1_inter_prediction(
         sub8x8_inter = (block_size_wide[bsize] < 8 && ss_x) ||
             (block_size_high[bsize] < 8 && ss_y);
 
-#if ICOPY
         if (use_intrabc) sub8x8_inter = 0;
-#else
-        //if (is_intrabc) sub8x8_inter = 0;
-#endif
 
         // For sub8x8 chroma blocks, we may be covering more than one luma block's
         // worth of pixels. Thus (mi_x, mi_y) may not be the correct coordinates for
@@ -1334,12 +1324,10 @@ EbErrorType av1_inter_prediction(
             av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                 &filter_params_y, blk_geom->bwidth_uv, blk_geom->bheight_uv);
 
-#if ICOPY 
             if (use_intrabc && (subpel_x != 0 || subpel_y != 0))
                 convolve_2d_for_intrabc((const uint8_t *)src_ptr, src_stride, dst_ptr, dst_stride, blk_geom->bwidth_uv, blk_geom->bheight_uv, subpel_x,
                     subpel_y, &conv_params);
             else
-#endif
             convolve[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
                 src_stride,
@@ -1366,12 +1354,10 @@ EbErrorType av1_inter_prediction(
             src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
             conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstCr, 64, is_compound, EB_8BIT);
 
-#if ICOPY 
             if (use_intrabc && (subpel_x != 0 || subpel_y != 0))
                 convolve_2d_for_intrabc((const uint8_t *)src_ptr, src_stride, dst_ptr, dst_stride, blk_geom->bwidth_uv, blk_geom->bheight_uv, subpel_x,
                     subpel_y, &conv_params);
             else
-#endif
             convolve[subpel_x != 0][subpel_y != 0][is_compound](
                 src_ptr,
                 src_stride,
@@ -3672,9 +3658,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
         md_context_ptr->cu_ptr,
         candidate_buffer_ptr->candidate_ptr->ref_frame_type,
         &mv_unit,
-#if ICOPY
         0,
-#endif
         md_context_ptr->cu_origin_x,
         md_context_ptr->cu_origin_y,
         md_context_ptr->blk_geom->bwidth,
@@ -3750,9 +3734,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         md_context_ptr->cu_ptr,
                         candidate_buffer_ptr->candidate_ptr->ref_frame_type,
                         &mv_unit,
-#if ICOPY
                         0,
-#endif
                         md_context_ptr->cu_origin_x,
                         md_context_ptr->cu_origin_y,
                         md_context_ptr->blk_geom->bwidth,
@@ -3825,9 +3807,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         md_context_ptr->cu_ptr,
                         candidate_buffer_ptr->candidate_ptr->ref_frame_type,
                         &mv_unit,
-#if ICOPY
                         0,
-#endif
                         md_context_ptr->cu_origin_x,
                         md_context_ptr->cu_origin_y,
                         md_context_ptr->blk_geom->bwidth,
@@ -3903,9 +3883,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         md_context_ptr->cu_ptr,
                         candidate_buffer_ptr->candidate_ptr->ref_frame_type,
                         &mv_unit,
-#if ICOPY
                         0,
-#endif
                         md_context_ptr->cu_origin_x,
                         md_context_ptr->cu_origin_y,
                         md_context_ptr->blk_geom->bwidth,
@@ -4345,7 +4323,6 @@ EbErrorType inter_pu_prediction_av1(
     int32_t rs = 0;
     int64_t rd = INT64_MAX;
 
-#if ICOPY
     if (candidate_buffer_ptr->candidate_ptr->use_intrabc)
     {
         if (is16bit) {
@@ -4411,7 +4388,6 @@ EbErrorType inter_pu_prediction_av1(
         }
 #endif
     }
-#endif
 
     if (is16bit) {
         ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr)->referencePicture16bit;
@@ -4543,9 +4519,7 @@ EbErrorType inter_pu_prediction_av1(
             md_context_ptr->cu_ptr,
             candidate_buffer_ptr->candidate_ptr->ref_frame_type,
             &mv_unit,
-#if ICOPY
             candidate_buffer_ptr->candidate_ptr->use_intrabc,
-#endif
             md_context_ptr->cu_origin_x,
             md_context_ptr->cu_origin_y,
             md_context_ptr->blk_geom->bwidth,

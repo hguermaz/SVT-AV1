@@ -23,12 +23,8 @@ extern "C" {
     /**************************************
      * Defines
      **************************************/
-#if ICOPY
 #define IBC_CAND 2 //two intra bc candidates
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (124+IBC_CAND) /* 61 Intra & 18+2x8+2x8 Inter*/
-#else
-#define MODE_DECISION_CANDIDATE_MAX_COUNT               124// 61 Intra & 18+2x8+2x8 Inter
-#endif
 
 #define DEPTH_ONE_STEP   21
 #define DEPTH_TWO_STEP    5

@@ -35,12 +35,6 @@ extern void av1_predict_intra_block(
     TileInfo                    *tile,
 
     STAGE                       stage,
-    #if !ICOPY
-    uint8_t                     intra_luma_left_mode,
-    uint8_t                     intra_luma_top_mode,
-    uint8_t                     intra_chroma_left_mode,
-    uint8_t                     intra_chroma_top_mode,
-#endif
     const BlockGeom            *blk_geom,
     const Av1Common *cm,
     int32_t wpx,
@@ -66,9 +60,6 @@ void av1_predict_intra_block_16bit(
     TileInfo               *tile,
 
     EncDecContext_t         *context_ptr,
-    #if !ICOPY
-    CodingUnit_t *cu_ptr,
-#endif
     const Av1Common *cm,
     int32_t wpx,
     int32_t hpx,
@@ -2680,11 +2671,7 @@ EB_EXTERN void AV1EncodePass(
 #endif
 
                 if (cu_ptr->prediction_mode_flag == INTRA_MODE) {
-#if ICOPY
                     context_ptr->is_inter = cu_ptr->av1xd->use_intrabc;
-#else
-                    context_ptr->is_inter = 0;
-#endif
                     context_ptr->tot_intra_coded_area += blk_geom->bwidth* blk_geom->bheight;
                     if (picture_control_set_ptr->slice_type != I_SLICE) {
                         context_ptr->intra_coded_area_sb[tbAddr] += blk_geom->bwidth* blk_geom->bheight;
@@ -2715,7 +2702,6 @@ EB_EXTERN void AV1EncodePass(
 
                             uint32_t cu_originy_uv = (context_ptr->cu_origin_y >> 3 << 3) >> 1;
                             uint32_t cu_originx_uv = (context_ptr->cu_origin_x >> 3 << 3) >> 1;
-#if ICOPY
                             if (cu_ptr->av1xd->use_intrabc)
                             {
                                 MvReferenceFrame ref_frame = INTRA_FRAME;
@@ -2794,9 +2780,7 @@ EB_EXTERN void AV1EncodePass(
                                     cu_ptr,
                                     cu_ptr->prediction_unit_array->ref_frame_type,
                                     &context_ptr->mv_unit,
-#if ICOPY
                                     1,// use_intrabc,
-#endif
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,
@@ -2813,7 +2797,6 @@ EB_EXTERN void AV1EncodePass(
                             }
                             else
                             {
-#endif
                                 if (is16bit) {
                                     uint16_t    topNeighArray[64 * 2 + 1];
                                     uint16_t    leftNeighArray[64 * 2 + 1];
@@ -2859,9 +2842,6 @@ EB_EXTERN void AV1EncodePass(
                                     av1_predict_intra_block_16bit(
                                         &sb_ptr->tile_info,
                                         context_ptr,
-                                        #if !ICOPY
-                                        cu_ptr,
-#endif
                                         picture_control_set_ptr->parent_pcs_ptr->av1_cm,                  //const Av1Common *cm,
                                         plane ? blk_geom->bwidth_uv : blk_geom->bwidth,                  //int32_t wpx,
                                         plane ? blk_geom->bheight_uv : blk_geom->bheight,                  //int32_t hpx,
@@ -2936,12 +2916,6 @@ EB_EXTERN void AV1EncodePass(
                                     av1_predict_intra_block(
                                         &sb_ptr->tile_info,
                                         ED_STAGE,
-                                        #if !ICOPY
-                                        cu_ptr->prediction_unit_array[0].intra_luma_left_mode,
-                                        cu_ptr->prediction_unit_array[0].intra_luma_top_mode,
-                                        cu_ptr->prediction_unit_array[0].intra_chroma_left_mode,
-                                        cu_ptr->prediction_unit_array[0].intra_chroma_top_mode,
-#endif
                                         context_ptr->blk_geom,
                                         picture_control_set_ptr->parent_pcs_ptr->av1_cm,                  //const Av1Common *cm,
                                         plane ? blk_geom->bwidth_uv : blk_geom->bwidth,                   //int32_t wpx,
@@ -2965,9 +2939,7 @@ EB_EXTERN void AV1EncodePass(
                                         0);
                                 }
                                 }
-#if ICOPY
                             }
-#endif
 
 
 
@@ -3276,9 +3248,7 @@ EB_EXTERN void AV1EncodePass(
                                     cu_ptr,
                                     cu_ptr->prediction_unit_array->ref_frame_type,
                                     &context_ptr->mv_unit,
-#if ICOPY
                                     0,//use_intrabc,
-#endif
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,
