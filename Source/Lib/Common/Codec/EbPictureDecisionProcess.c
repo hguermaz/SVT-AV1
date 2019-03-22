@@ -1081,7 +1081,11 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 5                                            Light OIS based Intra
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
+#if M9_INTRA
+         picture_control_set_ptr->intra_pred_mode = 4;
+#else
          picture_control_set_ptr->intra_pred_mode = 0;
+#endif
     else {
 #if SCENE_CONTENT_SETTINGS
         if (picture_control_set_ptr->sc_content_detected) {

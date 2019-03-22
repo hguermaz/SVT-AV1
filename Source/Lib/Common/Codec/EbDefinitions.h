@@ -95,6 +95,8 @@ extern "C" {
 #define M9_ME                    0   // VP9 4K ME, ME (16x9)
 #define M9_SUBPEL_SELECTION      0
 #define M9_CU_8x8                0
+    
+#define M9_INTRA                    0
 
 // Under testing
 #define M9_FRAC_ME_SEARCH_METHOD 0   // VP9 4K fractional search method; SUB_SAD_SEARCH vs. FULL_SAD_SEARCH 
