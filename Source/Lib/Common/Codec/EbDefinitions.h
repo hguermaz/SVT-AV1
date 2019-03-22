@@ -156,7 +156,6 @@ extern "C" {
 
 #if ICOPY
 #define IBC_EARLY_0 1
-#define HASH_ME     0
 #define HASH_X      1
 #define IBC_SW_WAVEFRONT    1
 #define FIX_SAD   1
