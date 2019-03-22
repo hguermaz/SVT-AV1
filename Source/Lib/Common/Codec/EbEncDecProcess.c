@@ -1375,7 +1375,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 #endif
 
 
-#if SHUT_GLOBAL_MV
     // Set global MV injection
     // Level                Settings
     // 0                    Injection off (Hsan: but not derivation as used by MV ref derivation)
@@ -1384,7 +1383,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->global_mv_injection = 1;
     else
         context_ptr->global_mv_injection = 0;
-#endif
+
     
     // Set warped motion injection
     // Level                Settings

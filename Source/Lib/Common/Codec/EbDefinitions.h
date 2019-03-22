@@ -122,9 +122,7 @@ extern "C" {
 #if M9_PF
 #define PF_N2_32X32                                     1
 #endif
-#define SHUT_GLOBAL_MV                                  1
 
-#define REMOVED_DUPLICATE_INTER                         1
 #define REMOVED_DUPLICATE_INTER_L1                      1
 #define REMOVED_DUPLICATE_INTER_BIPRED                  1
 #define INTRA_INTER_FAST_LOOP                           1

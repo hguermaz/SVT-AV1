@@ -212,7 +212,6 @@ extern "C" {
         uint8_t                         intra_chroma_top_mode;
         int16_t                         pred_buf_q3[CFL_BUF_SQUARE]; // Hsan: both MD and EP to use pred_buf_q3 (kept 1, and removed the 2nd)
 
-#if REMOVED_DUPLICATE_INTER
         int16_t                           injected_mv_x_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
         int16_t                           injected_mv_y_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
         uint8_t                           injected_mv_count_l0;
@@ -226,7 +225,6 @@ extern "C" {
         int16_t                           injected_mv_x_bipred_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
         int16_t                           injected_mv_y_bipred_l1_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
         uint8_t                           injected_mv_count_bipred;
-#endif
 #if INTRA_INTER_FAST_LOOP
         uint32_t                          fast_candidate_intra_count;
         uint32_t                          fast_candidate_inter_count;
@@ -246,9 +244,7 @@ extern "C" {
         uint8_t                           decouple_intra_inter_fast_loop;
 #endif
         uint8_t                           full_loop_escape;
-#if SHUT_GLOBAL_MV
         uint8_t                           global_mv_injection;
-#endif
         uint8_t                           warped_motion_injection;
         uint8_t                           unipred3x3_injection;
         uint8_t                           bipred3x3_injection;
