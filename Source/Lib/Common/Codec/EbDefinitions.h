@@ -70,10 +70,7 @@ extern "C" {
 #define ENCDEC_TX_SEARCH                                1
 #define TEST5_DISABLE_NSQ_ME                            0
 
-
-#define REST_FAST_RATE_EST                              1
-#define MDC_FIX_0                                       1
-#define MDC_FIX_1                                       1
+    // ADAM - MDC_FIX_0 and MDC_FIX_1
 
 #define M8_ADP                                          1
 #if M8_ADP

@@ -11,9 +11,7 @@
 #include "EbDefinitions.h"
 #include "EbRateControlProcess.h"
 #include "EbSequenceControlSet.h"
-#if MDC_FIX_0
 #include "EbModeDecision.h"
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -79,12 +77,10 @@ extern "C" {
         uint32_t                              sb_average_score;
 #endif
 
-#if MDC_FIX_0
         const BlockGeom                      *blk_geom;
         ModeDecisionCandidate_t              *mdc_candidate_ptr;
         CandidateMv                          *mdc_ref_mv_stack;
         CodingUnit_t                         *mdc_cu_ptr;
-#endif
         uint8_t                               qp_index;
 
         // Multi - Mode signal(s)

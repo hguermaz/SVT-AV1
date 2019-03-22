@@ -773,13 +773,11 @@ EbErrorType ModeDecisionConfigurationContextCtor(
     EB_MALLOC(uint32_t*, context_ptr->sb_score_array, sizeof(uint32_t) * sb_total_count, EB_N_PTR);
     EB_MALLOC(uint8_t *, context_ptr->sb_cost_array, sizeof(uint8_t) * sb_total_count, EB_N_PTR);
 
-#if MDC_FIX_0
     // Open Loop Partitioning 
     EB_MALLOC(ModeDecisionCandidate_t*, context_ptr->mdc_candidate_ptr, sizeof(ModeDecisionCandidate_t), EB_N_PTR);
     EB_MALLOC(CandidateMv*, context_ptr->mdc_ref_mv_stack, sizeof(CandidateMv), EB_N_PTR);
     EB_MALLOC(CodingUnit_t*, context_ptr->mdc_cu_ptr, sizeof(CodingUnit_t), EB_N_PTR);
     EB_MALLOC(MacroBlockD*, context_ptr->mdc_cu_ptr->av1xd, sizeof(MacroBlockD), EB_N_PTR);
-#endif
     return EB_ErrorNone;
 }
 

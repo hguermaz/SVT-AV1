@@ -70,7 +70,6 @@ typedef EbErrorType(*EB_MDC_FUNC)(
 #define ALL8        0x71
 #define AllD        0x80
 
-#if MDC_FIX_1
 #if M8_ADP
 EB_ALIGN(16) static const uint8_t ndp_level_0[4] = {Pred + Predp1 + Predp2, Pred + Predp1, Pred + Predp1, Pred + Predm1};
 EB_ALIGN(16) static const uint8_t ndp_level_1[4] = {Pred + Predp1         , Pred + Predp1, Pred + Predp1, Pred + Predm1 };
@@ -86,31 +85,7 @@ EB_ALIGN(16) static const uint8_t NdpRefinementControl[MAX_TEMPORAL_LAYERS/*temp
     /* layer-5 */      { Pred + Predp1 + Predp2     , Pred + Predp1                  ,Pred + Predp1          ,Pred + Predm1         },
 };
 #endif
-#else
-EB_ALIGN(16) static const uint8_t NdpRefinementControlNREF[MAX_TEMPORAL_LAYERS/*temporal layer*/][4/*cu Size*/] =
-{
-                            //   64                         32                              16                  8  
-    /* layer-0 */      { Pred + Predp1+Predp2     , Pred + Predp1                  ,Pred +Predp1          ,Pred+Predm1         },  
-    /* layer-1 */      { Pred + Predp1+Predp2     , Pred + Predp1                  ,Pred +Predp1          ,Pred+Predm1         },
-    /* layer-2 */      { Pred + Predp1+Predp2     , Pred + Predp1                  ,Pred +Predp1          ,Pred+Predm1         },
-    /* layer-3 */      { Pred + Predp1            , Pred + Predp1                  , Pred + Predp1        , Pred + Predm1      },
-    /* layer-4 */      { Pred + Predp1            , Pred + Predp1                  , Pred + Predp1        , Pred + Predm1      },
-    /* layer-5 */      { Pred + Predp1            , Pred + Predp1                  , Pred + Predp1        , Pred + Predm1      },
-  }; 
-#endif
 
-#if !MDC_FIX_1 // clean up
-EB_ALIGN(16) static const uint8_t NdpRefinementControl_FAST[MAX_TEMPORAL_LAYERS/*temporal layer*/][4/*cu Size*/] =
-{
-                            //   64                         32                              16                  8  
-    /* layer-0 */      { Pred + Predp1+Predp2       , Pred + Predp1                  ,Pred +Predp1          ,Pred+Predm1         },  
-    /* layer-1 */      { Pred                       , Pred + Predp1                  ,Pred +Predp1          ,Pred+Predm1         },
-    /* layer-2 */      { Pred                       , Pred + Predp1                  ,Pred +Predp1          ,Pred+Predm1         }, 
-    /* layer-3 */       { Pred                       , Pred                           , Pred                 , Pred + Predm1      },
-    /* layer-4 */       { Pred                       , Pred                           , Pred                 , Pred + Predm1      },
-    /* layer-5 */       { Pred                       , Pred                           , Pred                 , Pred + Predm1      },
-  }; 
-#endif
 #if !M8_ADP
 EB_ALIGN(16) static const uint8_t NdpRefinementControlSw1080P[2/*NDP levels*/][4/*LCU classifier class*/][MAX_TEMPORAL_LAYERS/*temporal layer*/][4/*cu Size*/] =
 {
