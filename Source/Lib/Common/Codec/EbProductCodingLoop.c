@@ -1272,9 +1272,7 @@ void perform_fast_loop(
                 lumaFastDistortion,
                 0,
                 context_ptr->fast_lambda,
-#if USE_SSE_FL
                 0,
-#endif
                 picture_control_set_ptr,
                 &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidate_ptr->ref_frame_type][0]),
                 context_ptr->blk_geom,
@@ -1319,14 +1317,9 @@ void perform_fast_loop(
                 asm_type);
 
             // Distortion
-#if USE_SSE_FL
             // Y
             if (use_ssd) {
-#if TRACK_FAST_DISTORTION
                 candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
-#else
-                lumaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth) - 2](
-#endif
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
@@ -1336,11 +1329,7 @@ void perform_fast_loop(
 
             }
             else {
-#if TRACK_FAST_DISTORTION
                 candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
-#else
-                lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
-#endif
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
@@ -1349,18 +1338,9 @@ void perform_fast_loop(
                     context_ptr->blk_geom->bwidth));
             }
 
-#else
-            lumaFastDistortion = (NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth >> 3](
-                input_picture_ptr->buffer_y + inputOriginIndex,
-                input_picture_ptr->stride_y,
-                prediction_ptr->buffer_y + cuOriginIndex,
-                prediction_ptr->stride_y,
-                context_ptr->blk_geom->bheight,
-                context_ptr->blk_geom->bwidth));
-#endif
+
 
             if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
-#if USE_SSE_FL
                 if (use_ssd) {
                     chromaFastDistortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2]( //spatial_full_distortion_kernel(
                         input_picture_ptr->bufferCb + inputCbOriginIndex,
@@ -1395,23 +1375,7 @@ void perform_fast_loop(
                         context_ptr->blk_geom->bheight_uv,
                         context_ptr->blk_geom->bwidth_uv);
                 }
-#else
-                chromaFastDistortion = NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
-                    input_picture_ptr->bufferCb + inputCbOriginIndex,
-                    input_picture_ptr->strideCb,
-                    candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex,
-                    prediction_ptr->strideCb,
-                    context_ptr->blk_geom->bheight_uv,
-                    context_ptr->blk_geom->bwidth_uv);
 
-                chromaFastDistortion += NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
-                    input_picture_ptr->bufferCr + inputCrOriginIndex,
-                    input_picture_ptr->strideCb,
-                    candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex,
-                    prediction_ptr->strideCr,
-                    context_ptr->blk_geom->bheight_uv,
-                    context_ptr->blk_geom->bwidth_uv);
-#endif
             }
             else {
                 chromaFastDistortion = 0;
@@ -1423,16 +1387,11 @@ void perform_fast_loop(
                 cu_ptr,
                 candidateBuffer->candidate_ptr,
                 cu_ptr->qp,
-#if USE_SSE_FL
                 lumaFastDistortion,
                 chromaFastDistortion,
                 use_ssd ? context_ptr->full_lambda : context_ptr->fast_lambda,
                 use_ssd,
-#else
-                lumaFastDistortion,
-                chromaFastDistortion,
-                context_ptr->fast_lambda,
-#endif
+
                 picture_control_set_ptr,
                 &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidate_ptr->ref_frame_type][0]),
                 context_ptr->blk_geom,
@@ -2300,9 +2259,6 @@ void AV1PerformFullLoop(
         candidateBuffer->cr_distortion[DIST_CALC_PREDICTION] = crFullDistortion[DIST_CALC_PREDICTION];
         candidateBuffer->cr_coeff_bits = cr_coeff_bits;
         candidateBuffer->candidate_ptr->full_distortion = (uint32_t)(y_full_distortion[0]);
-#if !TRACK_FAST_DISTORTION
-        candidateBuffer->candidate_ptr->luma_distortion = (uint32_t)(y_full_distortion[0]);
-#endif
 
         candidateBuffer->y_coeff_bits = y_coeff_bits;
 
@@ -2644,9 +2600,6 @@ void inter_depth_tx_search(
         candidateBuffer->cr_coeff_bits = cr_coeff_bits;
 
         candidateBuffer->candidate_ptr->full_distortion = (uint32_t)(y_full_distortion[0]);
-#if !TRACK_FAST_DISTORTION
-        candidateBuffer->candidate_ptr->luma_distortion = (uint32_t)(y_full_distortion[0]);
-#endif
 
         candidateBuffer->y_coeff_bits = y_coeff_bits;
         candidate_ptr->full_distortion = (uint32_t)(y_full_distortion[0]);
@@ -3122,18 +3075,10 @@ void md_encode_block(
     ModeDecisionCandidateBuffer_t         **candidateBufferPtrArrayBase = context_ptr->candidate_buffer_ptr_array;
     ModeDecisionCandidateBuffer_t         **candidate_buffer_ptr_array;
     const BlockGeom                          *blk_geom = context_ptr->blk_geom;
-#if !INTRA_INTER_FAST_LOOP
-    uint32_t                                  buffer_total_count;
-#endif
     ModeDecisionCandidateBuffer_t            *candidateBuffer;
     ModeDecisionCandidate_t                  *fast_candidate_array = context_ptr->fast_candidate_array;
     uint8_t                                   candidateIndex;
     uint32_t                                  fastCandidateTotalCount;
-#if !INTRA_INTER_FAST_LOOP
-    uint32_t                                  fullCandidateTotalCount;
-    uint32_t                                  maxBuffers;
-    uint32_t                                  secondFastCostSearchCandidateTotalCount;
-#endif
     EbAsm                                     asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
     uint32_t                                  best_intra_mode = EB_INTRA_MODE_INVALID;
 
@@ -3144,11 +3089,8 @@ void md_encode_block(
     const uint32_t cuOriginIndex = blk_geom->origin_x + blk_geom->origin_y * SB_STRIDE_Y;
     const uint32_t cuChromaOriginIndex = ROUND_UV(blk_geom->origin_x) / 2 + ROUND_UV(blk_geom->origin_y) / 2 * SB_STRIDE_UV;
     CodingUnit_t *  cu_ptr = context_ptr->cu_ptr;
-#if INTRA_INTER_FAST_LOOP
     candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
-#else
-    candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[context_ptr->buffer_depth_index_start[0]]);
-#endif
+
 #if NSQ_OPTIMASATION
     EbBool is_nsq_table_used = (picture_control_set_ptr->slice_type == !I_SLICE &&
         picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE &&
@@ -3221,13 +3163,10 @@ void md_encode_block(
             leaf_index,
 #endif
             lcuAddr,
-#if !INTRA_INTER_FAST_LOOP
-            &buffer_total_count,
-#endif
+
             &fastCandidateTotalCount,
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
-#if INTRA_INTER_FAST_LOOP
         EbBool decouple_intra_inter_fast_loop = context_ptr->decouple_intra_inter_fast_loop  && (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N && context_ptr->full_recon_search_count > 1);
         uint32_t buffer_total_count;
         if (decouple_intra_inter_fast_loop) {
@@ -3331,51 +3270,7 @@ void md_encode_block(
             context_ptr->best_candidate_index_array,
             context_ptr->sorted_candidate_index_array,
             &ref_fast_cost);
-#else
-        //if we want to recon N candidate, we would need N+1 buffers
-        maxBuffers = MIN((buffer_total_count + 1), context_ptr->buffer_depth_index_width[0]);
 
-        ProductPerformFastLoop(
-            picture_control_set_ptr,
-            context_ptr->sb_ptr,
-            context_ptr,
-            candidateBufferPtrArrayBase,
-            fast_candidate_array,
-            fastCandidateTotalCount,
-            input_picture_ptr,
-            inputOriginIndex,
-            inputCbOriginIndex,
-            inputCbOriginIndex,
-            cu_ptr,
-            cuOriginIndex,
-            cuChromaOriginIndex,
-            maxBuffers,
-            &secondFastCostSearchCandidateTotalCount,
-            asm_type);
-
-        // Make sure buffer_total_count is not larger than the number of fast modes
-        buffer_total_count = MIN(secondFastCostSearchCandidateTotalCount, buffer_total_count);
-
-        // PreModeDecision
-        // -Input is the buffers
-        // -Output is list of buffers for full reconstruction
-        uint8_t  disable_merge_index = 0;
-        uint64_t ref_fast_cost = MAX_MODE_COST;
-
-        PreModeDecision(
-            cu_ptr,
-            (secondFastCostSearchCandidateTotalCount == buffer_total_count) ? buffer_total_count : maxBuffers,
-            candidate_buffer_ptr_array,
-            &fullCandidateTotalCount,
-            context_ptr->best_candidate_index_array,
-#if USED_NFL_FEATURE_BASED
-            context_ptr->sorted_candidate_index_array,
-#endif
-            &disable_merge_index,
-            &ref_fast_cost,
-            (EbBool)(secondFastCostSearchCandidateTotalCount == buffer_total_count)); // The fast loop bug fix is now added to 4K only
-
-#endif
         AV1PerformFullLoop(
             picture_control_set_ptr,
             context_ptr->sb_ptr,
@@ -3386,11 +3281,8 @@ void md_encode_block(
             inputCbOriginIndex,
             cuOriginIndex,
             cuChromaOriginIndex,
-#if INTRA_INTER_FAST_LOOP
             context_ptr->full_recon_search_count,
-#else
-            MIN(fullCandidateTotalCount, buffer_total_count),
-#endif
+
             ref_fast_cost,
             asm_type); // fullCandidateTotalCount to number of buffers to process
 
@@ -3401,11 +3293,8 @@ void md_encode_block(
             context_ptr->blk_geom->bwidth,
             context_ptr->blk_geom->bheight,
             candidate_buffer_ptr_array,
-#if INTRA_INTER_FAST_LOOP
             context_ptr->full_recon_search_count,
-#else
-            fullCandidateTotalCount,
-#endif
+
 #if M9_FULL_LOOP_ESCAPE
             (context_ptr->full_loop_escape == 2) ? context_ptr->sorted_candidate_index_array : context_ptr->best_candidate_index_array,
 #else
