@@ -2357,15 +2357,10 @@ void  intra_bc_search(
     };
 
     //up to two dv candidates will be generated
-#if IBC_MODES
     enum IntrabcMotionDirection max_dir = pcs->parent_pcs_ptr->ibc_mode > 1 ? IBC_MOTION_LEFT : IBC_MOTION_DIRECTIONS;
 
     for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
         dir < max_dir; ++dir) {
-#else
-    for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
-        dir < IBC_MOTION_DIRECTIONS; ++dir) {
-#endif
 
         const MvLimits tmp_mv_limits = x->mv_limits;
 

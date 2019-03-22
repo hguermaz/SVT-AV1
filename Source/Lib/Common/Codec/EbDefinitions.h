@@ -159,7 +159,6 @@ extern "C" {
 
 #define AOM_SAD_PORTING 1
 
-#define ADD_CDEF_FILTER_LEVEL                           1
 
 #define SC_HME_ME  0//use sc detector for hme/me setting
 

@@ -962,11 +962,9 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
     UNUSED (var_max);
     UNUSED (rd);
 
-#if IBC_MODES
     int32_t ibc_shift = 0;
     if (pcs->parent_pcs_ptr->ibc_mode > 0)
         ibc_shift = 1;
-#endif
 
     SPEED_FEATURES * sf = &pcs->sf;
     sf->exhaustive_searches_thresh = (1 << 25);
@@ -1016,9 +1014,7 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
           exhuastive_thr >>=
               10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
 
-#if IBC_MODES
           exhuastive_thr = exhuastive_thr << ibc_shift;
-#endif
 
           if (var > exhuastive_thr)
           {

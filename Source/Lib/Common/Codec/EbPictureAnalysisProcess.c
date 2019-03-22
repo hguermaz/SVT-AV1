@@ -5015,14 +5015,12 @@ void* picture_analysis_kernel(void *input_ptr)
             0,
             input_picture_ptr->stride_y,
             sequence_control_set_ptr->luma_width, sequence_control_set_ptr->luma_height);       
- #if ADD_VAR_SC_DETECT
         if (picture_control_set_ptr->sc_content_detected) {
             if (picture_control_set_ptr->pic_avg_variance > 1000)
                 picture_control_set_ptr->sc_content_detected = 1;
             else
                 picture_control_set_ptr->sc_content_detected = 0;
         }
-#endif
 
 #endif
         
