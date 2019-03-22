@@ -344,26 +344,18 @@ void RefinementPredictionLoop(
             uint32_t depth = GetCodedUnitStats(cu_index)->depth;
             uint8_t refinementLevel;   
             {
-#if M8_ADP
                 if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_DEPTH_MODE) {
-#else
-                if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && (picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_DEPTH_MODE || picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_PRED_OPEN_LOOP_1_NFL_DEPTH_MODE)) {
-#endif
 
                     refinementLevel = Pred;
                 }
                 else
 
-#if M8_ADP
                     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode == PIC_SB_SWITCH_DEPTH_MODE && picture_control_set_ptr->parent_pcs_ptr->sb_depth_mode_array[sb_index] == SB_FAST_OPEN_LOOP_DEPTH_MODE) {
                         refinementLevel = ndp_level_1[depth];
                     }
                     else  { // SB_OPEN_LOOP_DEPTH_MODE
                         refinementLevel = ndp_level_0[depth];
                     }
-#else
-                    refinementLevel = NdpRefinementControl[temporal_layer_index][depth];
-#endif
 
                 if (picture_control_set_ptr->parent_pcs_ptr->cu8x8_mode == CU_8x8_MODE_1) {
                     refinementLevel = ((refinementLevel & REFINEMENT_Pp1) && depth == 2) ? refinementLevel - REFINEMENT_Pp1 :
