@@ -2137,7 +2137,6 @@ int av1_is_dv_valid(const MV dv,
         src_sb64_col >= active_sb64_col - INTRABC_DELAY_SB64 + wf_offset)
         return 0;
 
-#if IBC_SW_WAVEFRONT
     //add a SW-Wavefront constraint
     if (sb_size == 64)
     {
@@ -2153,7 +2152,7 @@ int av1_is_dv_valid(const MV dv,
             return 0;
 
     }
-#endif
+
 
     return 1;
 }

@@ -2263,11 +2263,9 @@ void  intra_bc_search(
     IntraBcContext  *x = &x_st;
     //fill x with what needed.
     x->is_exhaustive_allowed =  context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4 ? 1 : 0;
-#if HASH_X
     //CHKN crc calculator could be moved to mdContext and these init at init time.
     av1_crc_calculator_init(&x->crc_calculator1, 24, 0x5D6DCB);
     av1_crc_calculator_init(&x->crc_calculator2, 24, 0x864CFB);
-#endif
 
     x->xd = cu_ptr->av1xd;
     x->nmv_vec_cost = context_ptr->md_rate_estimation_ptr->nmv_vec_cost;

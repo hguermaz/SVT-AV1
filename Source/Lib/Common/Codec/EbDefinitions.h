@@ -154,16 +154,8 @@ extern "C" {
 
 #define ICOPY       1 //Intra Block Copy
 
-#if ICOPY
 #define IBC_EARLY_0 1
-#define HASH_X      1
-#define IBC_SW_WAVEFRONT    1
-#define FIX_SAD   1
-#define SC_DETECT_GOP       1  //make all frames in the GOP use the I frame screen content detection status
-#define ADD_VAR_SC_DETECT   1
-#define IBC_MODES           1  //add two intermediates modes for ibc    
 #define ICOPY_10B           1  //10b path
-#endif
 
 #define AOM_SAD_PORTING 1
 
