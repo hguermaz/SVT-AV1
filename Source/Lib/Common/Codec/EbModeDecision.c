@@ -2576,9 +2576,7 @@ void  inject_intra_candidates(
 #if TWO_FAST_LOOP 
     uint8_t enable_two_fast_loops = picture_control_set_ptr->parent_pcs_ptr->enable_two_fast_loops && (context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N);          
 #endif
-#if !DIS_EDGE_FIL
     const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
-#endif
     for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate <= intra_mode_end ; ++openLoopIntraCandidate) {
 
         if (av1_is_directional_mode((PredictionMode)openLoopIntraCandidate)) {
@@ -2607,10 +2605,8 @@ void  inject_intra_candidates(
                             (context_ptr->chroma_level == CHROMA_MODE_0) ?
                                 UV_CFL_PRED :
                                 UV_DC_PRED;
-#if !DIS_EDGE_FIL
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
                             UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
-#endif
                         candidateArray[canTotalCnt].cfl_alpha_signs = 0;
                         candidateArray[canTotalCnt].cfl_alpha_idx = 0;
                         candidateArray[canTotalCnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode);
@@ -2662,10 +2658,8 @@ void  inject_intra_candidates(
                     UV_CFL_PRED :
                     UV_DC_PRED;
 
-#if !DIS_EDGE_FIL
             candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
                 UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
-#endif
             candidateArray[canTotalCnt].cfl_alpha_signs = 0;
             candidateArray[canTotalCnt].cfl_alpha_idx = 0;
             candidateArray[canTotalCnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode);
