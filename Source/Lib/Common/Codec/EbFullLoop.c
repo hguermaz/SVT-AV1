@@ -1137,7 +1137,6 @@ void ProductFullLoopTxSearch(
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y];
 }
 
-#if ENCDEC_TX_SEARCH
 void encode_pass_tx_search(
     PictureControlSet_t            *picture_control_set_ptr,
     EncDecContext_t                *context_ptr,
@@ -1547,7 +1546,7 @@ void encode_pass_tx_search_hbd(
         txb_ptr->transform_type[PLANE_TYPE_UV] = txb_ptr->transform_type[PLANE_TYPE_Y];
 
 }
-#endif
+
 /****************************************
  ************  Full loop ****************
 ****************************************/

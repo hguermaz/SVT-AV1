@@ -127,10 +127,8 @@ extern "C" {
         uint16_t                               coded_area_sb;
         uint16_t                               coded_area_sb_uv;
 
-#if ENCDEC_TX_SEARCH
         uint8_t                                is_inter;
         uint8_t                                reduced_tx_set_used;
-#endif
         EbBool                                 evaluate_cfl_ep; // 0: CFL is evaluated @ mode decision, 1: CFL is evaluated @ encode pass
     } EncDecContext_t;
 

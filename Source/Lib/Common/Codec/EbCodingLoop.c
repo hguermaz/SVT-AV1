@@ -104,9 +104,7 @@ void av1_predict_intra_block_16bit(
 #define S4  4*4
 
 typedef void(*EB_AV1_ENCODE_LOOP_FUNC_PTR)(
-#if ENCDEC_TX_SEARCH
     PictureControlSet_t    *picture_control_set_ptr,
-#endif
     EncDecContext_t       *context_ptr,
     LargestCodingUnit_t   *sb_ptr,
     uint32_t                 origin_x,
@@ -552,9 +550,7 @@ void encode_pass_tx_search(
 *
 **********************************************************/
 static void Av1EncodeLoop(
-#if ENCDEC_TX_SEARCH
     PictureControlSet_t    *picture_control_set_ptr,
-#endif
     EncDecContext_t       *context_ptr,
     LargestCodingUnit_t   *sb_ptr,
     uint32_t                 origin_x,   //pic based tx org x
@@ -1035,9 +1031,7 @@ void encode_pass_tx_search_hbd(
 *
 **********************************************************/
 static void Av1EncodeLoop16bit(
-#if ENCDEC_TX_SEARCH
     PictureControlSet_t    *picture_control_set_ptr,
-#endif
     EncDecContext_t       *context_ptr,
     LargestCodingUnit_t   *sb_ptr,
     uint32_t                 origin_x,
@@ -2979,9 +2973,7 @@ EB_EXTERN void AV1EncodePass(
 
 
                                 Av1EncodeLoopFunctionTable[is16bit](
-#if ENCDEC_TX_SEARCH
                                     picture_control_set_ptr,
-#endif
                                     context_ptr,
                                     sb_ptr,
                                     context_ptr->cu_origin_x,
@@ -3121,9 +3113,7 @@ EB_EXTERN void AV1EncodePass(
                 // Inter
                 else if (cu_ptr->prediction_mode_flag == INTER_MODE) {
 
-#if ENCDEC_TX_SEARCH
                     context_ptr->is_inter = 1;
-#endif
 
                     EbReferenceObject_t* refObj0 = (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
                     EbReferenceObject_t* refObj1 = picture_control_set_ptr->slice_type == B_SLICE ?
@@ -3324,9 +3314,7 @@ EB_EXTERN void AV1EncodePass(
                             if (!zeroLumaCbfMD)
                                 //inter mode  1
                                 Av1EncodeLoopFunctionTable[is16bit](
-#if ENCDEC_TX_SEARCH
                                     picture_control_set_ptr,
-#endif
                                     context_ptr,
                                     sb_ptr,
                                     txb_origin_x,   //pic org
@@ -3562,9 +3550,7 @@ EB_EXTERN void AV1EncodePass(
                             //inter mode  2
 
                             Av1EncodeLoopFunctionTable[is16bit](
-#if ENCDEC_TX_SEARCH
                                 picture_control_set_ptr,
-#endif
                                 context_ptr,
                                 sb_ptr,
                                 txb_origin_x, //pic offset
