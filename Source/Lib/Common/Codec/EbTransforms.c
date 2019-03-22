@@ -8587,56 +8587,16 @@ void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
         highbd_iwht4x4_add(input, dest, stride, eob, bd);
         return;
     }
-#if INTRINSIC_OPT_2
     av1_inv_txfm2d_add_4x4(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type, bd);
-#else
-    switch (tx_type) {
-        // Assembly version doesn't support some transform types, so use C version
-        // for those.
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-    case IDTX:
-        av1_inv_txfm2d_add_4x4_c(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-            bd);
-        break;
-    default:
-        av1_inv_txfm2d_add_4x4(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-            bd);
-        break;
-    }
-#endif
+
 }
 static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
     int32_t stride, const TxfmParam *txfm_param) {
     int32_t bd = txfm_param->bd;
     const TxType tx_type = txfm_param->tx_type;
     const int32_t *src = cast_to_int32(input);
-#if INTRINSIC_OPT_2
     av1_inv_txfm2d_add_8x8(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type, bd);
-#else
-    switch (tx_type) {
-        // Assembly version doesn't support some transform types, so use C version
-        // for those.
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-    case IDTX:
-        av1_inv_txfm2d_add_8x8_c(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-            bd);
-        break;
-    default:
-        av1_inv_txfm2d_add_8x8(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-            bd);
-        break;
-    }
-#endif
+
 }
 
 static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
@@ -8644,29 +8604,8 @@ static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
     int32_t bd = txfm_param->bd;
     const TxType tx_type = txfm_param->tx_type;
     const int32_t *src = cast_to_int32(input);
-#if INTRINSIC_OPT_2
     av1_inv_txfm2d_add_16x16(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
         bd);
-#else
-    switch (tx_type) {
-        // Assembly version doesn't support some transform types, so use C version
-        // for those.
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-    case IDTX:
-        av1_inv_txfm2d_add_16x16_c(src, CONVERT_TO_SHORTPTR(dest), stride,
-            tx_type, bd);
-        break;
-    default:
-        av1_inv_txfm2d_add_16x16(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-            bd);
-        break;
-    }
-#endif
 }
 
 static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
@@ -8675,7 +8614,6 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
     const TxType tx_type = txfm_param->tx_type;
     const int32_t *src = cast_to_int32(input);
     switch (tx_type) {
-#if INTRINSIC_OPT_2
     case DCT_DCT:
     case IDTX:
         av1_inv_txfm2d_add_32x32(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
@@ -8683,19 +8621,7 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
         break;
     default:
         assert(0);
-#else
-    case DCT_DCT:
-        av1_inv_txfm2d_add_32x32(src, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
-            bd);
-        break;
-        // Assembly version doesn't support IDTX, so use C version for it.
-    case IDTX:
-        av1_inv_txfm2d_add_32x32_c(src, CONVERT_TO_SHORTPTR(dest), stride,
-            tx_type, bd);
-        break;
 
-    default: assert(0);
-#endif
     }
 }
 

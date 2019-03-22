@@ -3633,13 +3633,8 @@ static EB_SADKERNELNxM_TYPE FUNC_TABLE compute4x4SAD_funcPtrArray[ASM_TYPE_TOTAL
 {
     // C_DEFAULT
     Compute4x4SAD_Kernel,
-#if INTRINSIC_OPT_2
     // SSE2
     compute4x_m_sad_avx2_intrin,
-#else
-    // SSE2
-    Compute4x4SAD_Kernel,
-#endif
 
 
 };

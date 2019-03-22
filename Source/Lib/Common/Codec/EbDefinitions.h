@@ -55,7 +55,6 @@ extern "C" {
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 #endif
 // NEW MACOS
-#define INTRINSIC_OPT_2                                 1 // Intrinsics opt work phase 2
 #define DIS_EDGE_FIL                                    0 // disable intra edge filter - to be removed after fixing the neigbor array for intra 4xN and Nx4
 #define USE_INLOOP_ME_FULL_SAD                          0 // To switch between full SAD and subsampled-SAD for in-loop-me subpel.
 
