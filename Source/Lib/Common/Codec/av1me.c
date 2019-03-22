@@ -991,12 +991,8 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
         ibc_shift = 1;
 #endif
 
-#if IBC_EARLY_0
     SPEED_FEATURES * sf = &pcs->sf;
     sf->exhaustive_searches_thresh = (1 << 25);
-#else
-  const SPEED_FEATURES *const sf = &pcs->sf;
-#endif
   const aom_variance_fn_ptr_t *fn_ptr = &mefn_ptr[bsize];
   int var = 0;
 
@@ -1037,7 +1033,6 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
                                MAX_MVSEARCH_STEPS - 1 - step_param, 1,
                                cost_list, fn_ptr, ref_mv);
 
-#if IBC_EARLY_0
       if (x->is_exhaustive_allowed)
       {
           int exhuastive_thr = sf->exhaustive_searches_thresh;
@@ -1062,68 +1057,10 @@ int av1_full_pixel_search(PictureControlSet_t *pcs, IntraBcContext  *x, block_si
               }
           }
       }
-#else
-
-      // Should we allow a follow on exhaustive search?
-      if(1)// (is_exhaustive_allowed(cpi, x))   
-      {
-        //int exhuastive_thr = sf->exhaustive_searches_thresh;
-        //exhuastive_thr >>=
-        //    10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
-
-        // Threshold variance for an exhaustive full search.
-        //if (var > exhuastive_thr) 
-        {
-          int var_ex;
-          MV tmp_mv_ex;
-          var_ex =
-              full_pixel_exhaustive(pcs, x, &x->best_mv.as_mv, error_per_bit,
-                                    cost_list, fn_ptr, ref_mv, &tmp_mv_ex);
-
-          if (var_ex < var) {
-            var = var_ex;
-            x->best_mv.as_mv = tmp_mv_ex;
-          }
-        }
-      }
-#endif
       break;
     default: assert(0 && "Invalid search method.");
   }
 
-#if !IBC_EARLY_0 
-
-  // Should we allow a follow on exhaustive search?
-  if (!run_mesh_search) {
-    if (method == NSTEP) {
-      //if (is_exhaustive_allowed(cpi, x))
-      {
-        int exhuastive_thr = sf->exhaustive_searches_thresh;
-        exhuastive_thr >>=
-            10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
-        // Threshold variance for an exhaustive full search.
-        if (var > exhuastive_thr) run_mesh_search = 1;
-      }
-    }
-  }
-
-  //if (run_mesh_search)
-  if(1)
-  {
-    int var_ex;
-    MV tmp_mv_ex;
-    var_ex = full_pixel_exhaustive(pcs, x, &x->best_mv.as_mv, error_per_bit,
-                                   cost_list, fn_ptr, ref_mv, &tmp_mv_ex);
-    if (var_ex < var) {
-      var = var_ex;
-      x->best_mv.as_mv = tmp_mv_ex;
-    }
-  }
-
-  if (method != NSTEP && rd && var < var_max)
-    var = av1_get_mvpred_var(x, &x->best_mv.as_mv, ref_mv, fn_ptr, 1);
-
-#endif
 
   do {
     //CHKN if (!intra || !av1_use_hash_me(&cpi->common)) break;
