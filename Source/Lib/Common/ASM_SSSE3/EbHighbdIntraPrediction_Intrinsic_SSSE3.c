@@ -341,7 +341,6 @@ void aom_highbd_smooth_v_predictor_4x16_ssse3(uint16_t *dst, ptrdiff_t stride,
     smooth_v_pred_4x4(weights, rep, ab, &dst, stride);
 }
 
-#if ENABLE_PAETH
 // Return 8 16-bit pixels in one row
 static INLINE __m128i paeth_8x1_pred(const __m128i *left, const __m128i *top,
                                      const __m128i *topleft) {
@@ -901,4 +900,3 @@ void aom_paeth_predictor_64x16_ssse3(uint8_t *dst, ptrdiff_t stride,
     rep = _mm_add_epi16(rep, one);
   }
 }
-#endif

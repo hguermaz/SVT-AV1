@@ -2632,15 +2632,9 @@ void  inject_intra_candidates(
 #endif
     (void)sequence_control_set_ptr;
     (void)sb_ptr;
-#if ENABLE_PAETH
     uint8_t                     is16bit = (sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
-#endif
     uint8_t                     intra_mode_start = DC_PRED;
-#if ENABLE_PAETH
     uint8_t                     intra_mode_end   = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
-#else    
-    uint8_t                     intra_mode_end   = SMOOTH_H_PRED;
-#endif
     uint8_t                     openLoopIntraCandidate;
     uint32_t                    canTotalCnt = 0;
     uint8_t                     angleDeltaCounter = 0;

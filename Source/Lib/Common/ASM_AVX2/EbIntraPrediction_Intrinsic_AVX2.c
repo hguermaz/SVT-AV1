@@ -10549,7 +10549,6 @@ void av1_highbd_dr_prediction_z3_avx2(uint16_t *dst, ptrdiff_t stride, int32_t b
 
 
 
-#if ENABLE_PAETH
 static INLINE __m256i paeth_pred(const __m256i *left, const __m256i *top,
                                  const __m256i *topleft) {
   const __m256i base =
@@ -10879,4 +10878,3 @@ void aom_paeth_predictor_64x16_avx2(uint8_t *dst, ptrdiff_t stride,
     rep = _mm256_add_epi16(rep, one);
   }
 }
-#endif
