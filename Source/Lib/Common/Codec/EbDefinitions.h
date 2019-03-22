@@ -149,7 +149,6 @@ extern "C" {
 #define NSQ_TAB_SIZE                                    6
 
 
-#define OIS_BASED_INTRA                                 1
 
 #define SHUT_FULL_DENOISE                               1
 

@@ -2051,70 +2051,10 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
 
 
 
-#if OIS_BASED_INTRA
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->parent_pcs_ptr->ois_sb_results[sb_index];
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[ep_to_pa_block_index[cu_index]];
             distortion = OisCuPtr[ois_sb_results_ptr->best_distortion_index[ep_to_pa_block_index[cu_index]]].distortion;
-#else
 
-            OisCu32Cu16Results_t  *oisCu32Cu16ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index];
-            OisCu8Results_t         *oisCu8ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu8_results[sb_index];
-
-            if (cu_size > 32) {
-                distortion =
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[1][0].distortion +
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[2][0].distortion +
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[3][0].distortion +
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[4][0].distortion;
-            }
-            else if (cu_size == 32) {
-                const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth + me2Nx2NOffset[context_ptr->cu_stats->depth];
-                distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-            }
-            else {
-                if (cu_size > 8) {
-                    const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth + me2Nx2NOffset[context_ptr->cu_stats->depth];
-                    distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                }
-                else {
-
-
-                    if (use16x16Stat) {
-
-                        const CodedUnitStats_t  *cu_stats = GetCodedUnitStats(ParentBlockIndex[cu_index]);
-                        const uint32_t me2Nx2NTableOffset = cu_stats->cuNumInDepth + me2Nx2NOffset[cu_stats->depth];
-
-                        distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                    }
-                    else {
-
-
-
-                        const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth;
-
-                        if (oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].valid_distortion) {
-                            distortion = oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                        }
-                        else {
-
-                            const CodedUnitStats_t  *cu_stats = GetCodedUnitStats(ParentBlockIndex[cu_index]);
-                            const uint32_t me2Nx2NTableOffset = cu_stats->cuNumInDepth + me2Nx2NOffset[cu_stats->depth];
-
-                            if (oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].valid_distortion) {
-                                distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                            }
-                            else {
-                                distortion = 0;
-                            }
-                        }
-
-                    }
-
-
-                }
-            }
-
-#endif
 
 
 
