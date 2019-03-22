@@ -128,53 +128,6 @@ extern "C" {
         ModeDecisionCandidateBuffer_t           *candidate_buffer_ptr,
         EbAsm                                  asm_type);
 
-#if !OIS_BASED_INTRA
-    static const uint32_t intraLumaModeNumber[] = {
-        18,
-        35,
-        35,
-        35,
-        35 //4
-    };
-
-    static const uint32_t intraModeOrderMap[] = {
-        34,    //  Planar
-        9,     //  Vertical
-        25,    //  Horizontal
-        0,     //  DC
-        1,     //  Intra mode 4
-        5,     //  Intra mode 5
-        13,    //  Intra mode 6
-        17,    //  Intra mode 7
-        21,    //  Intra mode 8
-        29,    //  Intra mode 9
-        33,    //  Intra mode 10
-        3,     //  Intra mode 11
-        7,     //  Intra mode 12
-        11,    //  Intra mode 13
-        15,    //  Intra mode 14
-        19,    //  Intra mode 15
-        23,    //  Intra mode 16
-        27,    //  Intra mode 17
-        31,    //  Intra mode 18
-        2,     //  Intra mode 19
-        4,     //  Intra mode 20
-        6,     //  Intra mode 21
-        8,     //  Intra mode 22
-        10,    //  Intra mode 23
-        12,    //  Intra mode 24
-        14,    //  Intra mode 25
-        16,    //  Intra mode 26
-        18,    //  Intra mode 27
-        20,    //  Intra mode 28
-        22,    //  Intra mode 29
-        24,    //  Intra mode 30
-        26,    //  Intra mode 31
-        28,    //  Intra mode 32
-        30,    //  Intra mode 33
-        32,    //  Intra mode 34
-    };
-#endif
     extern void intra_mode_angular_horizontal_kernel_ssse3_intrin(
         uint32_t            size,
         uint8_t            *ref_samp_main,
@@ -190,7 +143,6 @@ extern "C" {
     extern void IntraOpenLoopReferenceSamplesDtor(
         IntraReferenceSamplesOpenLoop_t  *context_ptr);
 
-#if OIS_BASED_INTRA
     extern EbErrorType update_neighbor_samples_array_open_loop(
         uint8_t                           *above_ref,
         uint8_t                            *left_ref,
@@ -209,21 +161,7 @@ extern "C" {
         uint8_t                         *above_row,
         uint8_t                         *left_col,
         MotionEstimationContext_t       *context_ptr);                  // input parameter, ME context
-#else
-    extern EbErrorType UpdateNeighborSamplesArrayOpenLoop(
-        IntraReferenceSamplesOpenLoop_t *intra_ref_ptr,
-        EbPictureBufferDesc_t           *input_ptr,
-        uint32_t                           stride,
-        uint32_t                           src_origin_x,
-        uint32_t                           src_origin_y,
-        uint32_t                           block_size);
 
-    extern EbErrorType IntraPredictionOpenLoop(
-        uint32_t                       cu_size,
-        MotionEstimationContext_t   *context_ptr,
-        uint32_t           openLoopIntraCandidate,
-        EbAsm                       asm_type);
-#endif
 
     /***************************************
     * Function Ptr Types
@@ -336,92 +274,7 @@ extern "C" {
         uint16_t          dy,              //output parameter, pointer to the prediction
         uint16_t          bd);
 
-    #if !OIS_BASED_INTRA
-    /***************************************
-    * Function Ptrs
-    ***************************************/
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraVerticalLuma_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_vertical_luma_sse2_intrin,
-        // AVX2
-        intra_mode_vertical_luma_avx2_intrin,
 
-    };
-
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraVerticalChroma_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_vertical_chroma_sse2_intrin,
-        // AVX2
-        intra_mode_vertical_chroma_sse2_intrin,
-    };
-
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraHorzLuma_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_horizontal_luma_sse2_intrin,
-        // AVX2
-        intra_mode_horizontal_luma_sse2_intrin,
-    };
-
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraHorzChroma_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_horizontal_chroma_sse2_intrin,
-        // AVX2
-        intra_mode_horizontal_chroma_sse2_intrin,
-    };
-#endif
-#if !OIS_BASED_INTRA
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraDCLuma_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_dc_luma_sse2_intrin,
-        // AVX2
-        intra_mode_dc_luma_avx2_intrin,
-
-    };
-
-    uint32_t UpdateNeighborDcIntraPred(
-        MotionEstimationContext_t       *context_ptr,
-        EbPictureBufferDesc_t           *input_ptr,
-        uint32_t                           src_origin_x,
-        uint32_t                           src_origin_y,
-        uint32_t                           block_size,
-        EbAsm                             asm_type);
-
-    static EB_INTRA_NOANG_16bit_TYPE FUNC_TABLE IntraDCLuma_16bit_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_dc_luma16bit_sse4_1_intrin,
-        // AVX2
-        intra_mode_dc_luma16bit_sse4_1_intrin,
-    };
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraDCChroma_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_dc_chroma_sse2_intrin,
-        // AVX2
-        intra_mode_dc_chroma_sse2_intrin,
-    };
-
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraPlanar_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_planar_sse2_intrin,
-        // AVX2
-        intra_mode_planar_avx2_intrin,
-    };
-
-    void smooth_v_predictor_c(uint8_t *dst, ptrdiff_t stride, int32_t bw,
-        int32_t bh, const uint8_t *above,
-        const uint8_t *left);
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraPlanar_Av1_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        IntraModePlanar,
-        // AVX2
-        intra_mode_planar_av1_avx2_intrin,
-    };
-#endif
 
     static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraSmoothH_Av1_funcPtrArray[ASM_TYPE_TOTAL] = {
         // NON_AVX2
@@ -436,55 +289,6 @@ extern "C" {
         ebav1_smooth_v_predictor,
     };
 
-    #if !OIS_BASED_INTRA
-    static EB_INTRA_NOANG_16bit_TYPE FUNC_TABLE IntraPlanar_16bit_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_planar16bit_sse2_intrin,
-        // AVX2
-        intra_mode_planar16bit_sse2_intrin,
-    };
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraAng34_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_angular_34_sse2_intrin,
-        // AVX2
-        intra_mode_angular_34_avx2_intrin,
-    };
-
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraAng18_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_angular_18_sse2_intrin,
-        // AVX2
-        intra_mode_angular_18_avx2_intrin,
-
-    };
-
-
-    static EB_INTRA_NOANG_TYPE FUNC_TABLE IntraAng2_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_angular_2_sse2_intrin,
-        // AVX2
-        intra_mode_angular_2_avx2_intrin,
-    };
-
-
-    static EB_INTRA_ANG_TYPE FUNC_TABLE IntraAngVertical_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_angular_vertical_kernel_ssse3_intrin,
-        // AVX2
-        intra_mode_angular_vertical_kernel_avx2_intrin,
-    };
-
-
-    static EB_INTRA_ANG_TYPE FUNC_TABLE IntraAngHorizontal_funcPtrArray[ASM_TYPE_TOTAL] = {
-        // NON_AVX2
-        intra_mode_angular_horizontal_kernel_ssse3_intrin,
-        // AVX2
-        intra_mode_angular_horizontal_kernel_avx2_intrin,
-    };
-
-#endif
     static EB_INTRA_ANG_Z1_Z2_Z3_16bit_TYPE FUNC_TABLE IntraModeAngular_AV1_Z1_16bit_funcPtrArray[9][ASM_TYPE_TOTAL] = {
         // 4x4
         {

@@ -42,11 +42,7 @@ extern "C" {
 #define MAX_CU_COST (0xFFFFFFFFFFFFFFFFull >> 1)
 #define MAX_MODE_COST ( 13616969489728 * 8) // RDCOST(6544618, 128 * 128 * 255 * 255, 128 * 128 * 255 * 255) * 8;
 #define INVALID_FAST_CANDIDATE_INDEX    ~0
-#if OIS_BASED_INTRA
 #define MAX_OIS_CANDIDATES  61  //18//18
-#else
-#define MAX_OPEN_LOOP_INTRA_CANDIDATES  18//18
-#endif
 
     static const uint32_t intra_hev_cmode_to_intra_av1_mode[35] = {
         /*SMOOTH_PRED   */  SMOOTH_PRED,                                                        // EB_INTRA_PLANAR
@@ -395,7 +391,6 @@ extern "C" {
         uint8_t                    *neigh_top_recon[3];
         uint32_t                    best_d1_blk;
     } CodingUnit_t;
-#if OIS_BASED_INTRA
         typedef struct ois_candidate_s {
         union {
             struct {
@@ -414,34 +409,7 @@ extern "C" {
         ois_candidate_t*    ois_candidate_array[CU_MAX_COUNT];
         int8_t              best_distortion_index[CU_MAX_COUNT];
     } ois_sb_results_t;
-#else
-    typedef struct OisCandidate_s {
-        union {
-            struct {
-                unsigned distortion : 20;
-                unsigned valid_distortion : 1;
-                unsigned : 3;
-                unsigned intra_mode : 8;
-            };
-            uint32_t ois_results;
-        };
-    } OisCandidate_t;
-    typedef struct OisLcuResults_s
-    {
-        uint8_t           total_intra_luma_mode[CU_MAX_COUNT];
-        OisCandidate_t    sorted_ois_candidate[CU_MAX_COUNT][MAX_OPEN_LOOP_INTRA_CANDIDATES];
-    } OisLcuResults_t;
-    typedef struct OisCu32Cu16Results_s
-    {
-        uint8_t            total_intra_luma_mode[21];
-        OisCandidate_t*    sorted_ois_candidate[21];
-    } OisCu32Cu16Results_t;
-    typedef struct OisCu8Results_s
-    {
-        uint8_t            total_intra_luma_mode[64];
-        OisCandidate_t*    sorted_ois_candidate[64];
-    } OisCu8Results_t;
-#endif
+
     typedef struct QpmLcuResults_s {
         uint8_t  cu_qp;
         uint8_t  cu_intra_qp;
