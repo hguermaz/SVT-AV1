@@ -83,8 +83,8 @@ extern "C" {
 #define M9_ME                    1   // VP9 4K ME, ME (16x9)
 #define M9_SUBPEL_SELECTION      1
 #define M9_CU_8x8                1
-    
-#define M9_INTRA                 1
+#define M9_ADP                   1
+#define M9_INTRA                 0
 
 #define OMARK                     0
 #define M10_INTRA                 0
@@ -98,9 +98,7 @@ extern "C" {
 #define M9_CDEF                  0   // CDEF off
 #define M9_TX_SEARCH             0   // Tx search off
 #define M9_CHROMA                0   // VP9 4K chroma settings; shut cfl @ ep
-#define M9_ADP                   0   // VP9 4K ADP budget;  (121,110,100 but different injection) (budget = f (layer index))      
-
-#define M9_NON_UNIFORM_NFL       0   // Non-uniform NFL
+#define VP9_ADP                  0   // VP9 4K ADP budget;  (121,110,100 but different injection) (budget = f (layer index))      
 
 #define OPT_LOSSLESS             0
 #define OPT_LOSSY                0
@@ -110,15 +108,6 @@ extern "C" {
 
 
 #define NFL_PER_SQ_SIZE          0
-
-#if NFL_PER_SQ_SIZE
-#define   NFL_CAP_4x4     12
-#define   NFL_CAP_8x8     12
-#define   NFL_CAP_16x16   12
-#define   NFL_CAP_32x32   12
-#define   NFL_CAP_64x64   12
-#define   NFL_CAP_128x128 12
-#endif
 
 #endif
 
@@ -142,44 +131,12 @@ extern "C" {
 #define NFL_IT_TH                                       2 // To be tuned
 
 
-#define TWO_FAST_LOOP                                   0
-#define ENABLE_EOB_ZERO_CHECK                           1
-#define DISABLE_128_SB_FOR_SUB_720                      1
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
-#if BASE_LAYER_REF
 #define MAX_FRAMES_TO_REF_I                             64
-#endif
 
-#define NSQ_OPTIMASATION                                1
 
-#if NSQ_OPTIMASATION
 #define NSQ_TAB_SIZE                                    6
-#endif
 
-#define IMPROVE_CHROMA_MODE                             1
-#define CHROMA_BLIND_IF_SEARCH                          1
-#define OIS_BASED_INTRA                                 1
-
-#define SHUT_FULL_DENOISE                               1
-
-
-#define ICOPY       1 //Intra Block Copy
-
-#if ICOPY
-#define IBC_EARLY_0 1
-#define HASH_ME     0
-#define HASH_X      1
-#define IBC_SW_WAVEFRONT    1
-#define FIX_SAD   1
-#define SC_DETECT_GOP       1  //make all frames in the GOP use the I frame screen content detection status
-#define ADD_VAR_SC_DETECT   1
-#define IBC_MODES           1  //add two intermediates modes for ibc    
-#define ICOPY_10B           1  //10b path
-#endif
-
-#define AOM_SAD_PORTING 1
-
-#define ADD_CDEF_FILTER_LEVEL                           1
 
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
@@ -559,13 +516,10 @@ typedef enum INTERPOLATION_SEARCH_LEVEL {
     IT_SEARCH_OFF,
     IT_SEARCH_INTER_DEPTH,
     IT_SEARCH_FULL_LOOP,
-#if CHROMA_BLIND_IF_SEARCH
     IT_SEARCH_FAST_LOOP_UV_BLIND,
-#endif
     IT_SEARCH_FAST_LOOP,
 } INTERPOLATION_SEARCH_LEVEL;
 
-#if NSQ_OPTIMASATION
 typedef enum NSQ_SEARCH_LEVEL {
     NSQ_SEARCH_OFF,
     NSQ_SEARCH_LEVEL1,
@@ -576,16 +530,7 @@ typedef enum NSQ_SEARCH_LEVEL {
     NSQ_SEARCH_LEVEL6,
     NSQ_SEARCH_FULL
 } NSQ_SEARCH_LEVEL;
-#else
-typedef enum NSQ_SEARCH_LEVEL {
-    NSQ_SEARCH_OFF,
-    NSQ_SEARCH_BASE_ON_SQ_TYPE,
-    NSQ_SEARCH_BASE_ON_SQ_COEFF,
-    NSQ_INTER_SEARCH_BASE_ON_SQ_MVMODE,
-    NSQ_INTER_SEARCH_BASE_ON_SQ_INTRAMODE,
-    NSQ_SEARCH_FULL
-} NSQ_SEARCH_LEVEL;
-#endif
+
 #define MAX_PARENT_SQ     6
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
     DIST,
@@ -3864,7 +3809,6 @@ static const uint8_t SearchAreaHeight[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
 };
 #endif
-#if OIS_BASED_INTRA
 static const uint16_t ep_to_pa_block_index[BLOCK_MAX_COUNT_SB_64] = {
     0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,
 
@@ -3960,7 +3904,6 @@ static const uint16_t ep_to_pa_block_index[BLOCK_MAX_COUNT_SB_64] = {
     83,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,
     84,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0   
 };
-#endif
 #ifdef __cplusplus
 }
 #endif

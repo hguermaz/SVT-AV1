@@ -197,23 +197,11 @@ void FailingMotionLcu(
             cuMeSAD = picture_control_set_ptr->me_results[sb_index][rasterScanCuIndex].distortionDirection[0].distortion;
 
 
-#if OIS_BASED_INTRA
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[RASTER_SCAN_TO_MD_SCAN[rasterScanCuIndex]];
             sortedcuOisSAD = OisCuPtr[ois_sb_results_ptr->best_distortion_index[RASTER_SCAN_TO_MD_SCAN[rasterScanCuIndex]]].distortion;
 
-#else
-            OisCu32Cu16Results_t *oisResultsPtr = picture_control_set_ptr->ois_cu32_cu16_results[sb_index];
-            if (RASTER_SCAN_CU_SIZE[rasterScanCuIndex] > 32) {
-                sortedcuOisSAD = oisResultsPtr->sorted_ois_candidate[1][0].distortion +
-                    oisResultsPtr->sorted_ois_candidate[2][0].distortion +
-                    oisResultsPtr->sorted_ois_candidate[3][0].distortion +
-                    oisResultsPtr->sorted_ois_candidate[4][0].distortion;
-            }
-            else { //32x32
-                sortedcuOisSAD = oisResultsPtr->sorted_ois_candidate[rasterScanCuIndex][0].distortion;
-            }
-#endif
+
 
             int64_t  meToOisSadDiff = (int32_t)cuMeSAD - (int32_t)sortedcuOisSAD;
             meToOisSadDeviation = (sortedcuOisSAD == 0) || (meToOisSadDiff < 0) ? 0 : (meToOisSadDiff * 100) / sortedcuOisSAD;
@@ -263,28 +251,11 @@ void DetectUncoveredLcu(
 
                 cuMeSAD = picture_control_set_ptr->me_results[sb_index][rasterScanCuIndex].distortionDirection[0].distortion;
 
-#if OIS_BASED_INTRA
 
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[RASTER_SCAN_TO_MD_SCAN[rasterScanCuIndex]];
             sortedcuOisSAD = OisCuPtr[ois_sb_results_ptr->best_distortion_index[RASTER_SCAN_TO_MD_SCAN[rasterScanCuIndex]]].distortion;
 
-#else
-                OisCu32Cu16Results_t *oisResultsPtr = picture_control_set_ptr->ois_cu32_cu16_results[sb_index];
-                if (RASTER_SCAN_CU_SIZE[rasterScanCuIndex] > 32) {
-                    sortedcuOisSAD = oisResultsPtr->sorted_ois_candidate[1][0].distortion +
-                        oisResultsPtr->sorted_ois_candidate[2][0].distortion +
-                        oisResultsPtr->sorted_ois_candidate[3][0].distortion +
-                        oisResultsPtr->sorted_ois_candidate[4][0].distortion;
-                }
-                else if (RASTER_SCAN_CU_SIZE[rasterScanCuIndex] == 32) {
-                    sortedcuOisSAD = oisResultsPtr->sorted_ois_candidate[rasterScanCuIndex][0].distortion;
-                }
-                else {
-                    sortedcuOisSAD = oisResultsPtr->sorted_ois_candidate[rasterScanCuIndex][0].distortion;
-                }
-
-#endif
 
                 int64_t  meToOisSadDiff = (int32_t)cuMeSAD - (int32_t)sortedcuOisSAD;
                 meToOisSadDeviation = (sortedcuOisSAD == 0) || (meToOisSadDiff < 0) ? 0 : (meToOisSadDiff * 100) / sortedcuOisSAD;
@@ -391,20 +362,11 @@ void LumaContrastDetectorLcu(
     if (sb_params->is_complete_sb) {
         if (picture_control_set_ptr->slice_type != I_SLICE && picture_control_set_ptr->temporal_layer_index == 0) {
 
-#if OIS_BASED_INTRA
 
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[0];
             cuOisSAD = OisCuPtr[ois_sb_results_ptr->best_distortion_index[0]].distortion;
 
-#else
-            OisCu32Cu16Results_t *oisResultsPtr = picture_control_set_ptr->ois_cu32_cu16_results[sb_index];
-            cuOisSAD = oisResultsPtr->sorted_ois_candidate[1][0].distortion +
-                oisResultsPtr->sorted_ois_candidate[2][0].distortion +
-                oisResultsPtr->sorted_ois_candidate[3][0].distortion +
-                oisResultsPtr->sorted_ois_candidate[4][0].distortion;
-
-#endif
 
             cuMeSAD = picture_control_set_ptr->me_results[sb_index][0].distortionDirection[0].distortion;
 

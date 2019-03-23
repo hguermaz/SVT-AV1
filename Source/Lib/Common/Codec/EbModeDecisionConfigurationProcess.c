@@ -26,7 +26,6 @@
 #include "EbModeDecisionConfiguration.h"
 #include "EbReferenceObject.h"
 #include "EbModeDecisionProcess.h"
-#if ICOPY
 #include "av1me.h"
 
 
@@ -56,7 +55,6 @@ static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
 static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
                                                             25,  25,  10 };
 
-#endif
 // Adaptive Depth Partitioning
 // Shooting states
 #define UNDER_SHOOTING                        0
@@ -1780,7 +1778,7 @@ void derive_sb_score(
 Input   : cost per depth
 Output  : budget per picture
 ******************************************************/
-#if M9_ADP
+#if VP9_ADP
 void set_target_budget_layer_based(
     SequenceControlSet_t               *sequence_control_set_ptr,
     PictureControlSet_t                *picture_control_set_ptr,
@@ -1869,7 +1867,7 @@ void derive_sb_md_mode(
 
 
     // Set the target budget
-#if M9_ADP
+#if VP9_ADP
     if(context_ptr->adp_level <= ENC_M8)
         set_target_budget_complexity_based(
             sequence_control_set_ptr,
@@ -2262,9 +2260,7 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 
         // Initial Rate Estimatimation of the Motion vectors
         av1_estimate_mv_rate(
-#if ICOPY
             picture_control_set_ptr,
-#endif
             md_rate_estimation_array,
             &picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc->nmvc);
 
@@ -2338,7 +2334,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr->parent_pcs_ptr->average_qp = (uint8_t)picture_control_set_ptr->parent_pcs_ptr->picture_qp;
         }
 
-#if ICOPY
         if (picture_control_set_ptr->parent_pcs_ptr->allow_intrabc)
         {
             int i;
@@ -2395,15 +2390,9 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
                 //av1_hash_table_create(&picture_control_set_ptr->hash_table);
 
                 Yv12BufferConfig cpi_source;
-#if ICOPY_10B
                 link_Eb_to_aom_buffer_desc_8bit(
                     picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr,
                     &cpi_source);
-#else
-                LinkEbToAomBufferDesc(
-                    picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr,
-                    &cpi_source);
-#endif
 
                 av1_crc_calculator_init(&picture_control_set_ptr->crc_calculator1, 24, 0x5D6DCB);
                 av1_crc_calculator_init(&picture_control_set_ptr->crc_calculator2, 24, 0x864CFB);
@@ -2461,7 +2450,6 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
 
             av1_init3smotion_compensation(&picture_control_set_ptr->ss_cfg, picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr->stride_y);
         }
-#endif
 
         // Derive MD parameters
         SetMdSettings( // HT Done

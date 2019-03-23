@@ -14,9 +14,7 @@
 #include "EbPredictionUnit.h"
 #include "EbTransformUnit.h"
 #include "EbCabacContextModel.h"
-#if ICOPY
 #include "hash.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,11 +40,7 @@ extern "C" {
 #define MAX_CU_COST (0xFFFFFFFFFFFFFFFFull >> 1)
 #define MAX_MODE_COST ( 13616969489728 * 8) // RDCOST(6544618, 128 * 128 * 255 * 255, 128 * 128 * 255 * 255) * 8;
 #define INVALID_FAST_CANDIDATE_INDEX    ~0
-#if OIS_BASED_INTRA
 #define MAX_OIS_CANDIDATES  61  //18//18
-#else
-#define MAX_OPEN_LOOP_INTRA_CANDIDATES  18//18
-#endif
 
     static const uint32_t intra_hev_cmode_to_intra_av1_mode[35] = {
         /*SMOOTH_PRED   */  SMOOTH_PRED,                                                        // EB_INTRA_PLANAR
@@ -72,7 +66,6 @@ extern "C" {
         /*D67_PRED      */   2, 0, -2,                                                          // EB_INTRA_MODE_28 -> EB_INTRA_MODE_30
         /*D45_PRED      */   3, 2, 0, -2,                                                       // EB_INTRA_MODE_31 -> EB_INTRA_MODE_34
     };
-#if IMPROVE_CHROMA_MODE
     static const uint32_t intra_luma_to_chroma[INTRA_MODES] = {                                                                            // EB_INTRA_PLANAR
        UV_DC_PRED,        // Average of above and left pixels
        UV_V_PRED,         // Vertical
@@ -88,23 +81,6 @@ extern "C" {
        UV_SMOOTH_H_PRED,  // Horizontal interpolation
        UV_PAETH_PRED,     // Predict from the direction of smallest gradient
     };
-#else
-    static const uint32_t intra_luma_to_chroma[INTRA_MODES] = {                                                                            // EB_INTRA_PLANAR
-        /*DC_PRED       */  UV_DC_PRED,
-        /*V_PRED        */  UV_SMOOTH_PRED,
-        /*H_PRED        */  UV_SMOOTH_PRED,
-        /*D45_PRED      */  UV_D45_PRED,
-        /*D135_PRED     */  UV_D135_PRED,
-        /*D113_PRED     */  UV_D135_PRED,
-        /*D157_PRED     */  UV_D135_PRED,
-        /*D203_PRED     */  UV_SMOOTH_PRED,
-        /*D67_PRED      */  UV_D45_PRED,
-        /*SMOOTH_PRED   */  UV_SMOOTH_PRED,
-        /*SMOOTH_V_PRED */  UV_SMOOTH_PRED,
-        /*SMOOTH_H_PRED */  UV_SMOOTH_PRED,
-        /*PAETH_PRED    */  UV_PAETH_PRED,
-    };
-#endif
     static const TxType chroma_transform_type[14] = {
         /*UV_DC_PRED,          */   DCT_DCT   ,
         /*UV_V_PRED,           */   ADST_DCT  ,
@@ -184,11 +160,7 @@ extern "C" {
         // Only for INTRA blocks
         UV_PredictionMode uv_mode;
         //PALETTE_MODE_INFO palette_mode_info;
-#if ICOPY
         uint8_t use_intrabc;
-#else
-        //uint8_t use_intrabc;
-#endif
         // Only for INTER blocks
         //InterpFilters interp_filters;
         MvReferenceFrame ref_frame[2];
@@ -245,7 +217,6 @@ extern "C" {
         int32_t tile_col;
     } TileInfo;
 
-#if ICOPY
     typedef struct macroblockd_plane {
 
         int subsampling_x;
@@ -280,7 +251,6 @@ extern "C" {
         const int16_t *dequant_QTX;
 #endif
     } MACROBLOCK_PLANE;
-#endif
 
     typedef struct MacroBlockD {
         // block dimension in the unit of mode_info.
@@ -302,13 +272,11 @@ extern "C" {
         int32_t mb_to_bottom_edge;
         uint8_t neighbors_ref_counts[TOTAL_REFS_PER_FRAME];
 
-#if ICOPY 
         uint8_t  use_intrabc;
         MbModeInfo *above_mbmi;
         MbModeInfo *left_mbmi;
         MbModeInfo *chroma_above_mbmi;
         MbModeInfo *chroma_left_mbmi;
-#endif
     } MacroBlockD;
 
     typedef struct Macroblock {
@@ -318,7 +286,6 @@ extern "C" {
         int32_t sgrproj_restore_cost[2];
     } Macroblock;
 
-#if ICOPY
     typedef struct IntraBcContext {
         int32_t rdmult;
         struct macroblockd_plane xdplane[MAX_MB_PLANE];
@@ -342,16 +309,11 @@ extern "C" {
         // [first hash/second hash]
         // [two buffers used ping-pong]
         uint32_t *hash_value_buffer[2][2];
-#if IBC_EARLY_0
         uint8_t  is_exhaustive_allowed;
-#endif
-#if HASH_X
         CRC_CALCULATOR crc_calculator1;
         CRC_CALCULATOR crc_calculator2;
-#endif
 
     } IntraBcContext;
-#endif
 
     typedef struct CodingUnit_s
     {
@@ -413,7 +375,6 @@ extern "C" {
         uint8_t                    *neigh_top_recon[3];
         uint32_t                    best_d1_blk;
     } CodingUnit_t;
-#if OIS_BASED_INTRA
         typedef struct ois_candidate_s {
         union {
             struct {
@@ -432,34 +393,6 @@ extern "C" {
         ois_candidate_t*    ois_candidate_array[CU_MAX_COUNT];
         int8_t              best_distortion_index[CU_MAX_COUNT];
     } ois_sb_results_t;
-#else
-    typedef struct OisCandidate_s {
-        union {
-            struct {
-                unsigned distortion : 20;
-                unsigned valid_distortion : 1;
-                unsigned : 3;
-                unsigned intra_mode : 8;
-            };
-            uint32_t ois_results;
-        };
-    } OisCandidate_t;
-    typedef struct OisLcuResults_s
-    {
-        uint8_t           total_intra_luma_mode[CU_MAX_COUNT];
-        OisCandidate_t    sorted_ois_candidate[CU_MAX_COUNT][MAX_OPEN_LOOP_INTRA_CANDIDATES];
-    } OisLcuResults_t;
-    typedef struct OisCu32Cu16Results_s
-    {
-        uint8_t            total_intra_luma_mode[21];
-        OisCandidate_t*    sorted_ois_candidate[21];
-    } OisCu32Cu16Results_t;
-    typedef struct OisCu8Results_s
-    {
-        uint8_t            total_intra_luma_mode[64];
-        OisCandidate_t*    sorted_ois_candidate[64];
-    } OisCu8Results_t;
-#endif
     typedef struct QpmLcuResults_s {
         uint8_t  cu_qp;
         uint8_t  cu_intra_qp;

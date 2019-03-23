@@ -35,12 +35,6 @@ extern void av1_predict_intra_block(
     TileInfo                    *tile,
 
     STAGE                       stage,
-    #if !ICOPY
-    uint8_t                     intra_luma_left_mode,
-    uint8_t                     intra_luma_top_mode,
-    uint8_t                     intra_chroma_left_mode,
-    uint8_t                     intra_chroma_top_mode,
-#endif
     const BlockGeom            *blk_geom,
     const Av1Common *cm,
     int32_t wpx,
@@ -66,9 +60,6 @@ void av1_predict_intra_block_16bit(
     TileInfo               *tile,
 
     EncDecContext_t         *context_ptr,
-    #if !ICOPY
-    CodingUnit_t *cu_ptr,
-#endif
     const Av1Common *cm,
     int32_t wpx,
     int32_t hpx,
@@ -1867,22 +1858,10 @@ EbErrorType Av1QpModulationLcu(
 
 
             
-#if OIS_BASED_INTRA
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->parent_pcs_ptr->ois_sb_results[sb_index];
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->sorted_ois_candidate[from_1101_to_85[cu_index]];
             distortion = OisCuPtr[ois_sb_results_ptr->best_distortion_index[from_1101_to_85[cu_index]]].distortion;
 
-#else
-
-            OisCu32Cu16Results_t  *oisCu32Cu16ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index];
-            //OisCu8Results_t         *oisCu8ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu8_results[sb_index];
-
-            distortion =
-                oisCu32Cu16ResultsPtr->sorted_ois_candidate[1][0].distortion +
-                oisCu32Cu16ResultsPtr->sorted_ois_candidate[2][0].distortion +
-                oisCu32Cu16ResultsPtr->sorted_ois_candidate[3][0].distortion +
-                oisCu32Cu16ResultsPtr->sorted_ois_candidate[4][0].distortion;
-#endif
 
 
             distortion = (uint32_t)CLIP3(picture_control_set_ptr->parent_pcs_ptr->intra_complexity_min[0], picture_control_set_ptr->parent_pcs_ptr->intra_complexity_max[0], distortion);
@@ -2063,70 +2042,9 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
 
 
 
-#if OIS_BASED_INTRA
             ois_sb_results_t        *ois_sb_results_ptr = picture_control_set_ptr->parent_pcs_ptr->ois_sb_results[sb_index];
             ois_candidate_t *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[ep_to_pa_block_index[cu_index]];
             distortion = OisCuPtr[ois_sb_results_ptr->best_distortion_index[ep_to_pa_block_index[cu_index]]].distortion;
-#else
-
-            OisCu32Cu16Results_t  *oisCu32Cu16ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu32_cu16_results[sb_index];
-            OisCu8Results_t         *oisCu8ResultsPtr = picture_control_set_ptr->parent_pcs_ptr->ois_cu8_results[sb_index];
-
-            if (cu_size > 32) {
-                distortion =
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[1][0].distortion +
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[2][0].distortion +
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[3][0].distortion +
-                    oisCu32Cu16ResultsPtr->sorted_ois_candidate[4][0].distortion;
-            }
-            else if (cu_size == 32) {
-                const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth + me2Nx2NOffset[context_ptr->cu_stats->depth];
-                distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-            }
-            else {
-                if (cu_size > 8) {
-                    const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth + me2Nx2NOffset[context_ptr->cu_stats->depth];
-                    distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                }
-                else {
-
-
-                    if (use16x16Stat) {
-
-                        const CodedUnitStats_t  *cu_stats = GetCodedUnitStats(ParentBlockIndex[cu_index]);
-                        const uint32_t me2Nx2NTableOffset = cu_stats->cuNumInDepth + me2Nx2NOffset[cu_stats->depth];
-
-                        distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                    }
-                    else {
-
-
-
-                        const uint32_t me2Nx2NTableOffset = context_ptr->cu_stats->cuNumInDepth;
-
-                        if (oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].valid_distortion) {
-                            distortion = oisCu8ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                        }
-                        else {
-
-                            const CodedUnitStats_t  *cu_stats = GetCodedUnitStats(ParentBlockIndex[cu_index]);
-                            const uint32_t me2Nx2NTableOffset = cu_stats->cuNumInDepth + me2Nx2NOffset[cu_stats->depth];
-
-                            if (oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].valid_distortion) {
-                                distortion = oisCu32Cu16ResultsPtr->sorted_ois_candidate[me2Nx2NTableOffset][0].distortion;
-                            }
-                            else {
-                                distortion = 0;
-                            }
-                        }
-
-                    }
-
-
-                }
-            }
-
-#endif
 
 
 
@@ -2757,11 +2675,7 @@ EB_EXTERN void AV1EncodePass(
 #endif
 
                 if (cu_ptr->prediction_mode_flag == INTRA_MODE) {
-#if ICOPY
                     context_ptr->is_inter = cu_ptr->av1xd->use_intrabc;
-#else
-                    context_ptr->is_inter = 0;
-#endif
                     context_ptr->tot_intra_coded_area += blk_geom->bwidth* blk_geom->bheight;
                     if (picture_control_set_ptr->slice_type != I_SLICE) {
                         context_ptr->intra_coded_area_sb[tbAddr] += blk_geom->bwidth* blk_geom->bheight;
@@ -2792,7 +2706,6 @@ EB_EXTERN void AV1EncodePass(
 
                             uint32_t cu_originy_uv = (context_ptr->cu_origin_y >> 3 << 3) >> 1;
                             uint32_t cu_originx_uv = (context_ptr->cu_origin_x >> 3 << 3) >> 1;
-#if ICOPY
                             if (cu_ptr->av1xd->use_intrabc)
                             {
                                 MvReferenceFrame ref_frame = INTRA_FRAME;
@@ -2841,7 +2754,6 @@ EB_EXTERN void AV1EncodePass(
 
                                 EbPictureBufferDesc_t * ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
 
-#if ICOPY_10B
                                 if (is16bit)
                                     ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture16bit;
 
@@ -2864,16 +2776,13 @@ EB_EXTERN void AV1EncodePass(
                                         (uint8_t)sequence_control_set_ptr->static_config.encoder_bit_depth,
                                         asm_type);
                                 else
-#endif
                                 av1_inter_prediction(
                                     picture_control_set_ptr,
                                     cu_ptr->interp_filters,
                                     cu_ptr,
                                     cu_ptr->prediction_unit_array->ref_frame_type,
                                     &context_ptr->mv_unit,
-#if ICOPY
                                     1,// use_intrabc,
-#endif
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,
@@ -2890,7 +2799,6 @@ EB_EXTERN void AV1EncodePass(
                             }
                             else
                             {
-#endif
                                 if (is16bit) {
                                     uint16_t    topNeighArray[64 * 2 + 1];
                                     uint16_t    leftNeighArray[64 * 2 + 1];
@@ -2936,9 +2844,6 @@ EB_EXTERN void AV1EncodePass(
                                     av1_predict_intra_block_16bit(
                                         &sb_ptr->tile_info,
                                         context_ptr,
-                                        #if !ICOPY
-                                        cu_ptr,
-#endif
                                         picture_control_set_ptr->parent_pcs_ptr->av1_cm,                  //const Av1Common *cm,
                                         plane ? blk_geom->bwidth_uv : blk_geom->bwidth,                  //int32_t wpx,
                                         plane ? blk_geom->bheight_uv : blk_geom->bheight,                  //int32_t hpx,
@@ -3013,12 +2918,6 @@ EB_EXTERN void AV1EncodePass(
                                     av1_predict_intra_block(
                                         &sb_ptr->tile_info,
                                         ED_STAGE,
-                                        #if !ICOPY
-                                        cu_ptr->prediction_unit_array[0].intra_luma_left_mode,
-                                        cu_ptr->prediction_unit_array[0].intra_luma_top_mode,
-                                        cu_ptr->prediction_unit_array[0].intra_chroma_left_mode,
-                                        cu_ptr->prediction_unit_array[0].intra_chroma_top_mode,
-#endif
                                         context_ptr->blk_geom,
                                         picture_control_set_ptr->parent_pcs_ptr->av1_cm,                  //const Av1Common *cm,
                                         plane ? blk_geom->bwidth_uv : blk_geom->bwidth,                   //int32_t wpx,
@@ -3042,9 +2941,7 @@ EB_EXTERN void AV1EncodePass(
                                         0);
                                 }
                                 }
-#if ICOPY
                             }
-#endif
 
 
 
@@ -3332,9 +3229,7 @@ EB_EXTERN void AV1EncodePass(
                                     cu_ptr->prediction_unit_array->ref_frame_type,
                                     cu_ptr,
                                     &context_ptr->mv_unit,
-#if ICOPY_10B
                                     0,// use_intrabc,
-#endif
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,
@@ -3353,9 +3248,7 @@ EB_EXTERN void AV1EncodePass(
                                     cu_ptr,
                                     cu_ptr->prediction_unit_array->ref_frame_type,
                                     &context_ptr->mv_unit,
-#if ICOPY
                                     0,//use_intrabc,
-#endif
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,
