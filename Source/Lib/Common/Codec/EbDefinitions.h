@@ -108,7 +108,7 @@ extern "C" {
 
 #endif
 
-#if !M9_SETTINGS
+#if !M9_SETTINGS || M9_ADP
 #define FRAC_64x64_BUG_FIX                              1
 #endif
 #define USE_SAD_ME                                      1

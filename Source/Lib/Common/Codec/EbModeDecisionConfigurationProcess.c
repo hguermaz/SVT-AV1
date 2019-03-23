@@ -101,8 +101,11 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
 #define MEDIUM_SB_SCORE           16000 
 #define LOW_SB_SCORE               6000
 #define MAX_LUMINOSITY_BOOST         10
+#if M9_ADP
+int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,40,40,40,40,40,5,5,-10,-10,-10,-10,-10 };
+#else
 uint32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,40,40,40,40,40,25,25,10,10,10,10,10 };
-
+#endif
 
 // Coefficient scaling and quantization with AV1 TX are tailored to
 // the AV1 TX transforms.  Regardless of the bit-depth of the input,
@@ -1835,13 +1838,11 @@ void set_target_budget_oq(
         budget_per_sb = (((context_ptr->sb_average_score - MEDIUM_SB_SCORE) * (U_150 - U_125)) / (HIGH_SB_SCORE - MEDIUM_SB_SCORE)) + U_125;
     }
 
-    budget_per_sb = CLIP3(SB_PRED_OPEN_LOOP_COST, U_150, budget_per_sb + budget_per_sb_boost[context_ptr->adp_level] + luminosity_change_boost);
+    budget_per_sb = (uint32_t) CLIP3(SB_PRED_OPEN_LOOP_COST, U_150, (int32_t) (budget_per_sb + budget_per_sb_boost[context_ptr->adp_level] + luminosity_change_boost));
 
     //printf("picture_number = %d\tsb_average_score = %d\n", picture_control_set_ptr->picture_number, budget_per_sb);
     budget = sequence_control_set_ptr->sb_tot_cnt * budget_per_sb;
-
-
-  
+ 
     context_ptr->budget = budget;
 }
 
