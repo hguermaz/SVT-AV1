@@ -39,12 +39,8 @@ extern "C" {
         union {
             struct {
                 unsigned                        me_distortion : 20;
-#if OIS_BASED_INTRA
                 unsigned                        distortion_ready : 1;
                 unsigned                        : 2;
-#else
-                unsigned : 3;
-#endif
                 unsigned                        intra_luma_mode : 8; // HEVC mode, use pred_mode for AV1
             };
             uint32_t ois_results;
@@ -96,9 +92,7 @@ extern "C" {
 
         PredictionMode                         pred_mode; // AV1 mode, no need to convert
         uint8_t                                drl_index;
-#if ICOPY
         uint8_t                                use_intrabc;
-#endif
         // Intra Mode
         int32_t                                angle_delta[PLANE_TYPES];
         EbBool                                 is_directional_mode_flag;

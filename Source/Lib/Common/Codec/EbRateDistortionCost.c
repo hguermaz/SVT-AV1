@@ -29,12 +29,8 @@ block_size GetBlockSize(uint8_t cu_size) {
     return (cu_size == 64 ? BLOCK_64X64 : cu_size == 32 ? BLOCK_32X32 : cu_size == 16 ? BLOCK_16X16 : cu_size == 8 ? BLOCK_8X8 : BLOCK_4X4);
 }
 
-#if ICOPY
 int av1_allow_intrabc(const Av1Common *const cm);
 int32_t is_chroma_reference(int32_t mi_row, int32_t mi_col, block_size bsize,
-#else
-static INLINE int32_t is_chroma_reference(int32_t mi_row, int32_t mi_col, block_size bsize,
-#endif
     int32_t subsampling_x, int32_t subsampling_y) {
     const int32_t bw = mi_size_wide[bsize];
     const int32_t bh = mi_size_high[bsize];
@@ -779,7 +775,6 @@ uint64_t av1_intra_fast_cost(
     UNUSED(left_neighbor_mode);
     UNUSED(top_neighbor_mode);
 
-#if ICOPY 
    
     if (av1_allow_intrabc(picture_control_set_ptr->parent_pcs_ptr->av1_cm) && candidate_ptr->use_intrabc) {
 
@@ -824,7 +819,6 @@ uint64_t av1_intra_fast_cost(
 
     }
     else {
-#endif
 
     EbBool isMonochromeFlag = EB_FALSE; // NM - isMonochromeFlag is harcoded to false.
     EbBool isCflAllowed = (blk_geom->bwidth <= 32 && blk_geom->bheight <= 32) ? 1 : 0;
@@ -905,10 +899,8 @@ uint64_t av1_intra_fast_cost(
 
     uint32_t isInterRate = picture_control_set_ptr->slice_type != I_SLICE ? candidate_ptr->md_rate_estimation_ptr->intraInterFacBits[cu_ptr->is_inter_ctx][0] : 0;
     lumaRate = intraModeBitsNum + skipModeRate + intraLumaModeBitsNum + intraLumaAngModeBitsNum + isInterRate;
-#if ICOPY
     if (av1_allow_intrabc(picture_control_set_ptr->parent_pcs_ptr->av1_cm))
         lumaRate += candidate_ptr->md_rate_estimation_ptr->intrabcFacBits[candidate_ptr->use_intrabc];
-#endif
 
     chromaRate = intraChromaModeBitsNum + intraChromaAngModeBitsNum;
 
@@ -956,9 +948,7 @@ uint64_t av1_intra_fast_cost(
         // Assign fast cost
         return(RDCOST(lambda, rate, totalDistortion));
     }
-#if ICOPY
     }
-#endif
 }
 
 //extern INLINE int32_t have_newmv_in_inter_mode(PredictionMode mode);
@@ -2664,12 +2654,8 @@ EbErrorType av1_encode_tu_calc_cost(
         yNonZeroCbfRate = *y_tu_coeff_bits; // yNonZeroCbfLumaFlagBitsNum is already calculated inside y_tu_coeff_bits
 
         yZeroCbfRate = yZeroCbfLumaFlagBitsNum;
-#if ENABLE_EOB_ZERO_CHECK
         TransformUnit_t       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
         if (txb_ptr->transform_type[PLANE_TYPE_Y] != DCT_DCT) {
-#else
-        if (1) {
-#endif
             yZeroCbfCost = 0xFFFFFFFFFFFFFFFFull;
 
         }

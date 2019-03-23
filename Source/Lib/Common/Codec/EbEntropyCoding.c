@@ -454,11 +454,7 @@ void Av1WriteTxType(
     TxType                     txType,
     TxSize                      txSize) {
 
-#if ICOPY
     const int32_t isInter = cu_ptr->av1xd->use_intrabc || (cu_ptr->prediction_mode_flag == INTER_MODE);
-#else
-    const int32_t isInter = (cu_ptr->prediction_mode_flag == INTER_MODE);
-#endif
 
     const TxSize squareTxSize = txsize_sqr_map[txSize];
 
@@ -3868,12 +3864,7 @@ static void WriteUncompressedHeaderObu(SequenceControlSet_t *scsPtr/*AV1_COMP *c
         write_frame_size(pcsPtr, frame_size_override_flag, wb);
         //assert(av1_superres_unscaled(cm) ||
         //    !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-#if ICOPY
         if (pcsPtr->allow_screen_content_tools)
-#else
-        if (pcsPtr->allow_screen_content_tools &&
-            0 /*(av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC)*/)
-#endif
             aom_wb_write_bit(wb, pcsPtr->allow_intrabc);
         // all eight fbs are refreshed, pick one that will live long enough
         pcsPtr->fb_of_context_type[REGULAR_FRAME] = 0;
@@ -3881,12 +3872,7 @@ static void WriteUncompressedHeaderObu(SequenceControlSet_t *scsPtr/*AV1_COMP *c
     else {
         if (pcsPtr->av1FrameType == INTRA_ONLY_FRAME) {
             write_frame_size(pcsPtr, frame_size_override_flag, wb);
-#if ICOPY
             if (pcsPtr->allow_screen_content_tools)
-#else
-            if (pcsPtr->allow_screen_content_tools &&
-                0 /*(av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC)*/)
-#endif
                 aom_wb_write_bit(wb, pcsPtr->allow_intrabc);
         }
         else if (pcsPtr->av1FrameType == INTER_FRAME || frame_is_sframe(pcsPtr)) {
@@ -4757,7 +4743,6 @@ EbErrorType ec_update_neighbors(
     return return_error;
 
 }
-#if ICOPY
 int32_t is_chroma_reference(int32_t mi_row, int32_t mi_col, block_size bsize,
     int32_t subsampling_x, int32_t subsampling_y);
 
@@ -4859,7 +4844,6 @@ static void write_intrabc_info(
         av1_encode_dv(w, &mv, &dv_ref.as_mv, &ec_ctx->ndvc);
     }
 }
-#endif
 
 EbErrorType write_modes_b(
     PictureControlSet_t     *picture_control_set_ptr,
@@ -4951,12 +4935,10 @@ EbErrorType write_modes_b(
             const uint32_t intra_luma_mode = cu_ptr->pred_mode;
             uint32_t intra_chroma_mode = cu_ptr->prediction_unit_array->intra_chroma_mode;
 
-#if ICOPY
             if (av1_allow_intrabc(picture_control_set_ptr->parent_pcs_ptr->av1_cm))
                 write_intrabc_info(frameContext, cu_ptr, ecWriter);
 
             if (cu_ptr->av1xd->use_intrabc == 0)
-#endif
             EncodeIntraLumaModeAv1(
                 frameContext,
                 ecWriter,
@@ -4976,9 +4958,7 @@ EbErrorType write_modes_b(
                 blk_geom->bheight,
                 NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
-#if ICOPY
             if (cu_ptr->av1xd->use_intrabc == 0)
-#endif
                 if (blk_geom->has_uv)
                     EncodeIntraChromaModeAv1(
                         frameContext,
@@ -4988,7 +4968,6 @@ EbErrorType write_modes_b(
                         intra_chroma_mode,
                         blk_geom->bwidth <= 32 && blk_geom->bheight <= 32);
 
-#if ICOPY
             if (cu_ptr->av1xd->use_intrabc == 0 && av1_allow_palette(picture_control_set_ptr->parent_pcs_ptr->allow_screen_content_tools, blk_geom->bsize))
                 write_palette_mode_info(
                     frameContext,
@@ -4997,7 +4976,6 @@ EbErrorType write_modes_b(
                     blkOriginY >> MI_SIZE_LOG2,
                     blkOriginX >> MI_SIZE_LOG2,
                     ecWriter);
-#endif
 
             if (!skipCoeff) {
                 Av1EncodeCoeff1D(

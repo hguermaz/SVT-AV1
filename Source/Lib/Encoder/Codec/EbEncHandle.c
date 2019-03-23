@@ -411,9 +411,7 @@ void asmSetConvolveAsmTable(void);
 void asmSetConvolveHbdAsmTable(void);
 void init_intra_dc_predictors_c_internal(void);
 void init_intra_predictors_internal(void);
-#if ICOPY
 void av1_init_me_luts(void);
-#endif
 
 void SwitchToRealTime(){
 #if defined(__linux__) || defined(__APPLE__)
@@ -890,9 +888,7 @@ EbErrorType RestResultsCtor(
     return EB_ErrorNone;
 }
 
-#if ICOPY
 void init_fn_ptr(void);
-#endif
 
 /**********************************
 * Initialize Encoder Library
@@ -936,10 +932,8 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
 
     build_blk_geom(scs_init.sb_size == 128);
 
-#if ICOPY
     av1_init_me_luts();
     init_fn_ptr();
-#endif
 
     /************************************
     * Sequence Control Set
@@ -2156,9 +2150,7 @@ void SetParamBasedOnInput(
     derive_input_resolution(
         sequence_control_set_ptr,
         sequence_control_set_ptr->luma_width*sequence_control_set_ptr->luma_height);
- #if DISABLE_128_SB_FOR_SUB_720
     sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode <= ENC_M1 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
-#endif
 }
 
 void CopyApiFromApp(
@@ -2176,9 +2168,6 @@ void CopyApiFromApp(
     sequence_control_set_ptr->general_interlaced_source_flag = 0;
 
     // SB Definitions
-#if !DISABLE_128_SB_FOR_SUB_720
-    sequence_control_set_ptr->static_config.super_block_size       = (pComponentParameterStructure->enc_mode == ENC_M0) ? 128 : 64;
-#endif
     sequence_control_set_ptr->static_config.pred_structure = 2; // Hardcoded(Cleanup)
     sequence_control_set_ptr->static_config.enable_qp_scaling_flag = 1;
 

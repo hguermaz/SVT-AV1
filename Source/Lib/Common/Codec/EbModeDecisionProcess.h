@@ -23,12 +23,8 @@ extern "C" {
     /**************************************
      * Defines
      **************************************/
-#if ICOPY
 #define IBC_CAND 2 //two intra bc candidates
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (124+IBC_CAND) /* 61 Intra & 18+2x8+2x8 Inter*/
-#else
-#define MODE_DECISION_CANDIDATE_MAX_COUNT               124// 61 Intra & 18+2x8+2x8 Inter
-#endif
 
 #define DEPTH_ONE_STEP   21
 #define DEPTH_TWO_STEP    5
@@ -216,9 +212,7 @@ extern "C" {
         uint8_t                           parent_sq_has_coeff[MAX_PARENT_SQ];
         uint8_t                           parent_sq_pred_mode[MAX_PARENT_SQ];
         uint8_t                           chroma_level;
-#if NSQ_OPTIMASATION
         PART                              nsq_table[NSQ_TAB_SIZE];
-#endif
         uint8_t                           decoupled_fast_loop_search_method; 
         uint8_t                           decouple_intra_inter_fast_loop;
         uint8_t                           full_loop_escape;

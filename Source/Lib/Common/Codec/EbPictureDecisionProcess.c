@@ -696,7 +696,6 @@ EbErrorType signal_derivation_multi_processes_oq(
 
    
 
-#if NSQ_OPTIMASATION
     // NSQ search Level                               Settings
     // NSQ_SEARCH_OFF                                 OFF
     // NSQ_SEARCH_LEVEL1                              Allow only NSQ Inter-NEAREST/NEAR/GLOBAL if parent SQ has no coeff + reordering nsq_table number and testing only 1 NSQ SHAPE
@@ -781,19 +780,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
         
 
-#else
-    // NSQ search Level                               Settings
-   // 0                                              OFF
-   // 1                                              Allow only NSQ Intra-FULL if parent SQ is intra-coded and vice versa.
-   // 2                                              Allow only NSQ Inter-NEAREST/NEAR/GLOBAL if parent SQ has no coeff
-   // 3                                              Allow only NSQ Intra-FULL and Inter-NEWMV if parent SQ is NEWMV
-   // 4                                              Allow only NSQ Inter-FULL and Intra-Z3 if parent SQ is intra-coded
-   // 5                                              Allow NSQ Intra-FULL and Inter-FULL
-    if (!MR_MODE)
-        picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_BASE_ON_SQ_COEFF;
-    else
-        picture_control_set_ptr->nsq_search_level        = NSQ_SEARCH_FULL;
-#endif
+
 
     if (picture_control_set_ptr->nsq_search_level == NSQ_SEARCH_OFF) {
         if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
@@ -811,13 +798,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (sc_content_detected) {
 
         if (picture_control_set_ptr->enc_mode == ENC_M0)
-#if CHROMA_BLIND_IF_SEARCH
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
         else if (MR_MODE)
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#else
-            picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#endif
 
 
     }
@@ -827,11 +810,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (MR_MODE)
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
     else if (picture_control_set_ptr->enc_mode == ENC_M0)
-#if CHROMA_BLIND_IF_SEARCH
         picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
-#else
-        picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#endif
     else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         if (picture_control_set_ptr->is_used_as_reference_flag)
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
@@ -851,17 +830,14 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                            LIGHT FRAME-BASED
     // 3                                            FULL FRAME-BASED
 
-#if ICOPY
     //for now only I frames are allowed to use sc tools.
     //TODO: we can force all frames in GOP with the same detection status of leading I frame.
     if (picture_control_set_ptr->slice_type == I_SLICE) {
         picture_control_set_ptr->allow_screen_content_tools = picture_control_set_ptr->sc_content_detected;
         picture_control_set_ptr->allow_intrabc =  picture_control_set_ptr->sc_content_detected;
 
-#if IBC_MODES
         //IBC Modes:   0:Slow   1:Fast   2:Faster
         picture_control_set_ptr->ibc_mode = 0;
-#endif
 
         //turn OFF intra bc for some specific modes
         if (picture_control_set_ptr->enc_mode >= ENC_M3)
@@ -873,9 +849,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
 
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag && picture_control_set_ptr->allow_intrabc == 0) {
-#else
-    if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag) {
-#endif
         if (picture_control_set_ptr->enc_mode <= ENC_M3)
             picture_control_set_ptr->loop_filter_mode = 3;
         else if (picture_control_set_ptr->enc_mode <= ENC_M4)
@@ -895,12 +868,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 5                                            64 step refinement
     SequenceControlSet_t                    *sequence_control_set_ptr;
     sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
-#if ADD_CDEF_FILTER_LEVEL
-#if ICOPY 
     if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
-#else
-    if (sequence_control_set_ptr->enable_cdef) {
-#endif
 #if  M9_CDEF
         //if (picture_control_set_ptr->sc_content_detected) {
         //    if (picture_control_set_ptr->enc_mode <= ENC_M5)
@@ -932,23 +900,6 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else
         picture_control_set_ptr->cdef_filter_mode = 0;
-#else
-#if ICOPY 
-    if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
-#else
-    if (sequence_control_set_ptr->enable_cdef) {
-#endif
-        if (picture_control_set_ptr->enc_mode <= ENC_M3)
-            picture_control_set_ptr->cdef_filter_mode = 3;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M7)
-            picture_control_set_ptr->cdef_filter_mode = 1;
-        else
-            picture_control_set_ptr->cdef_filter_mode = 1;
-    }
-    else
-        picture_control_set_ptr->cdef_filter_mode = 0;
-
-#endif
 
     // SG Level                                    Settings
     // 0                                            OFF
@@ -1102,21 +1053,16 @@ EbErrorType signal_derivation_multi_processes_oq(
                     picture_control_set_ptr->intra_pred_mode = 1;
                 else
                     picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
             else if (picture_control_set_ptr->enc_mode <= ENC_M6)
-#else
-            else
-#endif
+
                 if (picture_control_set_ptr->temporal_layer_index == 0)
                     picture_control_set_ptr->intra_pred_mode = 2;
                 else
                     picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
             else if (picture_control_set_ptr->enc_mode <= ENC_M7)
                 picture_control_set_ptr->intra_pred_mode = 4;
             else
                 picture_control_set_ptr->intra_pred_mode = 5;
-#endif
         }
         else {
 #endif
@@ -1130,16 +1076,11 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->intra_pred_mode = 1;
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
         else if (picture_control_set_ptr->enc_mode <= ENC_M6) 
-#else
-        else
-#endif
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->intra_pred_mode = 2;
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
-#if OIS_BASED_INTRA
         else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
             picture_control_set_ptr->intra_pred_mode = 4;
 #if M9_INTRA
@@ -1151,7 +1092,6 @@ EbErrorType signal_derivation_multi_processes_oq(
         else
             picture_control_set_ptr->intra_pred_mode = 5;
 
-#endif
 #endif
 #if SCENE_CONTENT_SETTINGS
         }
@@ -2304,12 +2244,10 @@ void* picture_decision_kernel(void *input_ptr)
                                     picture_control_set_ptr->av1_cm->ref_frame_sign_bias[BWDREF_FRAME] = 1;
                             }
 
-#if SC_DETECT_GOP
                             if (picture_control_set_ptr->slice_type == I_SLICE)
                                 context_ptr->last_i_picture_sc_detection = picture_control_set_ptr->sc_content_detected;
                             else
                                 picture_control_set_ptr->sc_content_detected = context_ptr->last_i_picture_sc_detection;
-#endif
 
                             // ME Kernel Multi-Processes Signal(s) derivation
                             signal_derivation_multi_processes_oq(

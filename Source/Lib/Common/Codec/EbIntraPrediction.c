@@ -28,9 +28,7 @@
 void *aom_memset16(void *dest, int32_t val, size_t length);
 
 
-#if ICOPY
 int32_t is_inter_block(const MbModeInfo *mbmi);
-#endif
 
 // Some basic checks on weights for smooth predictor.
 #define sm_weights_sanity_checks(weights_w, weights_h, weights_scale, \
@@ -128,7 +126,6 @@ EbErrorType IntraReference16bitSamplesCtor(
 }
 
 
-#if ICOPY
 static int is_smooth(const MbModeInfo *mbmi, int plane) {
     if (plane == 0) {
         const PredictionMode mode = mbmi->mode;
@@ -164,47 +161,7 @@ static int get_filt_type(const MacroBlockD *xd, int plane) {
 
     return (ab_sm || le_sm) ? 1 : 0;
 }
-#else
-static int32_t is_smooth(PredictionMode modeIn, int32_t plane) {
-#if ICOPY
-    printf("add_intra_bc_support\n");
-#endif
 
-    if (plane == 0) {
-        const PredictionMode mode = modeIn;//mbmi->mode;
-        return (mode == SMOOTH_PRED || mode == SMOOTH_V_PRED ||
-            mode == SMOOTH_H_PRED);
-    }
-    else {
-        // uv_mode is not set for inter blocks, so need to explicitly
-        // detect that case.
-
-        const PredictionMode mode = modeIn;//mbmi->mode;
-
-        return (mode == (PredictionMode)UV_SMOOTH_PRED || mode == (PredictionMode)UV_SMOOTH_V_PRED ||
-            mode == (PredictionMode)UV_SMOOTH_H_PRED);
-    }
-}
-
-static int32_t get_filt_type(PredictionMode left, PredictionMode top, int32_t plane) {
-    int32_t ab_sm, le_sm;
-
-    if (plane == 0) {
-        //const MbModeInfo *ab = top;//xd->above_mbmi;
-        //const MbModeInfo *le = left;//xd->left_mbmi;
-        ab_sm = is_smooth(top, plane);
-        le_sm = is_smooth(left, plane);
-    }
-    else {
-        //const MbModeInfo *ab = top;//xd->chroma_above_mbmi;
-        //const MbModeInfo *le = left;//xd->chroma_left_mbmi;
-        ab_sm = is_smooth(top, plane);
-        le_sm = is_smooth(left, plane);
-    }
-
-    return (ab_sm || le_sm) ? 1 : 0;
-}
-#endif
 
 
 static int32_t use_intra_edge_upsample(int32_t bs0, int32_t bs1, int32_t delta, int32_t type) {
@@ -518,182 +475,6 @@ void av1_dr_prediction_z2_c(uint8_t *dst, ptrdiff_t stride, int32_t bw, int32_t 
 }
 
 
-    #if !OIS_BASED_INTRA
-static void IntraModeAngular_27To33(
-    uint32_t            mode,                       //input parameter, indicates the Intra luma mode
-    const uint32_t      size,                       //input parameter, denotes the size of the current PU
-    uint8_t            *ref_samples,                 //input parameter, pointer to the reference samples
-    uint8_t            *prediction_ptr,              //output parameter, pointer to the prediction
-    const uint32_t      prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-    EbAsm            asm_type)
-{
-    uint8_t           *ref_samp_main;
-    int32_t           intra_pred_angle = intraModeAngularTable[mode - INTRA_VERTICAL_MODE];
-    ref_samp_main = ref_samples + (size << 1);
-
-    IntraAngVertical_funcPtrArray[asm_type](
-        size,
-        ref_samp_main,
-        prediction_ptr,
-        prediction_buffer_stride,
-        EB_FALSE,
-        intra_pred_angle);
-
-    return;
-}
-
-
-/** IntraModeAngular_19To25()
-        is used to compute the prediction for Intra angular modes 19-25
- */
-static void IntraModeAngular_19To25(
-    uint32_t            mode,                       //input parameter, indicates the Intra luma mode
-    const uint32_t      size,                       //input parameter, denotes the size of the current PU
-    uint8_t            *ref_samples,                 //input parameter, pointer to the reference samples
-    uint8_t            *prediction_ptr,              //output parameter, pointer to the prediction
-    const uint32_t      prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-    uint8_t            *refAbove,
-    EbBool          *AboveReadyFlag,
-    EbAsm            asm_type
-)
-{
-    uint8_t        *ref_samp_main;
-    uint8_t        *refSampSide;
-    const uint32_t  numberOfSamples = size + 1;
-    int32_t        signIndex;
-    const uint32_t  refOffset = (size << 1);
-    int32_t        intra_pred_angle = 0;
-    uint32_t        invAngle = 0;
-    uint32_t        invAngleSum = 128;       // rounding used for (shift by 8)
-    int32_t        idx;
-    uint32_t        index;
-
-    if (INTRA_VERTICAL_MODE - mode < 9) { // check for index range, has to be less than size of array
-        intra_pred_angle = intraModeAngularTableNegative[INTRA_VERTICAL_MODE - mode];
-        invAngle = invIntraModeAngularTable[INTRA_VERTICAL_MODE - mode];
-    }
-
-    //We just need to copy above Reference pixels only for ONE TIME for all modes of this group
-    //where Filtered or non-Filtered are always used (8x8,32x32)
-    if ((*AboveReadyFlag == EB_FALSE) || (size == 16)) {
-
-        *AboveReadyFlag = EB_TRUE;
-        // Copy above reference samples (inc top left)
-        for (index = 0; index < numberOfSamples; index++) {
-            refAbove[index + size - 1] = ref_samples[refOffset + index];
-        }
-    }
-
-    ref_samp_main = refAbove + (size - 1);
-
-    // Extend the Main reference to the left for angles with negative slope
-    refSampSide = ref_samples + (size << 1);
-    for (signIndex = -1; signIndex > (int32_t)((int32_t)size*intra_pred_angle >> 5); --signIndex) {
-        invAngleSum += invAngle;
-        idx = (-((int32_t)invAngleSum >> 8));
-        ref_samp_main[signIndex] = refSampSide[idx];
-    }
-
-
-    IntraAngVertical_funcPtrArray[asm_type](
-        size,
-        ref_samp_main,
-        prediction_ptr,
-        prediction_buffer_stride,
-        EB_FALSE,
-        intra_pred_angle);
-
-    return;
-}
-
-
-
-/** IntraModeAngular_11To17()
-       is used to compute the prediction for Intra angular modes 11-17
-*/
-static void IntraModeAngular_11To17(
-    uint32_t            mode,                       //input parameter, indicates the Intra luma mode
-    const uint32_t      size,                       //input parameter, denotes the size of the current PU
-    uint8_t            *ref_samples,                 //input parameter, pointer to the reference samples
-    uint8_t            *prediction_ptr,              //output parameter, pointer to the prediction
-    const uint32_t      prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-    uint8_t            *refLeft,
-    EbBool          *LeftReadyFlag,
-    EbAsm            asm_type)
-{
-    uint8_t          *ref_samp_main;
-    uint8_t          *refSampSide;
-    const uint32_t    numberOfSamples = size + 1;
-    int32_t          signIndex;
-    const uint32_t    refOffset = (size << 1);
-    uint32_t          index;
-
-    int32_t          intra_pred_angle = intraModeAngularTableNegative[mode - INTRA_HORIZONTAL_MODE];
-    uint32_t          invAngle = invIntraModeAngularTable[mode - INTRA_HORIZONTAL_MODE];
-    uint32_t          invAngleSum = 128;       // rounding used for (shift by 8)
-
-   //We just need to copy above Reference pixels only for ONE TIME for all modes of this group
-   //where Filtered or non-Filtered are always used (8x8,32x32)
-    if ((*LeftReadyFlag == EB_FALSE) || (size == 16)) {
-
-        *LeftReadyFlag = EB_TRUE;
-        // Copy left reference samples (inc top left)(DO we really need all the data including topright??)
-        for (index = 0; index < numberOfSamples; index++) {
-            refLeft[index + size - 1] = ref_samples[refOffset - index];
-        }
-    }
-
-    ref_samp_main = refLeft + (size - 1);
-
-    // Extend the Main reference to the left for angles with negative slope
-    refSampSide = ref_samples + (size << 1);
-
-    for (signIndex = -1; signIndex > (int32_t)((int32_t)size*intra_pred_angle >> 5); --signIndex) {
-        invAngleSum += invAngle;
-        ref_samp_main[signIndex] = refSampSide[invAngleSum >> 8];
-    }
-
-
-    IntraAngHorizontal_funcPtrArray[asm_type](
-        size,
-        ref_samp_main,
-        prediction_ptr,
-        prediction_buffer_stride,
-        EB_FALSE,
-        intra_pred_angle);
-
-    return;
-}
-
-
-/** IntraModeAngular_3To9()
-       is used to compute the prediction for Intra angular modes 3-9
-*/
-static void IntraModeAngular_3To9(
-    uint32_t            mode,                       //input parameter, indicates the Intra luma mode
-    const uint32_t      size,                       //input parameter, denotes the size of the current PU
-    uint8_t            *ref_samples,                 //input parameter, pointer to the reference samples
-    uint8_t            *prediction_ptr,              //output parameter, pointer to the prediction
-    const uint32_t      prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-    EbAsm            asm_type)
-{
-    uint8_t        *ref_samp_main;
-
-    int32_t        intra_pred_angle = (INTRA_HORIZONTAL_MODE - mode) < 9 ? intraModeAngularTable[INTRA_HORIZONTAL_MODE - mode] : 0;
-
-    ref_samp_main = ref_samples - 1;
-
-    IntraAngHorizontal_funcPtrArray[asm_type](
-        size,
-        ref_samp_main,
-        prediction_ptr,
-        prediction_buffer_stride,
-        EB_FALSE,
-        intra_pred_angle);
-
-    return;
-}
-#endif
 /* clang-format on */
 void IntraModePlanar(
     const uint32_t   size,                       //input parameter, denotes the size of the current PU
@@ -1376,98 +1157,6 @@ void IntraModeAngular_AV1_Z3_16bit(
     return;
 }
 
-    #if !OIS_BASED_INTRA
-
-/** IntraModeAngular_all()
-        is the main function to compute intra  angular prediction for a PU
- */
-static inline void IntraModeAngular_all(
-    uint32_t            mode,                       //input parameter, indicates the Intra luma mode
-    const uint32_t      puSize,                     //input parameter, denotes the size of the current PU
-    uint8_t            *ref_samples,                 //input parameter, pointer to the reference samples
-    uint8_t            *refSamplesReverse,          //input parameter, pointer to the reference samples,Left in reverse order
-    uint8_t            *prediction_ptr,              //output parameter, pointer to the prediction
-    const uint32_t      prediction_buffer_stride,     //input parameter, denotes the stride for the prediction ptr
-    uint8_t            *refAbove,
-    EbBool          *AboveReadyFlag,
-    uint8_t            *refLeft,
-    EbBool          *LeftReadyFlag,
-    EbAsm            asm_type)
-{
-
-
-    switch (mode) {
-    case 34:
-
-        IntraAng34_funcPtrArray[asm_type](
-            puSize,
-            ref_samples,
-            prediction_ptr,
-            prediction_buffer_stride,
-            EB_FALSE);
-
-        break;
-    case 33: case 32: case 31: case 30: case 29: case 28: case 27:
-        IntraModeAngular_27To33(
-            mode,
-            puSize,
-            ref_samples,
-            prediction_ptr,
-            prediction_buffer_stride,
-            asm_type);
-        break;
-    case 25: case 24: case 23: case 22: case 21: case 20: case 19:
-        IntraModeAngular_19To25(
-            mode,
-            puSize,
-            ref_samples,
-            prediction_ptr,
-            prediction_buffer_stride,
-            refAbove,
-            AboveReadyFlag,
-            asm_type);
-        break;
-    case 18:
-        IntraAng18_funcPtrArray[asm_type](
-            puSize,
-            ref_samples,
-            prediction_ptr,
-            prediction_buffer_stride,
-            EB_FALSE);
-        break;
-    case 17: case 16: case 15: case 14: case 13: case 12: case 11:
-        IntraModeAngular_11To17(
-            mode,
-            puSize,
-            ref_samples,
-            prediction_ptr,
-            prediction_buffer_stride,
-            refLeft,
-            LeftReadyFlag,
-            asm_type);
-        break;
-    case 9: case 8: case 7: case 6: case 5: case 4: case 3:
-        IntraModeAngular_3To9(
-            mode,
-            puSize,
-            refSamplesReverse,
-            prediction_ptr,
-            prediction_buffer_stride,
-            asm_type);
-        break;
-    case 2:
-
-        IntraAng2_funcPtrArray[asm_type](
-            puSize,
-            refSamplesReverse,
-            prediction_ptr,
-            prediction_buffer_stride,
-            EB_FALSE);
-        break;
-    }
-}
-
-#endif
 
 /**********************************************
  * Intra Reference Samples Ctor
@@ -1611,96 +1300,6 @@ EbErrorType UpdateNeighborSamplesArrayOpenLoop(
     return return_error;
 }
 
-#if !OIS_BASED_INTRA
-/** IntraPredictionOpenLoop()
-        performs Open-loop Intra candidate Search for a CU
- */
-EbErrorType IntraPredictionOpenLoop(
-    uint32_t                               cu_size,                       // input parameter, pointer to the current cu
-    MotionEstimationContext_t           *context_ptr,                  // input parameter, ME context
-    uint32_t                   openLoopIntraCandidateIndex, // input parameter, intra mode
-    EbAsm                               asm_type)
-{
-    EbErrorType                return_error = EB_ErrorNone;
-
-    // Map the mode to the function table index
-    uint32_t funcIndex =
-        (openLoopIntraCandidateIndex < 2) ? openLoopIntraCandidateIndex :
-        (openLoopIntraCandidateIndex == INTRA_VERTICAL_MODE) ? 2 :
-        (openLoopIntraCandidateIndex == INTRA_HORIZONTAL_MODE) ? 3 :
-        4;
-
-
-    switch (funcIndex) {
-
-    case 0:
-
-        IntraPlanar_funcPtrArray[asm_type](
-            cu_size,
-            context_ptr->intra_ref_ptr->y_intra_reference_array_reverse,
-            (&(context_ptr->me_context_ptr->sb_buffer[0])),
-            context_ptr->me_context_ptr->sb_buffer_stride,
-            EB_FALSE);
-
-        break;
-
-    case 1:
-
-        IntraDCLuma_funcPtrArray[asm_type](
-            cu_size,
-            context_ptr->intra_ref_ptr->y_intra_reference_array_reverse,
-            (&(context_ptr->me_context_ptr->sb_buffer[0])),
-            context_ptr->me_context_ptr->sb_buffer_stride,
-            EB_FALSE);
-
-        break;
-
-    case 2:
-
-        IntraVerticalLuma_funcPtrArray[asm_type](
-            cu_size,
-            context_ptr->intra_ref_ptr->y_intra_reference_array_reverse,
-            (&(context_ptr->me_context_ptr->sb_buffer[0])),
-            context_ptr->me_context_ptr->sb_buffer_stride,
-            EB_FALSE);
-
-        break;
-
-    case 3:
-
-        IntraHorzLuma_funcPtrArray[asm_type](
-            cu_size,
-            context_ptr->intra_ref_ptr->y_intra_reference_array_reverse,
-            (&(context_ptr->me_context_ptr->sb_buffer[0])),
-            context_ptr->me_context_ptr->sb_buffer_stride,
-            EB_FALSE);
-
-        break;
-
-    case 4:
-
-        IntraModeAngular_all(
-            openLoopIntraCandidateIndex,
-            cu_size,
-            context_ptr->intra_ref_ptr->y_intra_reference_array,
-            context_ptr->intra_ref_ptr->y_intra_reference_array_reverse,
-            (&(context_ptr->me_context_ptr->sb_buffer[0])),
-            context_ptr->me_context_ptr->sb_buffer_stride,
-            context_ptr->intra_ref_ptr->reference_above_line_y,
-            &context_ptr->intra_ref_ptr->above_ready_flag_y,
-            context_ptr->intra_ref_ptr->reference_left_line_y,
-            &context_ptr->intra_ref_ptr->left_ready_flag_y,
-            asm_type);
-
-        break;
-
-    default:
-        break;
-    }
-
-    return return_error;
-}
-#endif
 void cfl_luma_subsampling_420_lbd_c(
     uint8_t *input,
     int32_t input_stride, int16_t *output_q3,
@@ -4017,226 +3616,6 @@ void av1_upsample_intra_edge_c(uint8_t *p, int32_t sz) {
         p[2 * i] = in[i + 2];
     }
 }
-#if !OIS_BASED_INTRA
-static void build_intra_predictors_md(
-
-    ModeDecisionContext_t            *cu_ptr,
-    const MacroBlockD *xd,
-    uint8_t* topNeighArray,
-    uint8_t* leftNeighArray,
-    // const uint8_t *ref,    int32_t ref_stride,
-    uint8_t *dst, int32_t dst_stride,
-    PredictionMode mode, int32_t angle_delta,
-    FILTER_INTRA_MODE filter_intra_mode,
-    TxSize tx_size, int32_t disable_edge_filter,
-    int32_t n_top_px, int32_t n_topright_px,
-    int32_t n_left_px, int32_t n_bottomleft_px,
-    int32_t plane)
-{
-    (void)xd;
-    int32_t i;
-
-    int32_t ref_stride = 1;
-    const uint8_t *above_ref = topNeighArray;//CHKN ref - ref_stride;
-    const uint8_t *left_ref = leftNeighArray;//CHKN ref - 1;
-
-    DECLARE_ALIGNED(16, uint8_t, left_data[MAX_TX_SIZE * 2 + 32]);
-    DECLARE_ALIGNED(16, uint8_t, above_data[MAX_TX_SIZE * 2 + 32]);
-    uint8_t *const above_row = above_data + 16;
-    uint8_t *const left_col = left_data + 16;
-    const int32_t txwpx = tx_size_wide[tx_size];
-    const int32_t txhpx = tx_size_high[tx_size];
-    int32_t need_left = extend_modes[mode] & NEED_LEFT;
-    int32_t need_above = extend_modes[mode] & NEED_ABOVE;
-    int32_t need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
-    int32_t p_angle = 0;
-    const int32_t is_dr_mode = av1_is_directional_mode(mode);
-    const int32_t use_filter_intra = filter_intra_mode != FILTER_INTRA_MODES;
-
-    if (is_dr_mode) {
-        p_angle = mode_to_angle_map[mode] + angle_delta * ANGLE_STEP;
-        if (p_angle <= 90)
-            need_above = 1, need_left = 0, need_above_left = 1;
-        else if (p_angle < 180)
-            need_above = 1, need_left = 1, need_above_left = 1;
-        else
-            need_above = 0, need_left = 1, need_above_left = 1;
-    }
-    if (use_filter_intra) need_left = need_above = need_above_left = 1;
-
-    assert(n_top_px >= 0);
-    assert(n_topright_px >= 0);
-    assert(n_left_px >= 0);
-    assert(n_bottomleft_px >= 0);
-
-    if ((!need_above && n_left_px == 0) || (!need_left && n_top_px == 0)) {
-        int32_t val;
-        if (need_left) {
-            val = (n_top_px > 0) ? above_ref[0] : 129;
-        }
-        else {
-            val = (n_left_px > 0) ? left_ref[0] : 127;
-        }
-        for (i = 0; i < txhpx; ++i) {
-            memset(dst, val, txwpx);
-            dst += dst_stride;
-        }
-        return;
-    }
-
-    // NEED_LEFT
-    if (need_left) {
-        int32_t need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
-        if (use_filter_intra) need_bottom = 0;
-        if (is_dr_mode) need_bottom = p_angle > 180;
-        const int32_t num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 0);
-        i = 0;
-        if (n_left_px > 0) {
-            for (; i < n_left_px; i++) left_col[i] = left_ref[i * ref_stride];
-            if (need_bottom && n_bottomleft_px > 0) {
-                assert(i == txhpx);
-                for (; i < txhpx + n_bottomleft_px; i++)
-                    left_col[i] = left_ref[i * ref_stride];
-            }
-            if (i < num_left_pixels_needed)
-                memset(&left_col[i], left_col[i - 1], num_left_pixels_needed - i);
-        }
-        else {
-            if (n_top_px > 0) {
-                memset(left_col, above_ref[0], num_left_pixels_needed);
-            }
-            else {
-                memset(left_col, 129, num_left_pixels_needed);
-            }
-        }
-    }
-
-    // NEED_ABOVE
-    if (need_above) {
-        int32_t need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
-        if (use_filter_intra) need_right = 0;
-        if (is_dr_mode) need_right = p_angle < 90;
-        const int32_t num_top_pixels_needed = txwpx + (need_right ? txhpx : 0);
-        if (n_top_px > 0) {
-            memcpy(above_row, above_ref, n_top_px);
-            i = n_top_px;
-            if (need_right && n_topright_px > 0) {
-                assert(n_top_px == txwpx);
-                memcpy(above_row + txwpx, above_ref + txwpx, n_topright_px);
-                i += n_topright_px;
-            }
-            if (i < num_top_pixels_needed)
-                memset(&above_row[i], above_row[i - 1], num_top_pixels_needed - i);
-        }
-        else {
-            if (n_left_px > 0) {
-                memset(above_row, left_ref[0], num_top_pixels_needed);
-            }
-            else {
-                memset(above_row, 127, num_top_pixels_needed);
-            }
-        }
-    }
-
-    if (need_above_left) {
-        if (n_top_px > 0 && n_left_px > 0) {
-            above_row[-1] = above_ref[-1];
-        }
-        else if (n_top_px > 0) {
-            above_row[-1] = above_ref[0];
-        }
-        else if (n_left_px > 0) {
-            above_row[-1] = left_ref[0];
-        }
-        else {
-            above_row[-1] = 128;
-        }
-        left_col[-1] = above_row[-1];
-    }
-
-    //    if (use_filter_intra) {
-    ////        av1_filter_intra_predictor(dst, dst_stride, tx_size, above_row, left_col,
-    ////CHKN            filter_intra_mode);
-    //        return;
-    //    }
-
-    if (is_dr_mode) {
-        int32_t upsample_above = 0;
-        int32_t upsample_left = 0;
-        if (!disable_edge_filter) {
-            const int32_t need_right = p_angle < 90;
-            const int32_t need_bottom = p_angle > 180;
-            uint32_t intraLeftMode;
-            uint32_t intraTopMode;
-            //const int32_t filt_type = get_filt_type(xd, plane);
-            if (plane) {
-
-                intraLeftMode = cu_ptr->intra_chroma_left_mode;
-                intraTopMode = cu_ptr->intra_chroma_top_mode;
-            }
-            else {
-                intraLeftMode = cu_ptr->intra_luma_left_mode;
-                intraTopMode = cu_ptr->intra_luma_top_mode;
-            }
-            EbBool neighborAvailableLeft = (n_left_px == 0) ? EB_FALSE : // left picture boundary check
-                EB_TRUE;
-
-            EbBool    neighborAvailableTop = (n_top_px == 0) ? EB_FALSE : // picture boundary check
-                EB_TRUE;
-#if ICOPY
-            const int32_t filt_type = get_filt_type(xd, plane);
-#else
-            const int32_t filt_type = get_filt_type(neighborAvailableLeft ? (PredictionMode)intraLeftMode : D135_PRED,
-                neighborAvailableTop ? (PredictionMode)intraTopMode : D135_PRED,
-                0);
-#endif
-
-            if (p_angle != 90 && p_angle != 180) {
-                const int32_t ab_le = need_above_left ? 1 : 0;
-                if (need_above && need_left && (txwpx + txhpx >= 24)) {
-                    filter_intra_edge_corner(above_row, left_col);
-                }
-                if (need_above && n_top_px > 0) {
-                    const int32_t strength =
-                        intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
-                    const int32_t n_px = n_top_px + ab_le + (need_right ? txhpx : 0);
-                    av1_filter_intra_edge(above_row - ab_le, n_px, strength);
-                }
-                if (need_left && n_left_px > 0) {
-                    const int32_t strength = intra_edge_filter_strength(
-                        txhpx, txwpx, p_angle - 180, filt_type);
-                    const int32_t n_px = n_left_px + ab_le + (need_bottom ? txwpx : 0);
-                    av1_filter_intra_edge(left_col - ab_le, n_px, strength);
-                }
-            }
-            upsample_above =
-                use_intra_edge_upsample(txwpx, txhpx, p_angle - 90, filt_type);
-            if (need_above && upsample_above) {
-                const int32_t n_px = txwpx + (need_right ? txhpx : 0);
-                av1_upsample_intra_edge(above_row, n_px);
-            }
-            upsample_left =
-                use_intra_edge_upsample(txhpx, txwpx, p_angle - 180, filt_type);
-            if (need_left && upsample_left) {
-                const int32_t n_px = txhpx + (need_bottom ? txwpx : 0);
-                av1_upsample_intra_edge(left_col, n_px);
-            }
-        }
-        dr_predictor(dst, dst_stride, tx_size, above_row, left_col, upsample_above,
-            upsample_left, p_angle);
-        return;
-    }
-
-    // predict
-    if (mode == DC_PRED) {
-        dc_pred[n_left_px > 0][n_top_px > 0][tx_size](dst, dst_stride, above_row,
-            left_col);
-    }
-    else {
-        pred[mode][tx_size](dst, dst_stride, above_row, left_col);
-    }
-}
-#endif
 /*static INLINE*/ block_size scale_chroma_bsize(block_size bsize, int32_t subsampling_x,
     int32_t subsampling_y) {
     block_size bs = bsize;
@@ -4288,12 +3667,6 @@ static void build_intra_predictors_md(
 static void build_intra_predictors(
 
 
-    #if !ICOPY
-    uint8_t    intra_luma_left_mode,
-    uint8_t    intra_luma_top_mode,
-    uint8_t    intra_chroma_left_mode,
-    uint8_t    intra_chroma_top_mode,
-#endif
     const MacroBlockD *xd,
     uint8_t* topNeighArray,
     uint8_t* leftNeighArray,
@@ -4439,32 +3812,7 @@ static void build_intra_predictors(
         if (!disable_edge_filter) {
             const int32_t need_right = p_angle < 90;
             const int32_t need_bottom = p_angle > 180;
-#if !ICOPY
-            uint32_t intraLeftMode;
-            uint32_t intraTopMode;
-            //const int32_t filt_type = get_filt_type(xd, plane);
-
-            if (plane) {
-                intraLeftMode = intra_chroma_left_mode;
-                intraTopMode = intra_chroma_top_mode;
-            }
-            else {
-                intraLeftMode = intra_luma_left_mode;
-                intraTopMode = intra_luma_top_mode;
-            }
-            EbBool neighborAvailableLeft = (n_left_px == 0) ? EB_FALSE : // left picture boundary check
-                EB_TRUE;
-
-            EbBool    neighborAvailableTop = (n_top_px == 0) ? EB_FALSE : // picture boundary check
-                EB_TRUE;
-#endif
-#if ICOPY
             const int32_t filt_type = get_filt_type(xd, plane);
-#else
-            const int32_t filt_type = get_filt_type(neighborAvailableLeft ? (PredictionMode)intraLeftMode : D135_PRED,
-                neighborAvailableTop ? (PredictionMode)intraTopMode : D135_PRED,
-                0);
-#endif
 
             if (p_angle != 90 && p_angle != 180) {
                 const int32_t ab_le = need_above_left ? 1 : 0;
@@ -4512,9 +3860,6 @@ static void build_intra_predictors(
     }
 }
 static void build_intra_predictors_high(
-    #if !ICOPY
-    CodingUnit_t            *cu_ptr,
-#endif
     const MacroBlockD *xd,
     uint16_t* topNeighArray, // int8_t
     uint16_t* leftNeighArray, // int8_t
@@ -4673,33 +4018,8 @@ static void build_intra_predictors_high(
         if (!disable_edge_filter) {
             const int32_t need_right = p_angle < 90;
             const int32_t need_bottom = p_angle > 180;
-#if !ICOPY
-            uint32_t intraLeftMode;
-            uint32_t intraTopMode;
-
-            if (plane) {
-
-                intraLeftMode = (&cu_ptr->prediction_unit_array[0])->intra_chroma_left_mode;
-                intraTopMode = (&cu_ptr->prediction_unit_array[0])->intra_chroma_top_mode;
-            }
-            else {
-                intraLeftMode = (&cu_ptr->prediction_unit_array[0])->intra_luma_left_mode;
-                intraTopMode = (&cu_ptr->prediction_unit_array[0])->intra_luma_top_mode;
-            }
-            EbBool neighborAvailableLeft = (n_left_px == 0) ? EB_FALSE : // left picture boundary check
-                EB_TRUE;
-
-            EbBool    neighborAvailableTop = (n_top_px == 0) ? EB_FALSE : // picture boundary check
-                EB_TRUE;
-#endif
             //const int32_t filt_type = get_filt_type(xd, plane);
-#if ICOPY
             const int32_t filt_type = get_filt_type(xd, plane);
-#else
-            const int32_t filt_type = get_filt_type(neighborAvailableLeft ? (PredictionMode)intraLeftMode : D135_PRED,
-                neighborAvailableTop ? (PredictionMode)intraTopMode : D135_PRED,
-                0);
-#endif
             if (p_angle != 90 && p_angle != 180) {
                 const int32_t ab_le = need_above_left ? 1 : 0;
                 if (need_above && need_left && (txwpx + txhpx >= 24)) {
@@ -4755,211 +4075,10 @@ static void build_intra_predictors_high(
 
 
 
-#if !OIS_BASED_INTRA
-extern void av1_predict_intra_block_md(
-    ModeDecisionContext_t *cu_ptr,
-    const Av1Common *cm,
-    int32_t wpx,
-    int32_t hpx,
-    TxSize tx_size,
-    PredictionMode mode,
-    int32_t angle_delta,
-    int32_t use_palette,
-    FILTER_INTRA_MODE filter_intra_mode,
-    uint8_t* topNeighArray,
-    uint8_t* leftNeighArray,
-    EbPictureBufferDesc_t  *recon_buffer,
-    int32_t col_off,
-    int32_t row_off,
-    int32_t plane,
-    block_size bsize,
-    uint32_t cuOrgX,
-    uint32_t cuOrgY,
-    uint32_t OrgX,
-    uint32_t OrgY
-)
-{
-    (void)use_palette;
-    MacroBlockD xdS;
-    MacroBlockD *xd = &xdS;
-    int32_t mirow = cuOrgY >> 2;
-    int32_t micol = cuOrgX >> 2;
-    xd->up_available = (mirow > 0);
-    xd->left_available = (micol > 0);
-    const int32_t bw = mi_size_wide[bsize];
-    const int32_t bh = mi_size_high[bsize];
-
-    // Adjust mirow , micol ;
-    // All plane have the same values
-    if (plane) {
-        mirow = (cuOrgY * 2) >> 2;
-        micol = (cuOrgX * 2) >> 2;
-    }
-    xd->mb_to_top_edge = -((mirow * MI_SIZE) * 8);
-    xd->mb_to_bottom_edge = ((cm->mi_rows - bh - mirow) * MI_SIZE) * 8;
-    xd->mb_to_left_edge = -((micol * MI_SIZE) * 8);
-    xd->mb_to_right_edge = ((cm->mi_cols - bw - micol) * MI_SIZE) * 8;
-    xd->tile.mi_col_start = 0;
-    xd->tile.mi_col_end = cm->mi_cols;
-    xd->tile.mi_row_start = 0;
-    xd->tile.mi_row_end = cm->mi_rows;
-    xd->n8_h = bh;
-    xd->n8_w = bw;
-    xd->is_sec_rect = 0;
-    if (xd->n8_w < xd->n8_h) {
-        // Only mark is_sec_rect as 1 for the last block.
-        // For PARTITION_VERT_4, it would be (0, 0, 0, 1);
-        // For other partitions, it would be (0, 1).
-        if (!((micol + xd->n8_w) & (xd->n8_h - 1))) xd->is_sec_rect = 1;
-    }
-
-    if (xd->n8_w > xd->n8_h)
-        if (mirow & (xd->n8_w - 1)) xd->is_sec_rect = 1;
-
-
-    // Adjust prediction pointers
-    uint8_t *dst;
-    int32_t dst_stride;
-    if (plane == 0) {
-        dst = recon_buffer->buffer_y + OrgX + recon_buffer->origin_x + (OrgY + recon_buffer->origin_y)*recon_buffer->stride_y;
-        dst_stride = recon_buffer->stride_y;
-    }
-    else if (plane == 1) {
-        dst = recon_buffer->bufferCb + (OrgX + recon_buffer->origin_x / 2 + (OrgY + recon_buffer->origin_y / 2)*recon_buffer->strideCb);
-        dst_stride = recon_buffer->strideCb;
-    }
-    else {
-        dst = recon_buffer->bufferCr + (OrgX + recon_buffer->origin_x / 2 + (OrgY + recon_buffer->origin_y / 2)*recon_buffer->strideCr);
-        dst_stride = recon_buffer->strideCr;
-
-    }
-    int32_t chroma_up_available = xd->up_available;
-    int32_t chroma_left_available = xd->left_available;
-
-
-    //CHKN  const MbModeInfo *const mbmi = xd->mi[0];
-    const int32_t txwpx = tx_size_wide[tx_size];
-    const int32_t txhpx = tx_size_high[tx_size];
-    const int32_t x = col_off << tx_size_wide_log2[0];
-    const int32_t y = row_off << tx_size_high_log2[0];
-
-    //if (use_palette) {
-    //  int32_t r, c;
-    //  const uint8_t *const map = xd->plane[plane != 0].color_index_map;
-    //  const uint16_t *const palette =
-    //      mbmi->palette_mode_info.palette_colors + plane * PALETTE_MAX_SIZE;
-    //  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    //    uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
-    //    for (r = 0; r < txhpx; ++r) {
-    //      for (c = 0; c < txwpx; ++c) {
-    //        dst16[r * dst_stride + c] = palette[map[(r + y) * wpx + c + x]];
-    //      }
-    //    }
-    //  } else {
-    //    for (r = 0; r < txhpx; ++r) {
-    //      for (c = 0; c < txwpx; ++c) {
-    //        dst[r * dst_stride + c] =
-    //            (uint8_t)palette[map[(r + y) * wpx + c + x]];
-    //      }
-    //    }
-    //  }
-    //  return;
-    //}
-
-    //CHKN block_size bsize = mbmi->sb_type;
-
-
-    struct MacroblockdPlane  pd_s;
-    struct MacroblockdPlane * pd = &pd_s;
-    if (plane == 0) {
-        pd->subsampling_x = pd->subsampling_y = 0;
-    }
-    else {
-        pd->subsampling_x = pd->subsampling_y = 1;
-    }
-
-    const int32_t txw = tx_size_wide_unit[tx_size];
-    const int32_t txh = tx_size_high_unit[tx_size];
-    const int32_t have_top = row_off || (pd->subsampling_y ? /*xd->*/chroma_up_available
-        : xd->up_available);
-    const int32_t have_left =
-        col_off ||
-        (pd->subsampling_x ? /*xd->*/chroma_left_available : xd->left_available);
-    const int32_t mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-    const int32_t mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
-    const int32_t xr_chr_offset = 0;
-    const int32_t yd_chr_offset = 0;
-
-    // Distance between the right edge of this prediction block to
-    // the frame right edge
-    const int32_t xr = (xd->mb_to_right_edge >> (3 + pd->subsampling_x)) +
-        (wpx - x - txwpx) - xr_chr_offset;
-    // Distance between the bottom edge of this prediction block to
-    // the frame bottom edge
-    const int32_t yd = (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) +
-        (hpx - y - txhpx) - yd_chr_offset;
-    const int32_t right_available =
-        mi_col + ((col_off + txw) << pd->subsampling_x) < xd->tile.mi_col_end;
-    const int32_t bottom_available =
-        (yd > 0) &&
-        (mi_row + ((row_off + txh) << pd->subsampling_y) < xd->tile.mi_row_end);
-
-    const PartitionType partition = from_shape_to_part[cu_ptr->blk_geom->shape]; //cu_ptr->part;// PARTITION_NONE;//CHKN this is good enough as the avail functions need to know if VERT part is used or not mbmi->partition;
-
-    // force 4x4 chroma component block size.
-    bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-
-    const int32_t have_top_right = has_top_right(
-        cm, bsize, mi_row, mi_col, have_top, right_available, partition, tx_size,
-        row_off, col_off, pd->subsampling_x, pd->subsampling_y);
-    const int32_t have_bottom_left = has_bottom_left(
-        cm, bsize, mi_row, mi_col, bottom_available, have_left, partition,
-        tx_size, row_off, col_off, pd->subsampling_x, pd->subsampling_y);
-
-#if DIS_EDGE_FIL
-    const int32_t disable_edge_filter = 1;
-#else
-    const int32_t disable_edge_filter = 0;//CHKN !cm->seq_params.enable_intra_edge_filter;
-#endif
-
-    //if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    //  build_intra_predictors_high(
-    //      xd, ref, ref_stride, dst, dst_stride, mode, angle_delta,
-    //      filter_intra_mode, tx_size, disable_edge_filter,
-    //      have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
-    //      have_top_right ? AOMMIN(txwpx, xr) : 0,
-    //      have_left ? AOMMIN(txhpx, yd + txhpx) : 0,
-    //      have_bottom_left ? AOMMIN(txhpx, yd) : 0, plane);
-    //  return;
-    //}
-
-    build_intra_predictors_md(
-
-        cu_ptr,
-        xd,
-        topNeighArray,
-        leftNeighArray,
-        // ref, ref_stride,
-        dst, dst_stride, mode,
-        angle_delta, filter_intra_mode, tx_size,
-        disable_edge_filter,
-        have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
-        have_top_right ? AOMMIN(txwpx, xr) : 0,
-        have_left ? AOMMIN(txhpx, yd + txhpx) : 0,
-        have_bottom_left ? AOMMIN(txhpx, yd) : 0, plane);
-}
-
-#endif
 extern void av1_predict_intra_block(
     TileInfo * tile,
 
     STAGE       stage,
-    #if !ICOPY
-    uint8_t    intra_luma_left_mode,
-    uint8_t    intra_luma_top_mode,
-    uint8_t    intra_chroma_left_mode,
-    uint8_t    intra_chroma_top_mode,
-#endif
     const BlockGeom            * blk_geom,
     const Av1Common *cm,
     int32_t wpx,
@@ -5056,7 +4175,6 @@ extern void av1_predict_intra_block(
     if (ss_y && bh < mi_size_high[BLOCK_8X8])
         chroma_up_available = (mirow - 1) > tile->mi_row_start;
 
-#if ICOPY
    
     int mi_stride = cm->mi_stride;
     const int32_t offset = mirow * mi_stride + micol;
@@ -5103,7 +4221,6 @@ extern void av1_predict_intra_block(
         xd->chroma_left_mbmi = chroma_left_mi;
     }
 
-#endif
 
     //CHKN  const MbModeInfo *const mbmi = xd->mi[0];
     const int32_t txwpx = tx_size_wide[tx_size];
@@ -5202,12 +4319,6 @@ extern void av1_predict_intra_block(
     //}
 
     build_intra_predictors(
-        #if !ICOPY
-        intra_luma_left_mode,
-        intra_luma_top_mode,
-        intra_chroma_left_mode,
-        intra_chroma_top_mode,
-#endif
         xd,
 
         topNeighArray,
@@ -5226,9 +4337,6 @@ void av1_predict_intra_block_16bit(
     TileInfo * tile,
 
     EncDecContext_t         *context_ptr,
-    #if !ICOPY
-    CodingUnit_t *cu_ptr,
-#endif
     const Av1Common *cm,
     int32_t wpx,
     int32_t hpx,
@@ -5317,7 +4425,6 @@ void av1_predict_intra_block_16bit(
         chroma_up_available = (mirow - 1) > tile->mi_row_start;
 
     
-#if ICOPY_10B
 
     int mi_stride = cm->mi_stride;
     const int32_t offset = mirow * mi_stride + micol;
@@ -5364,7 +4471,6 @@ void av1_predict_intra_block_16bit(
         xd->chroma_left_mbmi = chroma_left_mi;
     }
 
-#endif
     //CHKN  const MbModeInfo *const mbmi = xd->mi[0];
     const int32_t txwpx = tx_size_wide[tx_size];
     const int32_t txhpx = tx_size_high[tx_size];
@@ -5451,9 +4557,6 @@ void av1_predict_intra_block_16bit(
 #endif
 
     build_intra_predictors_high(
-        #if !ICOPY
-        cu_ptr,
-#endif
         xd,
         topNeighArray,
         leftNeighArray,
@@ -5573,12 +4676,6 @@ EbErrorType AV1IntraPredictionCL(
             &md_context_ptr->sb_ptr->tile_info, 
 		
             MD_STAGE,
-            #if !ICOPY
-            md_context_ptr->intra_luma_left_mode,
-            md_context_ptr->intra_luma_top_mode,
-            md_context_ptr->intra_chroma_left_mode,
-            md_context_ptr->intra_chroma_top_mode,
-#endif
             md_context_ptr->blk_geom,
             picture_control_set_ptr->parent_pcs_ptr->av1_cm,                                      //const Av1Common *cm,
             plane ? md_context_ptr->blk_geom->bwidth_uv : md_context_ptr->blk_geom->bwidth,          //int32_t wpx,
@@ -5607,7 +4704,6 @@ EbErrorType AV1IntraPredictionCL(
     return return_error;
 }
 
-#if OIS_BASED_INTRA
 EbErrorType update_neighbor_samples_array_open_loop(
         uint8_t                           *above_ref,
         uint8_t                            *left_ref,
@@ -5709,4 +4805,3 @@ EbErrorType intra_prediction_open_loop(
     }
     return return_error;
 }
-#endif

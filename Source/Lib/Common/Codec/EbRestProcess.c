@@ -233,11 +233,7 @@ void* rest_kernel(void *input_ptr)
         Av1Common* cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;
 
 
-#if ICOPY
         if (sequence_control_set_ptr->enable_restoration && picture_control_set_ptr->parent_pcs_ptr->allow_intrabc == 0)
-#else
-        if (sequence_control_set_ptr->enable_restoration)
-#endif
         {
             get_own_recon(sequence_control_set_ptr, picture_control_set_ptr, context_ptr, is16bit);
 
@@ -273,11 +269,7 @@ void* rest_kernel(void *input_ptr)
         {
 
 
-#if ICOPY
             if (sequence_control_set_ptr->enable_restoration && picture_control_set_ptr->parent_pcs_ptr->allow_intrabc == 0) {
-#else
-            if (sequence_control_set_ptr->enable_restoration) {
-#endif
 
 
 
