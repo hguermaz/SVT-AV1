@@ -3238,11 +3238,7 @@ void WriteSequenceHeader(SequenceControlSet_t *scsPtr/*AV1_COMP *cpi*/, struct a
     //    write_sb_size(seq_params, wb);
     aom_wb_write_bit(wb, scsPtr->enable_filter_intra);
 
-#if  DIS_EDGE_FIL
-        scsPtr->enable_intra_edge_filter = 0;
-#else
-        scsPtr->enable_intra_edge_filter = 1;
-#endif
+    scsPtr->enable_intra_edge_filter = 1;
     aom_wb_write_bit(wb, scsPtr->enable_intra_edge_filter);
 
     if (!scsPtr->reduced_still_picture_hdr) {

@@ -50,7 +50,6 @@ extern "C" {
 
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
 // NEW MACOS
-#define DIS_EDGE_FIL                                    0 // disable intra edge filter - to be removed after fixing the neigbor array for intra 4xN and Nx4
 #define USE_INLOOP_ME_FULL_SAD                          0 // To switch between full SAD and subsampled-SAD for in-loop-me subpel.
 
 
