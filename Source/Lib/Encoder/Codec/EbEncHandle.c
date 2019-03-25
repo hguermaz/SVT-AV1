@@ -2590,6 +2590,12 @@ static EbErrorType VerifySettings(
         return_error = EB_ErrorBadParameter;
     }
 #endif
+#if RC
+    if ((config->rate_control_mode == 3 || config->rate_control_mode == 2) && config->look_ahead_distance != config->intra_period_length) {
+        SVT_LOG("Error Instance %u: The rate control mode 2/3 LAD must be equal to IntraPeriod \n", channelNumber + 1);
+        return_error = EB_ErrorBadParameter;
+    }
+#endif
     if (config->look_ahead_distance > MAX_LAD && config->look_ahead_distance != (uint32_t)~0) {
         SVT_LOG("Error Instance %u: The lookahead distance must be [0 - %d] \n", channelNumber + 1, MAX_LAD);
 
