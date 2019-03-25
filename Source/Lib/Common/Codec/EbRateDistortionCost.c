@@ -2566,21 +2566,34 @@ EbErrorType av1_split_flag_rate(
         contextIndex = (left * 2 + above) + bsl * PARTITION_PLOFFSET;
 
         if (hasRows && hasCols) {
+#if SPLIT_RATE_FIX
+            *split_rate = (uint64_t)md_rate_estimation_ptr->partitionFacBits[contextIndex][partitionType];
 
+#else
             *split_rate = (uint64_t)md_rate_estimation_ptr->partitionFacBits[partition_cdf_length(bsize)][partitionType];
-
+#endif
         }
         else if (!hasRows && hasCols) {
+#if SPLIT_RATE_FIX
+            *split_rate = (uint64_t)md_rate_estimation_ptr->partitionFacBits[2][p == PARTITION_SPLIT];
+
+#else
             int32_t cdf[2];
             partition_gather_vert_alike(cdf, bsize, md_rate_estimation_ptr->partitionFacBits[contextIndex]);
             *split_rate = (uint64_t)md_rate_estimation_ptr->partitionFacBits[partition_cdf_length(bsize)][partitionType];
 
             *split_rate = (uint64_t)cdf[p == PARTITION_SPLIT];
+#endif
         }
         else {
+#if SPLIT_RATE_FIX
+            *split_rate = (uint64_t)md_rate_estimation_ptr->partitionFacBits[2][p == PARTITION_SPLIT];
+
+#else
             int32_t cdf[2];
             partition_gather_horz_alike(cdf, bsize, md_rate_estimation_ptr->partitionFacBits[contextIndex]);
             *split_rate = (uint64_t)cdf[p == PARTITION_SPLIT];
+#endif
         }
     }
     else {

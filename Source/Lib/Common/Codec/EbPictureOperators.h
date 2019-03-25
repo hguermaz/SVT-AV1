@@ -456,7 +456,12 @@ extern "C" {
         uint32_t  recon_stride,
         uint32_t  area_width,
         uint32_t  area_height);
+#if SPATIAL_SSE
+    static EB_SPATIALFULLDIST_TYPE FUNC_TABLE spatial_full_distortion_kernel_func_ptr_array[ASM_TYPE_TOTAL][7] = {
+
+#else
     static EB_SPATIALFULLDIST_TYPE FUNC_TABLE spatial_full_distortion_kernel_func_ptr_array[ASM_TYPE_TOTAL][6] = {
+#endif
         // NON_AVX2
         {
             // 4x4
@@ -471,6 +476,7 @@ extern "C" {
             SpatialFullDistortionKernel16MxN_SSSE3_INTRIN,
             // 128x128
             SpatialFullDistortionKernel16MxN_SSSE3_INTRIN
+
         },
         // ASM_AVX2
         {
@@ -486,6 +492,10 @@ extern "C" {
             SpatialFullDistortionKernel16MxN_SSSE3_INTRIN,
             // 128x128
             SpatialFullDistortionKernel16MxN_SSSE3_INTRIN
+#if SPATIAL_SSE
+            // NO SQ
+            ,spatial_full_distortion_kernel
+#endif
         },
     };
 

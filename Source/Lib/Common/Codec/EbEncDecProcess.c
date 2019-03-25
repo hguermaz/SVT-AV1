@@ -1479,7 +1479,13 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     }
     //}
 #endif
-
+#if SPATIAL_SSE
+    // Derive Spatial SSE Flag
+    if (picture_control_set_ptr->enc_mode == ENC_M0) 
+        context_ptr->spatial_sse_full_loop = EB_TRUE;
+    else
+        context_ptr->spatial_sse_full_loop = EB_FALSE;
+#endif
     return return_error;
 }
 void move_cu_data(

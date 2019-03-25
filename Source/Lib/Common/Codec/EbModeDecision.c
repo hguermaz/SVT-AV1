@@ -1955,7 +1955,7 @@ void  inject_intra_candidates_ois(
     EbBool                      use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
     ModeDecisionCandidate_t    *candidate_array = context_ptr->fast_candidate_array;
 #if CFL_FIX
-    EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 ) ? EB_TRUE : EB_FALSE;
+    EbBool                      disable_cfl_flag = (MAX(context_ptr->blk_geom->bheight, context_ptr->blk_geom->bwidth) > 32) ? EB_TRUE : EB_FALSE;
 #else
     EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 || 
                                                     context_ptr->blk_geom->bwidth == 4  ||   
@@ -2404,7 +2404,7 @@ void  inject_intra_candidates(
     uint8_t                     angleDeltaCandidateCount = use_angle_delta ? 7 : 1;
     ModeDecisionCandidate_t    *candidateArray = context_ptr->fast_candidate_array;
 #if CFL_FIX
-    EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 ) ? EB_TRUE : EB_FALSE;
+    EbBool                      disable_cfl_flag = (MAX(context_ptr->blk_geom->bheight, context_ptr->blk_geom->bwidth) > 32) ? EB_TRUE : EB_FALSE;
 #else
     EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 || 
                                                     context_ptr->blk_geom->bwidth == 4  ||   

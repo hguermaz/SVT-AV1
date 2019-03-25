@@ -1545,6 +1545,9 @@ void AV1CostCalcCfl(
             COMPONENT_CHROMA_CB,
             &cb_coeff_bits,
             &cr_coeff_bits,
+#if SPATIAL_SSE
+            0,
+#endif
             asm_type);
 
         full_distortion[DIST_CALC_RESIDUAL] += cbFullDistortion[DIST_CALC_RESIDUAL];
@@ -1623,6 +1626,9 @@ void AV1CostCalcCfl(
             COMPONENT_CHROMA_CR,
             &cb_coeff_bits,
             &cr_coeff_bits,
+#if SPATIAL_SSE
+            0,
+#endif
             asm_type);
 
         full_distortion[DIST_CALC_RESIDUAL] += crFullDistortion[DIST_CALC_RESIDUAL];
@@ -2196,6 +2202,9 @@ void AV1PerformFullLoop(
                 COMPONENT_CHROMA,
                 &cb_coeff_bits,
                 &cr_coeff_bits,
+#if SPATIAL_SSE
+                1,
+#endif
                 asm_type);
         }
 
@@ -2397,13 +2406,16 @@ EbBool allowed_ns_cu(
     uint8_t                            is_complete_sb){
   
     EbBool  ret = 1;
+#if NSQ_FIX
+    UNUSED(is_complete_sb);
+#else
     // Disable NSQ for non-complete LCU
     if (!is_complete_sb) {
         if (context_ptr->blk_geom->shape != PART_N) {
             ret = 0;
         }
     }
-
+#endif
     if (is_nsq_table_used) {
         if (context_ptr->blk_geom->shape != PART_N) {
             ret = 0;
@@ -2536,6 +2548,9 @@ void inter_depth_tx_search(
                 COMPONENT_CHROMA,
                 &cb_coeff_bits,
                 &cr_coeff_bits,
+#if SPATIAL_SSE
+                1,
+#endif
                 asm_type);
 
             candidate_ptr->block_has_coeff = (candidate_ptr->y_has_coeff | candidate_ptr->u_has_coeff | candidate_ptr->v_has_coeff) ? EB_TRUE : EB_FALSE;

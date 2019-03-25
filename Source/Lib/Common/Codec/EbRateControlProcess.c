@@ -1498,8 +1498,6 @@ void* rate_control_kernel(void *input_ptr){
                                 (int32_t)quantizer_to_qindex[sequence_control_set_ptr->static_config.max_qp_allowed],
                                 (int32_t)(new_qindex));
                     }
- 
-
                     else {
                         const  double delta_rate_new[2][6] =
                                 { { 0.40, 0.7, 0.85, 1.0, 1.0, 1.0 },
