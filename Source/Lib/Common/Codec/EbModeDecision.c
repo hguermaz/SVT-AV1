@@ -1614,65 +1614,6 @@ void  inject_inter_candidates(
             }
 
         }
-#if !BASE_LAYER_REF
-        /**************
-        inject NewMv from L1 as a candidate of NEWMV L0 in base layer frame (Only single reference support in base layer)
-        ************* */
-        if (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) {
-            int16_t to_inject_mv_x = use_close_loop_me ? ss_mecontext->inloop_me_mv[1][0][close_loop_me_index][0] << 1 : mePuResult->xMvL1 << 1;
-            int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[1][0][close_loop_me_index][1] << 1 : mePuResult->yMvL1 << 1;
-            if (context_ptr->injected_mv_count_l0 == 0 || is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE) {
-            candidateArray[canTotalCnt].type = INTER_MODE;
-            candidateArray[canTotalCnt].distortion_ready = 0;
-            candidateArray[canTotalCnt].use_intrabc = 0;
-            candidateArray[canTotalCnt].merge_flag = EB_FALSE;
-            candidateArray[canTotalCnt].prediction_direction[0] = (EbPredDirection)0;
-            candidateArray[canTotalCnt].inter_mode = NEWMV;
-            candidateArray[canTotalCnt].pred_mode = NEWMV;
-            candidateArray[canTotalCnt].motion_mode = SIMPLE_TRANSLATION;
-
-            candidateArray[canTotalCnt].is_compound = 0;
-            candidateArray[canTotalCnt].is_new_mv = 1;
-            candidateArray[canTotalCnt].is_zero_mv = 0;
-
-            candidateArray[canTotalCnt].drl_index = 0;
-
-            // Set the MV to ME result
-            candidateArray[canTotalCnt].motionVector_x_L0 = to_inject_mv_x;
-            candidateArray[canTotalCnt].motionVector_y_L0 = to_inject_mv_y;
-
-            // will be needed later by the rate estimation
-            candidateArray[canTotalCnt].ref_mv_index = 0;
-            candidateArray[canTotalCnt].pred_mv_weight = 0;
-            candidateArray[canTotalCnt].ref_frame_type = LAST_FRAME;
-
-
-            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
-            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
-            ChooseBestAv1MvPred(
-                context_ptr,
-                candidateArray[canTotalCnt].md_rate_estimation_ptr,
-                context_ptr->cu_ptr,
-                candidateArray[canTotalCnt].ref_frame_type,
-                candidateArray[canTotalCnt].is_compound,
-                candidateArray[canTotalCnt].pred_mode,
-                candidateArray[canTotalCnt].motionVector_x_L0,
-                candidateArray[canTotalCnt].motionVector_y_L0,
-                0, 0,
-                &candidateArray[canTotalCnt].drl_index,
-                bestPredmv);
-
-            candidateArray[canTotalCnt].motion_vector_pred_x[REF_LIST_0] = bestPredmv[0].as_mv.col;
-            candidateArray[canTotalCnt].motion_vector_pred_y[REF_LIST_0] = bestPredmv[0].as_mv.row;
-
-            ++canTotalCnt;
-            context_ptr->injected_mv_x_l0_array[context_ptr->injected_mv_count_l0] = to_inject_mv_x;
-            context_ptr->injected_mv_y_l0_array[context_ptr->injected_mv_count_l0] = to_inject_mv_y;
-            ++context_ptr->injected_mv_count_l0;
-            }
-        }
-#endif
     }
 
     if (context_ptr->global_mv_injection) {
@@ -1781,12 +1722,8 @@ void  inject_inter_candidates(
     }
 
     if (inject_newmv_candidate) {
-#if BASE_LAYER_REF
         if (isCompoundEnabled) {
             if (allow_bipred) {
-#else
-        if (allow_bipred) {
-#endif
             //----------------------
             // Bipred2Nx2N
             //----------------------
@@ -1803,9 +1740,7 @@ void  inject_inter_candidates(
                         me2Nx2NTableOffset,
                         &canTotalCnt);
 
-#if BASE_LAYER_REF
             }
-#endif
             //----------------------
             // Unipred2Nx2N
             //----------------------

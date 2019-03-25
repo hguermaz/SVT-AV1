@@ -107,7 +107,6 @@ extern "C" {
 #define NFL_IT_TH                                       2 // To be tuned
 
 
-#define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
 #define MAX_FRAMES_TO_REF_I                             64
 
 
