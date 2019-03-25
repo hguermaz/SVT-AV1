@@ -437,7 +437,9 @@ int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config) {
         fps        = fps < 24  ? 24    : fps; 
         ppcs_count = MAX(min_ppcs_count, fps);
         ppcs_count = ((ppcs_count * 4) >> 1);  // 2 sec worth of internal buffering
-    
+#if RC
+        ppcs_count = (ppcs_count + config->look_ahead_distance);
+#endif    
         return (int32_t) ppcs_count;
     }
     else{
@@ -2151,6 +2153,10 @@ void SetParamBasedOnInput(
         sequence_control_set_ptr,
         sequence_control_set_ptr->luma_width*sequence_control_set_ptr->luma_height);
     sequence_control_set_ptr->static_config.super_block_size       = (sequence_control_set_ptr->static_config.enc_mode <= ENC_M1 && sequence_control_set_ptr->input_resolution >= INPUT_SIZE_1080i_RANGE) ? 128 : 64;
+#if RC
+    sequence_control_set_ptr->static_config.super_block_size = (sequence_control_set_ptr->static_config.rate_control_mode > 1) ? 64 : sequence_control_set_ptr->static_config.super_block_size;
+    sequence_control_set_ptr->static_config.hierarchical_levels = (sequence_control_set_ptr->static_config.rate_control_mode > 1) ? 3 : sequence_control_set_ptr->static_config.hierarchical_levels;
+#endif
 }
 
 void CopyApiFromApp(
@@ -2573,11 +2579,17 @@ static EbErrorType VerifySettings(
         SVT_LOG("Error Instance %u: The constrained intra must be [0 - 1] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
+#if RC
+    if (config->rate_control_mode > 3) {
+        SVT_LOG("Error Instance %u: The rate control mode must be [0 - 3] \n", channelNumber + 1);
+        return_error = EB_ErrorBadParameter;
+    }
+#else
     if (config->rate_control_mode > 1) {
         SVT_LOG("Error Instance %u: The rate control mode must be [0 - 1] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
-
+#endif
     if (config->look_ahead_distance > MAX_LAD && config->look_ahead_distance != (uint32_t)~0) {
         SVT_LOG("Error Instance %u: The lookahead distance must be [0 - %d] \n", channelNumber + 1, MAX_LAD);
 
@@ -2685,7 +2697,11 @@ EbErrorType eb_svt_enc_init_parameter(
     config_ptr->look_ahead_distance = (uint32_t)~0;
     config_ptr->target_bit_rate = 7000000;
     config_ptr->max_qp_allowed = 63;
+#if RC
+    config_ptr->min_qp_allowed = 10;
+#else
     config_ptr->min_qp_allowed = 0;
+#endif
     config_ptr->base_layer_switch_mode = 0;
     config_ptr->enc_mode = MAX_ENC_PRESET;
     config_ptr->intra_period_length = -2;

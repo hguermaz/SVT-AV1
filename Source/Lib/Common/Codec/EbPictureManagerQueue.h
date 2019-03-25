@@ -55,6 +55,9 @@ extern "C" {
         uint8_t                         temporal_layer_index;
         uint64_t                        last_islice_picture_number;
 
+#if RC_FEEDBACK
+        EbBool                         feedback_arrived;
+#endif 
     } ReferenceQueueEntry_t;
 
     /************************************************
