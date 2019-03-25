@@ -51,9 +51,6 @@ extern "C" {
 
 //FOR DEBUGGING - Do not remove
 #define NO_ENCDEC                                       0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
-
-
-#define ENCDEC_TX_SEARCH                                1
 #define TEST5_DISABLE_NSQ_ME                            0
 
 
