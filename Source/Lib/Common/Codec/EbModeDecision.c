@@ -1620,7 +1620,7 @@ void  inject_inter_candidates(
             }
 
         }
-#if M0_ME_SEARCH_BASE && !BASE_LAYER_REF
+#if !BASE_LAYER_REF
         /**************
         inject NewMv from L1 as a candidate of NEWMV L0 in base layer frame (Only single reference support in base layer)
         ************* */
