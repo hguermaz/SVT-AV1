@@ -7682,15 +7682,24 @@ EbErrorType open_loop_intra_search_sb(
                 EbBool      use_angle_delta = (bsize >= 8);
                 uint8_t     angle_delta_candidate_count =   use_angle_delta ?  7 : 1;
                 uint8_t     disable_angular_prediction = 0;
-
+#if M9_INTRA
+                if (picture_control_set_ptr->intra_pred_mode == 5) {
+                    intra_mode_end = (picture_control_set_ptr->is_used_as_reference_flag == 0 ) ? DC_PRED : intra_mode_end;
+#else
                 if (picture_control_set_ptr->intra_pred_mode == 4) {
                     intra_mode_end = (picture_control_set_ptr->is_used_as_reference_flag == 0 && picture_control_set_ptr->intra_pred_mode >= 4) ? DC_PRED : intra_mode_end;
+#endif
                     disable_angular_prediction = picture_control_set_ptr->temporal_layer_index > 0 ? 1 : (bsize > 16) ? 1 : 0;
                     angle_delta_candidate_count = disable_angular_prediction ? 1 : use_angle_delta ? 5 : 1;
                     angle_delta_shift = 1;
                 }
+#if M9_INTRA
+                else if (picture_control_set_ptr->intra_pred_mode == 6) {
+                    intra_mode_end = (picture_control_set_ptr->is_used_as_reference_flag == 0) ? DC_PRED : intra_mode_end;
+#else
                 else if (picture_control_set_ptr->intra_pred_mode == 5) {
                     intra_mode_end = (picture_control_set_ptr->is_used_as_reference_flag == 0 && picture_control_set_ptr->intra_pred_mode >= 4) ? DC_PRED : intra_mode_end;
+#endif
                     disable_angular_prediction = picture_control_set_ptr->temporal_layer_index > 0 ? 1 : (bsize > 16) ? 1 : 0;
                     angle_delta_candidate_count = 1;
                     angle_delta_shift = 1;

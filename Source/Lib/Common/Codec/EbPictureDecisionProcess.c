@@ -1022,8 +1022,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                            LIGHT per block : disable_z2_prediction && disable_angle_refinement  for 64/32/4
     // 2                                            OFF per block : disable_angle_prediction for 64/32/4
     // 3                                            OFF : disable_angle_prediction
-    // 4                                            OIS based Intra
-    // 5                                            Light OIS based Intra
+    // 4                                            CUSTOM 
+    // 5                                            OIS based Intra
+    // 6                                            Light OIS based Intra
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
 #if M9_INTRA
@@ -1054,9 +1055,15 @@ EbErrorType signal_derivation_multi_processes_oq(
                 else
                     picture_control_set_ptr->intra_pred_mode = 3;
             else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#if M9_INTRA
+                picture_control_set_ptr->intra_pred_mode = 5;
+            else
+                picture_control_set_ptr->intra_pred_mode = 6;
+#else
                 picture_control_set_ptr->intra_pred_mode = 4;
             else
                 picture_control_set_ptr->intra_pred_mode = 5;
+#endif
         }
         else {
 #endif
@@ -1075,14 +1082,17 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->intra_pred_mode = 2;
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
+#if M9_INTRA
+        else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
+            picture_control_set_ptr->intra_pred_mode = 5;
+
+        else if (picture_control_set_ptr->enc_mode <= ENC_M8) 
+            picture_control_set_ptr->intra_pred_mode = 6;
+        else
+            picture_control_set_ptr->intra_pred_mode = 4;
+#else
         else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
             picture_control_set_ptr->intra_pred_mode = 4;
-#if M9_INTRA
-        else if (picture_control_set_ptr->enc_mode <= ENC_M8) 
-            picture_control_set_ptr->intra_pred_mode = 5;
-        else
-            picture_control_set_ptr->intra_pred_mode = 6;
-#else
         else
             picture_control_set_ptr->intra_pred_mode = 5;
 

@@ -2557,17 +2557,53 @@ void  inject_intra_candidates(
     uint8_t                     disable_z2_prediction;
     uint8_t                     disable_angle_refinement;
     uint8_t                     disable_angle_prediction;
+    
+#if M9_INTRA
+        uint8_t     angle_delta_shift = 1;
+    if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 4) {
+        if (picture_control_set_ptr->slice_type == I_SLICE) {
+            intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
+            angleDeltaCandidateCount = use_angle_delta ? 5 : 1;
+            disable_angle_prediction = 0;
+            angle_delta_shift = 1;
+            disable_angle_prediction =0;
+            disable_z2_prediction = 0;
+        }
+        else if (picture_control_set_ptr->temporal_layer_index == 0) {
+            intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
+            angleDeltaCandidateCount = (context_ptr->blk_geom->bsize > 16) ? 1 : use_angle_delta ? 2 : 1;
+            disable_angle_prediction = 0;
+            angle_delta_shift = 3;
+            disable_angle_prediction =0;
+            disable_z2_prediction = 0;
+        }
+        else {
+            intra_mode_end = DC_PRED;
+            disable_angle_prediction = 1;
+            angleDeltaCandidateCount = 1;
+            angle_delta_shift = 1;
+            disable_angle_prediction =0;
+            disable_z2_prediction = 0;
 
+        }
+    }else
+#endif
     if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 3){
         disable_z2_prediction       = 0;
         disable_angle_refinement    = 0;
         disable_angle_prediction    = 1;
+#if M9_INTRA
+        angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
+#endif
     } else if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 2) {
         disable_z2_prediction       = 0;
         disable_angle_refinement    = 0 ;
         disable_angle_prediction    = (context_ptr->blk_geom->sq_size > 16 ||
                                        context_ptr->blk_geom->bwidth == 4 ||
                                        context_ptr->blk_geom->bheight == 4) ? 1 : 0;
+#if M9_INTRA
+        angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
+#endif
     } else if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 1) {
         disable_z2_prediction       = (context_ptr->blk_geom->sq_size > 16 ||
                                        context_ptr->blk_geom->bwidth == 4 ||
@@ -2576,18 +2612,25 @@ void  inject_intra_candidates(
                                        context_ptr->blk_geom->bwidth == 4 ||
                                        context_ptr->blk_geom->bheight == 4) ? 1 : 0;
         disable_angle_prediction    = 0;
+#if M9_INTRA
+        angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
+#endif
     } else {
         disable_z2_prediction       = 0;
         disable_angle_refinement    = 0;
         disable_angle_prediction    = 0;
-
+#if M9_INTRA
+        angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
+#endif
     }
 #if MR_MODE
     disable_z2_prediction       = 0;
     disable_angle_refinement    = 0;
     disable_angle_prediction    = 0;
 #endif
+#if !M9_INTRA
     angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
+#endif    
     const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
     for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate <= intra_mode_end ; ++openLoopIntraCandidate) {
 
@@ -2595,7 +2638,11 @@ void  inject_intra_candidates(
 
             if (!disable_angle_prediction) {
                 for (angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
+#if M9_INTRA
+                    int32_t angle_delta = angle_delta_shift * (angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1));
+#else
                     int32_t angle_delta = angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1);
+#endif
                     int32_t  p_angle = mode_to_angle_map[(PredictionMode)openLoopIntraCandidate] + angle_delta * ANGLE_STEP;
                     if (!disable_z2_prediction || (p_angle <= 90 || p_angle >= 180)) {
                         candidateArray[canTotalCnt].type = INTRA_MODE;
@@ -2751,7 +2798,9 @@ EbErrorType ProductGenerateMdCandidatesCu(
     //----------------------
     // Intra
     if (context_ptr->blk_geom->sq_size < 128) {
-        if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode >= 4 && context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N)
+#if M9_INTRA
+        if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode >= 5 && context_ptr->blk_geom->sq_size > 4 && context_ptr->blk_geom->shape == PART_N)
+#endif
             inject_intra_candidates_ois(
                 picture_control_set_ptr,
                 context_ptr,

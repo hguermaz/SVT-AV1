@@ -3139,7 +3139,7 @@ void md_encode_block(
             (void*)context_ptr->inter_prediction_context,
             picture_control_set_ptr);
 #if M9_INTRA
-        if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode >= 4 && picture_control_set_ptr->slice_type == I_SLICE) 
+        if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode >= 5 && picture_control_set_ptr->slice_type == I_SLICE) 
          
             context_ptr->full_recon_search_count = 1;
 #endif
