@@ -51,10 +51,6 @@ extern "C" {
 
 //FOR DEBUGGING - Do not remove
 #define NO_ENCDEC                                       0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
-#define TEST5_DISABLE_NSQ_ME                            0
-
-
-
 
 // M9 settings toward 4K 60 fps
 #define M9_SETTINGS              1

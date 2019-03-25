@@ -2819,7 +2819,6 @@ void HalfPelSearch_LCU(
             }
         }
     }
-#if !TEST5_DISABLE_NSQ_ME
     if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
 
         // 64x32
@@ -3160,7 +3159,7 @@ void HalfPelSearch_LCU(
         }
 
     }
-#endif
+
 
     return;
 }
@@ -6509,9 +6508,6 @@ EbErrorType MotionEstimateLcu(
                                 picture_control_set_ptr->nsq_search_level >= NSQ_SEARCH_LEVEL1 &&
                                 picture_control_set_ptr->nsq_search_level < NSQ_SEARCH_FULL) ? EB_TRUE : EB_FALSE;
 
-#if TEST5_DISABLE_NSQ_ME
-    is_nsq_table_used = EB_FALSE;
-#endif
     referenceObject = (EbPaReferenceObject_t*)picture_control_set_ptr->ref_pa_pic_ptr_array[0]->object_ptr;
     ref0Poc = picture_control_set_ptr->ref_pic_poc_array[0];
 
@@ -6935,11 +6931,7 @@ EbErrorType MotionEstimateLcu(
 
             {
                 {
-#if TEST5_DISABLE_NSQ_ME
-                    if(0){
-#else
                     if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
-#endif
                         uint8_t refPicIndex = 0;
 
                         InitializeBuffer_32bits_funcPtrArray[asm_type](context_ptr->p_sb_best_sad[listIndex][refPicIndex], 52, 1, MAX_SAD_VALUE);
@@ -7139,11 +7131,7 @@ EbErrorType MotionEstimateLcu(
                             enableHalfPel8x8,
 #endif
                             enableQuarterPel,
-#if TEST5_DISABLE_NSQ_ME
-                            EB_FALSE);
-#else
                             picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE);
-#endif
 
 
                     }
@@ -7214,11 +7202,7 @@ EbErrorType MotionEstimateLcu(
         totalMeCandidateIndex = candidateIndex;
 
         if (numOfListToSearch) {
-#if TEST5_DISABLE_NSQ_ME
-            if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21){
-#else
             if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21 || (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE)) {
-#endif
 
                 BiPredictionSearch(
                     context_ptr,
