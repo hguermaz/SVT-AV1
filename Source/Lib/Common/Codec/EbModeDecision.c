@@ -1827,8 +1827,8 @@ void  inject_inter_candidates(
                 ++context_ptr->injected_mv_count_bipred;
                 }
             }
-
         }
+#endif
     }
 
     if (context_ptr->global_mv_injection) {
