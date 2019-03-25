@@ -57,13 +57,15 @@ extern "C" {
 
 #if M9_SETTINGS
 // Adopted
-#define M9_FULL_LOOP_ESCAPE      1   // Enhanced full loop escape
-#define M9_HME                   1   // VP9 4K HME, HME (L0 only 48x32)
-#define M9_ME                    1   // VP9 4K ME, ME (16x9)
-#define M9_SUBPEL_SELECTION      1
-#define M9_CU_8x8                1
-#define M9_ADP                   1
-#define M9_INTRA                 0
+#define M9_FULL_LOOP_ESCAPE        1   // Enhanced full loop escape
+#define M9_HME                     1   // VP9 4K HME, HME (L0 only 48x32)
+#define M9_ME                      1   // VP9 4K ME, ME (16x9)
+#define M9_SUBPEL_SELECTION        1
+#define M9_CU_8x8                  1
+#define M9_ADP                     1
+#define M9_INTRA                   0
+#define M9_INTER_SRC_SRC_FAST_LOOP 0
+#define M9_NEAR_INJECTION          0 
 
 // Under testing
 #define M9_FRAC_ME_SEARCH_METHOD 0   // VP9 4K fractional search method; SUB_SAD_SEARCH vs. FULL_SAD_SEARCH 

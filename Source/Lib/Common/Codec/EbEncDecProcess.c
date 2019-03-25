@@ -1375,14 +1375,27 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 
     // Set global MV injection
     // Level                Settings
-    // 0                    Injection off (Hsan: but not derivation as used by MV ref derivation)
+    // 0                    Off (Hsan: but not derivation as used by MV ref derivation)
     // 1                    On
     if (picture_control_set_ptr->enc_mode <= ENC_M7)
         context_ptr->global_mv_injection = 1;
     else
         context_ptr->global_mv_injection = 0;
 
-    
+#if M9_NEAR_INJECTION
+    // Set NEAR injection
+    // Level                Settings
+    // 0                    Off
+    // 1                    On
+    if (picture_control_set_ptr->enc_mode <= ENC_M8)
+        context_ptr->near_mv_injection = 1;
+    else
+        //context_ptr->near_mv_injection = 0;
+        (picture_control_set_ptr->temporal_layer_index == 0) ?
+            1 :
+            0;
+#endif
+
     // Set warped motion injection
     // Level                Settings
     // 0                    OFF

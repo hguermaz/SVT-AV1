@@ -217,6 +217,9 @@ extern "C" {
         uint8_t                           decouple_intra_inter_fast_loop;
         uint8_t                           full_loop_escape;
         uint8_t                           global_mv_injection;
+#if M9_NEAR_INJECTION
+        uint8_t                           near_mv_injection;
+#endif
         uint8_t                           warped_motion_injection;
         uint8_t                           unipred3x3_injection;
         uint8_t                           bipred3x3_injection;
