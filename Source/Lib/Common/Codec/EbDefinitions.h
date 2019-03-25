@@ -98,6 +98,9 @@ extern "C" {
 #define USE_SAD_HMEL2                                   1
 #endif
 
+#define ADP_STATS_PER_LAYER                             0
+
+
 #if M9_PF
 #define PF_N2_32X32                                     1
 #endif
