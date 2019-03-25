@@ -447,7 +447,7 @@ EbErrorType update_base_layer_reference_queue_dependent_count(
     // Derive the temporal layer difference between the current mini GOP and the previous mini GOP 
     picture_control_set_ptr->hierarchical_layers_diff = (uint8_t)(encode_context_ptr->previous_mini_gop_hierarchical_levels - picture_control_set_ptr->hierarchical_levels);
 
-    // Set init_pred_struct_position_flag to TRUE if mini GOP switch
+    // Set init_pred_struct_position_flag to EB_TRUE if mini GOP switch
     picture_control_set_ptr->init_pred_struct_position_flag = (picture_control_set_ptr->hierarchical_layers_diff != 0) ?
         EB_TRUE :
         EB_FALSE;

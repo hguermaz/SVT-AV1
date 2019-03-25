@@ -2206,7 +2206,7 @@ void  d1_non_square_block_decision(
     uint32_t blk_it;
 #if IMPROVE_1D_INTER_DEPTH_DECISION
     uint32_t merge_block_cnt = 0;
-    EbBool merge_block_flag = FALSE;
+    EbBool merge_block_flag = EB_FALSE;
 #endif
     for (blk_it = 0; blk_it < context_ptr->blk_geom->totns; blk_it++)
     {
@@ -2235,9 +2235,9 @@ void  d1_non_square_block_decision(
 #endif
 
 #if IMPROVE_1D_INTER_DEPTH_DECISION
-    if (merge_block_cnt == context_ptr->blk_geom->totns) merge_block_flag = TRUE;
+    if (merge_block_cnt == context_ptr->blk_geom->totns) merge_block_flag = EB_TRUE;
 
-    if (context_ptr->blk_geom->shape == PART_N || (tot_cost < context_ptr->md_local_cu_unit[context_ptr->blk_geom->sqi_mds].cost && merge_block_flag == FALSE))
+    if (context_ptr->blk_geom->shape == PART_N || (tot_cost < context_ptr->md_local_cu_unit[context_ptr->blk_geom->sqi_mds].cost && merge_block_flag == EB_FALSE))
 #else
     if (context_ptr->blk_geom->shape == PART_N || tot_cost < context_ptr->md_local_cu_unit[context_ptr->blk_geom->sqi_mds].cost)
 #endif

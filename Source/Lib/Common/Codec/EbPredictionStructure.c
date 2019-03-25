@@ -1722,7 +1722,7 @@ static EbErrorType PredictionStructureCtor(
                 0 :
                 predictionStructurePtr->predStructEntryPtrArray[entryIndex]->refPicsList1TotalCountMinus1;
 
-            // Set refPicsOverrideTotalCountFlag to TRUE if RefListCount is different than the default
+            // Set refPicsOverrideTotalCountFlag to EB_TRUE if RefListCount is different than the default
             predictionStructurePtr->predStructEntryPtrArray[entryIndex]->refPicsOverrideTotalCountFlag =
                 ((predictionStructurePtr->predStructEntryPtrArray[entryIndex]->refPicsList0TotalCountMinus1 != (int32_t)predictionStructurePtr->defaultRefPicsList0TotalCountMinus1) ||
                 (predictionStructurePtr->predStructEntryPtrArray[entryIndex]->refPicsList1TotalCountMinus1 != (int32_t)predictionStructurePtr->defaultRefPicsList1TotalCountMinus1)) ?

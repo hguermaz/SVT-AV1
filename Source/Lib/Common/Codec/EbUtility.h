@@ -267,7 +267,7 @@ extern "C" {
     EbLinkedListNode* concatEbLinkedList(EbLinkedListNode* a, EbLinkedListNode* b);
 
     // split a linked list into two. return the pointer to a linked list whose nodes meets the condition
-    // predicateFunc(node) == TRUE, the rest of the nodes will be collected into another linked list to which (*restLL) is
+    // predicateFunc(node) == EB_TRUE, the rest of the nodes will be collected into another linked list to which (*restLL) is
     // set. Does not gaurantee the original order of the nodes.
 
     EbLinkedListNode* splitEbLinkedList(EbLinkedListNode* input, EbLinkedListNode** restLL, EbBool(*predicateFunc)(EbLinkedListNode*));

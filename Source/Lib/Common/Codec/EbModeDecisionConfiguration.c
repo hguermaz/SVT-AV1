@@ -808,7 +808,7 @@ void PredictionPartitionLoop(
             cu_ptr->earlySplitFlag = (depth < endDepth) ? EB_TRUE : EB_FALSE;
 
             if (depth >= startDepth && depth <= endDepth) {
-                //reset the flags here:   all CU splitFalg=TRUE. default: we always split. interDepthDecision will select where  to stop splitting(ie setting the flag to False)
+                //reset the flags here:   all CU splitFalg=EB_TRUE. default: we always split. interDepthDecision will select where  to stop splitting(ie setting the flag to False)
 
                 if (picture_control_set_ptr->slice_type != I_SLICE) {
 

@@ -285,7 +285,7 @@ EbHandle eb_create_mutex(
 #ifdef _WIN32
     mutex_handle = (EbHandle)CreateMutex(
         NULL,                   // default security attributes
-        FALSE,                  // FALSE := not initially owned
+        EB_FALSE,                  // EB_FALSE := not initially owned
         NULL);                  // mutex is not named
 
 #elif defined(__linux__) || defined(__APPLE__)

@@ -487,7 +487,7 @@ void* resource_coordination_kernel(void *input_ptr)
                 eb_object_release_enable(
                     previousSequenceControlSetWrapperPtr);
 
-                // Check to see if previous SequenceControlSet is already inactive, if TRUE then release the SequenceControlSet
+                // Check to see if previous SequenceControlSet is already inactive, if EB_TRUE then release the SequenceControlSet
                 if (previousSequenceControlSetWrapperPtr->liveCount == 0) {
                     eb_release_object(
                         previousSequenceControlSetWrapperPtr);

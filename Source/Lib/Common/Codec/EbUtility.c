@@ -499,8 +499,8 @@ EbLinkedListNode* concatEbLinkedList(EbLinkedListNode* a, EbLinkedListNode* b)
 // split a linked list
 EbLinkedListNode* splitEbLinkedList(EbLinkedListNode* input, EbLinkedListNode** restLL, EbBool(*predicateFunc)(EbLinkedListNode*))
 {
-    EbLinkedListNode* llTruePtr = (EbLinkedListNode *)EB_NULL;    // list of nodes satifying predicateFunc(node) == TRUE
-    EbLinkedListNode* llRestPtr = (EbLinkedListNode *)EB_NULL;    // list of nodes satifying predicateFunc(node) != TRUE
+    EbLinkedListNode* llTruePtr = (EbLinkedListNode *)EB_NULL;    // list of nodes satifying predicateFunc(node) == EB_TRUE
+    EbLinkedListNode* llRestPtr = (EbLinkedListNode *)EB_NULL;    // list of nodes satifying predicateFunc(node) != EB_TRUE
 
     while (input)
     {

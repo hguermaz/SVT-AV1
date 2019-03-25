@@ -3628,7 +3628,7 @@ EB_EXTERN void AV1EncodePass(
                         cu_ptr->block_has_coeff = (y_has_coeff) ? EB_TRUE : EB_FALSE;
 
 
-                    // Force Skip if MergeFlag == TRUE && RootCbf == 0
+                    // Force Skip if MergeFlag == EB_TRUE && RootCbf == 0
 
                     if (cu_ptr->skip_flag == EB_FALSE &&
                         cu_ptr->prediction_unit_array[0].merge_flag == EB_TRUE && cu_ptr->block_has_coeff == EB_FALSE)
