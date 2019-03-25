@@ -878,7 +878,11 @@ void AV1PerformInverseTransformReconLuma(
             if (y_has_coeff) {
                 (void)context_ptr;
                 uint8_t     *predBuffer = &(candidateBuffer->prediction_ptr->buffer_y[tuOriginIndex]);
+#if CFL_FIX
+                uint8_t     *recBuffer = &(context_ptr->cfl_temp_luma_recon[recLumaOffset]);
+#else
                 uint8_t     *recBuffer = &(candidateBuffer->recon_ptr->buffer_y[recLumaOffset]);
+#endif
 
                 uint32_t j;
 
@@ -897,7 +901,15 @@ void AV1PerformInverseTransformReconLuma(
 
             }
             else {
-
+#if CFL_FIX
+                pic_copy_kernel(
+                    &(candidateBuffer->prediction_ptr->buffer_y[tuOriginIndex]),
+                    candidateBuffer->prediction_ptr->stride_y,
+                    &(context_ptr->cfl_temp_luma_recon[recLumaOffset]),
+                    candidateBuffer->recon_ptr->stride_y,
+                    tu_width,
+                    tu_height);
+#else
                 picture_copy8_bit(
                     candidateBuffer->prediction_ptr,
                     tuOriginIndex,
@@ -911,6 +923,7 @@ void AV1PerformInverseTransformReconLuma(
                     0,//chromaTuSize,
                     PICTURE_BUFFER_DESC_Y_FLAG,
                     asm_type);
+#endif
             }
 
             txb_1d_offset += context_ptr->blk_geom->tx_width[txb_itr] * context_ptr->blk_geom->tx_height[txb_itr];
@@ -1828,17 +1841,20 @@ static void CflPrediction(
     uint32_t                     cuChromaOriginIndex,
     EbAsm                    asm_type)
 {
-    // 1: recon the Luma
-    AV1PerformInverseTransformReconLuma(
-        picture_control_set_ptr,
-        context_ptr,
-        candidateBuffer,
-        context_ptr->cu_ptr,
-        context_ptr->blk_geom,
-        asm_type);
+
 
 #if CFL_FIX
     if (context_ptr->blk_geom->has_uv) {
+        // 1: recon the Luma
+        AV1PerformInverseTransformReconLuma(
+            picture_control_set_ptr,
+            context_ptr,
+            candidateBuffer,
+            context_ptr->cu_ptr,
+            context_ptr->blk_geom,
+            asm_type);
+        
+
         uint32_t recLumaOffset = ((context_ptr->blk_geom->origin_y >> 3) << 3) * candidateBuffer->recon_ptr->stride_y +
             ((context_ptr->blk_geom->origin_x >> 3) << 3);
 #else
@@ -1851,13 +1867,17 @@ static void CflPrediction(
 
     // Down sample Luma
     cfl_luma_subsampling_420_lbd_c(
-        &(candidateBuffer->recon_ptr->buffer_y[recLumaOffset]),
+#if CFL_FIX
+        &(context_ptr->cfl_temp_luma_recon[recLumaOffset]),
         candidateBuffer->recon_ptr->stride_y,
         context_ptr->pred_buf_q3,
-#if CFL_FIX
         context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bwidth ? (context_ptr->blk_geom->bwidth_uv << 1) : context_ptr->blk_geom->bwidth,
         context_ptr->blk_geom->bheight_uv == context_ptr->blk_geom->bheight ? (context_ptr->blk_geom->bheight_uv << 1) : context_ptr->blk_geom->bheight);
 #else
+        &(candidateBuffer->recon_ptr->buffer_y[recLumaOffset]),
+        candidateBuffer->recon_ptr->stride_y,
+        context_ptr->pred_buf_q3,
+
         context_ptr->blk_geom->bwidth,
         context_ptr->blk_geom->bheight);
 #endif
@@ -1947,9 +1967,6 @@ static void CflPrediction(
         candidateBuffer->candidate_ptr->intra_chroma_mode = UV_DC_PRED;
     }
 #if CFL_FIX
-    }
-    else {
-        candidateBuffer->candidate_ptr->intra_chroma_mode = UV_DC_PRED;
     }
 #endif
 }
@@ -3322,6 +3339,17 @@ void md_encode_block(
             context_ptr->blk_geom,
             asm_type);
 
+#if CFL_FIX
+        if (!context_ptr->blk_geom->has_uv && candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
+
+            // Store the luma data for 4x* and *x4 blocks to be used for CFL
+            EbPictureBufferDesc_t  *recon_ptr = candidateBuffer->recon_ptr;
+            uint32_t rec_luma_offset = context_ptr->blk_geom->origin_x + context_ptr->blk_geom->origin_y * recon_ptr->stride_y;
+            for (uint32_t j = 0; j < context_ptr->blk_geom->bheight; ++j) {
+                memcpy(&context_ptr->cfl_temp_luma_recon[rec_luma_offset + j* recon_ptr->stride_y], recon_ptr->buffer_y + rec_luma_offset + j * recon_ptr->stride_y, context_ptr->blk_geom->bwidth);
+            }
+        }
+#endif
         //copy neigh recon data in cu_ptr
         {
             uint32_t j;

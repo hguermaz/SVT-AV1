@@ -224,6 +224,9 @@ extern "C" {
         uint8_t                           unipred3x3_injection;
         uint8_t                           bipred3x3_injection;
         uint8_t                           interpolation_filter_search_blk_size;
+#if CFL_FIX
+        uint8_t                            cfl_temp_luma_recon[128 * 128];
+#endif
 #if SPATIAL_SSE
         EbBool                            spatial_sse_full_loop;
 #endif
