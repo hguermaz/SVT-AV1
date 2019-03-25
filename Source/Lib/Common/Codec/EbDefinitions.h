@@ -49,7 +49,6 @@ extern "C" {
     ////
 
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
-#define NEW_QPS                                         1 // New QPS based on AOM 1Pass
 #define INTERPOL_FILTER_SEARCH_10BIT_SUPPORT            1
 #define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 // NEW MACOS
