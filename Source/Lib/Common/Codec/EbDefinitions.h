@@ -49,7 +49,6 @@ extern "C" {
     ////
 
 // ADOPTED HEVC-M0 FEATURES (Active in M0 and M1)
-#define M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH           1
 // NEW MACOS
 #define INTRINSIC_OPT_2                                 1 // Intrinsics opt work phase 2
 #define DIS_EDGE_FIL                                    0 // disable intra edge filter - to be removed after fixing the neigbor array for intra 4xN and Nx4

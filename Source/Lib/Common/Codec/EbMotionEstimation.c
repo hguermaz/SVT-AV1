@@ -5209,11 +5209,7 @@ static void QuarterPelCompensation(
 * Requirement (x86 only): dst->chromaStride % 16 = 0 when pu_width %32 = 0
 *******************************************************************************/
 uint32_t BiPredAverging(
-#if M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH
     MeContext_t           *context_ptr,
-#else
-    // MeContext_t           *context_ptr,
-#endif
     MePredUnit_t          *me_candidate,
     uint32_t                 pu_index,
     uint8_t                 *sourcePic,
@@ -5486,11 +5482,7 @@ EbErrorType  BiPredictionCompensation(
     context_ptr->p_sb_bipred_sad[nIndex] =
 
         BiPredAverging(
-#if M0_SAD_HALF_QUARTER_PEL_BIPRED_SEARCH
             context_ptr,
-#else
-            // context_ptr,
-#endif
             me_candidate,
             pu_index,
             &(context_ptr->sb_src_ptr[puLcuBufferIndex]),
