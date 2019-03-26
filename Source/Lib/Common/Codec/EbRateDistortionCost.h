@@ -26,8 +26,10 @@ extern "C" {
         CodingUnit_t            *cu_ptr,
         uint32_t                 cu_origin_x,
         uint32_t                 cu_origin_y,
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
         uint32_t                 sb_sz,
         NeighborArrayUnit_t     *skip_coeff_neighbor_array,
+#endif
         NeighborArrayUnit_t     *luma_dc_sign_level_coeff_neighbor_array,
         NeighborArrayUnit_t     *cb_dc_sign_level_coeff_neighbor_array,
         NeighborArrayUnit_t     *cr_dc_sign_level_coeff_neighbor_array,

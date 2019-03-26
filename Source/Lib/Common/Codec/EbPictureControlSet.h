@@ -13799,7 +13799,9 @@ extern "C" {
         NeighborArrayUnit_t                  *md_luma_recon_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit_t                  *md_cb_recon_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit_t                  *md_cr_recon_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
         NeighborArrayUnit_t                  *md_skip_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
+#endif
         NeighborArrayUnit_t                  *md_luma_dc_sign_level_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit_t                  *md_cb_dc_sign_level_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit_t                  *md_cr_dc_sign_level_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
@@ -13829,11 +13831,11 @@ extern "C" {
         NeighborArrayUnit_t                  *ep_luma_recon_neighbor_array16bit;
         NeighborArrayUnit_t                  *ep_cb_recon_neighbor_array16bit;
         NeighborArrayUnit_t                  *ep_cr_recon_neighbor_array16bit;
-
+#if !OPT_LOSSLESS
         // AMVP & MV Merge Neighbor Arrays
         NeighborArrayUnit_t                  *amvp_mv_merge_mv_neighbor_array;
         NeighborArrayUnit_t                  *amvp_mv_merge_mode_type_neighbor_array;
-
+#endif
         // Entropy Coding Neighbor Arrays
         NeighborArrayUnit_t                  *mode_type_neighbor_array;
         NeighborArrayUnit_t                  *partition_context_neighbor_array;

@@ -107,7 +107,9 @@ extern "C" {
         NeighborArrayUnit_t            *luma_recon_neighbor_array;
         NeighborArrayUnit_t            *cb_recon_neighbor_array;
         NeighborArrayUnit_t            *cr_recon_neighbor_array;
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
         NeighborArrayUnit_t            *skip_coeff_neighbor_array;
+#endif
         NeighborArrayUnit_t            *luma_dc_sign_level_coeff_neighbor_array; // Stored per 4x4. 8 bit: lower 6 bits (COEFF_CONTEXT_BITS), shows if there is at least one Coef. Top 2 bit store the sign of DC as follow: 0->0,1->-1,2-> 1
         NeighborArrayUnit_t            *cr_dc_sign_level_coeff_neighbor_array; // Stored per 4x4. 8 bit: lower 6 bits(COEFF_CONTEXT_BITS), shows if there is at least one Coef. Top 2 bit store the sign of DC as follow: 0->0,1->-1,2-> 1
         NeighborArrayUnit_t            *cb_dc_sign_level_coeff_neighbor_array; // Stored per 4x4. 8 bit: lower 6 bits(COEFF_CONTEXT_BITS), shows if there is at least one Coef. Top 2 bit store the sign of DC as follow: 0->0,1->-1,2-> 1

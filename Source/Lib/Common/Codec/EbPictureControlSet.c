@@ -376,7 +376,7 @@ EbErrorType picture_control_set_ctor(
             return EB_ErrorInsufficientResources;
         }
 
-
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
         return_error = neighbor_array_unit_ctor(
             &object_ptr->md_skip_coeff_neighbor_array[depth],
             MAX_PICTURE_WIDTH_SIZE,
@@ -389,6 +389,7 @@ EbErrorType picture_control_set_ctor(
         if (return_error == EB_ErrorInsufficientResources) {
             return EB_ErrorInsufficientResources;
         }
+#endif
         // for each 4x4
         return_error = neighbor_array_unit_ctor(
             &object_ptr->md_luma_dc_sign_level_coeff_neighbor_array[depth],
@@ -661,7 +662,7 @@ EbErrorType picture_control_set_ctor(
         object_ptr->ep_cb_recon_neighbor_array16bit = 0;
         object_ptr->ep_cr_recon_neighbor_array16bit = 0;
     }
-
+#if !OPT_LOSSLESS
     return_error = neighbor_array_unit_ctor(
         &object_ptr->amvp_mv_merge_mv_neighbor_array,
         MAX_PICTURE_WIDTH_SIZE,
@@ -686,6 +687,7 @@ EbErrorType picture_control_set_ctor(
     if (return_error == EB_ErrorInsufficientResources) {
         return EB_ErrorInsufficientResources;
     }
+#endif
     // Entropy Coding Neighbor Arrays
     return_error = neighbor_array_unit_ctor(
         &object_ptr->mode_type_neighbor_array,
@@ -738,6 +740,7 @@ EbErrorType picture_control_set_ctor(
     if (return_error == EB_ErrorInsufficientResources) {
         return EB_ErrorInsufficientResources;
     }
+
     // for each 4x4
     return_error = neighbor_array_unit_ctor(
         &object_ptr->luma_dc_sign_level_coeff_neighbor_array,

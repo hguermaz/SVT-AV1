@@ -80,7 +80,8 @@ extern "C" {
 #define OPT_LOSSLESS             0
 #define OPT_LOSSY                0
 #if OPT_LOSSLESS
-#define PF_N2_SUPPORT            1
+#define REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY  1
+#define PF_N2_SUPPORT                     1
 #endif
 
 #define INTRA_CORE_OPT              0

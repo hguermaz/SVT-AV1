@@ -2069,9 +2069,11 @@ void coding_loop_context_generation(
     CodingUnit_t               *cu_ptr,
     uint32_t                    cu_origin_x,
     uint32_t                    cu_origin_y,
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
     uint32_t                    sb_sz,
 
     NeighborArrayUnit_t        *skip_coeff_neighbor_array,
+#endif
     NeighborArrayUnit_t        *luma_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit_t        *cb_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit_t        *cr_dc_sign_level_coeff_neighbor_array,
@@ -2084,7 +2086,9 @@ void coding_loop_context_generation(
     NeighborArrayUnit_t        *leaf_depth_neighbor_array,
     NeighborArrayUnit_t       *leaf_partition_neighbor_array)
 {
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
     (void)sb_sz;
+#endif
     uint32_t modeTypeLeftNeighborIndex = get_neighbor_array_unit_left_index(
         mode_type_neighbor_array,
         cu_origin_y);
@@ -2173,7 +2177,7 @@ void coding_loop_context_generation(
 
     context_ptr->md_local_cu_unit[cu_ptr->mds_idx].left_neighbor_partition = (((PartitionContext*)leaf_partition_neighbor_array->leftArray)[partition_left_neighbor_index].left == (int8_t)INVALID_NEIGHBOR_DATA) ?
         0 : ((PartitionContext*)leaf_partition_neighbor_array->leftArray)[partition_left_neighbor_index].left;
-
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
     // Skip Coeff AV1 Context
     uint32_t skipCoeffLeftNeighborIndex = get_neighbor_array_unit_left_index(
         skip_coeff_neighbor_array,
@@ -2181,7 +2185,6 @@ void coding_loop_context_generation(
     uint32_t skipCoeffTopNeighborIndex = get_neighbor_array_unit_top_index(
         skip_coeff_neighbor_array,
         cu_origin_x);
-
 
     cu_ptr->skip_coeff_context =
         (skip_coeff_neighbor_array->leftArray[skipCoeffLeftNeighborIndex] == (uint8_t)INVALID_NEIGHBOR_DATA) ? 0 :
@@ -2191,6 +2194,7 @@ void coding_loop_context_generation(
     cu_ptr->skip_coeff_context +=
         (skip_coeff_neighbor_array->topArray[skipCoeffTopNeighborIndex] == (uint8_t)INVALID_NEIGHBOR_DATA) ? 0 :
         (skip_coeff_neighbor_array->topArray[skipCoeffTopNeighborIndex]) ? 1 : 0;
+#endif
 
     // Skip and Dc sign context generation
 

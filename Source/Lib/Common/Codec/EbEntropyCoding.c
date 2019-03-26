@@ -4661,7 +4661,6 @@ EbErrorType ec_update_neighbors(
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
     }
 
-
     if (skipCoeff)
     {
         uint8_t dcSignLevelCoeff = 0;
@@ -4878,6 +4877,7 @@ EbErrorType write_modes_b(
     skipCoeff = cu_ptr->block_has_coeff ? 0 : 1;
 
     if (picture_control_set_ptr->slice_type == I_SLICE) {
+
         //const int32_t skip = write_skip(cm, xd, mbmi->segment_id, mi, w);
         EncodeSkipCoeffAv1(
             frameContext,

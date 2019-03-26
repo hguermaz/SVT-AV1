@@ -485,7 +485,7 @@ void copy_neighbour_arrays(
 
 
     }
-
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
     //neighbor_array_unit_reset(picture_control_set_ptr->md_skip_coeff_neighbor_array[depth]);
     copy_neigh_arr(
         picture_control_set_ptr->md_skip_coeff_neighbor_array[src_idx],
@@ -495,6 +495,7 @@ void copy_neighbour_arrays(
         blk_geom->bwidth,
         blk_geom->bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
     //neighbor_array_unit_reset(picture_control_set_ptr->md_luma_dc_sign_level_coeff_neighbor_array[depth]);
     copy_neigh_arr(
         picture_control_set_ptr->md_luma_dc_sign_level_coeff_neighbor_array[src_idx],
@@ -1484,7 +1485,9 @@ void AV1PerformInverseTransformRecon(
 *******************************************/
 void ProductCodingLoopInitFastLoop(
     ModeDecisionContext_t      *context_ptr,
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
     NeighborArrayUnit_t        *skip_coeff_neighbor_array,
+#endif
     NeighborArrayUnit_t        *luma_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit_t        *cb_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit_t        *cr_dc_sign_level_coeff_neighbor_array,
@@ -1508,8 +1511,10 @@ void ProductCodingLoopInitFastLoop(
         context_ptr->cu_ptr,
         context_ptr->cu_origin_x,
         context_ptr->cu_origin_y,
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
         BLOCK_SIZE_64,
         skip_coeff_neighbor_array,
+#endif
         luma_dc_sign_level_coeff_neighbor_array,
         cb_dc_sign_level_coeff_neighbor_array,
         cr_dc_sign_level_coeff_neighbor_array,
@@ -3636,7 +3641,9 @@ void md_encode_block(
 #endif
         ProductCodingLoopInitFastLoop(
             context_ptr,
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
             context_ptr->skip_coeff_neighbor_array,
+#endif
             context_ptr->luma_dc_sign_level_coeff_neighbor_array,
             context_ptr->cb_dc_sign_level_coeff_neighbor_array,
             context_ptr->cr_dc_sign_level_coeff_neighbor_array,
@@ -3650,12 +3657,12 @@ void md_encode_block(
             context_ptr->leaf_partition_neighbor_array);
 #if M8_SKIP_BLK        
          // Skip sub blocks if the current block has the same depth as the left block and above block
-        if (picture_control_set_ptr->parent_pcs_ptr->skip_sub_blks) 
-            *skip_sub_blocks =check_skip_sub_blks(picture_control_set_ptr,
-                                                  context_ptr,
-                                                  cu_ptr,
-                                                  is_complete_sb,
-                                                  lcuAddr);     
+        if (picture_control_set_ptr->parent_pcs_ptr->skip_sub_blks)
+            *skip_sub_blocks = check_skip_sub_blks(picture_control_set_ptr,
+                context_ptr,
+                cu_ptr,
+                is_complete_sb,
+                lcuAddr);
 #endif
         set_nfl(
 #if NFL_PER_SQ_SIZE
@@ -4047,8 +4054,9 @@ EB_EXTERN EbErrorType mode_decision_sb(
     context_ptr->luma_recon_neighbor_array = picture_control_set_ptr->md_luma_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
     context_ptr->cb_recon_neighbor_array = picture_control_set_ptr->md_cb_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
     context_ptr->cr_recon_neighbor_array = picture_control_set_ptr->md_cr_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
-
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
     context_ptr->skip_coeff_neighbor_array = picture_control_set_ptr->md_skip_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
+#endif
     context_ptr->luma_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->md_luma_dc_sign_level_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
     context_ptr->cb_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->md_cb_dc_sign_level_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
     context_ptr->cr_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->md_cr_dc_sign_level_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];

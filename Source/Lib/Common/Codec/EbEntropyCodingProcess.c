@@ -61,7 +61,6 @@ static void EntropyCodingResetNeighborArrays(PictureControlSet_t *picture_contro
     neighbor_array_unit_reset(picture_control_set_ptr->partition_context_neighbor_array);
 
     neighbor_array_unit_reset(picture_control_set_ptr->skip_flag_neighbor_array);
-
     neighbor_array_unit_reset(picture_control_set_ptr->skip_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->luma_dc_sign_level_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->cb_dc_sign_level_coeff_neighbor_array);
