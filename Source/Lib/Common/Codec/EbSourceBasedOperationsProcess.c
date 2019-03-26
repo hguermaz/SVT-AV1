@@ -986,11 +986,13 @@ void* source_based_operations_kernel(void *input_ptr)
                 picture_control_set_ptr,
                 sb_index);
 #endif
+#if !OPT_LOSSLESS
             // AC energy computation
             CalculateAcEnergy(
                 sequence_control_set_ptr,
                 picture_control_set_ptr,
                 sb_index);
+#endif
 #if !DISABLE_OIS_USE
             // Failing Motion Detection
             picture_control_set_ptr->failing_motion_sb_flag[sb_index] = EB_FALSE;

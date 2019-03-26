@@ -72,7 +72,6 @@ extern "C" {
 #define M9_FRAC_ME_SEARCH_64x64  0   // VP9 4K 64x64 search; OFF vs. ON
 #define M9_SUBPEL                0   // VP9 4K subpel settings; subpel ON base
 #define M9_NFL                   0   // VP9 4K NFL settings; NFL = 3 
-#define M9_PF                    0   // VP9 4K PF settings N2 is 32x32, and non-base
 #define M9_CDEF                  0   // CDEF off
 #define M9_TX_SEARCH             0   // Tx search off
 #define M9_CHROMA                0   // VP9 4K chroma settings; shut cfl @ ep
@@ -80,7 +79,9 @@ extern "C" {
 
 #define OPT_LOSSLESS             0
 #define OPT_LOSSY                0
-
+#if OPT_LOSSLESS
+#define PF_N2_SUPPORT            1
+#endif
 
 #define INTRA_CORE_OPT              0
 #define DIS_EDGE_FIL                0
@@ -103,12 +104,6 @@ extern "C" {
 #endif
 
 #define ADP_STATS_PER_LAYER                             0
-
-
-#if M9_PF
-#define PF_N2_32X32                                     1
-#endif
-
 
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
@@ -2993,14 +2988,19 @@ typedef enum EbCu8x8Mode {
 
 typedef enum EbPictureDepthMode {
 
-    PIC_ALL_DEPTH_MODE          = 0, // ALL sq and nsq:  SB size -> 4x4 
-    PIC_ALL_C_DEPTH_MODE        = 1, // ALL sq and nsq with control :  SB size -> 4x4 
-    PIC_SQ_DEPTH_MODE           = 2, // ALL sq:  SB size -> 4x4 
-    PIC_SQ_NON4_DEPTH_MODE      = 3, // SQ:  SB size -> 8x8 
+    PIC_ALL_DEPTH_MODE       = 0, // ALL sq and nsq:  SB size -> 4x4 
+    PIC_ALL_C_DEPTH_MODE     = 1, // ALL sq and nsq with control :  SB size -> 4x4 
+    PIC_SQ_DEPTH_MODE        = 2, // ALL sq:  SB size -> 4x4 
+    PIC_SQ_NON4_DEPTH_MODE   = 3, // SQ:  SB size -> 8x8 
+#if OPT_LOSSLESS             
+    PIC_OPEN_LOOP_DEPTH_MODE = 4, // Early Inter Depth Decision:  SB size -> 8x8 
+    PIC_SB_SWITCH_DEPTH_MODE = 5  // Adaptive Depth Partitioning
+#else
     PIC_BDP_DEPTH_MODE          = 4,
     PIC_LIGHT_BDP_DEPTH_MODE    = 5,
     PIC_SB_SWITCH_DEPTH_MODE    = 6,
     PIC_OPEN_LOOP_DEPTH_MODE    = 7
+#endif
 } EbPictureDepthMode;
 
 #define EB_SB_DEPTH_MODE              uint8_t

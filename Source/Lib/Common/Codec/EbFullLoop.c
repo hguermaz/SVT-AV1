@@ -752,15 +752,6 @@ void ProductFullLoop(
         tuOriginIndex = tx_org_x + (tx_org_y * candidateBuffer->residual_ptr->stride_y);
         y_tu_coeff_bits = 0;
 
-#if PF_N2_SUPPORT
-        EbPfMode pf_md_mode;
-        if (context_ptr->blk_geom->txsize[txb_itr] == TX_32X32 && candidateBuffer->candidate_ptr->type == INTER_MODE && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE) {
-            pf_md_mode = N2_SHAPE;
-        }
-        else {
-            pf_md_mode = DEFAULT_SHAPE;
-        }
-#endif
         // Y: T Q iQ
         av1_estimate_transform(
             &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tuOriginIndex]),
@@ -775,7 +766,7 @@ void ProductFullLoop(
             asm_type,
             PLANE_TYPE_Y,
 #if PF_N2_SUPPORT
-            pf_md_mode);
+            DEFAULT_SHAPE);
 #else
             context_ptr->pf_md_mode);
 #endif
@@ -1708,15 +1699,6 @@ void FullLoop_R(
 
 
             // Cb Transform
-#if PF_N2_SUPPORT
-            EbPfMode pf_md_mode;
-            if (context_ptr->blk_geom->txsize_uv[txb_itr] == TX_32X32) {
-                pf_md_mode = N2_SHAPE;
-            }
-            else {
-                pf_md_mode = DEFAULT_SHAPE;
-            }
-#endif
             av1_estimate_transform(
                 chromaResidualPtr,
                 candidateBuffer->residual_ptr->strideCb,
@@ -1730,7 +1712,7 @@ void FullLoop_R(
                 asm_type,
                 PLANE_TYPE_UV,
 #if PF_N2_SUPPORT
-                pf_md_mode);
+                DEFAULT_SHAPE);
 #else
                 correctedPFMode);
 #endif
@@ -1809,15 +1791,6 @@ void FullLoop_R(
                 &(((int16_t*)candidateBuffer->residual_ptr->bufferCr)[tuCrOriginIndex]);
 
             // Cr Transform
-#if PF_N2_SUPPORT
-            EbPfMode pf_md_mode;
-            if (context_ptr->blk_geom->txsize_uv[txb_itr] == TX_32X32) {
-                pf_md_mode = N2_SHAPE;
-            }
-            else {
-                pf_md_mode = DEFAULT_SHAPE;
-            }
-#endif
             av1_estimate_transform(
                 chromaResidualPtr,
                 candidateBuffer->residual_ptr->strideCr,
@@ -1831,7 +1804,7 @@ void FullLoop_R(
                 asm_type,
                 PLANE_TYPE_UV,
 #if PF_N2_SUPPORT
-                pf_md_mode);
+                DEFAULT_SHAPE);
 #else
                 correctedPFMode);
 #endif
