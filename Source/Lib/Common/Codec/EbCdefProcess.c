@@ -499,20 +499,25 @@ void* cdef_kernel(void *input_ptr)
                 finish_cdef_search(
                     0,
                     sequence_control_set_ptr,
-                    picture_control_set_ptr
-                    ,selected_strength_cnt
-                );
+                    picture_control_set_ptr,
+                    selected_strength_cnt);
 
-                if (is16bit)
-                    av1_cdef_frame16bit(
-                        0,
-                        sequence_control_set_ptr,
-                        picture_control_set_ptr);
-                else
-                    av1_cdef_frame(
-                        0,
-                        sequence_control_set_ptr,
-                        picture_control_set_ptr);
+#if CDEF_OFF_NON_REF
+                if (sequence_control_set_ptr->enable_restoration != 0 || picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag || sequence_control_set_ptr->static_config.recon_enabled){
+#endif
+                    if (is16bit)
+                        av1_cdef_frame16bit(
+                            0,
+                            sequence_control_set_ptr,
+                            picture_control_set_ptr);
+                    else
+                        av1_cdef_frame(
+                            0,
+                            sequence_control_set_ptr,
+                            picture_control_set_ptr);
+#if CDEF_OFF_NON_REF
+                }
+#endif
 
         }
         else {
