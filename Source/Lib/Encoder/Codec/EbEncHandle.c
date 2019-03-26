@@ -2822,6 +2822,10 @@ static void PrintLibParams(
     SVT_LOG("\nSVT [config]: HierarchicalLevels / BaseLayerSwitchMode / PredStructure\t\t: %d / %d / %d ", config->hierarchical_levels, config->base_layer_switch_mode, config->pred_structure);
     if (config->rate_control_mode == 1)
         SVT_LOG("\nSVT [config]: RCMode / TargetBitrate / LookaheadDistance / SceneChange\t\t: VBR / %d / %d / %d ", config->target_bit_rate, config->look_ahead_distance, config->scene_change_detection);
+    else if (config->rate_control_mode == 2)
+        SVT_LOG("\nSVT [config]: RCMode / TargetBitrate / LookaheadDistance / SceneChange\t\t: VBR / %d / %d / %d ", config->target_bit_rate, config->look_ahead_distance, config->scene_change_detection);
+    else if (config->rate_control_mode == 3)
+        SVT_LOG("\nSVT [config]: RCMode / TargetBitrate / LookaheadDistance / SceneChange\t\t: Constraint VBR / %d / %d / %d ", config->target_bit_rate, config->look_ahead_distance, config->scene_change_detection);
     else
         SVT_LOG("\nSVT [config]: BRC Mode / QP  / LookaheadDistance / SceneChange\t\t\t: CQP / %d / %d / %d ", scs->qp, config->look_ahead_distance, config->scene_change_detection);
 #ifdef DEBUG_BUFFERS

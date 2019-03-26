@@ -123,6 +123,16 @@ extern "C" {
 #define SC_HME_ME  0//use sc detector for hme/me setting
 
 #define AOM_INTERP_EXTEND 4
+#define CFL_FIX         1 // Fixes to CFL and enabling CFL for 4x*
+#define SPLIT_RATE_FIX  1 // Split partition rate calculation fix
+#define NSQ_FIX         1 // Inject NSQ blocks for incomplete CUs
+#define SPATIAL_SSE     1 // Spatial SSE. Active for M0 only
+
+
+#define IMPROVE_1D_INTER_DEPTH_DECISION  1
+#define ENABLE_WARPED_MV                 1
+#define CABAC_UP                         1 // update cabac probabilities. txb CDFs.
+
 #define RC                                              1 // VBR Rate control integrated from SVT-VP9
 #if RC
 #define RC_FEEDBACK                                     1 // Feedback from previous base layer is received before starting the next base layer frame
