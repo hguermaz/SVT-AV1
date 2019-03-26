@@ -138,6 +138,11 @@ extern "C" {
 #define RC_FEEDBACK                                     1 // Feedback from previous base layer is received before starting the next base layer frame
 #endif
 
+
+#define RED_CU          1  //bypass redundant CU
+#define RED_CU_DEBUG    0 //turn off some features known to not work with redudant CUs
+
+
 struct buf_2d {
     uint8_t *buf;
     uint8_t *buf0;

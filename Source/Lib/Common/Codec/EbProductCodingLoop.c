@@ -715,6 +715,9 @@ void Initialize_cu_data_structure(
     {
         const BlockGeom * blk_geom = get_blk_geom_mds(blk_idx);
 
+#if RED_CU
+        context_ptr->md_local_cu_unit[blk_idx].avail_blk_flag = EB_FALSE;
+#endif
         if (blk_geom->shape == PART_N)
         {
             context_ptr->md_cu_arr_nsq[blk_idx].split_flag = EB_TRUE;  //this means that all the CUs at init time are not finals. only idd makes them final.
@@ -2022,7 +2025,7 @@ void AV1PerformFullLoop(
     ModeDecisionCandidate_t                *candidate_ptr;
 
     //  if (context_ptr->blk_geom->origin_x == 16 && context_ptr->blk_geom->origin_y == 0 && context_ptr->blk_geom->bsize == BLOCK_8X8)
-    //      printf("NOPPPP");
+   //       printf("NOPPPP");
 
     for (fullLoopCandidateIndex = 0; fullLoopCandidateIndex < fullCandidateTotalCount; ++fullLoopCandidateIndex) {
 #if M9_FULL_LOOP_ESCAPE
@@ -2258,15 +2261,15 @@ void AV1PerformFullLoop(
 
         candidateBuffer->y_coeff_bits = y_coeff_bits;
 
-#if 0 //AMIR_DEBUG
-        //if (picture_control_set_ptr->parent_pcs_ptr->picture_number == 0 && /*context_ptr->cu_size > 16 &&*/ (cuStatsPtr)->origin_x >= 0 && (cuStatsPtr)->origin_x < 64 && (cuStatsPtr)->origin_y >= 0 && (cuStatsPtr)->origin_y < 64){
-        printf("POC:%d\t(%d,%d)\t%d\t%d\t%d\t%d\t%lld\t%lld\t%lld\t%lld\t%lld\n",
+#if 0//AMIR_DEBUG
+       if (picture_control_set_ptr->parent_pcs_ptr->picture_number == 0 && (context_ptr->blk_geom->blkidx_mds==5 || context_ptr->blk_geom->blkidx_mds == 25) )
+        printf("POC:%d\t%d\t(%d,%d)\t%d\t%d\t%d\t%lld\t%lld\t%lld\t%lld\t%lld\n",
             picture_control_set_ptr->parent_pcs_ptr->picture_number,
-            sb_ptr->origin_x + (cuStatsPtr)->origin_x,
-            sb_ptr->origin_y + (cuStatsPtr)->origin_y,
-            (context_ptr)->cu_size,
-            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
             fullLoopCandidateIndex,
+            context_ptr->cu_origin_x,
+            context_ptr->cu_origin_y,
+            context_ptr->blk_geom->sq_size,
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],           
             candidate_ptr->pred_mode,
             *candidateBuffer->full_cost_ptr,
             candidateBuffer->y_coeff_bits,
@@ -2354,6 +2357,7 @@ void move_cu_data(
     dst_cu->skip_flag = src_cu->skip_flag;
 
 
+
     //CHKN    MacroBlockD*  av1xd;
     memcpy(dst_cu->av1xd, src_cu->av1xd, sizeof(MacroBlockD));
 
@@ -2410,9 +2414,138 @@ void move_cu_data(
     dst_cu->shape = src_cu->shape;
     dst_cu->mds_idx = src_cu->mds_idx;
 }
+#if RED_CU
+void move_cu_data_redund(
+    CodingUnit_t *src_cu,
+    CodingUnit_t *dst_cu)
+{
+
+
+    //CHKN TransformUnit_t             transform_unit_array[TRANSFORM_UNIT_MAX_COUNT]; // 2-bytes * 21 = 42-bytes
+    memcpy(dst_cu->transform_unit_array, src_cu->transform_unit_array, TRANSFORM_UNIT_MAX_COUNT * sizeof(TransformUnit_t));
+
+
+    //CHKN PredictionUnit_t            prediction_unit_array[MAX_NUM_OF_PU_PER_CU];    // 35-bytes * 4 = 140 bytes
+    memcpy(dst_cu->prediction_unit_array, src_cu->prediction_unit_array, MAX_NUM_OF_PU_PER_CU * sizeof(PredictionUnit_t));
+
+    //CHKN     unsigned                    skip_flag_context : 2;
+    //CHKN     unsigned                    prediction_mode_flag : 2;
+    //CHKN     unsigned                    rootCbf : 1;
+    //CHKN     unsigned                    split_flag_context : 2;
+    //CHKN #if !ADD_DELTA_QP_SUPPORT
+    //CHKN     unsigned                    qp : 6;
+    //CHKN     unsigned                    ref_qp : 6;
+    //CHKN
+    //CHKN     signed                         delta_qp : 8; // can be signed 8bits
+    //CHKN     signed                         org_delta_qp : 8;
+    //CHKN #endif
+    //CHKN
+    //CHKN #if ADD_DELTA_QP_SUPPORT
+    //CHKN     uint16_t                       qp;
+    //CHKN     uint16_t                       ref_qp;
+    //CHKN
+    //CHKN     int16_t                          delta_qp; // can be signed 8bits
+    //CHKN     int16_t                          org_delta_qp;
+    //CHKN #endif
+
+    dst_cu->skip_flag_context = src_cu->skip_flag_context;
+    dst_cu->prediction_mode_flag = src_cu->prediction_mode_flag;
+    dst_cu->block_has_coeff = src_cu->block_has_coeff;
+    dst_cu->split_flag_context = src_cu->split_flag_context;
+    dst_cu->qp = src_cu->qp;
+    dst_cu->ref_qp = src_cu->ref_qp;
+    dst_cu->delta_qp = src_cu->delta_qp;
+    dst_cu->org_delta_qp = src_cu->org_delta_qp;
 
 
 
+
+    //CHKN    // Coded Tree
+    //CHKN    struct {
+    //CHKN        unsigned                   leaf_index : 8;
+    //CHKN        unsigned                   split_flag : 1;
+    //CHKN        unsigned                   skip_flag : 1;
+    //CHKN
+    //CHKN    };
+
+    dst_cu->leaf_index = src_cu->leaf_index;
+    dst_cu->split_flag = src_cu->split_flag;
+    dst_cu->skip_flag = src_cu->skip_flag;
+#if RED_CU
+    dst_cu->mdc_split_flag = src_cu->mdc_split_flag;
+#endif
+
+    //CHKN    MacroBlockD*  av1xd;
+    memcpy(dst_cu->av1xd, src_cu->av1xd, sizeof(MacroBlockD));
+
+
+    // uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
+
+    //CHKN int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
+    memcpy(dst_cu->inter_mode_ctx, src_cu->inter_mode_ctx, MODE_CTX_REF_FRAMES * sizeof(int16_t));
+
+
+    //CHKN IntMv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES]; //used only for nonCompound modes.
+    memcpy(dst_cu->ref_mvs, src_cu->ref_mvs, MODE_CTX_REF_FRAMES*MAX_MV_REF_CANDIDATES * sizeof(IntMv));
+
+    //CHKN uint8_t  drl_index;
+    //CHKN PredictionMode               pred_mode;
+    dst_cu->drl_index = src_cu->drl_index;
+    dst_cu->pred_mode = src_cu->pred_mode;
+
+    //CHKN IntMv  predmv[2];
+
+    memcpy(dst_cu->predmv, src_cu->predmv, 2 * sizeof(IntMv));
+
+    //CHKN uint8_t                         skip_coeff_context;
+    //CHKN int16_t                        luma_txb_skip_context;
+    //CHKN int16_t                        luma_dc_sign_context;
+    //CHKN int16_t                        cb_txb_skip_context;
+    //CHKN int16_t                        cb_dc_sign_context;
+    //CHKN int16_t                        cr_txb_skip_context;
+    //CHKN int16_t                        cr_dc_sign_context;
+    //CHKN uint8_t                         reference_mode_context;
+    //CHKN uint8_t                         compoud_reference_type_context;
+    //CHKN uint32_t                        partitionContext;
+
+    dst_cu->skip_coeff_context = src_cu->skip_coeff_context;
+    dst_cu->luma_txb_skip_context = src_cu->luma_txb_skip_context;
+    dst_cu->luma_dc_sign_context = src_cu->luma_dc_sign_context;
+    dst_cu->cb_txb_skip_context = src_cu->cb_txb_skip_context;
+    dst_cu->cb_dc_sign_context = src_cu->cb_dc_sign_context;
+    dst_cu->cr_txb_skip_context = src_cu->cr_txb_skip_context;
+    dst_cu->cr_dc_sign_context = src_cu->cr_dc_sign_context;
+    dst_cu->reference_mode_context = src_cu->reference_mode_context;
+    dst_cu->compoud_reference_type_context = src_cu->compoud_reference_type_context;
+
+    //CHKN int32_t                        quantized_dc[3];
+    memcpy(dst_cu->quantized_dc, src_cu->quantized_dc, 3 * sizeof(int32_t));
+
+    //CHKN uint32_t   is_inter_ctx;
+    //CHKN uint32_t                     interp_filters;
+
+    dst_cu->is_inter_ctx = src_cu->is_inter_ctx;
+    dst_cu->interp_filters = src_cu->interp_filters;
+
+    dst_cu->part = src_cu->part;
+   dst_cu->shape = src_cu->shape;
+  //dst_cu->mds_idx = src_cu->mds_idx;
+}
+
+void check_redundant_block(BlockGeom * blk_geom, ModeDecisionContext_t *context_ptr,  uint8_t * redundant_blk_avail, uint16_t *redundant_blk_mds)
+{
+    if (blk_geom->redund) {
+        for (int it = 0; it < blk_geom->redund_list.list_size; it++) {
+            if (context_ptr->md_local_cu_unit[blk_geom->redund_list.blk_mds_table[it]].avail_blk_flag)
+            {
+                *redundant_blk_mds = blk_geom->redund_list.blk_mds_table[it];
+                *redundant_blk_avail = 1;
+                break;
+            }
+        }
+    }
+}
+#endif
 /*******************************************
 * ModeDecision LCU
 *   performs CL (LCU)
@@ -3443,6 +3576,9 @@ void md_encode_block(
         }
 #endif
 
+#if RED_CU
+        context_ptr->md_local_cu_unit[cu_ptr->mds_idx].avail_blk_flag = EB_TRUE;
+#endif
 
     }
     else
@@ -3551,6 +3687,11 @@ EB_EXTERN EbErrorType mode_decision_sb(
         context_ptr->sb_origin_y = sb_origin_y;
         context_ptr->md_local_cu_unit[blk_idx_mds].tested_cu_flag = EB_TRUE;
 
+#if RED_CU
+        context_ptr->md_ep_pipe_sb[blk_idx_mds].merge_cost = 0;
+        context_ptr->md_ep_pipe_sb[blk_idx_mds].skip_cost = 0;
+#endif
+
         cu_ptr->mds_idx = blk_idx_mds;
         context_ptr->md_cu_arr_nsq[blk_idx_mds].mdc_split_flag = (uint16_t)leafDataPtr->split_flag;
 
@@ -3571,6 +3712,38 @@ EB_EXTERN EbErrorType mode_decision_sb(
                         sb_origin_y);
             }
 
+#if RED_CU
+        uint8_t redundant_blk_avail = 0;
+        uint16_t redundant_blk_mds;
+
+        check_redundant_block(blk_geom, context_ptr, &redundant_blk_avail, &redundant_blk_mds);
+       
+        if (redundant_blk_avail && picture_control_set_ptr->enc_mode == ENC_M0)
+        {
+            //copy results
+            CodingUnit_t *src_cu = &context_ptr->md_cu_arr_nsq[redundant_blk_mds];
+            CodingUnit_t *dst_cu = cu_ptr;
+
+            move_cu_data_redund(src_cu, dst_cu);
+            memcpy(&context_ptr->md_local_cu_unit[cu_ptr->mds_idx], &context_ptr->md_local_cu_unit[redundant_blk_mds], sizeof(MdCodingUnit_t));
+            memcpy(dst_cu->neigh_left_recon[0], src_cu->neigh_left_recon[0], 128);
+            memcpy(dst_cu->neigh_left_recon[1], src_cu->neigh_left_recon[1], 128);
+            memcpy(dst_cu->neigh_left_recon[2], src_cu->neigh_left_recon[2], 128);
+            memcpy(dst_cu->neigh_top_recon[0], src_cu->neigh_top_recon[0], 128);
+            memcpy(dst_cu->neigh_top_recon[1], src_cu->neigh_top_recon[1], 128);
+            memcpy(dst_cu->neigh_top_recon[2], src_cu->neigh_top_recon[2], 128); 
+            memcpy(&context_ptr->md_ep_pipe_sb[cu_ptr->mds_idx], &context_ptr->md_ep_pipe_sb[redundant_blk_mds], sizeof(MdEncPassCuData_t));
+            if (context_ptr->blk_geom->shape == PART_N) {
+
+                uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
+                context_ptr->parent_sq_type[sq_index] = src_cu->prediction_mode_flag;               
+                context_ptr->parent_sq_has_coeff[sq_index] = src_cu->block_has_coeff;
+                context_ptr->parent_sq_pred_mode[sq_index] = src_cu->pred_mode;
+            }
+
+        }
+        else
+#endif
         md_encode_block(
             sequence_control_set_ptr,
             picture_control_set_ptr,
