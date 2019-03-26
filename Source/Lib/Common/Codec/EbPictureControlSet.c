@@ -1028,7 +1028,7 @@ EbErrorType picture_parent_control_set_ctor(
         EB_MALLOC(uint64_t*, object_ptr->var_of_var32x32_based_sb_array[sb_index], sizeof(uint64_t) * 4, EB_N_PTR);
     }
     EB_MALLOC(EbBool*, object_ptr->sb_isolated_non_homogeneous_area_array, sizeof(EbBool) * object_ptr->sb_total_count, EB_N_PTR);
-
+#if !OPT_LOSSLESS
     EB_MALLOC(uint64_t**, object_ptr->sb_y_src_energy_cu_array, sizeof(uint64_t*) * object_ptr->sb_total_count, EB_N_PTR);
     for (sb_index = 0; sb_index < object_ptr->sb_total_count; ++sb_index) {
         EB_MALLOC(uint64_t*, object_ptr->sb_y_src_energy_cu_array[sb_index], sizeof(uint64_t) * 5, EB_N_PTR);
@@ -1038,7 +1038,7 @@ EbErrorType picture_parent_control_set_ctor(
     for (sb_index = 0; sb_index < object_ptr->sb_total_count; ++sb_index) {
         EB_MALLOC(uint64_t*, object_ptr->sb_y_src_mean_cu_array[sb_index], sizeof(uint64_t) * 5, EB_N_PTR);
     }
-
+#endif
     EB_MALLOC(uint8_t*, object_ptr->sb_cmplx_contrast_array, sizeof(uint8_t) * object_ptr->sb_total_count, EB_N_PTR);
     EB_MALLOC(uint8_t*, object_ptr->sb_high_contrast_array_dialated, sizeof(uint8_t) * object_ptr->sb_total_count, EB_N_PTR);
 

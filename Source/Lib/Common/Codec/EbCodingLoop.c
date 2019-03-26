@@ -596,13 +596,13 @@ static void Av1EncodeLoop(
     const uint32_t coeff1dOffsetChroma = context_ptr->coded_area_sb_uv;
     UNUSED(coeff1dOffsetChroma);
 
-
+#if !OPT_LOSSLESS
     //uint8_t enable_contouring_qc_update_flag;
     //enable_contouring_qc_update_flag = DeriveContouringClass(
     //    sb_ptr->picture_control_set_ptr->parent_pcs_ptr,
     //    sb_ptr->index,
     //    cu_ptr->leaf_index) && (cu_ptr->qp < sb_ptr->picture_control_set_ptr->picture_qp);
-
+#endif
     EbBool clean_sparse_coeff_flag = EB_FALSE;
 
     context_ptr->three_quad_energy = 0;
@@ -662,7 +662,7 @@ static void Av1EncodeLoop(
             txb_ptr->transform_type[PLANE_TYPE_Y],
             asm_type,
             PLANE_TYPE_Y,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
             DEFAULT_SHAPE);
 #else
             context_ptr->trans_coeff_shape_luma);
@@ -682,7 +682,7 @@ static void Av1EncodeLoop(
             candidate_plane[0],
             asm_type,
             &(count_non_zero_coeffs[0]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
             0,
 #endif
             0,
@@ -895,7 +895,7 @@ static void Av1EncodeLoop(
             txb_ptr->transform_type[PLANE_TYPE_UV],
             asm_type,
             PLANE_TYPE_UV,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
             DEFAULT_SHAPE);
 #else
             context_ptr->trans_coeff_shape_chroma);
@@ -916,7 +916,7 @@ static void Av1EncodeLoop(
             candidate_plane[1],
             asm_type,
             &(count_non_zero_coeffs[1]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
             0,
 #endif
             0,
@@ -944,7 +944,7 @@ static void Av1EncodeLoop(
             txb_ptr->transform_type[PLANE_TYPE_UV],
             asm_type,
             PLANE_TYPE_UV,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
             DEFAULT_SHAPE);
 #else
             context_ptr->trans_coeff_shape_chroma);
@@ -964,7 +964,7 @@ static void Av1EncodeLoop(
             candidate_plane[2],
             asm_type,
             &(count_non_zero_coeffs[2]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
             0,
 #endif
             0,
@@ -975,7 +975,7 @@ static void Av1EncodeLoop(
 
         txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
     }
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
     txb_ptr->trans_coeff_shape_luma = context_ptr->trans_coeff_shape_luma;
     txb_ptr->trans_coeff_shape_chroma = context_ptr->trans_coeff_shape_chroma;
 #endif
@@ -1136,7 +1136,7 @@ static void Av1EncodeLoop16bit(
                 txb_ptr->transform_type[PLANE_TYPE_Y],
                 asm_type,
                 PLANE_TYPE_Y,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
                 DEFAULT_SHAPE);
 #else
                 context_ptr->trans_coeff_shape_luma);
@@ -1156,7 +1156,7 @@ static void Av1EncodeLoop16bit(
                 candidate_plane[0],
                 asm_type,
                 &(count_non_zero_coeffs[0]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
                 0,
 #endif
                 0,
@@ -1293,7 +1293,7 @@ static void Av1EncodeLoop16bit(
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 asm_type,
                 PLANE_TYPE_UV,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
                 DEFAULT_SHAPE);
 #else
                 context_ptr->trans_coeff_shape_chroma);
@@ -1314,7 +1314,7 @@ static void Av1EncodeLoop16bit(
                 candidate_plane[1],
                 asm_type,
                 &(count_non_zero_coeffs[1]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
                 0,
 #endif
                 0,
@@ -1345,7 +1345,7 @@ static void Av1EncodeLoop16bit(
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 asm_type,
                 PLANE_TYPE_UV,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
                 DEFAULT_SHAPE);
 #else
                 context_ptr->trans_coeff_shape_chroma);
@@ -1366,7 +1366,7 @@ static void Av1EncodeLoop16bit(
                 candidate_plane[2],
                 asm_type,
                 &(count_non_zero_coeffs[2]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
                 0,
 #endif
                 0,
@@ -1379,7 +1379,7 @@ static void Av1EncodeLoop16bit(
         }
     }
 
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
     txb_ptr->trans_coeff_shape_luma = context_ptr->trans_coeff_shape_luma;
     txb_ptr->trans_coeff_shape_chroma = context_ptr->trans_coeff_shape_chroma;
 #endif
@@ -2114,7 +2114,7 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
         if (sb_stat_ptr->stationary_edge_over_time_flag && delta_qp > 0) {
             delta_qp = 0;
         }
-
+#if !OPT_LOSSLESS
         if (acEnergyBasedAntiContouring) {
 
             lowerQPClass = DeriveContouringClass(
@@ -2131,7 +2131,7 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
                     delta_qp = ANTI_CONTOURING_DELTA_QP_2;
             }
         }
-
+#endif
 
         delta_qp -= context_ptr->grass_enhancement_flag ? 3 : 0;
 
@@ -2531,7 +2531,7 @@ EB_EXTERN void AV1EncodePass(
         }
     }
     context_ptr->intra_coded_area_sb[tbAddr] = 0;
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
     context_ptr->trans_coeff_shape_luma = 0;
     context_ptr->trans_coeff_shape_chroma = 0;
 #endif
@@ -3309,7 +3309,7 @@ EB_EXTERN void AV1EncodePass(
                                     cuPlane);
 
                             // SKIP the CBF zero mode for DC path. There are problems with cost calculations
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
                             {
 #else
                             if (context_ptr->trans_coeff_shape_luma != ONLY_DC_SHAPE) {

@@ -4294,7 +4294,7 @@ void av1_fwd_txfm2d_32x32_avx2(int16_t *input, int32_t *output, uint32_t stride,
     fwd_txfm2d_32x32_avx2(input, output, stride, &cfg, txfm_buf);
 }
 
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
 void av1_idtx32_pf_new_avx2(const __m256i *input, __m256i *output, int8_t cos_bit,
     const int32_t col_num) {
     (void)cos_bit;

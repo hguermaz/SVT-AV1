@@ -507,7 +507,7 @@ void av1_quantize_inv_quantize_ii(
     //  MacroblockPlane      candidate_plane,
     EbAsm                asm_type,
     uint32_t                *y_count_non_zero_coeffs,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
     EbPfMode              pf_mode,
 #endif
     uint8_t                 enable_contouring_qc_update_flag,
@@ -519,7 +519,9 @@ void av1_quantize_inv_quantize_ii(
 {
     (void)clean_sparse_coeff_flag;
     (void)enable_contouring_qc_update_flag;
+#if !PF_N2_SUPPORT
     (void)pf_mode;
+#endif
     (void)asm_type;
 #if !ADD_DELTA_QP_SUPPORT
     (void) qp;
@@ -664,7 +666,7 @@ void av1_quantize_inv_quantize(
     MacroblockPlane      candidate_plane,
     EbAsm                asm_type,
     uint32_t                *y_count_non_zero_coeffs,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
     EbPfMode              pf_mode,
 #endif
     uint8_t                 enable_contouring_qc_update_flag,
@@ -676,7 +678,7 @@ void av1_quantize_inv_quantize(
     (void)coeff_stride;
     (void)candidate_plane;
     (void)enable_contouring_qc_update_flag;
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
     (void)pf_mode;
 #endif
     //Note: Transformed, Quantized, iQuantized coeff are stored in 1D fashion. 64x64 is hence in the first 32x32 corner.
@@ -705,7 +707,7 @@ void av1_quantize_inv_quantize(
         &eob[0],
         asm_type,
         y_count_non_zero_coeffs,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
         0,
 #endif
         0,
@@ -750,7 +752,7 @@ void ProductFullLoop(
         tuOriginIndex = tx_org_x + (tx_org_y * candidateBuffer->residual_ptr->stride_y);
         y_tu_coeff_bits = 0;
 
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
         EbPfMode pf_md_mode;
         if (context_ptr->blk_geom->txsize[txb_itr] == TX_32X32 && candidateBuffer->candidate_ptr->type == INTER_MODE && picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE) {
             pf_md_mode = N2_SHAPE;
@@ -772,7 +774,7 @@ void ProductFullLoop(
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
             asm_type,
             PLANE_TYPE_Y,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
             pf_md_mode);
 #else
             context_ptr->pf_md_mode);
@@ -791,7 +793,7 @@ void ProductFullLoop(
             candidateBuffer->candidate_ptr->candidate_plane[0],
             asm_type,
             &(y_count_non_zero_coeffs[txb_itr]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
             context_ptr->pf_md_mode,
 #endif
             0,
@@ -1116,7 +1118,7 @@ void ProductFullLoopTxSearch(
                 candidateBuffer->candidate_ptr->candidate_plane[0],
                 asm_type,
                 &yCountNonZeroCoeffsTemp,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
                 0,
@@ -1300,7 +1302,11 @@ void encode_pass_tx_search(
             tx_type,
             asm_type,
             PLANE_TYPE_Y,
+#if PF_N2_SUPPORT
+            DEFAULT_SHAPE);
+#else
             context_ptr->trans_coeff_shape_luma);
+#endif
 
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
@@ -1316,7 +1322,7 @@ void encode_pass_tx_search(
             candidate_plane[0],
             asm_type,
             &yCountNonZeroCoeffsTemp,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
             0,
 #endif
             0,
@@ -1505,7 +1511,11 @@ void encode_pass_tx_search_hbd(
             tx_type,
             asm_type,
             PLANE_TYPE_Y,
+#if PF_N2_SUPPORT
+            DEFAULT_SHAPE);
+#else
             context_ptr->trans_coeff_shape_luma);
+#endif
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
             ((int32_t*)transform16bit->buffer_y) + coeff1dOffset,
@@ -1520,7 +1530,7 @@ void encode_pass_tx_search_hbd(
             candidate_plane[0],
             asm_type,
             &yCountNonZeroCoeffsTemp,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
             0,
 #endif
             0,
@@ -1686,7 +1696,7 @@ void FullLoop_R(
         //    This function replaces the previous Intra Chroma mode if the LM fast
             //    cost is better.
             //    *Note - this might require that we have inv transform in the loop
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
         EbPfMode    correctedPFMode = PF_OFF;
 #endif
         if (component_mask & PICTURE_BUFFER_DESC_Cb_FLAG) {
@@ -1698,7 +1708,7 @@ void FullLoop_R(
 
 
             // Cb Transform
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
             EbPfMode pf_md_mode;
             if (context_ptr->blk_geom->txsize_uv[txb_itr] == TX_32X32) {
                 pf_md_mode = N2_SHAPE;
@@ -1719,7 +1729,7 @@ void FullLoop_R(
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 asm_type,
                 PLANE_TYPE_UV,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
                 pf_md_mode);
 #else
                 correctedPFMode);
@@ -1738,7 +1748,7 @@ void FullLoop_R(
                 candidateBuffer->candidate_ptr->candidate_plane[1],
                 asm_type,
                 &(cb_count_non_zero_coeffs[txb_itr]),
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
                 0,
@@ -1799,7 +1809,7 @@ void FullLoop_R(
                 &(((int16_t*)candidateBuffer->residual_ptr->bufferCr)[tuCrOriginIndex]);
 
             // Cr Transform
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
             EbPfMode pf_md_mode;
             if (context_ptr->blk_geom->txsize_uv[txb_itr] == TX_32X32) {
                 pf_md_mode = N2_SHAPE;
@@ -1820,7 +1830,7 @@ void FullLoop_R(
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 asm_type,
                 PLANE_TYPE_UV,
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
                 pf_md_mode);
 #else
                 correctedPFMode);
@@ -1840,7 +1850,9 @@ void FullLoop_R(
                 candidateBuffer->candidate_ptr->candidate_plane[2],
                 asm_type,
                 &(cr_count_non_zero_coeffs[txb_itr]),
+#if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
+#endif
                 0,
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_8BIT,

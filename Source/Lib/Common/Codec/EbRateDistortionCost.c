@@ -2067,9 +2067,9 @@ EbErrorType av1_inter_full_cost(
 void coding_loop_context_generation(
     ModeDecisionContext_t      *context_ptr,
     CodingUnit_t               *cu_ptr,
-    uint32_t                      cu_origin_x,
-    uint32_t                      cu_origin_y,
-    uint32_t                      sb_sz,
+    uint32_t                    cu_origin_x,
+    uint32_t                    cu_origin_y,
+    uint32_t                    sb_sz,
 
     NeighborArrayUnit_t        *skip_coeff_neighbor_array,
     NeighborArrayUnit_t        *luma_dc_sign_level_coeff_neighbor_array,

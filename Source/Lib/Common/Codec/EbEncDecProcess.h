@@ -108,7 +108,7 @@ extern "C" {
 #else                                          
         uint8_t                                qpmQp;
 #endif
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
         EB_TRANS_COEFF_SHAPE                   trans_coeff_shape_luma;
         EB_TRANS_COEFF_SHAPE                   trans_coeff_shape_chroma;
 #endif

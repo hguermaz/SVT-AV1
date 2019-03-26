@@ -115,10 +115,10 @@ extern "C" {
         NeighborArrayUnit_t            *ref_frame_type_neighbor_array;
         NeighborArrayUnit_t            *leaf_partition_neighbor_array;
         NeighborArrayUnit32_t          *interpolation_type_neighbor_array;
-
+#if !OPT_LOSSLESS
         // TMVP
         EbReferenceObject_t            *reference_object_write_ptr;
-
+#endif
         // Intra Reference Samples
         IntraReferenceSamples_t        *intra_ref_ptr;
 
@@ -155,16 +155,17 @@ extern "C" {
         // Entropy Coder
         EntropyCoder_t                 *coeff_est_entropy_coder_ptr;
         MdEncPassCuData_t               md_ep_pipe_sb[BLOCK_MAX_COUNT_SB_128];
-
+#if !OPT_LOSSLESS
         uint8_t                         group_of8x8_blocks_count;
         uint8_t                         group_of16x16_blocks_count;
+#endif
         uint8_t                         pu_itr;
         uint8_t                         cu_size_log2;
         uint8_t                         best_candidate_index_array[MAX_NFL + 2];
         uint8_t                         sorted_candidate_index_array[MAX_NFL];
         uint16_t                        cu_origin_x;
         uint16_t                        cu_origin_y;
-#if !DISABLE_OIS_USE
+#if !OPT_LOSSLESS
         uint64_t                        chroma_weight;
 #endif
         uint8_t                         sb_sz;
@@ -177,9 +178,11 @@ extern "C" {
         uint16_t                        pu_width;
         uint16_t                        pu_height;
         EbPfMode                        pf_md_mode;
+#if !OPT_LOSSLESS
         unsigned                        luma_intra_ref_samples_gen_done      : 2; // only 1 bit is needed, but used two for rounding
         unsigned                        chroma_intra_ref_samples_gen_done    : 2; // only 1 bit is needed, but used two for rounding
         unsigned                        generate_mvp                         : 2; // only 1 bit is needed, but used two for rounding
+#endif
         uint32_t                        full_recon_search_count;
         EbBool                          cu_use_ref_src_flag;
         uint16_t                        qp_index;
@@ -238,6 +241,9 @@ extern "C" {
 #endif
 #if SPATIAL_SSE
         EbBool                            spatial_sse_full_loop;
+#endif
+#if M9_INTER_SRC_SRC_FAST_LOOP
+        uint8_t                           inter_fast_loop_src_src;
 #endif
     } ModeDecisionContext_t;
 

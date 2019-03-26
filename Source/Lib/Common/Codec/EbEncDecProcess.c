@@ -291,12 +291,13 @@ static void ResetEncDec(
     // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
 
     context_ptr->md_rate_estimation_ptr = md_rate_estimation_array;
-
+#if !OPT_LOSSLESS
     // TMVP Map Writer pointer
     if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
         context_ptr->reference_object_write_ptr = (EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr;
     else
         context_ptr->reference_object_write_ptr = (EbReferenceObject_t*)EB_NULL;
+#endif
     if (segment_index == 0) {
         ResetEncodePassNeighborArrays(picture_control_set_ptr);
     }
@@ -1394,6 +1395,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->near_mv_injection = 1;
     else
         //context_ptr->near_mv_injection = 0;
+        context_ptr->near_mv_injection =
         (picture_control_set_ptr->temporal_layer_index == 0) ?
             1 :
             0;
@@ -1479,28 +1481,26 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->interpolation_filter_search_blk_size = 2;
     
 
-#if M9_PF
+#if PF_N2_SUPPORT
     // Set PF MD
-    //if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
-    //    context_ptr->pf_md_mode = PF_OFF;
-    //else {
-    if (picture_control_set_ptr->enc_mode <= ENC_M8) {
-        context_ptr->pf_md_mode = PF_OFF;
-    }
-    else {
-        if (picture_control_set_ptr->temporal_layer_index > 0)
-            context_ptr->pf_md_mode = PF_N2;
-        else
-            context_ptr->pf_md_mode = PF_OFF;
-    }
-    //}
+    context_ptr->pf_md_mode = PF_OFF;
 #endif
+
 #if SPATIAL_SSE
     // Derive Spatial SSE Flag
     if (picture_control_set_ptr->enc_mode == ENC_M0) 
         context_ptr->spatial_sse_full_loop = EB_TRUE;
     else
         context_ptr->spatial_sse_full_loop = EB_FALSE;
+#endif
+
+
+#if M9_INTER_SRC_SRC_FAST_LOOP
+    // Derive Spatial SSE Flag
+    if (picture_control_set_ptr->enc_mode <= ENC_M8)
+        context_ptr->inter_fast_loop_src_src = 0;
+    else
+        context_ptr->inter_fast_loop_src_src = 1;
 #endif
     return return_error;
 }

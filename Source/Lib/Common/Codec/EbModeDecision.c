@@ -1454,6 +1454,7 @@ void  inject_inter_candidates(
 
     if (inject_newmv_candidate) {
 #if M9_INTER_SRC_SRC_FAST_LOOP
+        // Derive PA distortion(s) per direction
         uint32_t distortion_l0 = ~0;
         uint32_t distortion_l1 = ~0;
         uint32_t distortion_bipred = ~0;
@@ -1478,7 +1479,7 @@ void  inject_inter_candidates(
         int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : mePuResult->yMvL0 << 1;
         if (context_ptr->injected_mv_count_l0 == 0 || is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE) {
             candidateArray[canTotalCnt].type = INTER_MODE;
-            candidateArray[canTotalCnt].distortion_ready = 1;
+            candidateArray[canTotalCnt].distortion_ready = context_ptr->inter_fast_loop_src_src ? 1 : 0;
             candidateArray[canTotalCnt].me_distortion = distortion_l0;
             candidateArray[canTotalCnt].use_intrabc = 0;
             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
@@ -1534,7 +1535,7 @@ void  inject_inter_candidates(
             int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[1][0][close_loop_me_index][1] << 1 : mePuResult->yMvL1 << 1;
             if (context_ptr->injected_mv_count_l1 == 0 || is_already_injected_mv_l1(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE) {
                 candidateArray[canTotalCnt].type = INTER_MODE;
-                candidateArray[canTotalCnt].distortion_ready = 1;
+                candidateArray[canTotalCnt].distortion_ready = context_ptr->inter_fast_loop_src_src ? 1 : 0;
                 candidateArray[canTotalCnt].me_distortion = distortion_l1;
                 candidateArray[canTotalCnt].use_intrabc = 0;
                 candidateArray[canTotalCnt].merge_flag = EB_FALSE;
@@ -1593,7 +1594,7 @@ void  inject_inter_candidates(
                 int16_t to_inject_mv_y_l1 = use_close_loop_me ? ss_mecontext->inloop_me_mv[1][0][close_loop_me_index][1] << 1 : mePuResult->yMvL1 << 1;
                 if (context_ptr->injected_mv_count_bipred == 0 || is_already_injected_mv_bipred(context_ptr, to_inject_mv_x_l0, to_inject_mv_y_l0, to_inject_mv_x_l1, to_inject_mv_y_l1) == EB_FALSE) {
                     candidateArray[canTotalCnt].type = INTER_MODE;
-                    candidateArray[canTotalCnt].distortion_ready = 1;
+                    candidateArray[canTotalCnt].distortion_ready = context_ptr->inter_fast_loop_src_src ? 1 : 0;
                     candidateArray[canTotalCnt].me_distortion = distortion_bipred;
                     candidateArray[canTotalCnt].use_intrabc = 0;
                     candidateArray[canTotalCnt].merge_flag = EB_FALSE;
@@ -2739,7 +2740,7 @@ void  inject_intra_candidates(
 
     return;
 }
-
+#if !OPT_LOSSLESS
 void ProductInitMdCandInjection(
     ModeDecisionContext_t          *context_ptr,
     uint32_t                         *candidateTotalCnt)
@@ -2751,6 +2752,7 @@ void ProductInitMdCandInjection(
 
     return;
 }
+#endif
 /***************************************
 * ProductGenerateMdCandidatesCu
 *   Creates list of initial modes to
@@ -2773,17 +2775,20 @@ EbErrorType ProductGenerateMdCandidatesCu(
     (void)interPredContextPtr;
     const SequenceControlSet_t *sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     const EB_SLICE slice_type = picture_control_set_ptr->slice_type;
+#if OPT_LOSSLESS
+    uint32_t canTotalCnt = 0;
+#else
     uint32_t       canTotalCnt;
-
+#endif
     // Reset duplicates variables
     context_ptr->injected_mv_count_l0 = 0;
     context_ptr->injected_mv_count_l1 = 0;
     context_ptr->injected_mv_count_bipred = 0;
-
+#if !OPT_LOSSLESS
     ProductInitMdCandInjection(
         context_ptr,
         &canTotalCnt);
-
+#endif
     uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
     uint8_t inject_intra_candidate = 1;
     uint8_t inject_inter_candidate = 1;

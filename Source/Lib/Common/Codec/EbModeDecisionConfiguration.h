@@ -43,11 +43,12 @@ extern EbErrorType DeriveDeltaQPForEachLeafLcu(
 void QpmDeriveDeltaQpMapWeights(
     ModeDecisionConfigurationContext_t    *context_ptr,
     PictureControlSet_t                  *picture_control_set_ptr);
-
+#if !OPT_LOSSLESS
 extern uint8_t DeriveContouringClass(
     PictureParentControlSet_t   *parentPcsPtr,
     uint16_t                       sb_index,
-    uint8_t                        leaf_index);  
+    uint8_t                        leaf_index);
+#endif
 /**************************************
 * Function Ptrs Definitions
 **************************************/

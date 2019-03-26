@@ -3777,7 +3777,7 @@ static INLINE void Av1TranformTwoDCore_c(
         }
     }
 }
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
 
 void av1_round_shift_array_pf_c(int32_t *arr_in, int32_t *arr_out, int32_t size, int32_t bit) {
     int32_t i;
@@ -4455,7 +4455,7 @@ void Av1TransformTwoD_32x32_c(
         intermediateTransformBuffer,
         bit_depth);
 }
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
 void av1_fwd_txfm2d_pf_32x32_c(
     int16_t         *input,
     int32_t         *output,
@@ -5175,7 +5175,7 @@ EbErrorType av1_estimate_transform(
         break;
 
     case TX_32X32:
-#if PF_N2_32X32
+#if PF_N2_SUPPORT
         if (transform_type == V_DCT || transform_type == H_DCT || transform_type == V_ADST || transform_type == H_ADST || transform_type == V_FLIPADST || transform_type == H_FLIPADST)
         {
             if (trans_coeff_shape == N2_SHAPE)

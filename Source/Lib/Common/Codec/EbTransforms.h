@@ -3905,7 +3905,7 @@ extern "C" {
         MacroblockPlane      candidate_plane,
         EbAsm                asm_type,
         uint32_t            *y_count_non_zero_coeffs,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
         EbPfMode             pf_mode,
 #endif
         uint8_t              enable_contouring_qc_update_flag,
@@ -3927,7 +3927,7 @@ extern "C" {
         uint16_t            *eob,
         EbAsm                asm_type,
         uint32_t            *y_count_non_zero_coeffs,
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
         EbPfMode             pf_mode,
 #endif
         uint8_t              enable_contouring_qc_update_flag,

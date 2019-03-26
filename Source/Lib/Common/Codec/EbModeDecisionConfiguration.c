@@ -275,7 +275,7 @@ EbErrorType MdcRefinement(
 
     return return_error;
 }
-
+#if !OPT_LOSSLESS
 /*******************************************
 Derive the contouring class
 If (AC energy < 32 * 32) then apply aggressive action (Class 1),
@@ -321,7 +321,7 @@ uint8_t DeriveContouringClass(
     }
     return(contouringClass);
 }
-
+#endif
 
 void RefinementPredictionLoop(
     SequenceControlSet_t                   *sequence_control_set_ptr,
@@ -387,7 +387,7 @@ void RefinementPredictionLoop(
     } // End while 1 CU Loop
 }
 
-#if !DISABLE_OIS_USE
+
 void PrePredictionRefinement(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,
@@ -446,7 +446,6 @@ void PrePredictionRefinement(
         *startDepth = DEPTH_16;
     }
 }
-#endif
 
 
 void ForwardCuToModeDecision(

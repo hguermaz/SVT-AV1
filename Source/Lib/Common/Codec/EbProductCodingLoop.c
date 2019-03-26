@@ -156,7 +156,6 @@ void mode_decision_update_neighbor_arrays(
         partition.above = partition_context_lookup[context_ptr->blk_geom->bsize].above;
         partition.left = partition_context_lookup[context_ptr->blk_geom->bsize].left;
 
-#if !OPT_LOSSLESS
         neighbor_array_unit_mode_write(
             context_ptr->leaf_partition_neighbor_array,
             (uint8_t*)(&partition), // NaderM
@@ -165,7 +164,6 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
-#endif
 
         // Mode Type Update
         neighbor_array_unit_mode_write(
@@ -694,6 +692,363 @@ void set_nfl(
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
 
+
+#if OPT_LOSSLESS
+int sq_block_index[341] = {
+    0,
+    25,
+    50,
+    75,
+    80,
+    81,
+    82,
+    83,
+    84,
+    89,
+    90,
+    91,
+    92,
+    93,
+    98,
+    99,
+    100,
+    101,
+    102,
+    107,
+    108,
+    109,
+    110,
+    111,
+    136,
+    141,
+    142,
+    143,
+    144,
+    145,
+    150,
+    151,
+    152,
+    153,
+    154,
+    159,
+    160,
+    161,
+    162,
+    163,
+    168,
+    169,
+    170,
+    171,
+    172,
+    197,
+    202,
+    203,
+    204,
+    205,
+    206,
+    211,
+    212,
+    213,
+    214,
+    215,
+    220,
+    221,
+    222,
+    223,
+    224,
+    229,
+    230,
+    231,
+    232,
+    233,
+    258,
+    263,
+    264,
+    265,
+    266,
+    267,
+    272,
+    273,
+    274,
+    275,
+    276,
+    281,
+    282,
+    283,
+    284,
+    285,
+    290,
+    291,
+    292,
+    293,
+    294,
+    319,
+    344,
+    349,
+    350,
+    351,
+    352,
+    353,
+    358,
+    359,
+    360,
+    361,
+    362,
+    367,
+    368,
+    369,
+    370,
+    371,
+    376,
+    377,
+    378,
+    379,
+    380,
+    405,
+    410,
+    411,
+    412,
+    413,
+    414,
+    419,
+    420,
+    421,
+    422,
+    423,
+    428,
+    429,
+    430,
+    431,
+    432,
+    437,
+    438,
+    439,
+    440,
+    441,
+    466,
+    471,
+    472,
+    473,
+    474,
+    475,
+    480,
+    481,
+    482,
+    483,
+    484,
+    489,
+    490,
+    491,
+    492,
+    493,
+    498,
+    499,
+    500,
+    501,
+    502,
+    527,
+    532,
+    533,
+    534,
+    535,
+    536,
+    541,
+    542,
+    543,
+    544,
+    545,
+    550,
+    551,
+    552,
+    553,
+    554,
+    559,
+    560,
+    561,
+    562,
+    563,
+    588,
+    613,
+    618,
+    619,
+    620,
+    621,
+    622,
+    627,
+    628,
+    629,
+    630,
+    631,
+    636,
+    637,
+    638,
+    639,
+    640,
+    645,
+    646,
+    647,
+    648,
+    649,
+    674,
+    679,
+    680,
+    681,
+    682,
+    683,
+    688,
+    689,
+    690,
+    691,
+    692,
+    697,
+    698,
+    699,
+    700,
+    701,
+    706,
+    707,
+    708,
+    709,
+    710,
+    735,
+    740,
+    741,
+    742,
+    743,
+    744,
+    749,
+    750,
+    751,
+    752,
+    753,
+    758,
+    759,
+    760,
+    761,
+    762,
+    767,
+    768,
+    769,
+    770,
+    771,
+    796,
+    801,
+    802,
+    803,
+    804,
+    805,
+    810,
+    811,
+    812,
+    813,
+    814,
+    819,
+    820,
+    821,
+    822,
+    823,
+    828,
+    829,
+    830,
+    831,
+    832,
+    857,
+    882,
+    887,
+    888,
+    889,
+    890,
+    891,
+    896,
+    897,
+    898,
+    899,
+    900,
+    905,
+    906,
+    907,
+    908,
+    909,
+    914,
+    915,
+    916,
+    917,
+    918,
+    943,
+    948,
+    949,
+    950,
+    951,
+    952,
+    957,
+    958,
+    959,
+    960,
+    961,
+    966,
+    967,
+    968,
+    969,
+    970,
+    975,
+    976,
+    977,
+    978,
+    979,
+    1004,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1018,
+    1019,
+    1020,
+    1021,
+    1022,
+    1027,
+    1028,
+    1029,
+    1030,
+    1031,
+    1036,
+    1037,
+    1038,
+    1039,
+    1040,
+    1065,
+    1070,
+    1071,
+    1072,
+    1073,
+    1074,
+    1079,
+    1080,
+    1081,
+    1082,
+    1083,
+    1088,
+    1089,
+    1090,
+    1091,
+    1092,
+    1097,
+    1098,
+    1099,
+    1100 
+};
+
+void init_sq_block(
+    ModeDecisionContext_t   *context_ptr,
+    SequenceControlSet_t    *sequence_control_set_ptr)
+{
+    for(uint32_t blk_idx = 0; blk_idx < 341; blk_idx++)
+    {
+        context_ptr->md_cu_arr_nsq[sq_block_index[blk_idx]].part = PARTITION_SPLIT;
+        context_ptr->md_local_cu_unit[sq_block_index[blk_idx]].tested_cu_flag = EB_FALSE;
+    } 
+}
+#else
 //*************************//
 // SetNmm
 // Based on the MDStage and the encodeMode
@@ -735,7 +1090,7 @@ void Initialize_cu_data_structure(
         ++blk_idx;
     } while (blk_idx < sequence_control_set_ptr->max_block_cnt);
 }
-
+#endif
 static INLINE tran_high_t check_range(tran_high_t input, int32_t bd) {
     // AV1 TX case
     // - 8 bit: signed 16 bit integer
@@ -1111,10 +1466,11 @@ void ProductCodingLoopInitFastLoop(
     NeighborArrayUnit_t        *leaf_partition_neighbor_array
 )
 {
+#if !OPT_LOSSLESS
     // Keep track of the SB Ptr
     context_ptr->luma_intra_ref_samples_gen_done = EB_FALSE;
     context_ptr->chroma_intra_ref_samples_gen_done = EB_FALSE;
-
+#endif
     // Generate Split, Skip and intra mode contexts for the rate estimation
     coding_loop_context_generation(
         context_ptr,
@@ -1138,7 +1494,7 @@ void ProductCodingLoopInitFastLoop(
     }
     return;
 }
-
+#if !OPT_LOSSLESS
 uint64_t ProductGenerateChromaWeight(
     PictureControlSet_t                 *picture_control_set_ptr,
     uint32_t                               qp)
@@ -1162,7 +1518,7 @@ uint64_t ProductGenerateChromaWeight(
     }
     return (weight << 1);
 }
-
+#endif
 uint64_t spatial_full_distortion_kernel(
     uint8_t   *input,
     uint32_t   input_stride,
@@ -1430,7 +1786,7 @@ void perform_fast_loop(
         *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr);
 
 }
-#if !DISABLE_OIS_USE
+#if !OPT_LOSSLESS
 void ProductConfigureChroma(
     PictureControlSet_t                 *picture_control_set_ptr,
     ModeDecisionContext_t               *context_ptr,
@@ -1448,7 +1804,7 @@ void ProductConfigureChroma(
     context_ptr->chroma_weight = (picture_control_set_ptr->parent_pcs_ptr->failing_motion_sb_flag[lcuAddr]) ? chroma_weight << 1 : chroma_weight;
 }
 #endif
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
 void ProductDerivePartialFrequencyN2Flag(
     SequenceControlSet_t               *sequence_control_set_ptr,
     PictureControlSet_t                *picture_control_set_ptr,
@@ -3240,7 +3596,7 @@ void md_encode_block(
     if (allowed_ns_cu(
         is_nsq_table_used, picture_control_set_ptr->parent_pcs_ptr->nsq_max_shapes_md,context_ptr,is_complete_sb ))
     {
-#if !PF_N2_32X32
+#if !PF_N2_SUPPORT
         // Set PF Mode - should be done per TU (and not per CU) to avoid the correction
         ProductDerivePartialFrequencyN2Flag(
             sequence_control_set_ptr,
@@ -3619,20 +3975,27 @@ EB_EXTERN EbErrorType mode_decision_sb(
     UNUSED(lastCuIndex);
 
     context_ptr->sb_ptr = sb_ptr;
+#if !OPT_LOSSLESS
     context_ptr->group_of8x8_blocks_count = 0;
     context_ptr->group_of16x16_blocks_count = 0;
-#if !DISABLE_OIS_USE
+#endif
+#if !OPT_LOSSLESS
     ProductConfigureChroma(
         picture_control_set_ptr,
         context_ptr,
         sb_ptr);
 #endif
+#if OPT_LOSSLESS
+    init_sq_block(
+        context_ptr,
+        sequence_control_set_ptr);
+#else
     Initialize_cu_data_structure(
         context_ptr,
         sequence_control_set_ptr,
         sb_ptr,
         mdcResultTbPtr);
-
+#endif
     // Mode Decision Neighbor Arrays
     context_ptr->intra_luma_mode_neighbor_array = picture_control_set_ptr->md_intra_luma_mode_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
     context_ptr->intra_chroma_mode_neighbor_array = picture_control_set_ptr->md_intra_chroma_mode_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
