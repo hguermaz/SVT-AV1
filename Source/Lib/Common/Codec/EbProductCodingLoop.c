@@ -3182,6 +3182,14 @@ void md_encode_block(
 
             // Evaluate intra fast loop candidates
             if (context_ptr->fast_candidate_intra_count) {
+                
+#if INTRA_CORE_OPT
+    if (context_ptr->blk_geom->sq_size < 128) {
+        generate_intra_reference_samples(
+            picture_control_set_ptr->parent_pcs_ptr->av1_cm,
+            context_ptr);
+    }
+#endif
                 perform_fast_loop(
                     picture_control_set_ptr,
                     context_ptr,
@@ -3232,7 +3240,14 @@ void md_encode_block(
 
             // Derive intra and inter full buffer total count
             buffer_total_count = fastCandidateTotalCount > context_ptr->full_recon_search_count ? (context_ptr->full_recon_search_count + 1) : context_ptr->full_recon_search_count;
-
+            
+#if INTRA_CORE_OPT
+    if (context_ptr->blk_geom->sq_size < 128) {
+        generate_intra_reference_samples(
+            picture_control_set_ptr->parent_pcs_ptr->av1_cm,
+            context_ptr);
+    }
+#endif
             // Evaluate intra and inter fast loop candidates
             perform_fast_loop(
                 picture_control_set_ptr,

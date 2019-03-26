@@ -82,6 +82,8 @@ extern "C" {
 #define OPT_LOSSY                0
 
 
+#define INTRA_CORE_OPT              0
+#define DIS_EDGE_FIL                0
 
 
 

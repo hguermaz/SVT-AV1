@@ -191,7 +191,11 @@ extern "C" {
         uint8_t                         intra_chroma_left_mode;
         uint8_t                         intra_chroma_top_mode;
         int16_t                         pred_buf_q3[CFL_BUF_SQUARE]; // Hsan: both MD and EP to use pred_buf_q3 (kept 1, and removed the 2nd)
-
+#if INTRA_CORE_OPT
+        DECLARE_ALIGNED(16, uint8_t, left_data[MAX_MB_PLANE][MAX_TX_SIZE * 2 + 32]);
+        DECLARE_ALIGNED(16, uint8_t, above_data[MAX_MB_PLANE][MAX_TX_SIZE * 2 + 32]);
+        block_size  scaled_chroma_bsize;
+#endif
         int16_t                           injected_mv_x_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
         int16_t                           injected_mv_y_l0_array[MODE_DECISION_CANDIDATE_MAX_COUNT]; // used to do not inject existing MV
         uint8_t                           injected_mv_count_l0;

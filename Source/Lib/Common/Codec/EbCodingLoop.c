@@ -33,7 +33,9 @@
 
 extern void av1_predict_intra_block(
     TileInfo                    *tile,
-
+#if INTRA_CORE_OPT
+    ModeDecisionContext_t                  *md_context_ptr,
+#endif
     STAGE                       stage,
     const BlockGeom            *blk_geom,
     const Av1Common *cm,
@@ -2911,6 +2913,9 @@ EB_EXTERN void AV1EncodePass(
                                     // If that's the case then you should ensure than the 1st chroma prediction uses UV_DC_PRED (that's the default configuration for CHROMA_MODE_1 if CFL applicable (set @ fast loop candidates injection) then MD assumes chroma mode always UV_DC_PRED)
                                     av1_predict_intra_block(
                                         &sb_ptr->tile_info,
+#if INTRA_CORE_OPT
+                                        NULL,
+#endif
                                         ED_STAGE,
                                         context_ptr->blk_geom,
                                         picture_control_set_ptr->parent_pcs_ptr->av1_cm,                  //const Av1Common *cm,
