@@ -77,12 +77,13 @@ extern "C" {
 #define M9_CHROMA                0   // VP9 4K chroma settings; shut cfl @ ep
 #define VP9_ADP                  0   // VP9 4K ADP budget;  (121,110,100 but different injection) (budget = f (layer index))      
 
-#define OPT_LOSSLESS             0
+#define OPT_LOSSLESS             1
 #define OPT_LOSSY                0
 #if OPT_LOSSLESS
 #define REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY  1
 #define PF_N2_SUPPORT                     1
 #endif
+#define UNPACK_REF_POST_EP                1
 
 #define INTRA_CORE_OPT              0
 #define DIS_EDGE_FIL                0
