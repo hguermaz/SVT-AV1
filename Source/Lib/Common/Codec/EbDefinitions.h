@@ -64,9 +64,9 @@ extern "C" {
 #define M9_CU_8x8                  1
 #define M9_ADP                     1
 #define M9_INTRA                   1
+#define DISABLE_OIS_USE            1 
 #define M9_INTER_SRC_SRC_FAST_LOOP 0
 #define M9_NEAR_INJECTION          0 
-
 // Under testing
 #define M9_FRAC_ME_SEARCH_METHOD 0   // VP9 4K fractional search method; SUB_SAD_SEARCH vs. FULL_SAD_SEARCH 
 #define M9_FRAC_ME_SEARCH_64x64  0   // VP9 4K 64x64 search; OFF vs. ON

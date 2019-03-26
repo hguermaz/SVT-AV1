@@ -13866,7 +13866,9 @@ extern "C" {
 
         EbEncMode                             enc_mode;
         EbBool                                intra_md_open_loop_flag;
+#if !DISABLE_OIS_USE
         uint8_t                               high_intra_slection;
+#endif
         EB_FRAME_CARACTERICTICS               scene_caracteristic_id;
         EbBool                                limit_intra;
         int32_t                               cdef_preset[4];
@@ -14047,15 +14049,19 @@ extern "C" {
         EbBool                               *sb_homogeneous_area_array;        // used by EncDecProcess()
         EdgeLcuResults_t                     *edge_results_ptr;                // used by EncDecProcess()
         uint8_t                              *sharp_edge_sb_flag;
+#if !DISABLE_OIS_USE
         uint8_t                              *failing_motion_sb_flag;        // used by EncDecProcess()  and ModeDecisionConfigurationProcess // USED for L2 to replace the uncovered detectors for L6 and L7
         EbBool                               *uncovered_area_sb_flag;            // used by EncDecProcess()
+#endif
         EbBool                                logo_pic_flag;                    // used by EncDecProcess()
         uint64_t                            **var_of_var32x32_based_sb_array;    // used by ModeDecisionConfigurationProcess()- the variance of 8x8 block variances for each 32x32 block
         uint8_t                              *sb_cmplx_contrast_array;            // used by EncDecProcess()
         uint8_t                              *sb_high_contrast_array_dialated;
         uint64_t                            **sb_y_src_energy_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
         uint64_t                            **sb_y_src_mean_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
+#if !DISABLE_OIS_USE
         uint8_t                               intra_coded_block_probability;    // used by EncDecProcess()
+#endif
         EbBool                                low_motion_content_flag;            // used by EncDecProcess()
         uint32_t                              zz_cost_average;                    // used by ModeDecisionConfigurationProcess()
         uint16_t                              non_moving_index_average;            // used by ModeDecisionConfigurationProcess()

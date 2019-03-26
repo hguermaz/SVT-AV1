@@ -1022,9 +1022,10 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                            LIGHT per block : disable_z2_prediction && disable_angle_refinement  for 64/32/4
     // 2                                            OFF per block : disable_angle_prediction for 64/32/4
     // 3                                            OFF : disable_angle_prediction
-    // 4                                            CUSTOM 
+    // 4                                            CUSTOM CL INTRA
     // 5                                            OIS based Intra
     // 6                                            Light OIS based Intra
+    // 7                                            OIS based Intra
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
 #if M9_INTRA

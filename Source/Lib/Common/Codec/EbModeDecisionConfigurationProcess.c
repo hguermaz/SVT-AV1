@@ -677,6 +677,7 @@ void set_reference_cdef_strength(
 /******************************************************
 * Compute Tc, and Beta offsets for a given picture
 ******************************************************/
+#if !DISABLE_OIS_USE
 void AdaptiveDlfParameterComputation(
     ModeDecisionConfigurationContext_t     *context_ptr,
     SequenceControlSet_t                   *sequence_control_set_ptr,
@@ -721,6 +722,7 @@ void AdaptiveDlfParameterComputation(
 
     picture_control_set_ptr->high_intra_slection = highIntra;
 }
+#endif
 
 
 /******************************************************
@@ -2192,12 +2194,13 @@ void* ModeDecisionConfigurationKernel(void *input_ptr)
             picture_control_set_ptr);
 
         // Compute Tc, and Beta offsets for a given picture
+#if !DISABLE_OIS_USE
         AdaptiveDlfParameterComputation( // HT done
             context_ptr,
             sequence_control_set_ptr,
             picture_control_set_ptr,
             picture_control_set_ptr->slice_type == I_SLICE ? EB_FALSE : picture_control_set_ptr->parent_pcs_ptr->scene_transition_flag[REF_LIST_0]);
-
+#endif
         // Set reference cdef strength 
         set_reference_cdef_strength(
             picture_control_set_ptr);
