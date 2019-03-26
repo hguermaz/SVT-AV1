@@ -1786,7 +1786,7 @@ void perform_fast_loop(
         *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr);
 
 }
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS && !DISABLE_OIS_USE
 void ProductConfigureChroma(
     PictureControlSet_t                 *picture_control_set_ptr,
     ModeDecisionContext_t               *context_ptr,
@@ -3979,7 +3979,7 @@ EB_EXTERN EbErrorType mode_decision_sb(
     context_ptr->group_of8x8_blocks_count = 0;
     context_ptr->group_of16x16_blocks_count = 0;
 #endif
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS && !DISABLE_OIS_USE
     ProductConfigureChroma(
         picture_control_set_ptr,
         context_ptr,
