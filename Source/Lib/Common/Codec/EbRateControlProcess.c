@@ -3341,7 +3341,7 @@ void init_rc(
 
         }
 
-        for (uint32_t temporal_layer_index = 0; temporal_layer_index < 4; temporal_layer_index++) {
+        for (uint32_t temporal_layer_index = 0; temporal_layer_index < sequence_control_set_ptr->static_config.hierarchical_levels+1; temporal_layer_index++) {
             if (base_qp < 64) {
                 context_ptr->qp_scaling_map[temporal_layer_index][base_qp] = qp_scaling_calc(
                     sequence_control_set_ptr,
@@ -3439,7 +3439,8 @@ uint32_t qp_scaling_calc(
 
         delta_qindex = av1_compute_qdelta(
             q,
-            q* delta_rate_new[0][temporal_layer_index], // RC does not support 5L
+            q* delta_rate_new[sequence_control_set_ptr->static_config.hierarchical_levels == 4][temporal_layer_index], // RC does not support 5L
+            //q* delta_rate_new[0][temporal_layer_index], // RC does not support 5L
             (aom_bit_depth_t)sequence_control_set_ptr->static_config.encoder_bit_depth);
 
     }
