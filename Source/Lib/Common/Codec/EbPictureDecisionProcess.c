@@ -1034,7 +1034,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
 #if M9_INTRA
-        if (picture_control_set_ptr->enc_mode <= ENC_M8)
+        if (picture_control_set_ptr->enc_mode <= ENC_M7)
             picture_control_set_ptr->intra_pred_mode = 0;
         else            
             picture_control_set_ptr->intra_pred_mode = 4;
@@ -1091,9 +1091,6 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if M9_INTRA
         else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
             picture_control_set_ptr->intra_pred_mode = 5;
-
-        else if (picture_control_set_ptr->enc_mode <= ENC_M8) 
-            picture_control_set_ptr->intra_pred_mode = 6;
         else
             picture_control_set_ptr->intra_pred_mode = 4;
 #else
