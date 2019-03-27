@@ -464,17 +464,21 @@ extern "C" {
         // NON_AVX2
         {
             // 4x4
-            SpatialFullDistortionKernel4x4_SSSE3_INTRIN,
+            spatial_full_distortion_kernel,
             // 8x8
-            SpatialFullDistortionKernel8x8_SSSE3_INTRIN,
+            spatial_full_distortion_kernel,
             // 16x16
-            SpatialFullDistortionKernel16MxN_SSSE3_INTRIN,
+            spatial_full_distortion_kernel,
             // 32x32
-            SpatialFullDistortionKernel16MxN_SSSE3_INTRIN,
+            spatial_full_distortion_kernel,
             // 64x64
-            SpatialFullDistortionKernel16MxN_SSSE3_INTRIN,
+            spatial_full_distortion_kernel,
             // 128x128
-            SpatialFullDistortionKernel16MxN_SSSE3_INTRIN
+            spatial_full_distortion_kernel
+#if SPATIAL_SSE
+            // NO SQ
+            ,spatial_full_distortion_kernel
+#endif
 
         },
         // ASM_AVX2
