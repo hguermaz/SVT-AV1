@@ -433,15 +433,15 @@ EbErrorType eb_object_inc_live_count(
  *     object_ctor is called.
  *********************************************************************/
 EbErrorType eb_system_resource_ctor(
-    EbSystemResource_t **resource_dbl_ptr,
-    uint32_t               object_total_count,
-    uint32_t               producer_process_total_count,
-    uint32_t               consumer_process_total_count,
-    EbFifo_t          ***producer_fifo_ptr_array_ptr,
-    EbFifo_t          ***consumer_fifo_ptr_array_ptr,
-    EbBool              full_fifo_enabled,
-    EB_CTOR              object_ctor,
-    EbPtr               object_init_data_ptr)
+    EbSystemResource_t  **resource_dbl_ptr,
+    uint32_t              object_total_count,
+    uint32_t              producer_process_total_count,
+    uint32_t              consumer_process_total_count,
+    EbFifo_t           ***producer_fifo_ptr_array_ptr,
+    EbFifo_t           ***consumer_fifo_ptr_array_ptr,
+    EbBool                full_fifo_enabled,
+    EB_CTOR               object_ctor,
+    EbPtr                 object_init_data_ptr)
 {
     uint32_t wrapperIndex;
     EbErrorType return_error = EB_ErrorNone;

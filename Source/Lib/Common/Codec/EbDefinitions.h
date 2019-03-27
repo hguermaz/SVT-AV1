@@ -34,6 +34,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
+#define MOD_M0                  0 // Sub-SAD for @ HME and ME, 12 NFL
     
 #define QUICK_ME_CLEANUP        1
 #define SCENE_CONTENT_SETTINGS  1
@@ -77,13 +81,14 @@ extern "C" {
 #define M9_CHROMA                0   // VP9 4K chroma settings; shut cfl @ ep
 #define VP9_ADP                  0   // VP9 4K ADP budget;  (121,110,100 but different injection) (budget = f (layer index))      
 
-#define OPT_LOSSLESS_0           1
-#define OPT_LOSSY                0
+#define OPT_LOSSLESS_0                    1
 #if OPT_LOSSLESS_0
 #define CDEF_OFF_NON_REF                  1
 #define REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY  1
 #define PF_N2_SUPPORT                     1
 #endif
+#define OPT_LOSSLESS_1                    1
+
 #define UNPACK_REF_POST_EP                0
 
 #define INTRA_CORE_OPT              0

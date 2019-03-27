@@ -188,7 +188,7 @@ EbErrorType eb_reference_object_ctor(
     }
 
 
-
+#if !OPT_LOSSLESS_1
     // Allocate SB based TMVP map
     EB_MALLOC(TmvpUnit_t *, referenceObject->tmvpMap, (sizeof(TmvpUnit_t) * (((pictureBufferDescInitDataPtr->maxWidth + (64 - 1)) >> 6) * ((pictureBufferDescInitDataPtr->maxHeight + (64 - 1)) >> 6))), EB_N_PTR);
 
@@ -212,7 +212,7 @@ EbErrorType eb_reference_object_ctor(
         if (return_error == EB_ErrorInsufficientResources)
             return EB_ErrorInsufficientResources;
     }
-
+#endif
     memset(&referenceObject->film_grain_params, 0, sizeof(referenceObject->film_grain_params));
 
     return EB_ErrorNone;
