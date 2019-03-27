@@ -2566,16 +2566,7 @@ void  inject_intra_candidates(
             intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
             angleDeltaCandidateCount = use_angle_delta ? 5 : 1;
             disable_angle_prediction = 0;
-            angle_delta_shift = 1;
-            disable_angle_prediction =0;
-            disable_z2_prediction = 0;
-        }
-        else if (picture_control_set_ptr->temporal_layer_index == 0) {
-            intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
-            angleDeltaCandidateCount = (context_ptr->blk_geom->bsize > 16) ? 1 : use_angle_delta ? 2 : 1;
-            disable_angle_prediction = 0;
-            angle_delta_shift = 3;
-            disable_angle_prediction =0;
+            angle_delta_shift = 2;
             disable_z2_prediction = 0;
         }
         else {
@@ -2583,7 +2574,6 @@ void  inject_intra_candidates(
             disable_angle_prediction = 1;
             angleDeltaCandidateCount = 1;
             angle_delta_shift = 1;
-            disable_angle_prediction =0;
             disable_z2_prediction = 0;
 
         }
@@ -2640,7 +2630,7 @@ void  inject_intra_candidates(
             if (!disable_angle_prediction) {
                 for (angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
 #if M9_INTRA
-                    int32_t angle_delta = angle_delta_shift * (angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1));
+                    int32_t angle_delta = CLIP( angle_delta_shift * (angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1)), -3 , 3);
 #else
                     int32_t angle_delta = angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1);
 #endif
