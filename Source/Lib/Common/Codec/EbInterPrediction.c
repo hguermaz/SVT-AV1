@@ -1501,23 +1501,27 @@ void Av1UnPackReferenceBlock(
 
 
 EbErrorType AV1InterPrediction10BitMD(
-    uint32_t                                interp_filters,
+    uint32_t                                 interp_filters,
     PictureControlSet_t                     *picture_control_set_ptr,
     uint8_t                                  ref_frame_type,
     ModeDecisionContext_t                   *md_context_ptr,
     CodingUnit_t                            *cu_ptr,
     MvUnit_t                                *mv_unit,
-    uint8_t                                 use_intrabc,
+    uint8_t                                  use_intrabc,
     uint16_t                                 pu_origin_x,
     uint16_t                                 pu_origin_y,
     uint8_t                                  bwidth,
     uint8_t                                  bheight,
     EbPictureBufferDesc_t                   *ref_pic_list0,
     EbPictureBufferDesc_t                   *ref_pic_list1,
+#if UNPACK_REF_POST_EP
+    EbPictureBufferDesc_t                   *unpacked_ref_pic_list0,
+    EbPictureBufferDesc_t                   *unpacked_ref_pic_list1,
+#endif
     EbPictureBufferDesc_t                   *prediction_ptr,
     uint16_t                                 dst_origin_x,
     uint16_t                                 dst_origin_y,
-    EbBool                                  perform_chroma,
+    EbBool                                   perform_chroma,
     EbAsm                                    asm_type)
 {
     EbErrorType  return_error = EB_ErrorNone;
@@ -1533,8 +1537,14 @@ EbErrorType AV1InterPrediction10BitMD(
 
     int32_t subpel_x, subpel_y;
     uint16_t * src_ptr;
+#if UNPACK_REF_POST_EP  
+    EbByte unpacked_src_ptr;
+#endif
     uint8_t * dst_ptr;
     int32_t src_stride;
+#if UNPACK_REF_POST_EP 
+    int32_t unpacked_src_stride;
+#endif
     int32_t dst_stride;
     ConvolveParams conv_params;
     InterpFilterParams filter_params_x, filter_params_y;
@@ -1781,9 +1791,15 @@ EbErrorType AV1InterPrediction10BitMD(
         //List0-Y
         mv.col = mv_unit->mv[REF_LIST_0].x;
         mv.row = mv_unit->mv[REF_LIST_0].y;
+#if UNPACK_REF_POST_EP  
+        unpacked_src_ptr = unpacked_ref_pic_list0->buffer_y + unpacked_ref_pic_list0->origin_x + pu_origin_x + (unpacked_ref_pic_list0->origin_y + pu_origin_y) * unpacked_ref_pic_list0->stride_y;
+#endif
 
         src_ptr = (uint16_t*)ref_pic_list0->buffer_y + ref_pic_list0->origin_x + pu_origin_x + (ref_pic_list0->origin_y + pu_origin_y) * ref_pic_list0->stride_y;
         dst_ptr = prediction_ptr->buffer_y + prediction_ptr->origin_x + dst_origin_x + (prediction_ptr->origin_y + dst_origin_y) * prediction_ptr->stride_y;
+#if UNPACK_REF_POST_EP  
+        unpacked_src_stride = unpacked_ref_pic_list0->stride_y;
+#endif
         src_stride = ref_pic_list0->stride_y;
         dst_stride = prediction_ptr->stride_y;
         mv_q4 = clamp_mv_to_umv_border_sb(cu_ptr->av1xd, &mv, bwidth, bheight, 0, 0);//mv_q4 has 1 extra bit for fractionnal to accomodate chroma when accessing filter coeffs.
@@ -1791,11 +1807,14 @@ EbErrorType AV1InterPrediction10BitMD(
         subpel_x = mv_q4.col & SUBPEL_MASK;
         subpel_y = mv_q4.row & SUBPEL_MASK;
         src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
+#if UNPACK_REF_POST_EP  
+        unpacked_src_ptr = unpacked_src_ptr + (mv_q4.row >> SUBPEL_BITS) * unpacked_src_stride + (mv_q4.col >> SUBPEL_BITS);
+#endif
         conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstY, 128, is_compound, EB_8BIT);
 
         av1_get_convolve_filter_params(interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
-
+#if !UNPACK_REF_POST_EP  
         Av1UnPackReferenceBlock(
             src_ptr,
             ref_pic_list0->stride_y,
@@ -1806,10 +1825,15 @@ EbErrorType AV1InterPrediction10BitMD(
             EB_FALSE,
             asm_type,
             16);
-
+#endif
         convolve[subpel_x != 0][subpel_y != 0][is_compound](
+#if UNPACK_REF_POST_EP 
+            unpacked_src_ptr,
+            unpacked_src_stride,
+#else
             context_ptr->mcp_context->local_reference_block8_bitl0->buffer_y + 8 + (8 * context_ptr->mcp_context->local_reference_block8_bitl0->stride_y),
             context_ptr->mcp_context->local_reference_block8_bitl0->stride_y,
+#endif
             dst_ptr,
             dst_stride,
             bwidth,
@@ -1923,8 +1947,14 @@ EbErrorType AV1InterPrediction10BitMD(
         mv.row = mv_unit->mv[REF_LIST_1].y;
         ASSERT(ref_pic_list1 != NULL);
         src_ptr = (uint16_t*)ref_pic_list1->buffer_y + ref_pic_list1->origin_x + pu_origin_x + (ref_pic_list1->origin_y + pu_origin_y) * ref_pic_list1->stride_y;
+#if UNPACK_REF_POST_EP  
+        unpacked_src_ptr = unpacked_ref_pic_list1->buffer_y + unpacked_ref_pic_list1->origin_x + pu_origin_x + (unpacked_ref_pic_list1->origin_y + pu_origin_y) * unpacked_ref_pic_list1->stride_y;
+#endif
         dst_ptr = prediction_ptr->buffer_y + prediction_ptr->origin_x + dst_origin_x + (prediction_ptr->origin_y + dst_origin_y) * prediction_ptr->stride_y;
         src_stride = ref_pic_list1->stride_y;
+#if UNPACK_REF_POST_EP  
+        unpacked_src_stride = unpacked_ref_pic_list1->stride_y;
+#endif
         dst_stride = prediction_ptr->stride_y;
 
         mv_q4 = clamp_mv_to_umv_border_sb(cu_ptr->av1xd, &mv, bwidth, bheight, 0, 0);//mv_q4 has 1 extra bit for fractionnal to accomodate chroma when accessing filter coeffs.
@@ -1933,12 +1963,15 @@ EbErrorType AV1InterPrediction10BitMD(
         subpel_y = mv_q4.row & SUBPEL_MASK;
 
         src_ptr = src_ptr + (mv_q4.row >> SUBPEL_BITS) * src_stride + (mv_q4.col >> SUBPEL_BITS);
+#if UNPACK_REF_POST_EP  
+        unpacked_src_ptr = unpacked_src_ptr + (mv_q4.row >> SUBPEL_BITS) * unpacked_src_stride + (mv_q4.col >> SUBPEL_BITS);
+#endif
         conv_params = get_conv_params_no_round(0, (mv_unit->predDirection == BI_PRED) ? 1 : 0, 0, tmp_dstY, 128, is_compound, EB_8BIT);
 
         av1_get_convolve_filter_params(interp_filters, &filter_params_x,
             &filter_params_y, bwidth, bheight);
 
-
+#if !UNPACK_REF_POST_EP  
         Av1UnPackReferenceBlock(
             src_ptr,
             ref_pic_list1->stride_y,
@@ -1949,10 +1982,15 @@ EbErrorType AV1InterPrediction10BitMD(
             EB_FALSE,
             asm_type,
             16);
-
+#endif
         convolve[subpel_x != 0][subpel_y != 0][is_compound](
+#if UNPACK_REF_POST_EP 
+            unpacked_src_ptr,
+            unpacked_src_stride,
+#else
             context_ptr->mcp_context->local_reference_block8_bitl1->buffer_y + 8 + (8 * context_ptr->mcp_context->local_reference_block8_bitl1->stride_y),
             context_ptr->mcp_context->local_reference_block8_bitl1->stride_y,
+#endif
             dst_ptr,
             dst_stride,
             bwidth,
@@ -3899,6 +3937,10 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
         md_context_ptr->blk_geom->bheight,
         ref_pic_list0,
         ref_pic_list1,
+#if UNPACK_REF_POST_EP // TBD
+        0,
+        0,
+#endif
         prediction_ptr,
         md_context_ptr->blk_geom->origin_x,
         md_context_ptr->blk_geom->origin_y,
@@ -3974,6 +4016,10 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         md_context_ptr->blk_geom->bheight,
                         ref_pic_list0,
                         ref_pic_list1,
+#if UNPACK_REF_POST_EP // TBD
+                        0,
+                        0,
+#endif
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
@@ -4048,6 +4094,10 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         md_context_ptr->blk_geom->bheight,
                         ref_pic_list0,
                         ref_pic_list1,
+#if UNPACK_REF_POST_EP // TBD
+                        0,
+                        0,
+#endif
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
@@ -4125,6 +4175,10 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
                         md_context_ptr->blk_geom->bheight,
                         ref_pic_list0,
                         ref_pic_list1,
+#if UNPACK_REF_POST_EP // TBD
+                        0,
+                        0,
+#endif
                         prediction_ptr,
                         md_context_ptr->blk_geom->origin_x,
                         md_context_ptr->blk_geom->origin_y,
@@ -4211,6 +4265,10 @@ EbErrorType inter_pu_prediction_av1(
 
             ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture16bit;
 
+
+#if UNPACK_REF_POST_EP
+            EbPictureBufferDesc_t  *unpacked_ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr)->referencePicture;
+#endif
             AV1InterPrediction10BitMD(
                 candidate_buffer_ptr->candidate_ptr->interp_filters,
                 picture_control_set_ptr,
@@ -4225,6 +4283,10 @@ EbErrorType inter_pu_prediction_av1(
                 md_context_ptr->blk_geom->bheight,
                 ref_pic_list0,
                 0,// ref_pic_list1,
+#if UNPACK_REF_POST_EP
+                unpacked_ref_pic_list0,
+                0, //unpacked_ref_pic_list1,
+#endif
                 candidate_buffer_ptr->prediction_ptr,
                 md_context_ptr->blk_geom->origin_x,
                 md_context_ptr->blk_geom->origin_y,
@@ -4260,11 +4322,19 @@ EbErrorType inter_pu_prediction_av1(
         return return_error;
         }
     }
-
+#if UNPACK_REF_POST_EP
+    EbPictureBufferDesc_t  *unpacked_ref_pic_list0;
+    EbPictureBufferDesc_t  *unpacked_ref_pic_list1;
+#endif
     if (is16bit) {
         ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr)->referencePicture16bit;
         if (picture_control_set_ptr->slice_type == B_SLICE)
             ref_pic_list1 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr)->referencePicture16bit;
+#if UNPACK_REF_POST_EP
+        unpacked_ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr)->referencePicture;
+        if (picture_control_set_ptr->slice_type == B_SLICE)
+            unpacked_ref_pic_list1 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr)->referencePicture;
+#endif
     } else {
         ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr)->referencePicture;
         if (picture_control_set_ptr->slice_type == B_SLICE)
@@ -4352,6 +4422,10 @@ EbErrorType inter_pu_prediction_av1(
             md_context_ptr->blk_geom->bheight,
             ref_pic_list0,
             ref_pic_list1,
+#if UNPACK_REF_POST_EP
+            unpacked_ref_pic_list0,
+            unpacked_ref_pic_list1,
+#endif
             candidate_buffer_ptr->prediction_ptr,
             md_context_ptr->blk_geom->origin_x,
             md_context_ptr->blk_geom->origin_y,

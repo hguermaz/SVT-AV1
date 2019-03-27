@@ -164,6 +164,13 @@ EbErrorType eb_reference_object_ctor(
             &pictureBufferDescInitData16BitPtr,
             pictureBufferDescInitData16BitPtr.bit_depth);
 
+#if UNPACK_REF_POST_EP // constructor
+        pictureBufferDescInitDataPtr->splitMode = 1;
+        return_error = eb_picture_buffer_desc_ctor(
+            (EbPtr*)&(referenceObject->referencePicture),
+            (EbPtr)pictureBufferDescInitDataPtr);
+        pictureBufferDescInitDataPtr->splitMode = 0;
+#endif
     }
     else {
 
