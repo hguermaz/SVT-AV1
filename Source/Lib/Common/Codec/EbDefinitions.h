@@ -37,7 +37,7 @@ extern "C" {
 
 
 
-#define MOD_M0                  0 // Sub-SAD for @ HME and ME, 12 NFL
+#define MOD_M0                  0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
     
 #define QUICK_ME_CLEANUP        1
 #define SCENE_CONTENT_SETTINGS  1

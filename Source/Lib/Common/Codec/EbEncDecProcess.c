@@ -1535,7 +1535,11 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 #if SPATIAL_SSE
     // Derive Spatial SSE Flag
     if (picture_control_set_ptr->enc_mode == ENC_M0) 
+#if MOD_M0
+        context_ptr->spatial_sse_full_loop = EB_FALSE;
+#else
         context_ptr->spatial_sse_full_loop = EB_TRUE;
+#endif
     else
         context_ptr->spatial_sse_full_loop = EB_FALSE;
 #endif
