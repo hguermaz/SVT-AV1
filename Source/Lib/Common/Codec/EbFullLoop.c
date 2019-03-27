@@ -2139,7 +2139,6 @@ void CuFullDistortionFastTuMode_R(
 /***************************************
  * Check merge_block algorithm
  ***************************************/
-
 EbBool merge_1D_inter_block(
     ModeDecisionContext_t    *context_ptr,
     uint32_t                  sq_idx,

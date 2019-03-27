@@ -2457,12 +2457,12 @@ static INLINE int32_t partition_cdf_length(block_size bsize) {
         return EXT_PARTITION_TYPES;
 }
 
+#if !SPLIT_RATE_FIX
 static int32_t cdf_element_prob(const int32_t *cdf,
     size_t element) {
     assert(cdf != NULL);
     return (element > 0 ? cdf[element - 1] : CDF_PROB_TOP) - cdf[element];
 }
-#if !SPLIT_RATE_FIX
 static void partition_gather_horz_alike(int32_t *out,
     block_size bsize,
     const int32_t *const in) {

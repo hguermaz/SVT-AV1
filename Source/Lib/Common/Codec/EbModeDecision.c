@@ -599,9 +599,10 @@ void Unipred3x3CandidatesInjection(
             /**************
             NEWMV L1
             ************* */
-        if (context_ptr->unipred3x3_injection >= 2)
-            if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
-                continue;
+            if (context_ptr->unipred3x3_injection >= 2) {
+                if (ALLOW_REFINEMENT_FLAG[bipredIndex] == 0)
+                    continue;
+            }
             int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[1][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->xMvL1 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
             int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[1][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->yMvL1 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
             if (context_ptr->injected_mv_count_l1 == 0 || is_already_injected_mv_l1(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE) {

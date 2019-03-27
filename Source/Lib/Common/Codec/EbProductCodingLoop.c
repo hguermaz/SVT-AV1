@@ -116,12 +116,11 @@ void mode_decision_update_neighbor_arrays(
     uint8_t chroma_mode = (uint8_t)context_ptr->cu_ptr->prediction_unit_array->intra_chroma_mode;
     uint8_t skip_flag = (uint8_t)context_ptr->cu_ptr->skip_flag;
 
-
+#if !OPT_LOSSLESS_0
     EbBool availableCoeff =
         (context_ptr->cu_ptr->transform_unit_array[0].y_has_coeff ||
             context_ptr->cu_ptr->transform_unit_array[0].v_has_coeff ||
             context_ptr->cu_ptr->transform_unit_array[0].u_has_coeff) ? EB_TRUE : EB_FALSE;
-#if !OPT_LOSSLESS_0
     uint8_t skipCoeff = !availableCoeff;
 #endif
     context_ptr->mv_unit.predDirection = (uint8_t)(context_ptr->md_cu_arr_nsq[index_mds].prediction_unit_array[0].inter_pred_direction_index);
