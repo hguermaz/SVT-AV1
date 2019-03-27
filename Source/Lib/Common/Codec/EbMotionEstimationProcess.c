@@ -768,9 +768,9 @@ void* MotionEstimationKernel(void *input_ptr)
                 }
             }
             else {
+#if !RC
                 uint32_t                       bestOisCuIndex = 0;
-
-
+#endif
                 for (yLcuIndex = yLcuStartIndex; yLcuIndex < yLcuEndIndex; ++yLcuIndex) {
                     for (xLcuIndex = xLcuStartIndex; xLcuIndex < xLcuEndIndex; ++xLcuIndex) {
                         sb_origin_x = xLcuIndex * sequence_control_set_ptr->sb_sz;

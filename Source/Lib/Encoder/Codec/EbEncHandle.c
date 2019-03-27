@@ -2591,7 +2591,7 @@ static EbErrorType VerifySettings(
     }
 #endif
 #if RC
-    if ((config->rate_control_mode == 3 || config->rate_control_mode == 2) && config->look_ahead_distance != config->intra_period_length) {
+    if ((config->rate_control_mode == 3 || config->rate_control_mode == 2) && (int32_t)config->look_ahead_distance != config->intra_period_length) {
         SVT_LOG("Error Instance %u: The rate control mode 2/3 LAD must be equal to IntraPeriod \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }

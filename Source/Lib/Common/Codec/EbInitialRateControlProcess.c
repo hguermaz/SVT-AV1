@@ -17,9 +17,6 @@
 #include "EbUtility.h"
 #include "EbReferenceObject.h"
 
-
-static const uint32_t me2Nx2NOffset[4] = { 0, 1, 5, 21 };
-
 /**************************************
 * Macros
 **************************************/

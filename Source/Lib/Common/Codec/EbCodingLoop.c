@@ -2019,9 +2019,10 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
         usedDepth = 2;
 
     uint32_t cuIndexInRaterScan = MD_SCAN_TO_RASTER_SCAN[cu_index];
-
+#if !OPT_LOSSLESS_0
     EbBool                         acEnergyBasedAntiContouring = picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE;
-    uint8_t                           lowerQPClass;
+    uint8_t                        lowerQPClass;
+#endif
 
     int8_t    non_moving_delta_qp = context_ptr->non_moving_delta_qp;
     int8_t    bea64x64DeltaQp;
@@ -2566,18 +2567,12 @@ EB_EXTERN void AV1EncodePass(
     }
 #endif
 
-
 #if CABAC_UP
     uint8_t allow_update_cdf = picture_control_set_ptr->update_cdf;
-    FRAME_CONTEXT *fc = &picture_control_set_ptr->ec_ctx_array[tbAddr];
-    Av1Common *cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;
 #endif
 
-
     uint32_t final_cu_itr = 0;
-
     // CU Loop
-
     uint32_t    blk_it = 0;
 
     while (blk_it < sequence_control_set_ptr->max_block_cnt) {

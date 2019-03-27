@@ -47,7 +47,6 @@ static void set_restoration_unit_size(int32_t width, int32_t height, int32_t sx,
     rst[2].restoration_unit_size = rst[1].restoration_unit_size;
 }
 
-
 EbErrorType picture_control_set_ctor(
     EbPtr *object_dbl_ptr,
     EbPtr object_init_data_ptr)
@@ -168,7 +167,6 @@ EbErrorType picture_control_set_ctor(
     if (return_error == EB_ErrorInsufficientResources) {
         return EB_ErrorInsufficientResources;
     }
-
 
     // Entropy Coder
     return_error = EntropyCoderCtor(

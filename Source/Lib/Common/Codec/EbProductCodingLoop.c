@@ -121,10 +121,9 @@ void mode_decision_update_neighbor_arrays(
         (context_ptr->cu_ptr->transform_unit_array[0].y_has_coeff ||
             context_ptr->cu_ptr->transform_unit_array[0].v_has_coeff ||
             context_ptr->cu_ptr->transform_unit_array[0].u_has_coeff) ? EB_TRUE : EB_FALSE;
-
+#if !OPT_LOSSLESS_0
     uint8_t skipCoeff = !availableCoeff;
-
-
+#endif
     context_ptr->mv_unit.predDirection = (uint8_t)(context_ptr->md_cu_arr_nsq[index_mds].prediction_unit_array[0].inter_pred_direction_index);
     context_ptr->mv_unit.mv[REF_LIST_0].mvUnion = context_ptr->md_cu_arr_nsq[index_mds].prediction_unit_array[0].mv[REF_LIST_0].mvUnion;
     context_ptr->mv_unit.mv[REF_LIST_1].mvUnion = context_ptr->md_cu_arr_nsq[index_mds].prediction_unit_array[0].mv[REF_LIST_1].mvUnion;
@@ -1072,10 +1071,11 @@ void init_nsq_block(
 
 void init_sq_block(
     SequenceControlSet_t    *sequence_control_set_ptr,
-    ModeDecisionContext_t   *context_ptr)
-{
-    for (uint32_t blk_idx = 0; blk_idx < TOTAL_SQ_BLOCK_COUNT; blk_idx++)
-    {
+    ModeDecisionContext_t   *context_ptr){
+
+    UNUSED(sequence_control_set_ptr);
+    for (uint32_t blk_idx = 0; blk_idx < TOTAL_SQ_BLOCK_COUNT; blk_idx++){
+
         context_ptr->md_cu_arr_nsq[sq_block_index[blk_idx]].part = PARTITION_SPLIT;
         context_ptr->md_local_cu_unit[sq_block_index[blk_idx]].tested_cu_flag = EB_FALSE;
     }
@@ -1232,6 +1232,16 @@ void picture_addition_kernel16_bit(
     return;
 }
 
+#if CFL_FIX
+void pic_copy_kernel(
+    EbByte                     src,
+    uint32_t                   src_stride,
+    EbByte                     dst,
+    uint32_t                   dst_stride,
+    uint32_t                   area_width,
+    uint32_t                   area_height);
+#endif
+
 void AV1PerformInverseTransformReconLuma(
     PictureControlSet_t               *picture_control_set_ptr,
     ModeDecisionContext_t             *context_ptr,
@@ -1248,7 +1258,9 @@ void AV1PerformInverseTransformReconLuma(
     uint32_t                              tuTotalCount;
 
     uint32_t                              txb_itr;
-
+#if CFL_FIX
+    UNUSED(asm_type);
+#endif
     if (picture_control_set_ptr->intra_md_open_loop_flag == EB_FALSE) {
         tuTotalCount = blk_geom->txb_count;
         txb_itr = 0;
@@ -2924,7 +2936,7 @@ void move_cu_data_redund(
   //dst_cu->mds_idx = src_cu->mds_idx;
 }
 
-void check_redundant_block(BlockGeom * blk_geom, ModeDecisionContext_t *context_ptr,  uint8_t * redundant_blk_avail, uint16_t *redundant_blk_mds)
+void check_redundant_block(const BlockGeom * blk_geom, ModeDecisionContext_t *context_ptr,  uint8_t * redundant_blk_avail, uint16_t *redundant_blk_mds)
 {
     if (blk_geom->redund) {
         for (int it = 0; it < blk_geom->redund_list.list_size; it++) {
@@ -4003,7 +4015,6 @@ EB_EXTERN EbErrorType mode_decision_sb(
     uint32_t                               lastCuIndex;
 #endif
     // Pre Intra Search
-    EbAsm                                  asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
 #if !OPT_LOSSLESS_0
     const uint32_t                         sb_height = MIN(BLOCK_SIZE_64, (uint32_t)(sequence_control_set_ptr->luma_height - sb_origin_y));
 #endif

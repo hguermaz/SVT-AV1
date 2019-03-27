@@ -2462,6 +2462,7 @@ static int32_t cdf_element_prob(const int32_t *cdf,
     assert(cdf != NULL);
     return (element > 0 ? cdf[element - 1] : CDF_PROB_TOP) - cdf[element];
 }
+#if !SPLIT_RATE_FIX
 static void partition_gather_horz_alike(int32_t *out,
     block_size bsize,
     const int32_t *const in) {
@@ -2489,6 +2490,7 @@ static void partition_gather_vert_alike(int32_t *out,
     out[0] = AOM_ICDF(out[0]);
     out[1] = AOM_ICDF(CDF_PROB_TOP);
 }
+#endif
 
 //static INLINE int32_t partition_plane_context(const MacroBlockD *xd, int32_t mi_row,
 //    int32_t mi_col, block_size bsize) {

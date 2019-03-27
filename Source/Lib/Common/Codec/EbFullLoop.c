@@ -850,7 +850,7 @@ void ProductFullLoop(
             tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][context_ptr->blk_geom->bwidth == context_ptr->blk_geom->bheight ? Log2f(context_ptr->blk_geom->bwidth) - 2 : 6](
                 input_picture_ptr->buffer_y + input_tu_origin_index,
                 input_picture_ptr->stride_y,
-                &(((int8_t*)candidateBuffer->recon_ptr->buffer_y)[tuOriginIndex]),
+                &(((uint8_t*)candidateBuffer->recon_ptr->buffer_y)[tuOriginIndex]),
                 candidateBuffer->recon_ptr->stride_y,
                 context_ptr->blk_geom->tx_width[txb_itr],
                 context_ptr->blk_geom->tx_height[txb_itr]);
@@ -1969,7 +1969,7 @@ void CuFullDistortionFastTuMode_R(
                 tuFullDistortion[1][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bheight_uv ? Log2f(context_ptr->blk_geom->bwidth_uv) - 2 : 6](
                     input_picture_ptr->bufferCb + input_chroma_tu_origin_index,
                     input_picture_ptr->strideCb,
-                    &(((int8_t*)candidateBuffer->recon_ptr->bufferCb)[tu_uv_origin_index]),
+                    &(((uint8_t*)candidateBuffer->recon_ptr->bufferCb)[tu_uv_origin_index]),
                     candidateBuffer->recon_ptr->strideCb,
                     context_ptr->blk_geom->tx_width_uv[txb_itr],
                     context_ptr->blk_geom->tx_height_uv[txb_itr]);
@@ -1985,7 +1985,7 @@ void CuFullDistortionFastTuMode_R(
                 tuFullDistortion[2][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bheight_uv ? Log2f(context_ptr->blk_geom->bwidth_uv) - 2 : 6](
                     input_picture_ptr->bufferCr + input_chroma_tu_origin_index,
                     input_picture_ptr->strideCr,
-                    &(((int8_t*)candidateBuffer->recon_ptr->bufferCr)[tu_uv_origin_index]),
+                    &(((uint8_t*)candidateBuffer->recon_ptr->bufferCr)[tu_uv_origin_index]),
                     candidateBuffer->recon_ptr->strideCr,
                     context_ptr->blk_geom->tx_width_uv[txb_itr],
                     context_ptr->blk_geom->tx_height_uv[txb_itr]);

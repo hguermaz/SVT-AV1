@@ -57,13 +57,13 @@ void picture_addition(
 }
 
 void pic_copy_kernel(
-    EbByte                  src,
+    EbByte                     src,
     uint32_t                   src_stride,
-    EbByte                  dst,
+    EbByte                     dst,
     uint32_t                   dst_stride,
     uint32_t                   area_width,
-    uint32_t                   area_height)
-{
+    uint32_t                   area_height){
+
     uint32_t   j;
 
     for (j = 0; j < area_height; j++)

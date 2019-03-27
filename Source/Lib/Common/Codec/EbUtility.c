@@ -1106,7 +1106,7 @@ uint32_t count_total_num_of_active_blks()
 #if RED_CU
 void log_redundancy_similarity(uint32_t  max_block_count)
 {
-    uint32_t blk_it, s_it, sim_cnt, red_cnt;
+    uint32_t blk_it, s_it;
 
     for (blk_it = 0; blk_it < max_block_count; blk_it++)
     {
@@ -1115,10 +1115,6 @@ void log_redundancy_similarity(uint32_t  max_block_count)
         cur_geom->redund = 0;
         cur_geom->redund_list.list_size = 0;
         cur_geom->similar_list.list_size = 0;
-
-        //search for all redundant/similar blocks
-        sim_cnt = 0;
-        red_cnt = 0;
 
         for (s_it = 0; s_it < max_block_count; s_it++)
         {
