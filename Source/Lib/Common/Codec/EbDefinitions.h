@@ -87,7 +87,7 @@ extern "C" {
 #define REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY  1
 #define PF_N2_SUPPORT                     1
 #endif
-#define OPT_LOSSLESS_1                    1
+#define OPT_LOSSLESS_1                    0
 
 #define UNPACK_REF_POST_EP                0
 
