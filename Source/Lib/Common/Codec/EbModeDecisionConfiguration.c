@@ -275,7 +275,7 @@ EbErrorType MdcRefinement(
 
     return return_error;
 }
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
 /*******************************************
 Derive the contouring class
 If (AC energy < 32 * 32) then apply aggressive action (Class 1),

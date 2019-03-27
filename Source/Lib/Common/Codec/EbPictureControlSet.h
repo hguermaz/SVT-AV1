@@ -13831,7 +13831,7 @@ extern "C" {
         NeighborArrayUnit_t                  *ep_luma_recon_neighbor_array16bit;
         NeighborArrayUnit_t                  *ep_cb_recon_neighbor_array16bit;
         NeighborArrayUnit_t                  *ep_cr_recon_neighbor_array16bit;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
         // AMVP & MV Merge Neighbor Arrays
         NeighborArrayUnit_t                  *amvp_mv_merge_mv_neighbor_array;
         NeighborArrayUnit_t                  *amvp_mv_merge_mode_type_neighbor_array;

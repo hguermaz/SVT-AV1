@@ -596,7 +596,7 @@ static void Av1EncodeLoop(
     const uint32_t coeff1dOffsetChroma = context_ptr->coded_area_sb_uv;
     UNUSED(coeff1dOffsetChroma);
 
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     //uint8_t enable_contouring_qc_update_flag;
     //enable_contouring_qc_update_flag = DeriveContouringClass(
     //    sb_ptr->picture_control_set_ptr->parent_pcs_ptr,
@@ -2114,7 +2114,7 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
         if (sb_stat_ptr->stationary_edge_over_time_flag && delta_qp > 0) {
             delta_qp = 0;
         }
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
         if (acEnergyBasedAntiContouring) {
 
             lowerQPClass = DeriveContouringClass(

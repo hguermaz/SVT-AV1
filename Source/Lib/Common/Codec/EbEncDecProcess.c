@@ -232,7 +232,7 @@ static void ResetEncodePassNeighborArrays(PictureControlSet_t *picture_control_s
     neighbor_array_unit_reset(picture_control_set_ptr->ep_luma_recon_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cb_recon_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cr_recon_neighbor_array);
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     neighbor_array_unit_reset(picture_control_set_ptr->amvp_mv_merge_mv_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->amvp_mv_merge_mode_type_neighbor_array);
 #endif
@@ -292,7 +292,7 @@ static void ResetEncDec(
     // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
 
     context_ptr->md_rate_estimation_ptr = md_rate_estimation_array;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     // TMVP Map Writer pointer
     if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
         context_ptr->reference_object_write_ptr = (EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr;
@@ -1094,6 +1094,20 @@ void PadRefAndSetFlags(
             refPic16BitPtr->height >> 1,
             refPic16BitPtr->origin_x,
             refPic16BitPtr->origin_y >> 1);
+
+
+#if UNPACK_REF_POST_EP
+        un_pack2d(
+            (uint16_t*) refPic16BitPtr->buffer_y,
+            refPic16BitPtr->stride_y,
+            refPicPtr->buffer_y,
+            refPicPtr->stride_y,
+            refPicPtr->bufferBitIncY,
+            refPicPtr->strideBitIncY,
+            refPic16BitPtr->width,
+            refPic16BitPtr->height,
+            sequence_control_set_ptr->static_config.asm_type);
+#endif
 
     }
 

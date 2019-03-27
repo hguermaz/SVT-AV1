@@ -986,7 +986,7 @@ void* source_based_operations_kernel(void *input_ptr)
                 picture_control_set_ptr,
                 sb_index);
 #endif
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
             // AC energy computation
             CalculateAcEnergy(
                 sequence_control_set_ptr,

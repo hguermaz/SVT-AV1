@@ -313,7 +313,7 @@ void* rest_kernel(void *input_ptr)
             }
 
             //// PSNR Calculation
-            //if (sequence_control_set_ptr->static_config.stat_report) {
+            //if (sequence_control_set_ptr->si atic_config.stat_report) {
             //    PsnrCalculations(
             //        picture_control_set_ptr,
             //        sequence_control_set_ptr);

@@ -2740,7 +2740,7 @@ void  inject_intra_candidates(
 
     return;
 }
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
 void ProductInitMdCandInjection(
     ModeDecisionContext_t          *context_ptr,
     uint32_t                         *candidateTotalCnt)
@@ -2775,7 +2775,7 @@ EbErrorType ProductGenerateMdCandidatesCu(
     (void)interPredContextPtr;
     const SequenceControlSet_t *sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     const EB_SLICE slice_type = picture_control_set_ptr->slice_type;
-#if OPT_LOSSLESS
+#if OPT_LOSSLESS_0
     uint32_t canTotalCnt = 0;
 #else
     uint32_t       canTotalCnt;
@@ -2784,7 +2784,7 @@ EbErrorType ProductGenerateMdCandidatesCu(
     context_ptr->injected_mv_count_l0 = 0;
     context_ptr->injected_mv_count_l1 = 0;
     context_ptr->injected_mv_count_bipred = 0;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     ProductInitMdCandInjection(
         context_ptr,
         &canTotalCnt);

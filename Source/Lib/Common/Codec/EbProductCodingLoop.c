@@ -89,7 +89,7 @@ const EB_AV1_FULL_COST_FUNC   Av1ProductFullCostFuncTable[3] =
 * Update Recon Samples Neighbor Arrays
 ***************************************************/
 void mode_decision_update_neighbor_arrays(
-#if OPT_LOSSLESS
+#if OPT_LOSSLESS_0
     PictureControlSet_t     *picture_control_set_ptr,
 #endif
     ModeDecisionContext_t   *context_ptr,
@@ -143,7 +143,7 @@ void mode_decision_update_neighbor_arrays(
     uint8_t                    ref_frame_type = (uint8_t)context_ptr->cu_ptr->prediction_unit_array[0].ref_frame_type;
 
 
-#if OPT_LOSSLESS
+#if OPT_LOSSLESS_0
     if (picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level != IT_SEARCH_OFF)
 #endif
         neighbor_array_unit_mode_write32(
@@ -179,7 +179,7 @@ void mode_decision_update_neighbor_arrays(
             bwdith,
             bheight,
             NEIGHBOR_ARRAY_UNIT_FULL_MASK);
-#if OPT_LOSSLESS
+#if OPT_LOSSLESS_0
         if (picture_control_set_ptr->parent_pcs_ptr->skip_sub_blks)
 #endif
 #if M8_SKIP_BLK        
@@ -252,7 +252,7 @@ void mode_decision_update_neighbor_arrays(
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     //  Update skip_coeff_neighbor_array,
     neighbor_array_unit_mode_write(
         context_ptr->skip_coeff_neighbor_array,
@@ -573,7 +573,7 @@ void md_update_all_neighbour_arrays(
     context_ptr->cu_ptr = &context_ptr->md_cu_arr_nsq[lastCuIndex_mds];
 
     mode_decision_update_neighbor_arrays(
-#if OPT_LOSSLESS
+#if OPT_LOSSLESS_0
         picture_control_set_ptr,
 #endif
         context_ptr,
@@ -704,7 +704,7 @@ void set_nfl(
 }
 
 
-#if OPT_LOSSLESS
+#if OPT_LOSSLESS_0
 #define TOTAL_SQ_BLOCK_COUNT 341  
 int sq_block_index[TOTAL_SQ_BLOCK_COUNT] = {
     0,
@@ -1500,7 +1500,7 @@ void ProductCodingLoopInitFastLoop(
     NeighborArrayUnit_t        *leaf_partition_neighbor_array
 )
 {
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     // Keep track of the SB Ptr
     context_ptr->luma_intra_ref_samples_gen_done = EB_FALSE;
     context_ptr->chroma_intra_ref_samples_gen_done = EB_FALSE;
@@ -1530,7 +1530,7 @@ void ProductCodingLoopInitFastLoop(
     }
     return;
 }
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
 uint64_t ProductGenerateChromaWeight(
     PictureControlSet_t                 *picture_control_set_ptr,
     uint32_t                               qp)
@@ -1822,7 +1822,7 @@ void perform_fast_loop(
         *(candidateBufferPtrArrayBase[highestCostIndex]->fast_cost_ptr);
 
 }
-#if !OPT_LOSSLESS && !DISABLE_OIS_USE
+#if !OPT_LOSSLESS_0 && !DISABLE_OIS_USE
 void ProductConfigureChroma(
     PictureControlSet_t                 *picture_control_set_ptr,
     ModeDecisionContext_t               *context_ptr,
@@ -3998,34 +3998,34 @@ EB_EXTERN EbErrorType mode_decision_sb(
 
     uint32_t                             cuIdx;
     ModeDecisionCandidateBuffer_t       *bestCandidateBuffers[5];
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     // CTB merge
     uint32_t                               lastCuIndex;
 #endif
     // Pre Intra Search
     EbAsm                                  asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     const uint32_t                         sb_height = MIN(BLOCK_SIZE_64, (uint32_t)(sequence_control_set_ptr->luma_height - sb_origin_y));
 #endif
     uint32_t                               leaf_count = mdcResultTbPtr->leaf_count;
     const EbMdcLeafData_t *const           leaf_data_array = mdcResultTbPtr->leaf_data_array;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     UNUSED(sb_height);
     UNUSED(asm_type);
     UNUSED(lastCuIndex);
 #endif
     context_ptr->sb_ptr = sb_ptr;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     context_ptr->group_of8x8_blocks_count = 0;
     context_ptr->group_of16x16_blocks_count = 0;
 #endif
-#if !OPT_LOSSLESS && !DISABLE_OIS_USE
+#if !OPT_LOSSLESS_0 && !DISABLE_OIS_USE
     ProductConfigureChroma(
         picture_control_set_ptr,
         context_ptr,
         sb_ptr);
 #endif
-#if OPT_LOSSLESS
+#if OPT_LOSSLESS_0
     if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
         init_nsq_block(
             sequence_control_set_ptr,
@@ -4068,11 +4068,11 @@ EB_EXTERN EbErrorType mode_decision_sb(
     cuIdx = 0;  //index over mdc array
 
     uint32_t blk_idx_mds = 0;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     EbBool all_d1_blocks_done = 0;
 #endif
     uint32_t  d1_blocks_accumlated = 0;
-#if !OPT_LOSSLESS
+#if !OPT_LOSSLESS_0
     UNUSED(all_d1_blocks_done);
 #endif
 #if M8_SKIP_BLK
