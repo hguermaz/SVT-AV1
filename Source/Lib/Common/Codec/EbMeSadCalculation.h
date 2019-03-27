@@ -27,7 +27,8 @@ extern "C" {
         uint32_t  *p_best_mv8x8,
         uint32_t  *p_best_mv16x16,
         uint32_t   mv,
-        uint32_t  *p_sad16x16);
+        uint32_t  *p_sad16x16,
+        EbBool     skip);
 
     typedef void(*EB_EXTSADCALCULATION8X8AND16X16_TYPE)(
         uint8_t   *src,
@@ -40,7 +41,8 @@ extern "C" {
         uint32_t  *p_best_mv16x16,
         uint32_t   mv,
         uint32_t  *p_sad16x16,
-        uint32_t  *p_sad8x8);
+        uint32_t  *p_sad8x8,
+        EbBool    skip);
 
     typedef void(*EB_EXTSADCALCULATION32X32AND64X64_TYPE)(
         uint32_t  *p_sad16x16,

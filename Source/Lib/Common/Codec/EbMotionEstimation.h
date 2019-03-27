@@ -1541,6 +1541,66 @@ extern "C" {
         uint8_t  *ref,                            // input parameter, reference samples Ptr
         uint32_t  ref_stride);
 
+    /*******************************************
+    * GetEightHorizontalSearchPointResults_8x8_16x16_PU
+    *******************************************/
+    extern void get_eight_horizontal_search_point_results_8x8_16x16_pu(
+        uint8_t   *src,
+        uint32_t   src_stride,
+        uint8_t   *ref,
+        uint32_t   ref_stride,
+        uint32_t  *p_best_sad8x8,
+        uint32_t  *p_best_mv8x8,
+        uint32_t  *pBestSad16x16,
+        uint32_t  *p_best_mv16x16,
+        uint32_t   mv,
+        uint16_t  *p_sad16x16,
+        EbBool     skip);
+
+    /*******************************************
+    Calcualte SAD for 32x32,64x64 from 16x16
+    and check if there is improvement, if yes keep
+    the best SAD+MV
+    *******************************************/
+    extern void get_eight_horizontal_search_point_results_32x32_64x64_pu(
+        uint16_t  *p_sad16x16,
+        uint32_t  *p_best_sad32x32,
+        uint32_t  *p_best_sad64x64,
+        uint32_t  *p_best_mv32x32,
+        uint32_t  *p_best_mv64x64,
+        uint32_t   mv);
+
+    /*******************************************
+    Calcualte SAD for 16x16 and its 8x8 sublcoks
+    and check if there is improvment, if yes keep
+    the best SAD+MV
+    *******************************************/
+    extern void sad_calculation_8x8_16x16(
+        uint8_t   *src,
+        uint32_t   src_stride,
+        uint8_t   *ref,
+        uint32_t   ref_stride,
+        uint32_t  *p_best_sad8x8,
+        uint32_t  *p_best_sad16x16,
+        uint32_t  *p_best_mv8x8,
+        uint32_t  *p_best_mv16x16,
+        uint32_t   mv,
+        uint32_t  *p_sad16x16,
+        EbBool     skip);
+
+    /*******************************************
+    Calcualte SAD for 32x32,64x64 from 16x16
+    and check if there is improvment, if yes keep
+    the best SAD+MV
+    *******************************************/
+    extern void sad_calculation_32x32_64x64(
+        uint32_t  *p_sad16x16,
+        uint32_t  *p_best_sad32x32,
+        uint32_t  *p_best_sad64x64,
+        uint32_t  *p_best_mv32x32,
+        uint32_t  *p_best_mv64x64,
+        uint32_t   mv);
+
     // Nader - to be replaced by loock-up table
     /*******************************************
     * get_me_info_index
@@ -1555,6 +1615,25 @@ extern "C" {
         uint32_t                 geom_offset_y
     );
 
+    extern void open_loop_me_fullpel_search_sblock(
+        MeContext_t             *context_ptr,
+        uint32_t                   listIndex,
+        int16_t                   x_search_area_origin,
+        int16_t                     y_search_area_origin,
+        uint32_t                   search_area_width,
+        uint32_t                   search_area_height,
+        EbBool                  skip,
+        EbAsm                   asm_type);
+
+    extern void FullPelSearch_LCU(
+        MeContext_t             *context_ptr,
+        uint32_t                   listIndex,
+        int16_t                   x_search_area_origin,
+        int16_t                     y_search_area_origin,
+        uint32_t                   search_area_width,
+        uint32_t                   search_area_height,
+        EbBool                  skip,
+        EbAsm                   asm_type);
 
 #ifdef __cplusplus
 }

@@ -80,7 +80,8 @@ extern "C" {
         uint32_t  *p_best_sad16x16,
         uint32_t  *p_best_mv16x16,
         uint32_t   mv,
-        uint16_t  *p_sad16x16);
+        uint16_t  *p_sad16x16,
+        EbBool     skip);
 
     typedef void(*EB_GETEIGHTSAD32x32)(
         uint16_t  *p_sad16x16,
