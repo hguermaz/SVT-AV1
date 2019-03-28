@@ -23,11 +23,12 @@ extern "C" {
         // mcp context
         MotionCompensationPredictionContext_t  *mcp_context;
     } InterPredictionContext_t;
-
+#if !UNPACK_REF_POST_EP 
     extern EbErrorType inter_prediction_context_ctor(
         InterPredictionContext_t   **inter_prediction_context,
         uint16_t                     max_cu_width,
         uint16_t                     max_cu_height);
+#endif
     EbErrorType av1_inter_prediction(
         PictureControlSet_t                    *picture_control_set_ptr,
         uint32_t                                interp_filters,

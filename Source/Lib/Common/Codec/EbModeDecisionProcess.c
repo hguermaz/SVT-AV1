@@ -78,7 +78,7 @@ EbErrorType mode_decision_context_ctor(
             return EB_ErrorInsufficientResources;
         }
     }
-
+#if !UNPACK_REF_POST_EP 
     // Inter Prediction Context
     return_error = inter_prediction_context_ctor(
         &context_ptr->inter_prediction_context,
@@ -87,7 +87,7 @@ EbErrorType mode_decision_context_ctor(
     if (return_error == EB_ErrorInsufficientResources) {
         return EB_ErrorInsufficientResources;
     }
-
+#endif
     // Intra Reference Samples
     return_error = IntraReferenceSamplesCtor(&context_ptr->intra_ref_ptr);
     if (return_error == EB_ErrorInsufficientResources) {

@@ -22,7 +22,7 @@
 #else
 #define ChromaMinusOffset1 MinusOffset1
 #endif
-
+#if !UNPACK_REF_POST_EP  
 EbErrorType motion_compensation_prediction_context_ctor(
     MotionCompensationPredictionContext_t **context_dbl_ptr,
     uint16_t                                  max_cu_width,
@@ -33,7 +33,7 @@ EbErrorType motion_compensation_prediction_context_ctor(
     MotionCompensationPredictionContext_t *context_ptr;
     EB_MALLOC(MotionCompensationPredictionContext_t *, context_ptr, sizeof(MotionCompensationPredictionContext_t), EB_N_PTR);
     *(context_dbl_ptr) = context_ptr;
-
+ 
     // context_ptr->localReferenceBlock = (uint16_t*)malloc(sizeof(uint16_t)*( (max_cu_width+8)*(max_cu_height+8)));
 
     //if(is16bit)
@@ -70,7 +70,7 @@ EbErrorType motion_compensation_prediction_context_ctor(
     }
     return EB_ErrorNone;
 }
-
+#endif
 void encode_uni_pred_interpolation(
     EbPictureBufferDesc_t *ref_pic,                  //input parameter, please refer to the detailed explanation above.
     uint32_t                 posX,                    //input parameter, please refer to the detailed explanation above.

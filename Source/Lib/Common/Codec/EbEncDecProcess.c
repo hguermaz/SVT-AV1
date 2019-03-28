@@ -1121,6 +1121,28 @@ void PadRefAndSetFlags(
             refPic16BitPtr->width  + (refPicPtr->origin_x << 1),
             refPic16BitPtr->height + (refPicPtr->origin_y << 1),
             sequence_control_set_ptr->static_config.asm_type);
+
+        un_pack2d(
+            (uint16_t*)refPic16BitPtr->bufferCb,
+            refPic16BitPtr->strideCb,
+            refPicPtr->bufferCb,
+            refPicPtr->strideCb,
+            refPicPtr->bufferBitIncCb,
+            refPicPtr->strideBitIncCb,
+            (refPic16BitPtr->width + (refPicPtr->origin_x << 1)) >> 1,
+            (refPic16BitPtr->height + (refPicPtr->origin_y << 1)) >> 1,
+            sequence_control_set_ptr->static_config.asm_type);
+
+        un_pack2d(
+            (uint16_t*)refPic16BitPtr->bufferCr,
+            refPic16BitPtr->strideCr,
+            refPicPtr->bufferCr,
+            refPicPtr->strideCr,
+            refPicPtr->bufferBitIncCr,
+            refPicPtr->strideBitIncCr,
+            (refPic16BitPtr->width + (refPicPtr->origin_x << 1)) >> 1,
+            (refPic16BitPtr->height + (refPicPtr->origin_y << 1)) >> 1,
+            sequence_control_set_ptr->static_config.asm_type);
 #if 0
         {
             FILE *fp = fopen("unpacked.xlsx", "a");

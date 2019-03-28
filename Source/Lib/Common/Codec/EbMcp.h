@@ -28,10 +28,12 @@ extern "C" {
 #if !USE_PRE_COMPUTE
         EbByte                   avc_style_mcp_two_d_interpolation_first_pass_filter_result_buf; // For short filter in MD
 #endif
+#if !UNPACK_REF_POST_EP  
         EbPictureBufferDesc_t   *local_reference_block_l0;                //used to pre-load reference L0 full pel block in local memory in 16bit mode
         EbPictureBufferDesc_t   *local_reference_block_l1;                //used to pre-load reference L1 full pel block in local memory in 16bit mode
         EbPictureBufferDesc_t   *local_reference_block8_bitl0;                //used to pre-load reference L0 full pel block in local memory in 16bit mode
         EbPictureBufferDesc_t   *local_reference_block8_bitl1;                //used to pre-load reference L1 full pel block in local memory in 16bit mode
+#endif
     }MotionCompensationPredictionContext_t;
 
     /** InterpolationFilter()
@@ -98,12 +100,12 @@ extern "C" {
         int16_t           *first_pass_if_dst,
         uint32_t           frac_pos_x,
         uint32_t           frac_pos_y);
-
+#if !UNPACK_REF_POST_EP 
     extern EbErrorType motion_compensation_prediction_context_ctor(
         MotionCompensationPredictionContext_t **context_dbl_ptr,
         uint16_t                                max_cu_width,
         uint16_t                                max_cu_height);
-
+#endif
     extern EbErrorType in_loop_me_context_ctor(
         SsMeContext_t                         **ss_mecontext);
 

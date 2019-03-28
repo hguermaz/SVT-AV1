@@ -88,9 +88,9 @@ extern "C" {
 #define PF_N2_SUPPORT                     1
 #endif
 #define OPT_LOSSLESS_1                    0
-
-#define UNPACK_REF_POST_EP                0
-
+#if OPT_LOSSLESS_1
+#define UNPACK_REF_POST_EP                1
+#endif
 #define INTRA_CORE_OPT              0
 #define DIS_EDGE_FIL                0
 
