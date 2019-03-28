@@ -78,7 +78,8 @@ extern "C" {
         uint32_t  *p_best_sad16x16,
         uint32_t  *p_best_mv16x16,
         uint32_t   mv,
-        uint16_t  *p_sad16x16);
+        uint16_t  *p_sad16x16,
+        EbBool     sub_sad);
 
     typedef void(*EB_GETEIGHTSAD32x32)(
         uint16_t  *p_sad16x16,
@@ -204,42 +205,6 @@ extern "C" {
         sad_loop_kernel_avx2_intrin,
     };
 
-#if 1 //USE_SAD_ME
-    static EB_GETEIGHTSAD8x8 FUNC_TABLE GetEightHorizontalSearchPointResults_8x8_16x16_funcPtrArray[2][ASM_TYPE_TOTAL] =
-    {
-        {
-            // NON_AVX2
-            get_eight_horizontal_search_point_results_8x8_16x16_pu_sse41_intrin,
-            // AVX2
-            get_eight_horizontal_search_point_results_8x8_16x16_pu_avx2_intrin,
-        } , 
-        {
-            // Hsan: use the kernel above after adding the ability to use SAD
-            // C
-            sad_8x8_16x16_0,
-            // C
-            sad_8x8_16x16_0,
-        } 
-    };
-
-    static EB_GETEIGHTSAD32x32 FUNC_TABLE GetEightHorizontalSearchPointResults_32x32_64x64_funcPtrArray[2][ASM_TYPE_TOTAL] =
-    {
-        {
-            // NON_AVX2
-            get_eight_horizontal_search_point_results_32x32_64x64_pu_sse41_intrin,
-            // AVX2
-            get_eight_horizontal_search_point_results_32x32_64x64_pu_avx2_intrin,
-        } ,
-        {
-           // Hsan: use the kernel above after adding the ability to use SAD
-           // C
-           sad_32x32_64x64_0,
-           // C
-           sad_32x32_64x64_0,
-        }
-    };
-
-#else
     static EB_GETEIGHTSAD8x8 FUNC_TABLE GetEightHorizontalSearchPointResults_8x8_16x16_funcPtrArray[ASM_TYPE_TOTAL] =
     {
         // NON_AVX2
@@ -255,7 +220,6 @@ extern "C" {
         // AVX2
         get_eight_horizontal_search_point_results_32x32_64x64_pu_avx2_intrin,
     };
-#endif
 
     uint32_t combined_averaging_ssd_c(
         uint8_t   *src,
