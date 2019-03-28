@@ -1122,6 +1122,8 @@ void PadRefAndSetFlags(
             refPic16BitPtr->height + (refPicPtr->origin_y << 1),
             sequence_control_set_ptr->static_config.asm_type);
 
+        // Hsan: to check chroma here
+#if 0
         un_pack2d(
             (uint16_t*)refPic16BitPtr->bufferCb,
             refPic16BitPtr->strideCb,
@@ -1143,6 +1145,8 @@ void PadRefAndSetFlags(
             (refPic16BitPtr->width + (refPicPtr->origin_x << 1)) >> 1,
             (refPic16BitPtr->height + (refPicPtr->origin_y << 1)) >> 1,
             sequence_control_set_ptr->static_config.asm_type);
+#endif
+
 #if 0
         {
             FILE *fp = fopen("unpacked.xlsx", "a");
