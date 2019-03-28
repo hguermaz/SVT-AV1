@@ -90,6 +90,7 @@ extern "C" {
 #define OPT_LOSSLESS_1                    0
 #if OPT_LOSSLESS_1
 #define UNPACK_REF_POST_EP                1
+#define REMOVE_UNPACK_REF                 1
 #endif
 #define INTRA_CORE_OPT              0
 #define DIS_EDGE_FIL                0

@@ -1499,7 +1499,7 @@ void Av1UnPackReferenceBlock(
     );
 }
 #endif
-
+#if !REMOVE_UNPACK_REF
 EbErrorType AV1InterPrediction10BitMD(
     uint32_t                                 interp_filters,
     PictureControlSet_t                     *picture_control_set_ptr,
@@ -2144,6 +2144,7 @@ EbErrorType AV1InterPrediction10BitMD(
 
     return return_error;
 }
+#endif
 
 
 EbErrorType av1_inter_prediction_hbd(
@@ -3992,7 +3993,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
     }
     //  return 0;
 }
-
+#if !REMOVE_UNPACK_REF
 /*static*/ void interpolation_filter_search_HBD(
     PictureControlSet_t *picture_control_set_ptr,
     EbPictureBufferDesc_t *prediction_ptr,
@@ -4335,6 +4336,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
     }
     //  return 0;
 }
+#endif
 
 
 
@@ -4371,6 +4373,29 @@ EbErrorType inter_pu_prediction_av1(
 
     if (candidate_buffer_ptr->candidate_ptr->use_intrabc)
     {
+
+#if REMOVE_UNPACK_REF
+        av1_inter_prediction(
+            picture_control_set_ptr,
+            candidate_buffer_ptr->candidate_ptr->interp_filters,
+            md_context_ptr->cu_ptr,
+            candidate_buffer_ptr->candidate_ptr->ref_frame_type,
+            &mv_unit,
+            1,//use_intrabc
+            md_context_ptr->cu_origin_x,
+            md_context_ptr->cu_origin_y,
+            md_context_ptr->blk_geom->bwidth,
+            md_context_ptr->blk_geom->bheight,
+            ref_pic_list0,
+            0,//ref_pic_list1,
+            candidate_buffer_ptr->prediction_ptr,
+            md_context_ptr->blk_geom->origin_x,
+            md_context_ptr->blk_geom->origin_y,
+            md_context_ptr->chroma_level == CHROMA_MODE_0,
+            asm_type);
+
+        return return_error;
+#else
         if (is16bit) {
 
 #if !UNPACK_REF_POST_EP
@@ -4426,6 +4451,7 @@ EbErrorType inter_pu_prediction_av1(
 
             return return_error;
         }
+#endif
     }
 
 #if UNPACK_REF_POST_EP
@@ -4491,6 +4517,46 @@ EbErrorType inter_pu_prediction_av1(
 
     uint16_t capped_size = md_context_ptr->interpolation_filter_search_blk_size == 0 ? 4 : 
                            md_context_ptr->interpolation_filter_search_blk_size == 1 ? 8 : 16 ;
+
+
+#if REMOVE_UNPACK_REF
+    candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
+    if (!md_context_ptr->skip_interpolation_search) {
+        if (md_context_ptr->blk_geom->bwidth > capped_size && md_context_ptr->blk_geom->bheight > capped_size)
+            interpolation_filter_search(
+                picture_control_set_ptr,
+                candidate_buffer_ptr->predictionPtrTemp,
+                md_context_ptr,
+                candidate_buffer_ptr,
+                mv_unit,
+                ref_pic_list0,
+                ref_pic_list1,
+                asm_type,
+                &rd,
+                &rs,
+                &skip_txfm_sb,
+                &skip_sse_sb);
+    }
+
+    av1_inter_prediction(
+        picture_control_set_ptr,
+        candidate_buffer_ptr->candidate_ptr->interp_filters,
+        md_context_ptr->cu_ptr,
+        candidate_buffer_ptr->candidate_ptr->ref_frame_type,
+        &mv_unit,
+        candidate_buffer_ptr->candidate_ptr->use_intrabc,
+        md_context_ptr->cu_origin_x,
+        md_context_ptr->cu_origin_y,
+        md_context_ptr->blk_geom->bwidth,
+        md_context_ptr->blk_geom->bheight,
+        ref_pic_list0,
+        ref_pic_list1,
+        candidate_buffer_ptr->prediction_ptr,
+        md_context_ptr->blk_geom->origin_x,
+        md_context_ptr->blk_geom->origin_y,
+        md_context_ptr->chroma_level == CHROMA_MODE_0,
+        asm_type);
+#else
     if (is16bit) {
         candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
         if (!md_context_ptr->skip_interpolation_search) {
@@ -4569,7 +4635,7 @@ EbErrorType inter_pu_prediction_av1(
 
             asm_type);
     }
-
+#endif
     return return_error;
 }
 

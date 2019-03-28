@@ -1096,21 +1096,8 @@ void PadRefAndSetFlags(
             refPic16BitPtr->origin_y >> 1);
 
 
-#if UNPACK_REF_POST_EP // unpack ref samples 
-
-#if 0
-        {
-            FILE *fp = fopen("packed.xlsx", "a");
-            uint16_t* a = (uint16_t*)refPic16BitPtr->buffer_y;
-
-            for (int j = 0; j < (refPic16BitPtr->height + (refPicPtr->origin_y << 1)); j++) {
-                for (int i = 0; i < (refPic16BitPtr->width + (refPicPtr->origin_x << 1)); i++) {
-                    fprintf(fp, "%d\t", a[j * refPic16BitPtr->stride_y + i]);
-                }
-            }
-            fclose(fp);
-        }
-#endif
+#if UNPACK_REF_POST_EP 
+        // Hsan: unpack ref samples (to be used @ MD) 
         un_pack2d(
             (uint16_t*) refPic16BitPtr->buffer_y,
             refPic16BitPtr->stride_y,
@@ -1122,8 +1109,6 @@ void PadRefAndSetFlags(
             refPic16BitPtr->height + (refPicPtr->origin_y << 1),
             sequence_control_set_ptr->static_config.asm_type);
 
-        // Hsan: to check chroma here
-#if 0
         un_pack2d(
             (uint16_t*)refPic16BitPtr->bufferCb,
             refPic16BitPtr->strideCb,
@@ -1145,21 +1130,6 @@ void PadRefAndSetFlags(
             (refPic16BitPtr->width + (refPicPtr->origin_x << 1)) >> 1,
             (refPic16BitPtr->height + (refPicPtr->origin_y << 1)) >> 1,
             sequence_control_set_ptr->static_config.asm_type);
-#endif
-
-#if 0
-        {
-            FILE *fp = fopen("unpacked.xlsx", "a");
-            uint8_t* a = (uint8_t*)refPicPtr->buffer_y;
-
-            for (int j = 0; j < (refPic16BitPtr->height + (refPicPtr->origin_y << 1)); j++) {
-                for (int i = 0; i < (refPic16BitPtr->width + (refPicPtr->origin_x << 1)); i++) {
-                    fprintf(fp, "%d\t", a[j * refPicPtr->stride_y + i]);
-                }
-            }
-            fclose(fp);
-        }
-#endif
 #endif
 
     }
