@@ -156,7 +156,7 @@ EbErrorType eb_reference_object_ctor(
     if (pictureBufferDescInitData16BitPtr.bit_depth == EB_10BIT) {
 
 #if UNPACK_REF_POST_EP // constructor
-        // Hsan: set splitMode to 1 to construct the packed reference buffer (used @ EP)
+        // Hsan: set splitMode to 0 to construct the packed reference buffer (used @ EP)
         pictureBufferDescInitData16BitPtr.splitMode = EB_FALSE;
 #endif
         return_error = eb_picture_buffer_desc_ctor(
@@ -169,7 +169,7 @@ EbErrorType eb_reference_object_ctor(
             pictureBufferDescInitData16BitPtr.bit_depth);
 
 #if UNPACK_REF_POST_EP // constructor
-        // Hsan: set splitMode to 0 to construct the unpacked reference buffer (used @ MD)
+        // Hsan: set splitMode to 1 to construct the unpacked reference buffer (used @ MD)
         pictureBufferDescInitData16BitPtr.splitMode = EB_TRUE;
         return_error = eb_picture_buffer_desc_ctor(
             (EbPtr*)&(referenceObject->referencePicture),
@@ -178,7 +178,7 @@ EbErrorType eb_reference_object_ctor(
     }
     else {
 #if UNPACK_REF_POST_EP // constructor
-        // Hsan: set splitMode to 0 to construct the reference buffer (used @ both MD and EP)
+        // Hsan: set splitMode to 0 to as 8BIT input
         pictureBufferDescInitData16BitPtr.splitMode = EB_FALSE;
 #endif
         return_error = eb_picture_buffer_desc_ctor(
