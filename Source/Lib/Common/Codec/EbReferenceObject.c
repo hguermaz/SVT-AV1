@@ -146,7 +146,7 @@ EbErrorType eb_reference_object_ctor(
 
     EbReferenceObject_t              *referenceObject;
     EbPictureBufferDescInitData_t    *pictureBufferDescInitDataPtr = (EbPictureBufferDescInitData_t*)object_init_data_ptr;
-    EbPictureBufferDescInitData_t    pictureBufferDescInitData16BitPtr = *pictureBufferDescInitDataPtr;
+    EbPictureBufferDescInitData_t     pictureBufferDescInitData16BitPtr = *pictureBufferDescInitDataPtr;
     EbErrorType return_error = EB_ErrorNone;
     EB_MALLOC(EbReferenceObject_t*, referenceObject, sizeof(EbReferenceObject_t), EB_N_PTR);
 
@@ -155,6 +155,10 @@ EbErrorType eb_reference_object_ctor(
 
     if (pictureBufferDescInitData16BitPtr.bit_depth == EB_10BIT) {
 
+#if UNPACK_REF_POST_EP // constructor
+        // Hsan: set splitMode to 1 to construct the packed reference buffer (used @ EP)
+        pictureBufferDescInitData16BitPtr.splitMode = EB_FALSE;
+#endif
         return_error = eb_picture_buffer_desc_ctor(
             (EbPtr*)&(referenceObject->referencePicture16bit),
             (EbPtr)&pictureBufferDescInitData16BitPtr);
@@ -165,15 +169,18 @@ EbErrorType eb_reference_object_ctor(
             pictureBufferDescInitData16BitPtr.bit_depth);
 
 #if UNPACK_REF_POST_EP // constructor
-        pictureBufferDescInitDataPtr->splitMode = 1;
+        // Hsan: set splitMode to 0 to construct the unpacked reference buffer (used @ MD)
+        pictureBufferDescInitData16BitPtr.splitMode = EB_TRUE;
         return_error = eb_picture_buffer_desc_ctor(
             (EbPtr*)&(referenceObject->referencePicture),
-            (EbPtr)pictureBufferDescInitDataPtr);
-        pictureBufferDescInitDataPtr->splitMode = 0;
+            (EbPtr)&pictureBufferDescInitData16BitPtr);
 #endif
     }
     else {
-
+#if UNPACK_REF_POST_EP // constructor
+        // Hsan: set splitMode to 0 to construct the reference buffer (used @ both MD and EP)
+        pictureBufferDescInitData16BitPtr.splitMode = EB_FALSE;
+#endif
         return_error = eb_picture_buffer_desc_ctor(
             (EbPtr*)&(referenceObject->referencePicture),
             (EbPtr)pictureBufferDescInitDataPtr);
