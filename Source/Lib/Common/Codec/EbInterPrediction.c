@@ -4347,12 +4347,8 @@ EbErrorType inter_pu_prediction_av1(
     EbAsm                                   asm_type)
 {
     EbErrorType            return_error = EB_ErrorNone;
-
-#if UNPACK_REF_POST_EP
-    EbPictureBufferDesc_t  *ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr)->referencePicture;
-#else
     EbPictureBufferDesc_t  *ref_pic_list0;
-#endif
+
     EbPictureBufferDesc_t  *ref_pic_list1 = NULL;
     ModeDecisionCandidate_t *const candidate_ptr = candidate_buffer_ptr->candidate_ptr;
 
@@ -4375,6 +4371,7 @@ EbErrorType inter_pu_prediction_av1(
     {
 
 #if REMOVE_UNPACK_REF
+        ref_pic_list0 = ((EbReferenceObject_t*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture;
         av1_inter_prediction(
             picture_control_set_ptr,
             candidate_buffer_ptr->candidate_ptr->interp_filters,

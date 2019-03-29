@@ -1068,11 +1068,9 @@ void init_nsq_block(
 }
 
 
-void init_sq_block(
-    SequenceControlSet_t    *sequence_control_set_ptr,
+void init_sq_non4_block(
     ModeDecisionContext_t   *context_ptr){
 
-    UNUSED(sequence_control_set_ptr);
     for (uint32_t blk_idx = 0; blk_idx < TOTAL_SQ_BLOCK_COUNT; blk_idx++){
 
         context_ptr->md_cu_arr_nsq[sq_block_index[blk_idx]].part = PARTITION_SPLIT;
@@ -4036,14 +4034,13 @@ EB_EXTERN EbErrorType mode_decision_sb(
         sb_ptr);
 #endif
 #if OPT_LOSSLESS_0
-    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
+    if (picture_control_set_ptr->parent_pcs_ptr->pic_depth_mode <= PIC_SQ_DEPTH_MODE) {
         init_nsq_block(
             sequence_control_set_ptr,
             context_ptr);
     }
     else {
-        init_sq_block(
-            sequence_control_set_ptr,
+        init_sq_non4_block(
             context_ptr);
     }
 #else
