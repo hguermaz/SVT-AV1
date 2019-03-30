@@ -35,52 +35,31 @@
 extern "C" {
 #endif
 
-
-
-#define MOD_M0                  0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
-    
-#define QUICK_ME_CLEANUP        1
-#define SCENE_CONTENT_SETTINGS  1
-
-#define HARD_CODE_SC_SETTING    0
-
-#define M8_SKIP_BLK             1  
-#define M8_OIS                  1  
-
-
-#define MR_MODE                                         0
-#define SHUT_FILTERING                                  0 // CDEF RESTORATION DLF
-    ////
-
-
-//FOR DEBUGGING - Do not remove
-#define NO_ENCDEC                                       0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
-
-// M9 settings toward 4K 60 fps
-#define M9_SETTINGS              1
-
-#if M9_SETTINGS
-// Adopted
-#define M9_FULL_LOOP_ESCAPE        1   // Enhanced full loop escape
-#define M9_HME                     1   // VP9 4K HME, HME (L0 only 48x32)
-#define M9_ME                      1   // VP9 4K ME, ME (16x9)
-#define M9_SUBPEL_SELECTION        1
-#define M9_CU_8x8                  1
-#define M9_ADP                     1
-#define M9_INTRA                   1
-#define M10_INTRA                  0
-#define DISABLE_OIS_USE            1 
-#define M9_INTER_SRC_SRC_FAST_LOOP 1
-#define M9_NEAR_INJECTION          0 
-// Under testing
-#define M9_FRAC_ME_SEARCH_METHOD 0   // VP9 4K fractional search method; SUB_SAD_SEARCH vs. FULL_SAD_SEARCH 
-#define M9_FRAC_ME_SEARCH_64x64  0   // VP9 4K 64x64 search; OFF vs. ON
-#define M9_SUBPEL                0   // VP9 4K subpel settings; subpel ON base
-#define M9_NFL                   0   // VP9 4K NFL settings; NFL = 3 
-#define M9_CDEF                  0   // CDEF off
-#define M9_TX_SEARCH             0   // Tx search off
-#define M9_CHROMA                0   // VP9 4K chroma settings; shut cfl @ ep
-#define VP9_ADP                  0   // VP9 4K ADP budget;  (121,110,100 but different injection) (budget = f (layer index))      
+#define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
+#define HARD_CODE_SC_SETTING              0
+#define MR_MODE                           0
+#define SHUT_FILTERING                    0 // CDEF RESTORATION DLF
+                                          
+#define M8_SKIP_BLK                       1  
+#define M8_OIS                            1  
+#define QUICK_ME_CLEANUP                  1
+#define SCENE_CONTENT_SETTINGS            1
+                                          
+// M9 settings toward 4K 60 fps           
+#define M9_SETTINGS                       1
+                                          
+#if M9_SETTINGS                           
+// Adopted                                
+#define M9_FULL_LOOP_ESCAPE               1 // Enhanced full loop escape
+#define M9_HME                            1 // VP9 4K HME, HME (L0 only 48x32)
+#define M9_ME                             1 // VP9 4K ME, ME (16x9)
+#define M9_SUBPEL_SELECTION               1
+#define M9_CU_8x8                         1
+#define M9_ADP                            1
+#define M9_INTRA                          1
+#define M10_INTRA                         0
+#define DISABLE_OIS_USE                   1 
+#define M9_INTER_SRC_SRC_FAST_LOOP        1
 
 #define OPT_LOSSLESS_0                    1
 #if OPT_LOSSLESS_0
@@ -93,12 +72,38 @@ extern "C" {
 #define UNPACK_REF_POST_EP                1
 #define REMOVE_UNPACK_REF                 1
 #endif
-#define INTRA_CORE_OPT              0
-#define DIS_EDGE_FIL                0
+#define CFL_FIX                           1 // Fixes to CFL and enabling CFL for 4x*
+#define SPLIT_RATE_FIX                    1 // Split partition rate calculation fix
+#define NSQ_FIX                           1 // Inject NSQ blocks for incomplete CUs
+#define SPATIAL_SSE                       1 // Spatial SSE. Active for M0 only
+#define IMPROVE_1D_INTER_DEPTH_DECISION   1
+#define ENABLE_WARPED_MV                  1
+#define CABAC_UP                          1 // Update cabac probabilities. txb CDFs.
+#define RC                                1 // VBR Rate control integrated from SVT-VP9
+#if RC
+#define RC_FEEDBACK                       1 // Feedback from previous base layer is received before starting the next base layer frame
+#endif
+#define RED_CU                            1 // Bypass redundant CU
+#define NSQ_ME_OPT                        0 // NSQ ME Restructuring
 
-
-
-#define NFL_PER_SQ_SIZE          0
+// Testing MACROS
+#define M9_NEAR_INJECTION                 0 
+// Under testing
+#define M9_FRAC_ME_SEARCH_METHOD          0 // VP9 4K fractional search method; SUB_SAD_SEARCH vs. FULL_SAD_SEARCH 
+#define M9_FRAC_ME_SEARCH_64x64           0 // VP9 4K 64x64 search; OFF vs. ON
+#define M9_SUBPEL                         0 // VP9 4K subpel settings; subpel ON base
+#define M9_NFL                            0 // VP9 4K NFL settings; NFL = 3 
+#define M9_CDEF                           0 // CDEF off
+#define M9_TX_SEARCH                      0 // Tx search off
+#define M9_CHROMA                         0 // VP9 4K chroma settings; shut cfl @ ep
+#define VP9_ADP                           0 // VP9 4K ADP budget;  (121,110,100 but different injection) (budget = f (layer index))      
+#define INTRA_CORE_OPT                    0
+#define DIS_EDGE_FIL                      0
+#define NFL_PER_SQ_SIZE                   0
+#define SC_HME_ME                         0 // Use sc detector for hme/me setting
+#define RED_CU_DEBUG                      0 // Turn off some features known to not work with redudant CUs
+//FOR DEBUGGING - Do not remove
+#define NO_ENCDEC                         0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
 
 #endif
 
@@ -114,39 +119,11 @@ extern "C" {
 #endif
 
 #define ADP_STATS_PER_LAYER                             0
-
 #define NFL_TX_TH                                      12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
-
-
 #define MAX_FRAMES_TO_REF_I                             64
-
-
 #define NSQ_TAB_SIZE                                    6
-
-
-#define SC_HME_ME  0//use sc detector for hme/me setting
-
-#define AOM_INTERP_EXTEND 4
-#define CFL_FIX         1 // Fixes to CFL and enabling CFL for 4x*
-#define SPLIT_RATE_FIX  1 // Split partition rate calculation fix
-#define NSQ_FIX         1 // Inject NSQ blocks for incomplete CUs
-#define SPATIAL_SSE     1 // Spatial SSE. Active for M0 only
-
-
-#define IMPROVE_1D_INTER_DEPTH_DECISION  1
-#define ENABLE_WARPED_MV                 1
-#define CABAC_UP                         1 // update cabac probabilities. txb CDFs.
-
-#define RC                                              1 // VBR Rate control integrated from SVT-VP9
-#if RC
-#define RC_FEEDBACK                                     1 // Feedback from previous base layer is received before starting the next base layer frame
-#endif
-
-
-#define RED_CU          1  //bypass redundant CU
-#define RED_CU_DEBUG    0 //turn off some features known to not work with redudant CUs
-
+#define AOM_INTERP_EXTEND                               4
 
 struct buf_2d {
     uint8_t *buf;
