@@ -801,16 +801,12 @@ void av1_cdef_frame(
 void av1_cdef_frame16bit(
     EncDecContext_t                *context_ptr,
     SequenceControlSet_t           *sequence_control_set_ptr,
-    PictureControlSet_t            *pCs
-)
-{
+    PictureControlSet_t            *pCs){
+
     (void)context_ptr;
     struct PictureParentControlSet_s     *pPcs = pCs->parent_pcs_ptr;
     Av1Common*   cm = pPcs->av1_cm;
-
-
     EbPictureBufferDesc_t  * recon_picture_ptr;
-
 
     if (pPcs->is_used_as_reference_flag == EB_TRUE)
         recon_picture_ptr = ((EbReferenceObject_t*)pCs->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->referencePicture16bit;
@@ -821,8 +817,6 @@ void av1_cdef_frame16bit(
     uint16_t*  reconBufferY = (uint16_t*)recon_picture_ptr->buffer_y + (recon_picture_ptr->origin_x + recon_picture_ptr->origin_y     * recon_picture_ptr->stride_y);
     uint16_t*  reconBufferCb = (uint16_t*)recon_picture_ptr->bufferCb + (recon_picture_ptr->origin_x / 2 + recon_picture_ptr->origin_y / 2 * recon_picture_ptr->strideCb);
     uint16_t*  reconBufferCr = (uint16_t*)recon_picture_ptr->bufferCr + (recon_picture_ptr->origin_x / 2 + recon_picture_ptr->origin_y / 2 * recon_picture_ptr->strideCr);
-
-
 
     const int32_t num_planes = 3;// av1_num_planes(cm);
     DECLARE_ALIGNED(16, uint16_t, src[CDEF_INBUF_SIZE]);

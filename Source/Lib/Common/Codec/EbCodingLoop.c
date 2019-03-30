@@ -1992,17 +1992,16 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
     SequenceControlSet_t                   *sequence_control_set_ptr,
     PictureControlSet_t                    *picture_control_set_ptr,
     LargestCodingUnit_t                    *sb_ptr,
-    uint32_t                                  sb_index,
+    uint32_t                                sb_index,
     CodingUnit_t                           *cu_ptr,
-    uint32_t                                  cu_depth,
-    uint32_t                                  cu_index,
-    uint32_t                                  cu_size,
-    uint8_t                                   type,
-    uint8_t                                   parent32x32Index,
-    EncDecContext_t                        *context_ptr)
-{
-    EbErrorType                    return_error = EB_ErrorNone;
+    uint32_t                                cu_depth,
+    uint32_t                                cu_index,
+    uint32_t                                cu_size,
+    uint8_t                                 type,
+    uint8_t                                 parent32x32Index,
+    EncDecContext_t                        *context_ptr){
 
+    EbErrorType                    return_error = EB_ErrorNone;
 
     //SbParams_t                        sb_params;
     int64_t                          complexityDistance;
@@ -2601,18 +2600,14 @@ EB_EXTERN void AV1EncodePass(
                 PredictionUnit_t        *pu_ptr = (PredictionUnit_t *)EB_NULL; //  done
                 EbPictureBufferDesc_t   *residual_buffer = context_ptr->residual_buffer;
                 EbPictureBufferDesc_t   *transform_buffer = context_ptr->transform_buffer;
-
                 EbPictureBufferDesc_t   *inverse_quant_buffer = context_ptr->inverse_quant_buffer;
-
-                int16_t                  *transform_inner_array_ptr = context_ptr->transform_inner_array_ptr;
-
+                int16_t                 *transform_inner_array_ptr = context_ptr->transform_inner_array_ptr;
                 CodingUnit_t            *cu_ptr = context_ptr->cu_ptr = &context_ptr->md_context->md_cu_arr_nsq[d1_itr];
 
                 context_ptr->cu_origin_x = (uint16_t)(sb_origin_x + blk_geom->origin_x);
                 context_ptr->cu_origin_y = (uint16_t)(sb_origin_y + blk_geom->origin_y);
                 cu_ptr->delta_qp = 0;
                 cu_ptr->block_has_coeff = 0;
-
 
                 // if(picture_control_set_ptr->picture_number==4 && context_ptr->cu_origin_x==0 && context_ptr->cu_origin_y==0)
                 //     printf("CHEDD");
@@ -2625,7 +2620,6 @@ EB_EXTERN void AV1EncodePass(
                     context_ptr->blk_geom->bheight == 4) ? EB_TRUE : EB_FALSE;
                 // Evaluate cfl @ EP if applicable, and not done @ MD 
                 context_ptr->evaluate_cfl_ep = (disable_cfl_flag == EB_FALSE && context_ptr->md_context->chroma_level == CHROMA_MODE_1);
-
 
 #if ADD_DELTA_QP_SUPPORT
                 if (context_ptr->skip_qpm_flag == EB_FALSE && sequence_control_set_ptr->static_config.improve_sharpness) {

@@ -603,7 +603,6 @@ void StationaryEdgeOverUpdateOverTimeLcuPart2(
                 GetMeDist(picture_control_set_ptr, sb_index, &meDist);
             }
             lowSad = (picture_control_set_ptr->slice_type != B_SLICE) ?
-
                 EB_FALSE : (meDist < 64 * 64 * lowSadTh) ? EB_TRUE : EB_FALSE;
 
             if (lowSad) {
@@ -1035,15 +1034,14 @@ void InitZzCostInfo(
 void UpdateMotionFieldUniformityOverTime(
     EncodeContext_t                   *encode_context_ptr,
     SequenceControlSet_t              *sequence_control_set_ptr,
-    PictureParentControlSet_t         *picture_control_set_ptr)
-{
+    PictureParentControlSet_t         *picture_control_set_ptr){
+
     InitialRateControlReorderEntry_t   *temporaryQueueEntryPtr;
     PictureParentControlSet_t          *temporaryPictureControlSetPtr;
     uint32_t                                inputQueueIndex;
     uint32_t                              NoFramesToCheck;
     uint32_t                                framesToCheckIndex;
     //printf("To update POC %d\tframesInSw = %d\n", picture_control_set_ptr->picture_number, picture_control_set_ptr->frames_in_sw);
-
 
     //Check conditions for statinary edge over time
     StationaryEdgeOverUpdateOverTimeLcuPart2(
@@ -1056,7 +1054,6 @@ void UpdateMotionFieldUniformityOverTime(
     // Walk the first N entries in the sliding window starting picture + 1
     inputQueueIndex = (encode_context_ptr->initial_rate_control_reorder_queue_head_index == INITIAL_RATE_CONTROL_REORDER_QUEUE_MAX_DEPTH - 1) ? 0 : encode_context_ptr->initial_rate_control_reorder_queue_head_index;
     for (framesToCheckIndex = 0; framesToCheckIndex < NoFramesToCheck - 1; framesToCheckIndex++) {
-
 
         temporaryQueueEntryPtr = encode_context_ptr->initial_rate_control_reorder_queue[inputQueueIndex];
         temporaryPictureControlSetPtr = ((PictureParentControlSet_t*)(temporaryQueueEntryPtr->parentPcsWrapperPtr)->object_ptr);
