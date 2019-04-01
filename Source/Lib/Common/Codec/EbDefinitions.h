@@ -106,7 +106,7 @@ extern "C" {
 #define NO_ENCDEC                         0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
 
 #endif
-
+#define OPT_QUANT_OEFF                                  0
 #if !M9_SETTINGS || M9_ADP
 #define FRAC_64x64_BUG_FIX                              1
 #endif
