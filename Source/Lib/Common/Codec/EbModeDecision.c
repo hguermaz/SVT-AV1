@@ -1940,7 +1940,10 @@ void  inject_inter_candidates(
             use_close_loop_me,
             close_loop_me_index);
     }
-
+#if Mx_DISABLE_BIPRED_UNIPRED_NSQ
+   context_ptr->bipred3x3_injection     = (context_ptr->blk_geom->shape == PART_N ) ? context_ptr->bipred3x3_injection : 0;
+   context_ptr->unipred3x3_injection    = (context_ptr->blk_geom->shape == PART_N ) ? context_ptr->unipred3x3_injection : 0;
+#endif
     if (inject_newmv_candidate) {
         if (isCompoundEnabled) {
             if (allow_bipred) {

@@ -4514,11 +4514,19 @@ EbErrorType inter_pu_prediction_av1(
 
     uint16_t capped_size = md_context_ptr->interpolation_filter_search_blk_size == 0 ? 4 : 
                            md_context_ptr->interpolation_filter_search_blk_size == 1 ? 8 : 16 ;
+#if Mx_DISABLE_INTERPOLATION_SEARCH_FOR_NSQ
 
+    uint16_t nsq_off = md_context_ptr->blk_geom->shape == PART_N ? 1 : 0;
+
+#endif
 
 #if REMOVE_UNPACK_REF
     candidate_buffer_ptr->candidate_ptr->interp_filters = 0;
+#if Mx_DISABLE_INTERPOLATION_SEARCH_FOR_NSQ
+    if (!md_context_ptr->skip_interpolation_search && nsq_off) {    
+#else
     if (!md_context_ptr->skip_interpolation_search) {
+#endif
         if (md_context_ptr->blk_geom->bwidth > capped_size && md_context_ptr->blk_geom->bheight > capped_size)
             interpolation_filter_search(
                 picture_control_set_ptr,

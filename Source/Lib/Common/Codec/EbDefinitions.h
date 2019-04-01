@@ -35,22 +35,41 @@
 extern "C" {
 #endif
 
-// Run with enc-mode 0 will give M1
+#define NEW_M2								1
+
+
+
+#if NEW_M2
+
+
 #define M1_NSQ_search                       1
 #define M1_Interpolation_search             1
-#define M1_Interpolation_search_blk_Size    1
 #define M1_ME                               1
 #define M1_Uni_Bi_Pred                      1
 #define M1_NFL                              1
 #define M1_HME_Search_Method                1
 #define M1_ME_Search_Method                 1
 #define M1_RED_CU                           1 // not in excel
-#define M1_CABAC_UP                         1 // not in excel
 #define M1_Fast_Loop_Method                 1 // not in excel
-#define M1_Spatial_SSE                      1 // not in excel
-#define M1_WARPED_MV                        1 // not in excel
 
-#define M2_SB_block_size                    0
+#define M2_SB_block_size                    1
+
+
+#endif
+
+
+    
+#define Mx_DISABLE_INTERPOLATION_SEARCH_FOR_NSQ     0
+#define Mx_DISABLE_TX_SEARCH_FOR_NSQ                0
+#define Mx_DISABLE_BIPRED_UNIPRED_NSQ               0
+
+
+// Run with enc-mode 0 will give M1
+#define M1_Interpolation_search_blk_Size    0 // NEWM2
+#define M1_CABAC_UP                         0 // not in excel
+#define M1_Spatial_SSE                      0 // not in excel
+#define M1_WARPED_MV                        0 // not in excel
+
 #define M2_NSQ_search                       0
 #define M2_ADP_level                        0 // no difference in 1080p and below
 #define M2_NFL                              0
@@ -174,7 +193,7 @@ extern "C" {
 #define RC_FEEDBACK                       1 // Feedback from previous base layer is received before starting the next base layer frame
 #endif
 #define RED_CU                            1 // Bypass redundant CU
-#define NSQ_ME_OPT                        0 // NSQ ME Restructuring
+#define NSQ_ME_OPT                        1 // NSQ ME Restructuring
 
 // Testing MACROS
 #define M9_NEAR_INJECTION                 0 

@@ -628,6 +628,12 @@ static void Av1EncodeLoop(
             0,
             1) : 1;
 
+#if Mx_DISABLE_TX_SEARCH_FOR_NSQ
+
+        tx_search_skip_fag = context_ptr->blk_geom->shape == PART_N ? tx_search_skip_fag : 1; 
+
+#endif
+
         if (!tx_search_skip_fag) {
 
                 encode_pass_tx_search(
@@ -1101,7 +1107,13 @@ static void Av1EncodeLoop16bit(
                 MAX_MODE_COST,
                 0,
                 1) : 1;
+            
 
+#if Mx_DISABLE_TX_SEARCH_FOR_NSQ
+
+        tx_search_skip_fag = context_ptr->blk_geom->shape == PART_N ? tx_search_skip_fag : 1; 
+
+#endif
             if (!tx_search_skip_fag) {
 
                     encode_pass_tx_search_hbd(

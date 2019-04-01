@@ -2528,7 +2528,13 @@ void AV1PerformFullLoop(
             ref_fast_cost,
             *candidateBuffer->fast_cost_ptr,
             picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
+        
 
+#if Mx_DISABLE_TX_SEARCH_FOR_NSQ
+
+        tx_search_skip_fag = context_ptr->blk_geom->shape == PART_N ? tx_search_skip_fag : 1; 
+
+#endif
         tx_search_skip_fag = ( picture_control_set_ptr->parent_pcs_ptr->skip_tx_search && best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
         if (!tx_search_skip_fag){
 
@@ -3016,6 +3022,12 @@ void inter_depth_tx_search(
         ref_fast_cost,
         *candidateBuffer->fast_cost_ptr,
         picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
+
+#if Mx_DISABLE_TX_SEARCH_FOR_NSQ
+
+        tx_search_skip_fag = context_ptr->blk_geom->shape == PART_N ? tx_search_skip_fag : 1; 
+
+#endif
     if (!tx_search_skip_fag) {
 
         uint64_t      y_full_distortion[DIST_CALC_TOTAL] = { 0 };
