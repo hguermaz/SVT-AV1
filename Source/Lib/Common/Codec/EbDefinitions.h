@@ -114,6 +114,15 @@ extern "C" {
 #define M8_Global_MV_Injection              0
 #define M8_NFL                              0
 
+#define M9_adopted_FULL_LOOP_ESCAPE         0
+#define M9_adopted_HME                      0
+#define M9_adopted_ME                       0
+#define M9_adopted_SUBPEL_SELECTION         0
+#define M9_adopted_CU_8x8                   0
+#define M9_adopted_ADP_level                0
+#define M9_adopted_INTER_SRC_SRC_FAST_LOOP  0
+#define M9_adopted_HME_level                0
+
 
 
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see

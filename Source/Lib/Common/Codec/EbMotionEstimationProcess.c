@@ -103,7 +103,9 @@ void* set_me_hme_params_oq(
     me_context_ptr->number_hme_search_region_in_width = 2;
     me_context_ptr->number_hme_search_region_in_height = 2;
 
-#if M6_HME
+#if M9_adopted_HME
+    hmeMeLevel = 9;
+#elif M6_HME
     hmeMeLevel = 6;
 #endif
 
@@ -127,7 +129,9 @@ void* set_me_hme_params_oq(
     me_context_ptr->hme_level2_search_area_in_height_array[0] = HmeLevel2SearchAreaInHeightArrayTop[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->hme_level2_search_area_in_height_array[1] = HmeLevel2SearchAreaInHeightArrayBottom[sc_content_detected][input_resolution][hmeMeLevel];
 
-#if M8_ME
+#if M9_adopted_ME
+    hmeMeLevel = 9;
+#elif M8_ME
     hmeMeLevel = 8;
 #elif M6_ME
     hmeMeLevel = 6;
@@ -135,7 +139,7 @@ void* set_me_hme_params_oq(
     hmeMeLevel = 3;
 #elif M1_ME
     hmeMeLevel = 1;
-#elif M6_HME
+#elif M6_HME || M9_adopted_HME
     hmeMeLevel = picture_control_set_ptr->enc_mode;
 #endif
 
@@ -236,12 +240,16 @@ EbErrorType signal_derivation_me_kernel_oq(
     // 1: selective based on Full-Search SAD & MV.
     // 2: off
     if (picture_control_set_ptr->use_subpel_flag == 1) {
+#if M9_adopted_SUBPEL_SELECTION
+        context_ptr->me_context_ptr->fractional_search_model = 1;
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M8) {
             context_ptr->me_context_ptr->fractional_search_model = 0;
         }
         else {
             context_ptr->me_context_ptr->fractional_search_model = 1;
         }
+#endif
     }
     else {
         context_ptr->me_context_ptr->fractional_search_model = 2;

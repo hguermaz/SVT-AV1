@@ -1441,7 +1441,9 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    Off
     // 1                    On but only INTRA
     // 2                    On both INTRA and INTER
-#if M8_Full_loop_escape
+#if M9_adopted_FULL_LOOP_ESCAPE
+    context_ptr->full_loop_escape = 2;
+#elif M8_Full_loop_escape
     context_ptr->full_loop_escape = 1;
 #else
 #if M9_FULL_LOOP_ESCAPE
@@ -1612,10 +1614,14 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 
 #if M9_INTER_SRC_SRC_FAST_LOOP
     // Derive Spatial SSE Flag
+#if M9_adopted_INTER_SRC_SRC_FAST_LOOP
+    context_ptr->inter_fast_loop_src_src = 1;
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M8)
         context_ptr->inter_fast_loop_src_src = 0;
     else
         context_ptr->inter_fast_loop_src_src = 1;
+#endif
 #endif
     return return_error;
 }

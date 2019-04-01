@@ -1279,12 +1279,18 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
 
 #if M9_CU_8x8
+#if M9_adopted_CU_8x8
+    picture_control_set_ptr->cu8x8_mode = (picture_control_set_ptr->temporal_layer_index > 0) ?
+        CU_8x8_MODE_1 :
+        CU_8x8_MODE_0;
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M8)
             picture_control_set_ptr->cu8x8_mode = CU_8x8_MODE_0;
         else
             picture_control_set_ptr->cu8x8_mode = (picture_control_set_ptr->temporal_layer_index > 0) ?
             CU_8x8_MODE_1 :
             CU_8x8_MODE_0;
+#endif
 #endif
 
     return return_error;

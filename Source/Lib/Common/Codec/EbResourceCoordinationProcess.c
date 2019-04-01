@@ -98,6 +98,10 @@ EbErrorType signal_derivation_pre_analysis_oq(
     if (sequence_control_set_ptr->static_config.use_default_me_hme) {
         uint8_t  hme_me_level = picture_control_set_ptr->enc_mode;
 
+#if M9_adopted_HME_level
+        hme_me_level = 9;
+#endif
+
         picture_control_set_ptr->enable_hme_flag = EB_TRUE;
         picture_control_set_ptr->enable_hme_level0_flag = EnableHmeLevel0Flag[input_resolution][hme_me_level];
         picture_control_set_ptr->enable_hme_level1_flag = EnableHmeLevel1Flag[input_resolution][hme_me_level];
