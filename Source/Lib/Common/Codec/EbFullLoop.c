@@ -488,36 +488,79 @@ void av1_quantize_b_facade_II(
     }
 }
 
+#if OPT_QUANT_OEFF
+int av1_optimize_b(
+#if 0
+    const struct AV1_COMP *cpi, 
+    MACROBLOCK *mb, 
+#endif
+    int plane
+#if 0
+    int block, 
+    TX_SIZE tx_size, 
+    TX_TYPE tx_type,
+    const TXB_CTX *const txb_ctx, 
+    int fast_mode,
+    int *rate_cost
+#endif
+) {
+#if 0
+    MACROBLOCKD *const xd = &mb->e_mbd;
+    struct macroblock_plane *const p = &mb->plane[plane];
+    const int eob = p->eobs[block];
+    const int segment_id = xd->mi[0]->segment_id;
+
+    if (eob == 0 || !cpi->optimize_seg_arr[segment_id] || xd->lossless[segment_id]) {
+        *rate_cost = av1_cost_skip_txb(mb, txb_ctx, plane, tx_size);
+        return eob;
+    }
+#endif
+    return av1_optimize_txb_new(
+#if 0
+        cpi, 
+        mb, 
+#endif
+        plane
+#if 0
+        block, 
+        tx_size, 
+        tx_type, 
+        txb_ctx,
+        rate_cost, 
+        cpi->oxcf.sharpness, 
+        fast_mode
+#endif    
+    );
+}
+#endif
+
 /*********************************************************************
 * UnifiedQuantizeInvQuantize
 *
 *  Unified Quant +iQuant
 *********************************************************************/
 void av1_quantize_inv_quantize_ii(
-    PictureControlSet_t  *picture_control_set_ptr,
-    int32_t               *coeff,
-    const uint32_t          coeff_stride,
-    int32_t               *quant_coeff,
-    int32_t               *recon_coeff,
-    uint32_t                qp,
-    uint32_t                width,
-    uint32_t                height,
-    TxSize              transform_size,
-    uint16_t                *eob,
-    //  MacroblockPlane      candidate_plane,
+    PictureControlSet_t *picture_control_set_ptr,
+    int32_t             *coeff,
+    const uint32_t       coeff_stride,
+    int32_t             *quant_coeff,
+    int32_t             *recon_coeff,
+    uint32_t             qp,
+    uint32_t             width,
+    uint32_t             height,
+    TxSize               transform_size,
+    uint16_t            *eob,
     EbAsm                asm_type,
-    uint32_t                *y_count_non_zero_coeffs,
+    uint32_t            *y_count_non_zero_coeffs,
 #if !PF_N2_SUPPORT
     EbPfMode              pf_mode,
 #endif
-    uint8_t                 enable_contouring_qc_update_flag,
-    uint32_t                component_type,
-    uint32_t                bit_increment,
-
+    uint8_t              enable_contouring_qc_update_flag,
+    uint32_t             component_type,
+    uint32_t             bit_increment,
     TxType               tx_type,
-    EbBool               clean_sparse_coeff_flag)
+    EbBool               is_final_stage)
 {
-    (void)clean_sparse_coeff_flag;
     (void)enable_contouring_qc_update_flag;
 #if !PF_N2_SUPPORT
     (void)pf_mode;
@@ -649,31 +692,52 @@ void av1_quantize_inv_quantize_ii(
             scan_order,
             &qparam);
 
+#if OPT_QUANT_OEFF
+    // Hsan_vod: only luma for now and only @ encode pass  
+    if (is_final_stage && component_type == COMPONENT_LUMA) {
+        av1_optimize_b(
+#if 0
+            cpi,
+            x,
+#endif
+            0 //plane
+#if 0
+            block,
+
+            tx_size,
+            tx_type,
+            txb_ctx,
+            cpi->sf.trellis_eob_fast,
+            &rate_cost
+#endif      
+        );
+    }
+#endif
     *y_count_non_zero_coeffs = *eob;
 
     }
 void av1_quantize_inv_quantize(
-    PictureControlSet_t  *picture_control_set_ptr,
-    int32_t               *coeff,
-    const uint32_t          coeff_stride,
-    int32_t               *quant_coeff,
-    int32_t               *recon_coeff,
-    uint32_t                qp,
-    uint32_t                width,
-    uint32_t                height,
+    PictureControlSet_t *picture_control_set_ptr,
+    int32_t             *coeff,
+    const uint32_t       coeff_stride,
+    int32_t             *quant_coeff,
+    int32_t             *recon_coeff,
+    uint32_t             qp,
+    uint32_t             width,
+    uint32_t             height,
     TxSize               txsize,
-    uint16_t                *eob,
+    uint16_t            *eob,
     MacroblockPlane      candidate_plane,
     EbAsm                asm_type,
-    uint32_t                *y_count_non_zero_coeffs,
+    uint32_t            *y_count_non_zero_coeffs,
 #if !PF_N2_SUPPORT
-    EbPfMode              pf_mode,
+    EbPfMode             pf_mode,
 #endif
-    uint8_t                 enable_contouring_qc_update_flag,
-    uint32_t                component_type,
-    uint32_t                bit_increment,
+    uint8_t              enable_contouring_qc_update_flag,
+    uint32_t             component_type,
+    uint32_t             bit_increment,
     TxType               tx_type,
-    EbBool               clean_sparse_coeff_flag)
+    EbBool               is_final_stage)
 {
     (void)coeff_stride;
     (void)candidate_plane;
@@ -690,9 +754,6 @@ void av1_quantize_inv_quantize(
         memset(quant_coeff + i * width, 0, width * sizeof(int32_t));
         memset(recon_coeff + i * width, 0, width * sizeof(int32_t));
     }
-
-
-
 
     av1_quantize_inv_quantize_ii(
         picture_control_set_ptr,
@@ -714,10 +775,7 @@ void av1_quantize_inv_quantize(
         component_type,
         bit_increment,
         tx_type,
-        clean_sparse_coeff_flag);
-
-
-
+        is_final_stage);
 }
 
 /****************************************
@@ -736,10 +794,6 @@ void ProductFullLoop(
     uint64_t                      y_full_cost;
     SequenceControlSet_t        *sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     EbAsm                         asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
-
-    EbBool                      clean_sparse_coeff_flag = EB_FALSE;
-
-    //    uint32_t   currentTuIndex,tuIt;
     uint64_t   y_tu_coeff_bits;
     uint64_t   tuFullDistortion[3][DIST_CALC_TOTAL];
     context_ptr->three_quad_energy = 0;
@@ -791,7 +845,7 @@ void ProductFullLoop(
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
-            clean_sparse_coeff_flag);
+            EB_FALSE);
 
         candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[txb_1d_offset]);
 
@@ -1023,7 +1077,6 @@ void ProductFullLoopTxSearch(
     uint32_t                       tuOriginIndex;
     SequenceControlSet_t          *sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     EbAsm                          asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
-    EbBool                         clean_sparse_coeff_flag = EB_FALSE;
     uint64_t                       y_tu_coeff_bits;
     uint64_t                       tuFullDistortion[3][DIST_CALC_TOTAL];
     int32_t                        plane = 0;
@@ -1116,7 +1169,7 @@ void ProductFullLoopTxSearch(
                 COMPONENT_LUMA,
                 BIT_INCREMENT_8BIT,
                 tx_type,
-                clean_sparse_coeff_flag);
+                EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]);
 
@@ -1248,7 +1301,6 @@ void encode_pass_tx_search(
     const uint32_t         scratchLumaOffset = context_ptr->blk_geom->tx_org_x[context_ptr->txb_itr] + context_ptr->blk_geom->tx_org_y[context_ptr->txb_itr] * SB_STRIDE_Y;
     const uint32_t         coeff1dOffset = context_ptr->coded_area_sb;
 
-    EbBool                 clean_sparse_coeff_flag = EB_FALSE;
     uint64_t               y_tu_coeff_bits;
     uint64_t               tuFullDistortion[3][DIST_CALC_TOTAL];
     const int32_t          is_inter = context_ptr->is_inter;
@@ -1320,7 +1372,7 @@ void encode_pass_tx_search(
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             tx_type,
-            clean_sparse_coeff_flag);
+            EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
         if (yCountNonZeroCoeffsTemp == 0 && tx_type != DCT_DCT) {
@@ -1453,7 +1505,6 @@ void encode_pass_tx_search_hbd(
     uint32_t         qp                   = cu_ptr->qp;
     const uint32_t   scratchLumaOffset    = context_ptr->blk_geom->origin_x + context_ptr->blk_geom->origin_y * SB_STRIDE_Y;
     const uint32_t   coeff1dOffset        = context_ptr->coded_area_sb;
-    EbBool           clean_sparse_coeff_flag = EB_FALSE;
 
     //Update QP for Quant
     qp += QP_BD_OFFSET;
@@ -1528,7 +1579,7 @@ void encode_pass_tx_search_hbd(
             COMPONENT_LUMA,
             BIT_INCREMENT_10BIT,
             tx_type,
-            clean_sparse_coeff_flag);
+            EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
         if (yCountNonZeroCoeffsTemp == 0 && tx_type != DCT_DCT) {
@@ -1660,13 +1711,8 @@ void FullLoop_R(
     uint32_t                 txb_origin_x;
     uint32_t                 txb_origin_y;
 
-    // EbPictureBufferDesc_t         * tuTransCoeffTmpPtr;
-     //EbPictureBufferDesc_t         * tuQuantCoeffTmpPtr;
-
     SequenceControlSet_t    *sequence_control_set_ptr = (SequenceControlSet_t*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     EbAsm     asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
-
-    EbBool clean_sparse_coeff_flag = EB_FALSE;
     context_ptr->three_quad_energy = 0;
 
     tuCount = context_ptr->blk_geom->txb_count;
@@ -1737,7 +1783,8 @@ void FullLoop_R(
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
-                clean_sparse_coeff_flag);
+                EB_FALSE);
+
             candidateBuffer->candidate_ptr->quantized_dc[1] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCb)[txb_1d_offset]);
 #if SPATIAL_SSE
             if (context_ptr->spatial_sse_full_loop) {
@@ -1830,7 +1877,8 @@ void FullLoop_R(
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
-                clean_sparse_coeff_flag);
+                EB_FALSE);
+
             candidateBuffer->candidate_ptr->quantized_dc[2] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCr)[txb_1d_offset]);
 #if SPATIAL_SSE
             if (context_ptr->spatial_sse_full_loop) {

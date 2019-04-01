@@ -3912,7 +3912,7 @@ extern "C" {
         uint32_t             component_type,
         uint32_t             bit_increment,
         TxType               tx_type,
-        EbBool               clean_sparse_coeff_flag);
+        EbBool               is_final_stage);
 
     extern void av1_quantize_inv_quantize_ii(
         PictureControlSet_t *picture_control_set_ptr,
@@ -3933,9 +3933,8 @@ extern "C" {
         uint8_t              enable_contouring_qc_update_flag,
         uint32_t             component_type,
         uint32_t             bit_increment,
-
         TxType               tx_type,
-        EbBool               clean_sparse_coeff_flag);
+        EbBool               is_final_stage);
 
     extern EbErrorType av1_estimate_inv_transform(
         int32_t  *coeff_buffer,

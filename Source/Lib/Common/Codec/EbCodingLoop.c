@@ -603,7 +603,6 @@ static void Av1EncodeLoop(
     //    sb_ptr->index,
     //    cu_ptr->leaf_index) && (cu_ptr->qp < sb_ptr->picture_control_set_ptr->picture_qp);
 #endif
-    EbBool clean_sparse_coeff_flag = EB_FALSE;
 
     context_ptr->three_quad_energy = 0;
     //**********************************
@@ -688,9 +687,8 @@ static void Av1EncodeLoop(
             0,
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
-
             txb_ptr->transform_type[PLANE_TYPE_Y],
-            clean_sparse_coeff_flag);
+            EB_FALSE);
 
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
 
@@ -923,11 +921,9 @@ static void Av1EncodeLoop(
             COMPONENT_CHROMA_CB,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
-            clean_sparse_coeff_flag);
-
+            EB_FALSE);
 
         txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
-
         //**********************************
         // Cr
         //**********************************
@@ -971,7 +967,7 @@ static void Av1EncodeLoop(
             COMPONENT_CHROMA_CR,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
-            clean_sparse_coeff_flag);
+            EB_FALSE);
 
         txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
     }
@@ -1073,9 +1069,6 @@ static void Av1EncodeLoop16bit(
     const uint32_t coeff1dOffsetChroma = context_ptr->coded_area_sb_uv;
     UNUSED(coeff1dOffsetChroma);
 
-
-    EbBool clean_sparse_coeff_flag = EB_FALSE;
-
     //Update QP for Quant
     qp += QP_BD_OFFSET;
 
@@ -1162,9 +1155,9 @@ static void Av1EncodeLoop16bit(
                 0,
                 COMPONENT_LUMA,
                 BIT_INCREMENT_10BIT,
-
                 txb_ptr->transform_type[PLANE_TYPE_Y],
-                clean_sparse_coeff_flag);
+                EB_FALSE);
+
             txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
             if (count_non_zero_coeffs[0] == 0) {
                 // INTER. Chroma follows Luma in transform type
@@ -1321,7 +1314,7 @@ static void Av1EncodeLoop16bit(
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
-                clean_sparse_coeff_flag);
+                EB_FALSE);
 
             txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
 
@@ -1373,9 +1366,9 @@ static void Av1EncodeLoop16bit(
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
-                clean_sparse_coeff_flag);
-            txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
+                EB_FALSE);
 
+            txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
         }
     }
 
