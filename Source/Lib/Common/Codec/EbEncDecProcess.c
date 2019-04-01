@@ -1299,6 +1299,24 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     }
     else {
 #endif
+#if M6_NFL
+        context_ptr->nfl_level = 5;
+#elif M4_NFL
+        if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+            context_ptr->nfl_level = 4;
+        else
+            context_ptr->nfl_level = 5;
+#elif M2_NFL
+        if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+            context_ptr->nfl_level = 2;
+        else
+            context_ptr->nfl_level = 4;
+#elif M1_NFL
+        if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+            context_ptr->nfl_level = 2;
+        else
+            context_ptr->nfl_level = 3;
+#else
     if (picture_control_set_ptr->enc_mode == ENC_M0)
 #if MOD_M0
         context_ptr->nfl_level = 2;
@@ -1332,6 +1350,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
             context_ptr->nfl_level  = 6;
         else
             context_ptr->nfl_level  = 7;
+#endif
 #if SCENE_CONTENT_SETTINGS
     }
 #endif
@@ -1360,12 +1379,18 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
             context_ptr->chroma_level = CHROMA_MODE_2;
     }
 #else
+#if M5_Chroma
+    context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
+        CHROMA_MODE_1 :
+        CHROMA_MODE_2;
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
         context_ptr->chroma_level = CHROMA_MODE_0;
     else 
         context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
             CHROMA_MODE_1 :
             CHROMA_MODE_2 ;
+#endif
 #endif
 
 
@@ -1376,10 +1401,14 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     //  0                   Collapsed fast loop
     //  1                   Decoupled fast loops ( intra/inter) 
 
+#if M1_Fast_Loop_Method
+    context_ptr->decouple_intra_inter_fast_loop = 1;
+#else
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->decouple_intra_inter_fast_loop = 0;
     else
         context_ptr->decouple_intra_inter_fast_loop = 1;
+#endif
 
     // Set the search method when decoupled fast loop is used 
     // Hsan: FULL_SAD_SEARCH not supported
@@ -1392,10 +1421,14 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 	        context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
 	}else
 #endif
+#if M6_Fast_Loop_Search_Method
+        context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
         context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
     else
         context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
+#endif
     // Set the full loop escape level
     // Level                Settings
     // 0                    Off
@@ -1453,10 +1486,14 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
 
 #endif
+#if M6_Warped_Motion_Injection
+        context_ptr->warped_motion_injection = 0;
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
         context_ptr->warped_motion_injection = 1;
     else
         context_ptr->warped_motion_injection = 0;
+#endif
 
     
     // Set unipred3x3 injection
@@ -1473,14 +1510,19 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
 
 #endif
+#if M4_Uni_Bi_Pred
+        context_ptr->unipred3x3_injection = 0;
+#elif M1_Uni_Bi_Pred
+        context_ptr->unipred3x3_injection = 2;
+#else
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->unipred3x3_injection = 1;
     else if (picture_control_set_ptr->enc_mode <= ENC_M3)
         context_ptr->unipred3x3_injection = 2;
     else
         context_ptr->unipred3x3_injection = 0;
+#endif
 
-    
     // Set bipred3x3 injection
     // Level                Settings
     // 0                    OFF
@@ -1495,13 +1537,19 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
 
 #endif
+#if M4_Uni_Bi_Pred
+        context_ptr->bipred3x3_injection = 0;
+#elif M1_Uni_Bi_Pred
+        context_ptr->bipred3x3_injection = 2;
+#else
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->bipred3x3_injection = 1;
     else if (picture_control_set_ptr->enc_mode <= ENC_M3)
         context_ptr->bipred3x3_injection = 2;
     else
         context_ptr->bipred3x3_injection = 0;
-      
+#endif
+
     // Set interpolation filter search blk size
     // Level                Settings
     // 0                    ON for 8x8 and above
@@ -1512,13 +1560,18 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->interpolation_filter_search_blk_size = 0;
     else
 #endif
+#if M3_Interpolation_search_blk_Size
+        context_ptr->interpolation_filter_search_blk_size = 2;
+#elif M1_Interpolation_search_blk_Size
+        context_ptr->interpolation_filter_search_blk_size = 1;
+#else
     if (picture_control_set_ptr->enc_mode == ENC_M0)
         context_ptr->interpolation_filter_search_blk_size = 0;
     else if (picture_control_set_ptr->enc_mode <= ENC_M2)
         context_ptr->interpolation_filter_search_blk_size = 1;
     else        
         context_ptr->interpolation_filter_search_blk_size = 2;
-    
+#endif
 
 #if PF_N2_SUPPORT
     // Set PF MD
@@ -1527,6 +1580,9 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 
 #if SPATIAL_SSE
     // Derive Spatial SSE Flag
+#if M1_Spatial_SSE
+    context_ptr->spatial_sse_full_loop = EB_FALSE;
+#else
     if (picture_control_set_ptr->enc_mode == ENC_M0) 
 #if MOD_M0
         context_ptr->spatial_sse_full_loop = EB_FALSE;
@@ -1535,6 +1591,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 #endif
     else
         context_ptr->spatial_sse_full_loop = EB_FALSE;
+#endif
 #endif
 
 

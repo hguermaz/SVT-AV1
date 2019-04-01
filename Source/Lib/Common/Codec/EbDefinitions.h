@@ -35,6 +35,72 @@
 extern "C" {
 #endif
 
+// Run with enc-mode 0 will give M1
+#define M1_NSQ_search                       1
+#define M1_Interpolation_search             1
+#define M1_Interpolation_search_blk_Size    1
+#define M1_ME                               1
+#define M1_Uni_Bi_Pred                      1
+#define M1_NFL                              1
+#define M1_HME_Search_Method                1
+#define M1_ME_Search_Method                 1
+#define M1_RED_CU                           1 // not in excel
+#define M1_CABAC_UP                         1 // not in excel
+#define M1_Fast_Loop_Method                 1 // not in excel
+#define M1_Spatial_SSE                      1 // not in excel
+#define M1_WARPED_MV                        1 // not in excel
+
+#define M2_SB_block_size                    0
+#define M2_NSQ_search                       0
+#define M2_ADP_level                        0 // no difference in 1080p and below
+#define M2_NFL                              0
+
+#define M3_Partitioning_Method              0 // coupled with M3_NSQ_search
+#define M3_NSQ_search                       0 // coupled with M3_Partitioning_Method
+#define M3_ADP_level                        0 // no difference in 1080p and below
+#define M3_Interpolation_search             0
+#define M3_Interpolation_search_blk_Size    0
+#define M3_TX_search_Skip_TH                0
+#define M3_TX_search_Reduced_Set            0
+#define M3_ME                               0
+#define M3_Intra                            0
+
+#define M4_Partitioning_Method              0
+#define M4_NSQ_search                       0
+#define M4_ADP_level                        0
+#define M4_DLF                              0
+#define M4_SG_filter                        0
+#define M4_TX_search                        0
+#define M4_Uni_Bi_Pred                      0
+#define M4_NFL                              0
+
+#define M5_Partitioning_Method              0
+#define M5_NSQ_search                       0
+#define M5_ADP_level                        0
+#define M5_DLF                              0
+#define M5_SG_filter                        0
+#define M5_TX_search                        0
+#define M5_TX_search_Skip_TH                0
+#define M5_TX_search_Reduced_Set            0
+#define M5_Chroma                           0
+
+#define M6_Partitioning_Method              0
+#define M6_ADP_level                        0
+#define M6_Interpolation_search             0
+#define M6_CDEF_filter                      0
+#define M6_SG_filter                        0
+#define M6_Wiener_filter                    0
+#define M6_TX_search                        0
+#define M6_TX_search_Skip_TH                0
+#define M6_Disable_TX_search_based_on_NFL   0
+#define M6_ME                               0
+#define M6_HME                              0
+#define M6_Intra                            0
+#define M6_NFL                              0
+#define M6_Fast_Loop_Search_Method          0
+#define M6_Warped_Motion_Injection          0
+
+
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
 #define HARD_CODE_SC_SETTING              0
 #define MR_MODE                           0

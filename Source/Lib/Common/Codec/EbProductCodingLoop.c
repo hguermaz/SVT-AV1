@@ -4139,7 +4139,11 @@ EB_EXTERN EbErrorType mode_decision_sb(
 
         check_redundant_block(blk_geom, context_ptr, &redundant_blk_avail, &redundant_blk_mds);
        
+#if M1_RED_CU
+        if (0)
+#else
         if (redundant_blk_avail && picture_control_set_ptr->enc_mode == ENC_M0)
+#endif
         {
             // Copy results
             CodingUnit_t *src_cu = &context_ptr->md_cu_arr_nsq[redundant_blk_mds];

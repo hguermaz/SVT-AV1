@@ -423,7 +423,11 @@ void reset_mode_decision(
 
 
 #if ENABLE_WARPED_MV
+#if M1_WARPED_MV
+    EbBool enable_wm = EB_FALSE;
+#else
     EbBool enable_wm = (picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M0) || MR_MODE ? EB_TRUE : EB_FALSE;
+#endif
     enable_wm = picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index > 0 ? EB_FALSE : enable_wm;
     picture_control_set_ptr->parent_pcs_ptr->allow_warped_motion = enable_wm
 #else

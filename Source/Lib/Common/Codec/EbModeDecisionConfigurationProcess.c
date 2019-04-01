@@ -1942,10 +1942,26 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
 
     EbErrorType return_error = EB_ErrorNone;
 
+#if M6_ADP_level
+    context_ptr->adp_level = 6;
+#elif M5_ADP_level
+    context_ptr->adp_level = 5;
+#elif M4_ADP_level
+    context_ptr->adp_level = 4;
+#elif M3_ADP_level
+    context_ptr->adp_level = 3;
+#elif M2_ADP_level
+    context_ptr->adp_level = 2;
+#else
     context_ptr->adp_level = picture_control_set_ptr->parent_pcs_ptr->enc_mode;
+#endif
 
 #if CABAC_UP  
+#if M1_CABAC_UP
+    picture_control_set_ptr->update_cdf = 0;
+#else
     picture_control_set_ptr->update_cdf = picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M0 ? 1 : 0;
+#endif
 #endif
 
     return return_error;

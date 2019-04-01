@@ -103,6 +103,10 @@ void* set_me_hme_params_oq(
     me_context_ptr->number_hme_search_region_in_width = 2;
     me_context_ptr->number_hme_search_region_in_height = 2;
 
+#if M6_HME
+    hmeMeLevel = 6;
+#endif
+
 #if SCENE_CONTENT_SETTINGS
     uint8_t sc_content_detected = picture_control_set_ptr->sc_content_detected;
     // HME Level0
@@ -122,6 +126,16 @@ void* set_me_hme_params_oq(
     me_context_ptr->hme_level2_search_area_in_width_array[1] = HmeLevel2SearchAreaInWidthArrayLeft[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->hme_level2_search_area_in_height_array[0] = HmeLevel2SearchAreaInHeightArrayTop[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->hme_level2_search_area_in_height_array[1] = HmeLevel2SearchAreaInHeightArrayBottom[sc_content_detected][input_resolution][hmeMeLevel];
+
+#if M6_ME
+    hmeMeLevel = 6;
+#elif M3_ME
+    hmeMeLevel = 3;
+#elif M1_ME
+    hmeMeLevel = 1;
+#elif M6_HME
+    hmeMeLevel = picture_control_set_ptr->enc_mode;
+#endif
 
     // ME
     me_context_ptr->search_area_width = SearchAreaWidth[sc_content_detected][input_resolution][hmeMeLevel];
@@ -230,25 +244,33 @@ EbErrorType signal_derivation_me_kernel_oq(
 
 
 #if USE_SAD_HME
-    // ME Search Method
+    // HME Search Method
 #if MOD_M0
+    context_ptr->me_context_ptr->hme_search_method = SUB_SAD_SEARCH;
+#else
+#if M1_HME_Search_Method
     context_ptr->me_context_ptr->hme_search_method = SUB_SAD_SEARCH;
 #else
     context_ptr->me_context_ptr->hme_search_method = (picture_control_set_ptr->enc_mode == ENC_M0) ?
         FULL_SAD_SEARCH :
         SUB_SAD_SEARCH;
 #endif
+#endif
 #else
     context_ptr->me_context_ptr->hme_search_method = SUB_SAD_SEARCH;
 #endif
 #if USE_SAD_ME
-    // HME Search Method
+    // ME Search Method
 #if MOD_M0
+    context_ptr->me_context_ptr->me_search_method = SUB_SAD_SEARCH;
+#else
+#if M1_ME_Search_Method
     context_ptr->me_context_ptr->me_search_method = SUB_SAD_SEARCH;
 #else
     context_ptr->me_context_ptr->me_search_method = (picture_control_set_ptr->enc_mode == ENC_M0) ?
         FULL_SAD_SEARCH :
         SUB_SAD_SEARCH;
+#endif
 #endif
 #else
     context_ptr->me_context_ptr->me_search_method = SUB_SAD_SEARCH  ;
