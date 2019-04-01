@@ -127,7 +127,9 @@ void* set_me_hme_params_oq(
     me_context_ptr->hme_level2_search_area_in_height_array[0] = HmeLevel2SearchAreaInHeightArrayTop[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->hme_level2_search_area_in_height_array[1] = HmeLevel2SearchAreaInHeightArrayBottom[sc_content_detected][input_resolution][hmeMeLevel];
 
-#if M6_ME
+#if M8_ME
+    hmeMeLevel = 8;
+#elif M6_ME
     hmeMeLevel = 6;
 #elif M3_ME
     hmeMeLevel = 3;
@@ -200,6 +202,9 @@ EbErrorType signal_derivation_me_kernel_oq(
         context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH ; 
     else 
 #endif
+#if M7_Subpel_fractional_Search_Method
+        context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH;
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
         context_ptr->me_context_ptr->fractionalSearchMethod = SSD_SEARCH ; 
 #if M9_FRAC_ME_SEARCH_METHOD
@@ -210,6 +215,7 @@ EbErrorType signal_derivation_me_kernel_oq(
 #else
         else
             context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH;
+#endif
 #endif
 
 #if M9_FRAC_ME_SEARCH_64x64

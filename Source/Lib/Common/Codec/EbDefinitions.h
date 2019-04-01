@@ -55,8 +55,8 @@ extern "C" {
 #define M2_ADP_level                        0 // no difference in 1080p and below
 #define M2_NFL                              0
 
-#define M3_Partitioning_Method              0 // coupled with M3_NSQ_search
-#define M3_NSQ_search                       0 // coupled with M3_Partitioning_Method
+#define M3_Partitioning_Method              0 // coupled with M3_NSQ_search and M2_SB_block_size
+#define M3_NSQ_search                       0 // coupled with M3_Partitioning_Method and M2_SB_block_size
 #define M3_ADP_level                        0 // no difference in 1080p and below
 #define M3_Interpolation_search             0
 #define M3_Interpolation_search_blk_Size    0
@@ -99,6 +99,21 @@ extern "C" {
 #define M6_NFL                              0
 #define M6_Fast_Loop_Search_Method          0
 #define M6_Warped_Motion_Injection          0
+
+#define M7_ADP_level                        0
+#define M7_Wiener_filter                    0
+#define M7_Subpel_fractional_Search_Method  0
+#define M7_Intra                            0
+#define M7_enable_restoration               0 // not in excel
+
+#define M8_ADP_level                        0
+#define M8_CDEF_filter                      0
+#define M8_ME                               0
+#define M8_Intra                            0
+#define M8_Full_loop_escape                 0
+#define M8_Global_MV_Injection              0
+#define M8_NFL                              0
+
 
 
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see

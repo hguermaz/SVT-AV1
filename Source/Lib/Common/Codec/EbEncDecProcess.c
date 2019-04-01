@@ -1299,7 +1299,14 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     }
     else {
 #endif
-#if M6_NFL
+#if M8_NFL
+        if (picture_control_set_ptr->parent_pcs_ptr->slice_type == I_SLICE)
+            context_ptr->nfl_level = 5;
+        else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
+            context_ptr->nfl_level = 6;
+        else
+            context_ptr->nfl_level = 7;
+#elif M6_NFL
         context_ptr->nfl_level = 5;
 #elif M4_NFL
         if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
@@ -1434,6 +1441,9 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    Off
     // 1                    On but only INTRA
     // 2                    On both INTRA and INTER
+#if M8_Full_loop_escape
+    context_ptr->full_loop_escape = 1;
+#else
 #if M9_FULL_LOOP_ESCAPE
     if (picture_control_set_ptr->enc_mode <= ENC_M7)
         context_ptr->full_loop_escape = 0;
@@ -1447,16 +1457,21 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->full_loop_escape = 1;
 #endif
+#endif
 
 
     // Set global MV injection
     // Level                Settings
     // 0                    Off (Hsan: but not derivation as used by MV ref derivation)
     // 1                    On
+#if M8_Global_MV_Injection
+    context_ptr->global_mv_injection = 0;
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M7)
         context_ptr->global_mv_injection = 1;
     else
         context_ptr->global_mv_injection = 0;
+#endif
 
 #if M9_NEAR_INJECTION
     // Set NEAR injection

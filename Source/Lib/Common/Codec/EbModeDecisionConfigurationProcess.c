@@ -1942,7 +1942,11 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
 
     EbErrorType return_error = EB_ErrorNone;
 
-#if M6_ADP_level
+#if M8_ADP_level
+    context_ptr->adp_level = 8;
+#elif M7_ADP_level
+    context_ptr->adp_level = 7;
+#elif M6_ADP_level
     context_ptr->adp_level = 6;
 #elif M5_ADP_level
     context_ptr->adp_level = 5;

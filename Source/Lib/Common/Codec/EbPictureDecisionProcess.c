@@ -951,7 +951,9 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->cdef_filter_mode = 0;
         }
 #else
-#if M6_CDEF_filter
+#if M8_CDEF_filter
+        picture_control_set_ptr->cdef_filter_mode = 1;
+#elif M6_CDEF_filter
         picture_control_set_ptr->cdef_filter_mode = 2;
 #else
         if (picture_control_set_ptr->enc_mode <= ENC_M5)
@@ -1015,7 +1017,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         cm->wn_filter_mode = 0;
 	else
 #endif
-#if M6_Wiener_filter
+#if M7_Wiener_filter
+        cm->wn_filter_mode = 0;
+#elif M6_Wiener_filter
         cm->wn_filter_mode = 2;
 #else
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
@@ -1167,6 +1171,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 7                                            OIS based Intra
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
+#if M8_Intra
+        picture_control_set_ptr->intra_pred_mode = 4;
+#else
 #if M9_INTRA
         if (picture_control_set_ptr->enc_mode <= ENC_M7)
             picture_control_set_ptr->intra_pred_mode = 0;
@@ -1174,6 +1181,7 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->intra_pred_mode = 4;
 #else
          picture_control_set_ptr->intra_pred_mode = 0;
+#endif
 #endif
     else {
 #if SCENE_CONTENT_SETTINGS
@@ -1207,7 +1215,11 @@ EbErrorType signal_derivation_multi_processes_oq(
         }
         else {
 #endif
-#if M6_Intra
+#if M8_Intra
+            picture_control_set_ptr->intra_pred_mode = 4;
+#elif M7_Intra
+            picture_control_set_ptr->intra_pred_mode = 5;
+#elif M6_Intra
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->intra_pred_mode = 2;
             else
