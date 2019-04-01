@@ -622,7 +622,11 @@ static void Av1EncodeLoop(
             context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
         
         uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_ENC_DEC ? get_skip_tx_search_flag(
+#if BYPASS_USELESS_TX_SEARCH
+            context_ptr->blk_geom,
+#else
             context_ptr->blk_geom->sq_size,
+#endif
             MAX_MODE_COST,
             0,
             1) : 1;
@@ -1090,7 +1094,11 @@ static void Av1EncodeLoop16bit(
                 context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
 
             uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_ENC_DEC ? get_skip_tx_search_flag(
+#if BYPASS_USELESS_TX_SEARCH
+                context_ptr->blk_geom,
+#else
                 context_ptr->blk_geom->sq_size,
+#endif
                 MAX_MODE_COST,
                 0,
                 1) : 1;

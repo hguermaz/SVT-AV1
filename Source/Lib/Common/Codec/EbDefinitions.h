@@ -85,7 +85,7 @@ extern "C" {
 #endif
 #define RED_CU                            1 // Bypass redundant CU
 #define NSQ_ME_OPT                        0 // NSQ ME Restructuring
-
+#define BYPASS_USELESS_TX_SEARCH          0
 // Testing MACROS
 #define M9_NEAR_INJECTION                 0 
 // Under testing
