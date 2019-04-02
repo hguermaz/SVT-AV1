@@ -538,7 +538,7 @@ static INLINE int32_t av1_cost_skip_txb(
     return coeff_costs->txb_skip_cost[txb_skip_ctx][1];
 }
 // Note: don't call this function when eob is 0.
-uint64_t av1_cost_coeffs_txb(  // Hsan_vod
+uint64_t av1_cost_coeffs_txb(  // Hsan (Trellis) 
 #if CABAC_UP
     uint8_t        allow_update_cdf,
     FRAME_CONTEXT *ec_ctx,

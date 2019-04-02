@@ -758,7 +758,11 @@ static AOM_FORCE_INLINE int get_nz_map_ctx_from_stats(
         //   if (row + col < 2) return ctx + 1;
         //   if (row + col < 4) return 5 + ctx + 1;
         //   return 21 + ctx;
+#if 1 // Hsan (Trellis) 
+        return av1_nz_map_ctx_offset[tx_size][coeff_idx][ctx];
+#else
         return ctx + av1_nz_map_ctx_offset[tx_size][coeff_idx];
+#endif
     }
     case TX_CLASS_HORIZ: {
         const int row = coeff_idx >> bwl;
@@ -967,7 +971,7 @@ static AOM_FORCE_INLINE int get_two_coeff_cost_simple(
     return cost;
 }
 static AOM_FORCE_INLINE void update_coeff_eob(
-    int *accu_rate, int64_t *accu_dist, int *eob, int *nz_num, int *nz_ci,
+    int *accu_rate, int64_t *accu_dist, uint16_t *eob, int *nz_num, int *nz_ci,
     int si, TxSize tx_size, TX_CLASS tx_class, int bwl, int height,
     int dc_sign_ctx, int64_t rdmult, int shift, const int16_t *dequant,
     const int16_t *scan, const LV_MAP_EOB_COST *txb_eob_costs,
@@ -1236,7 +1240,7 @@ static INLINE int get_coeff_cost_eob(int ci, tran_low_t abs_qc, int sign,
     return cost;
 }
 
-static INLINE void update_skip(int *accu_rate, int64_t accu_dist, int *eob,
+static INLINE void update_skip(int *accu_rate, int64_t accu_dist, uint16_t *eob,
     int nz_num, int *nz_ci, int64_t rdmult,
     int skip_cost, int non_skip_cost,
     tran_low_t *qcoeff, tran_low_t *dqcoeff,
@@ -1266,7 +1270,7 @@ int av1_optimize_txb_new(
     const MacroblockPlane      *p,
     tran_low_t                 *qcoeff_ptr,
     tran_low_t                 *dqcoeff_ptr,
-    uint16_t                    eob,
+    uint16_t                   *eob,
     const SCAN_ORDER           *sc,
     const QUANT_PARAM          *qparam,
     TxSize                      tx_size,
@@ -1285,7 +1289,7 @@ int av1_optimize_txb_new(
 #endif
 
     int sharpness = 0;
-    int fast_mode = 0; // Hsan_vod
+    int fast_mode = 0; // Hsan (Trellis) 
 
 #if 0
     MACROBLOCKD *xd = &x->e_mbd;
@@ -1365,7 +1369,7 @@ int av1_optimize_txb_new(
     uint8_t *const levels = set_levels(levels_buf, width);
 
 #if 1
-    if (eob > 1) av1_txb_init_levels(qcoeff_ptr, width, height, levels);
+    if (*eob > 1) av1_txb_init_levels(qcoeff_ptr, width, height, levels);
 #else
     if (eob > 1) av1_txb_init_levels(qcoeff, width, height, levels);
 #endif
@@ -1373,12 +1377,12 @@ int av1_optimize_txb_new(
     // TODO(angirbird): check iqmatrix
     const int non_skip_cost = txb_costs->txb_skip_cost[txb_skip_context][0];
     const int skip_cost = txb_costs->txb_skip_cost[txb_skip_context][1];
-    const int eob_cost = get_eob_cost(eob, txb_eob_costs, txb_costs, tx_class);
+    const int eob_cost = get_eob_cost(*eob, txb_eob_costs, txb_costs, tx_class);
     int accu_rate = eob_cost;
 
 
     int64_t accu_dist = 0;
-    int si = eob - 1;
+    int si = *eob - 1;
     const int ci = scan[si];
 #if 1
     const tran_low_t qc = qcoeff_ptr[ci];
@@ -1396,7 +1400,7 @@ int av1_optimize_txb_new(
             &accu_rate, 
             &accu_dist, 
             si, 
-            eob, 
+            *eob, 
             tx_size, 
             tx_class,
             bwl, 
@@ -1438,7 +1442,7 @@ int av1_optimize_txb_new(
 #define UPDATE_COEFF_EOB_CASE(tx_class_literal)                                       \
   case tx_class_literal:                                                              \
     for (; si >= 0 && nz_num <= max_nz_num && !fast_mode; --si) {                     \
-      update_coeff_eob(&accu_rate, &accu_dist, &eob, &nz_num, nz_ci, si,              \
+      update_coeff_eob(&accu_rate, &accu_dist, eob, &nz_num, nz_ci, si,              \
                        tx_size, tx_class_literal, bwl, height,                        \
                        dc_sign_context, rdmult, shift, p->dequant_QTX, scan,          \
                        txb_eob_costs, txb_costs, coeff_ptr, qcoeff_ptr, dqcoeff_ptr,  \
@@ -1454,14 +1458,14 @@ int av1_optimize_txb_new(
     }
 
     if (si == -1 && nz_num <= max_nz_num) {
-        update_skip(&accu_rate, accu_dist, &eob, nz_num, nz_ci, rdmult, skip_cost,
+        update_skip(&accu_rate, accu_dist, eob, nz_num, nz_ci, rdmult, skip_cost,
             non_skip_cost, qcoeff_ptr, dqcoeff_ptr, sharpness);
     }
 
 #define UPDATE_COEFF_SIMPLE_CASE(tx_class_literal)                                   \
   case tx_class_literal:                                                             \
     for (; si >= 1; --si) {                                                          \
-      update_coeff_simple(&accu_rate, si, eob, tx_size, tx_class_literal, bwl,       \
+      update_coeff_simple(&accu_rate, si, *eob, tx_size, tx_class_literal, bwl,       \
                           rdmult, shift, p->dequant_QTX, scan, txb_costs, coeff_ptr, \
                           qcoeff_ptr, dqcoeff_ptr, levels);                          \
     }                                                                                \
@@ -1483,18 +1487,18 @@ int av1_optimize_txb_new(
             p->dequant_QTX, scan, txb_costs, coeff_ptr, qcoeff_ptr, dqcoeff_ptr,
             levels);
     }
-#if 0 // Hsan_vod - TBD
+#if 0 // Hsan (Trellis)  - TBD
     const int tx_type_cost = get_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
 #endif
-    if (eob == 0)
+    if (*eob == 0)
         accu_rate += skip_cost;
     else
-#if 1 // Hsan_vod - TBD
+#if 1 // Hsan (Trellis)  - TBD
         accu_rate += non_skip_cost;
 #else
         accu_rate += non_skip_cost + tx_type_cost;
 #endif
-#if 0 // Hsan_vod - TBD
+#if 0 // Hsan (Trellis)  - TBD
     p->eobs[block] = eob;
     p->txb_entropy_ctx[block] =
         av1_get_txb_entropy_context(qcoeff, scan_order, p->eobs[block]);
@@ -1515,7 +1519,7 @@ int av1_optimize_b(
     const MacroblockPlane      *p,
     tran_low_t                 *qcoeff_ptr,
     tran_low_t                 *dqcoeff_ptr,
-    uint16_t                    eob,
+    uint16_t                   *eob,
     const SCAN_ORDER           *sc,
     const QUANT_PARAM          *qparam,
     TxSize                      tx_size,
@@ -1740,11 +1744,11 @@ void av1_quantize_inv_quantize_ii(
             &qparam);
 
 #if OPT_QUANT_OEFF
-    // Hsan_vod: only luma for now and only @ encode pass  
+    // Hsan (Trellis) : only luma for now and only @ encode pass  
     if (*eob != 0 && is_final_stage && component_type == COMPONENT_LUMA) {
         av1_optimize_b(
             md_rate_estimation_ptr,
-            full_lambda,    // Hsan_vod spatial or frequency
+            full_lambda,    // Hsan (Trellis)  spatial or frequency
             txb_skip_context,
             dc_sign_context,
             (tran_low_t*)coeff,
@@ -1753,7 +1757,7 @@ void av1_quantize_inv_quantize_ii(
             &candidate_plane,
             quant_coeff,
             (tran_low_t*)recon_coeff,
-            *eob,
+            eob,
             scan_order,
             &qparam,          
             transform_size,
