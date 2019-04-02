@@ -910,26 +910,27 @@ int av1_optimize_b(
 *  Unified Quant +iQuant
 *********************************************************************/
 void av1_quantize_inv_quantize_ii(
-    PictureControlSet_t *picture_control_set_ptr,
-    int32_t             *coeff,
-    const uint32_t       coeff_stride,
-    int32_t             *quant_coeff,
-    int32_t             *recon_coeff,
-    uint32_t             qp,
-    uint32_t             width,
-    uint32_t             height,
-    TxSize               transform_size,
-    uint16_t            *eob,
-    EbAsm                asm_type,
-    uint32_t            *y_count_non_zero_coeffs,
-#if !PF_N2_SUPPORT
-    EbPfMode              pf_mode,
-#endif
-    EbBool               is_inter,
-    uint32_t             component_type,
-    uint32_t             bit_increment,
-    TxType               tx_type,
-    EbBool               is_final_stage)
+    PictureControlSet_t        *picture_control_set_ptr,
+    int32_t                    *coeff,
+    const uint32_t              coeff_stride,
+    int32_t                    *quant_coeff,
+    int32_t                    *recon_coeff,
+    uint32_t                    qp,
+    uint32_t                    width,
+    uint32_t                    height,
+    TxSize                      transform_size,
+    uint16_t                   *eob,
+    EbAsm                       asm_type,
+    uint32_t                   *y_count_non_zero_coeffs,
+#if !PF_N2_SUPPORT            
+    EbPfMode                     pf_mode,
+#endif                        
+    EbBool                      is_inter,
+    uint32_t                    component_type,
+    uint32_t                    bit_increment,
+    TxType                      tx_type,
+    MdRateEstimationContext_t  *md_rate_estimation_ptr,
+    EbBool                      is_final_stage)
 {
 #if !PF_N2_SUPPORT
     (void)pf_mode;
@@ -1095,27 +1096,28 @@ void av1_quantize_inv_quantize_ii(
 
     }
 void av1_quantize_inv_quantize(
-    PictureControlSet_t *picture_control_set_ptr,
-    int32_t             *coeff,
-    const uint32_t       coeff_stride,
-    int32_t             *quant_coeff,
-    int32_t             *recon_coeff,
-    uint32_t             qp,
-    uint32_t             width,
-    uint32_t             height,
-    TxSize               txsize,
-    uint16_t            *eob,
-    MacroblockPlane      candidate_plane,
-    EbAsm                asm_type,
-    uint32_t            *y_count_non_zero_coeffs,
-#if !PF_N2_SUPPORT
-    EbPfMode             pf_mode,
-#endif
-    EbBool               is_inter,
-    uint32_t             component_type,
-    uint32_t             bit_increment,
-    TxType               tx_type,
-    EbBool               is_final_stage)
+    PictureControlSet_t         *picture_control_set_ptr,
+    int32_t                     *coeff,
+    const uint32_t               coeff_stride,
+    int32_t                     *quant_coeff,
+    int32_t                     *recon_coeff,
+    uint32_t                     qp,
+    uint32_t                     width,
+    uint32_t                     height,
+    TxSize                       txsize,
+    uint16_t                    *eob,
+    MacroblockPlane              candidate_plane,
+    EbAsm                        asm_type,
+    uint32_t                    *y_count_non_zero_coeffs,
+#if !PF_N2_SUPPORT             
+    EbPfMode                     pf_mode,
+#endif                         
+    EbBool                       is_inter,
+    uint32_t                     component_type,
+    uint32_t                     bit_increment,
+    TxType                       tx_type,
+    MdRateEstimationContext_t   *md_rate_estimation_ptr,
+    EbBool                       is_final_stage)
 {
     (void)coeff_stride;
     (void)candidate_plane;
@@ -1152,6 +1154,7 @@ void av1_quantize_inv_quantize(
         component_type,
         bit_increment,
         tx_type,
+        md_rate_estimation_ptr,
         is_final_stage);
 }
 
@@ -1222,6 +1225,7 @@ void ProductFullLoop(
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+            context_ptr->md_rate_estimation_ptr,
             EB_FALSE);
 
         candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[txb_1d_offset]);
@@ -1546,6 +1550,7 @@ void ProductFullLoopTxSearch(
                 COMPONENT_LUMA,
                 BIT_INCREMENT_8BIT,
                 tx_type,
+                context_ptr->md_rate_estimation_ptr,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]);
@@ -1749,6 +1754,7 @@ void encode_pass_tx_search(
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             tx_type,
+            context_ptr->md_rate_estimation_ptr,
             EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
@@ -1956,6 +1962,7 @@ void encode_pass_tx_search_hbd(
             COMPONENT_LUMA,
             BIT_INCREMENT_10BIT,
             tx_type,
+            context_ptr->md_rate_estimation_ptr,
             EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
@@ -2160,6 +2167,7 @@ void FullLoop_R(
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+                context_ptr->md_rate_estimation_ptr,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[1] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCb)[txb_1d_offset]);
@@ -2254,6 +2262,7 @@ void FullLoop_R(
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+                context_ptr->md_rate_estimation_ptr,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[2] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCr)[txb_1d_offset]);

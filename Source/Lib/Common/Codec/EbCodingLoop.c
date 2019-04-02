@@ -692,6 +692,7 @@ static void Av1EncodeLoop(
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_Y],
+            context_ptr->md_rate_estimation_ptr,
             EB_TRUE);
 
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -925,6 +926,7 @@ static void Av1EncodeLoop(
             COMPONENT_CHROMA_CB,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
+            context_ptr->md_rate_estimation_ptr,
             EB_TRUE);
 
         txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -971,6 +973,7 @@ static void Av1EncodeLoop(
             COMPONENT_CHROMA_CR,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
+            context_ptr->md_rate_estimation_ptr,
             EB_TRUE);
 
         txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
@@ -1164,6 +1167,7 @@ static void Av1EncodeLoop16bit(
                 COMPONENT_LUMA,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_Y],
+                context_ptr->md_rate_estimation_ptr,
                 EB_TRUE);
 
             txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -1322,6 +1326,7 @@ static void Av1EncodeLoop16bit(
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
+                context_ptr->md_rate_estimation_ptr,
                 EB_TRUE);
 
             txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -1374,6 +1379,7 @@ static void Av1EncodeLoop16bit(
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
+                context_ptr->md_rate_estimation_ptr,
                 EB_TRUE);
 
             txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
