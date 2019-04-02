@@ -1259,6 +1259,25 @@ static INLINE void update_skip(int *accu_rate, int64_t accu_dist, uint16_t *eob,
         *eob = 0;
     }
 }
+enum {
+    NO_AQ = 0,
+    VARIANCE_AQ = 1,
+    COMPLEXITY_AQ = 2,
+    CYCLIC_REFRESH_AQ = 3,
+    AQ_MODE_COUNT  // This should always be the last member of the enum
+} UENUM1BYTE(AQ_MODE);
+enum {
+    NO_DELTA_Q = 0,
+    DELTA_Q_ONLY = 1,
+    DELTA_Q_LF = 2,
+    DELTAQ_MODE_COUNT  // This should always be the last member of the enum
+} UENUM1BYTE(DELTAQ_MODE);
+
+// These numbers are empirically obtained.
+static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
+  { 17, 13 },
+  { 16, 10 },
+};
 int av1_optimize_txb_new(
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
     uint32_t                    full_lambda,
@@ -1275,6 +1294,8 @@ int av1_optimize_txb_new(
     const QUANT_PARAM          *qparam,
     TxSize                      tx_size,
     TxType                      tx_type,
+    EbBool                      is_inter,
+    uint32_t                    bit_increment,
     int                         plane) {
 #if 0
     const struct AV1_COMP *cpi, 
@@ -1287,10 +1308,13 @@ int av1_optimize_txb_new(
     int *rate_cost,
     int sharpness, int fast_mode) {
 #endif
-
-    int sharpness = 0;
-    int fast_mode = 0; // Hsan (Trellis) 
-
+    // Hsan (Trellis): hardcoded as not supported:
+    int sharpness = 0; // No Sharpness
+    int fast_mode = 0; // TBD
+    AQ_MODE aq_mode = NO_AQ;  
+    DELTAQ_MODE deltaq_mode = NO_DELTA_Q;
+    int8_t segment_id = 0;
+    int sb_energy_level = 0;
 #if 0
     MACROBLOCKD *xd = &x->e_mbd;
     struct macroblockd_plane *pd = &xd->plane[plane];
@@ -1347,24 +1371,22 @@ int av1_optimize_txb_new(
 #else
     const LV_MAP_EOB_COST *txb_eob_costs = &x->eob_costs[eob_multi_size][plane_type];
 #endif
-#if 1
-    const int64_t rdmult = full_lambda;
-#else
+
     const int rshift =
         (sharpness +
-        (cpi->oxcf.aq_mode == VARIANCE_AQ && mbmi->segment_id < 4
-            ? 7 - mbmi->segment_id
+        (aq_mode == VARIANCE_AQ && segment_id < 4
+            ? 7 - segment_id
             : 2) +
-            (cpi->oxcf.aq_mode != VARIANCE_AQ &&
-                cpi->oxcf.deltaq_mode > NO_DELTA_Q && x->sb_energy_level < 0
-                ? (3 - x->sb_energy_level)
+            (aq_mode != VARIANCE_AQ &&
+                deltaq_mode > NO_DELTA_Q && sb_energy_level < 0
+                ? (3 - sb_energy_level)
                 : 0));
     const int64_t rdmult =
-        (((int64_t)x->rdmult *
-        (plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8)))) +
+        (((int64_t)full_lambda *
+        (plane_rd_mult[is_inter][plane_type] << (2 * bit_increment))) +
             2) >>
         rshift;
-#endif
+
     uint8_t levels_buf[TX_PAD_2D];
     uint8_t *const levels = set_levels(levels_buf, width);
 
@@ -1524,6 +1546,8 @@ int av1_optimize_b(
     const QUANT_PARAM          *qparam,
     TxSize                      tx_size,
     TxType                      tx_type,
+    EbBool                      is_inter,
+    uint32_t                    bit_increment,
     int                         plane) {
 
 #if 0
@@ -1565,6 +1589,8 @@ int av1_optimize_b(
         qparam,
         tx_size,
         tx_type,
+        is_inter,
+        bit_increment,
         plane);
 #if 0
         cpi, 
@@ -1761,7 +1787,9 @@ void av1_quantize_inv_quantize_ii(
             scan_order,
             &qparam,          
             transform_size,
-            tx_type,
+            tx_type, 
+            is_inter,
+            bit_increment,
             0);
 #if 0
             cpi,
