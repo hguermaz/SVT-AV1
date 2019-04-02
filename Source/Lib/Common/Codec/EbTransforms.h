@@ -3908,7 +3908,7 @@ extern "C" {
 #if !PF_N2_SUPPORT
         EbPfMode             pf_mode,
 #endif
-        uint8_t              enable_contouring_qc_update_flag,
+        EbBool               is_inter,
         uint32_t             component_type,
         uint32_t             bit_increment,
         TxType               tx_type,
@@ -3930,7 +3930,7 @@ extern "C" {
 #if !PF_N2_SUPPORT
         EbPfMode             pf_mode,
 #endif
-        uint8_t              enable_contouring_qc_update_flag,
+        EbBool               is_inter,
         uint32_t             component_type,
         uint32_t             bit_increment,
         TxType               tx_type,

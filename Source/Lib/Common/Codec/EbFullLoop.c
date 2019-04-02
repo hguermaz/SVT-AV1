@@ -489,6 +489,22 @@ void av1_quantize_b_facade_II(
 }
 
 #if OPT_QUANT_OEFF
+// Hsan: code clean up; from static to extern as now used @ more than 1 file 
+static INLINE int32_t get_txb_bwl(TxSize tx_size) {
+    tx_size = av1_get_adjusted_tx_size(tx_size);
+    return tx_size_wide_log2[tx_size];
+}
+static INLINE int32_t get_txb_wide(TxSize tx_size) {
+    tx_size = av1_get_adjusted_tx_size(tx_size);
+    return tx_size_wide[tx_size];
+}
+static INLINE int32_t get_txb_high(TxSize tx_size) {
+    tx_size = av1_get_adjusted_tx_size(tx_size);
+    return tx_size_high[tx_size];
+}
+static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int32_t width) {
+    return levels_buf + TX_PAD_TOP * (width + TX_PAD_HOR);
+}
 static INLINE void update_coeff_general(
     int *accu_rate, 
     int64_t *accu_dist, 
@@ -624,26 +640,40 @@ static AOM_FORCE_INLINE void update_coeff_simple(
     }
 }
 int av1_optimize_txb_new(
+    const tran_low_t        *coeff_ptr,
+    int32_t                  stride,
+    intptr_t                 n_coeffs,
+    const MacroblockPlane   *p,
+    tran_low_t              *qcoeff_ptr,
+    tran_low_t              *dqcoeff_ptr,
+    uint16_t                 eob,
+    const SCAN_ORDER        *sc,
+    const QUANT_PARAM       *qparam,
+    TxSize                   tx_size,
+    TxType                   tx_type) {
 #if 0
     const struct AV1_COMP *cpi, 
     MACROBLOCK *x, 
-#endif
     int plane
-#if 0
     int block, 
     TX_SIZE tx_size, 
     TX_TYPE tx_type,
     const TXB_CTX *const txb_ctx, 
     int *rate_cost,
-    int sharpness, int fast_mode
+    int sharpness, int fast_mode) {
 #endif
-) {
+
 #if 0
     MACROBLOCKD *xd = &x->e_mbd;
     struct macroblockd_plane *pd = &xd->plane[plane];
     const struct macroblock_plane *p = &x->plane[plane];
+#endif
+    const SCAN_ORDER *const scan_order = &av1_scan_orders[tx_size][tx_type];
+#if 0
     const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
+#endif
     const int16_t *scan = scan_order->scan;
+#if 0
     const int shift = av1_get_tx_scale(tx_size);
     int eob = p->eobs[block];
     const int16_t *dequant = p->dequant_QTX;
@@ -665,9 +695,11 @@ int av1_optimize_txb_new(
     const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
     const TX_CLASS tx_class = tx_type_to_class[tx_type];
     const MB_MODE_INFO *mbmi = xd->mi[0];
+#endif
     const int bwl = get_txb_bwl(tx_size);
     const int width = get_txb_wide(tx_size);
     const int height = get_txb_high(tx_size);
+#if 0
     assert(width == (1 << bwl));
     const int is_inter = is_inter_block(mbmi);
     const LV_MAP_COEFF_COST *txb_costs = &x->coeff_costs[txs_ctx][plane_type];
@@ -689,27 +721,38 @@ int av1_optimize_txb_new(
         (plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8)))) +
             2) >>
         rshift;
-
+#endif
     uint8_t levels_buf[TX_PAD_2D];
     uint8_t *const levels = set_levels(levels_buf, width);
 
+#if 1
+    if (eob > 1) av1_txb_init_levels(qcoeff_ptr, width, height, levels);
+#else
     if (eob > 1) av1_txb_init_levels(qcoeff, width, height, levels);
-
+#endif
+#if 0
     // TODO(angirbird): check iqmatrix
 
     const int non_skip_cost = txb_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][0];
     const int skip_cost = txb_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][1];
     const int eob_cost = get_eob_cost(eob, txb_eob_costs, txb_costs, tx_class);
     int accu_rate = eob_cost;
+#endif
+
     int64_t accu_dist = 0;
     int si = eob - 1;
     const int ci = scan[si];
+#if 1
+    const tran_low_t qc = qcoeff_ptr[ci];
+#else
     const tran_low_t qc = qcoeff[ci];
+#endif
     const tran_low_t abs_qc = abs(qc);
     const int sign = qc < 0;
     const int max_nz_num = 2;
     int nz_num = 1;
     int nz_ci[3] = { ci, 0, 0 };
+#if 0
     if (abs_qc >= 2) {
         update_coeff_general(&accu_rate, &accu_dist, si, eob, tx_size, tx_class,
             bwl, height, rdmult, shift, txb_ctx->dc_sign_ctx,
@@ -798,22 +841,30 @@ int av1_optimize_txb_new(
 #endif
 }
 int av1_optimize_b(
-    const MacroblockPlane *p,
-    uint16_t *eob_ptr,
+    const tran_low_t        *coeff_ptr,
+    int32_t                  stride,
+    intptr_t                 n_coeffs,
+    const MacroblockPlane   *p,
+    tran_low_t              *qcoeff_ptr,
+    tran_low_t              *dqcoeff_ptr,
+    uint16_t                 eob,
+    const SCAN_ORDER        *sc,
+    const QUANT_PARAM       *qparam,
+    TxSize                   tx_size,
+    TxType                   tx_type) {
+
 #if 0
     const struct AV1_COMP *cpi, 
     MACROBLOCK *mb, 
-#endif
     int plane
-#if 0
     int block, 
     TX_SIZE tx_size, 
     TX_TYPE tx_type,
     const TXB_CTX *const txb_ctx, 
     int fast_mode,
-    int *rate_cost
+    int *rate_cost) {
 #endif
-) {
+
 #if 0
     MACROBLOCKD *const xd = &mb->e_mbd;
     struct macroblock_plane *const p = &mb->plane[plane];
@@ -826,12 +877,21 @@ int av1_optimize_b(
     }
 #endif
     return av1_optimize_txb_new(
+        coeff_ptr,
+        stride,
+        n_coeffs,
+        p,
+        qcoeff_ptr,
+        dqcoeff_ptr,
+        eob,
+        sc,
+        qparam,
+        tx_size,
+        tx_type
 #if 0
         cpi, 
         mb, 
-#endif
         plane
-#if 0
         block, 
         tx_size, 
         tx_type, 
@@ -865,13 +925,12 @@ void av1_quantize_inv_quantize_ii(
 #if !PF_N2_SUPPORT
     EbPfMode              pf_mode,
 #endif
-    uint8_t              enable_contouring_qc_update_flag,
+    EbBool               is_inter,
     uint32_t             component_type,
     uint32_t             bit_increment,
     TxType               tx_type,
     EbBool               is_final_stage)
 {
-    (void)enable_contouring_qc_update_flag;
 #if !PF_N2_SUPPORT
     (void)pf_mode;
 #endif
@@ -990,7 +1049,7 @@ void av1_quantize_inv_quantize_ii(
             &qparam);
     else
         av1_quantize_b_facade_II(
-        (tran_low_t*)coeff,
+            (tran_low_t*)coeff,
             coeff_stride,
             width,
             height,
@@ -1006,23 +1065,30 @@ void av1_quantize_inv_quantize_ii(
     // Hsan_vod: only luma for now and only @ encode pass  
     if (*eob != 0 && is_final_stage && component_type == COMPONENT_LUMA) {
         av1_optimize_b(
+            (tran_low_t*)coeff,
+            coeff_stride,
+            n_coeffs,
             &candidate_plane,
-            eob,
+            quant_coeff,
+            (tran_low_t*)recon_coeff,
+            *eob,
+            scan_order,
+            &qparam,          
+            transform_size,
+            tx_type);
 #if 0
             cpi,
             x,
-#endif
-            0 //plane
-#if 0
+            plane,
             block,
 
             tx_size,
             tx_type,
             txb_ctx,
             cpi->sf.trellis_eob_fast,
-            &rate_cost
+            &rate_cost);
 #endif      
-        );
+
     }
 #endif
     *y_count_non_zero_coeffs = *eob;
@@ -1045,7 +1111,7 @@ void av1_quantize_inv_quantize(
 #if !PF_N2_SUPPORT
     EbPfMode             pf_mode,
 #endif
-    uint8_t              enable_contouring_qc_update_flag,
+    EbBool               is_inter,
     uint32_t             component_type,
     uint32_t             bit_increment,
     TxType               tx_type,
@@ -1053,7 +1119,6 @@ void av1_quantize_inv_quantize(
 {
     (void)coeff_stride;
     (void)candidate_plane;
-    (void)enable_contouring_qc_update_flag;
 #if !PF_N2_SUPPORT
     (void)pf_mode;
 #endif
@@ -1083,7 +1148,7 @@ void av1_quantize_inv_quantize(
 #if !PF_N2_SUPPORT
         0,
 #endif
-        0,
+        is_inter,
         component_type,
         bit_increment,
         tx_type,
@@ -1153,7 +1218,7 @@ void ProductFullLoop(
 #if !PF_N2_SUPPORT
             context_ptr->pf_md_mode,
 #endif
-            0,
+            candidateBuffer->candidate_ptr->type == INTER_MODE,
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
@@ -1477,7 +1542,7 @@ void ProductFullLoopTxSearch(
 #if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
-                0,
+                candidateBuffer->candidate_ptr->type == INTER_MODE,
                 COMPONENT_LUMA,
                 BIT_INCREMENT_8BIT,
                 tx_type,
@@ -1680,7 +1745,7 @@ void encode_pass_tx_search(
 #if !PF_N2_SUPPORT
             0,
 #endif
-            0,
+            context_ptr->is_inter,
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             tx_type,
@@ -1887,7 +1952,7 @@ void encode_pass_tx_search_hbd(
 #if !PF_N2_SUPPORT
             0,
 #endif
-            0,
+            context_ptr->is_inter,
             COMPONENT_LUMA,
             BIT_INCREMENT_10BIT,
             tx_type,
@@ -2091,7 +2156,7 @@ void FullLoop_R(
 #if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
-                0,
+                candidateBuffer->candidate_ptr->type == INTER_MODE,
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
@@ -2185,7 +2250,7 @@ void FullLoop_R(
 #if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
-                0,
+                candidateBuffer->candidate_ptr->type == INTER_MODE, 
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
