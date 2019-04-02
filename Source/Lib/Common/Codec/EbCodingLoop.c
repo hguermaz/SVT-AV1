@@ -693,6 +693,8 @@ static void Av1EncodeLoop(
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_Y],
             context_ptr->md_rate_estimation_ptr,
+            context_ptr->md_context->full_lambda,
+            cu_ptr->luma_txb_skip_context,
             EB_TRUE);
 
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -927,6 +929,8 @@ static void Av1EncodeLoop(
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
             context_ptr->md_rate_estimation_ptr,
+            context_ptr->md_context->full_lambda,
+            cu_ptr->cb_txb_skip_context,
             EB_TRUE);
 
         txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -974,6 +978,8 @@ static void Av1EncodeLoop(
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
             context_ptr->md_rate_estimation_ptr,
+            context_ptr->md_context->full_lambda,
+            cu_ptr->cr_txb_skip_context,
             EB_TRUE);
 
         txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
@@ -1168,6 +1174,8 @@ static void Av1EncodeLoop16bit(
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_Y],
                 context_ptr->md_rate_estimation_ptr,
+                context_ptr->md_context->full_lambda,
+                cu_ptr->luma_txb_skip_context,
                 EB_TRUE);
 
             txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -1327,6 +1335,8 @@ static void Av1EncodeLoop16bit(
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 context_ptr->md_rate_estimation_ptr,
+                context_ptr->md_context->full_lambda,
+                cu_ptr->cr_txb_skip_context,
                 EB_TRUE);
 
             txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -1380,6 +1390,8 @@ static void Av1EncodeLoop16bit(
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 context_ptr->md_rate_estimation_ptr,
+                context_ptr->md_context->full_lambda,
+                cu_ptr->cb_txb_skip_context,
                 EB_TRUE);
 
             txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;

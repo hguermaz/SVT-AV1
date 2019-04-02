@@ -3913,6 +3913,8 @@ extern "C" {
         uint32_t                    bit_increment,
         TxType                      tx_type, 
         MdRateEstimationContext_t  *md_rate_estimation_ptr,
+        uint32_t                    full_lambda,
+        int16_t                     txb_skip_context,
         EbBool                      is_final_stage);
 
     extern void av1_quantize_inv_quantize_ii(
@@ -3936,6 +3938,8 @@ extern "C" {
         uint32_t                    bit_increment,
         TxType                      tx_type,
         MdRateEstimationContext_t  *md_rate_estimation_ptr,
+        uint32_t                    full_lambda,
+        int16_t                     txb_skip_context,
         EbBool                      is_final_stage);
 
     extern EbErrorType av1_estimate_inv_transform(

@@ -505,6 +505,85 @@ static INLINE int32_t get_txb_high(TxSize tx_size) {
 static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int32_t width) {
     return levels_buf + TX_PAD_TOP * (width + TX_PAD_HOR);
 }
+static INLINE TxSize get_txsize_entropy_ctx(TxSize txsize) {
+    return (TxSize)((txsize_sqr_map[txsize] + txsize_sqr_up_map[txsize] + 1) >>
+        1);
+}
+static INLINE PLANE_TYPE get_plane_type(int plane) {
+    return (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
+}
+static const int16_t k_eob_offset_bits[12] = { 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+static int32_t get_eob_cost(int32_t eob, const LV_MAP_EOB_COST *txb_eob_costs,
+    const LV_MAP_COEFF_COST *txb_costs, TxType tx_type) {
+    int32_t eob_extra;
+    const int32_t eob_pt = get_eob_pos_token(eob, &eob_extra);
+    int32_t eob_cost = 0;
+    const int32_t eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
+    eob_cost = txb_eob_costs->eob_cost[eob_multi_ctx][eob_pt - 1];
+
+    if (k_eob_offset_bits[eob_pt] > 0) {
+        const int32_t eob_shift = k_eob_offset_bits[eob_pt] - 1;
+        const int32_t bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+        eob_cost += txb_costs->eob_extra_cost[eob_pt][bit];
+        const int32_t offset_bits = k_eob_offset_bits[eob_pt];
+        if (offset_bits > 1) eob_cost += av1_cost_literal(offset_bits - 1);
+    }
+    return eob_cost;
+}
+
+static const int16_t k_eob_group_start[12] = { 0, 1, 2, 3, 5, 9, 17, 33, 65, 129, 257, 513 };
+
+static const int8_t eob_to_pos_small[33] = {
+    0, 1, 2,                                        // 0-2
+    3, 3,                                           // 3-4
+    4, 4, 4, 4,                                     // 5-8
+    5, 5, 5, 5, 5, 5, 5, 5,                         // 9-16
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6  // 17-32
+};
+
+static const int8_t eob_to_pos_large[17] = {
+    6,                               // place holder
+    7,                               // 33-64
+    8, 8,                            // 65-128
+    9, 9, 9, 9,                      // 129-256
+    10, 10, 10, 10, 10, 10, 10, 10,  // 257-512
+    11                               // 513-
+};
+
+static INLINE int32_t get_eob_pos_token(const int32_t eob, int32_t *const extra) {
+    int32_t t;
+
+    if (eob < 33) {
+        t = eob_to_pos_small[eob];
+    }
+    else {
+        const int32_t e = AOMMIN((eob - 1) >> 5, 16);
+        t = eob_to_pos_large[e];
+    }
+
+    *extra = eob - k_eob_group_start[t];
+
+    return t;
+}
+static INLINE int get_lower_levels_ctx_general(int is_last, int scan_idx,
+    int bwl, int height,
+    const uint8_t *levels,
+    int coeff_idx, TxSize tx_size,
+    TX_CLASS tx_class) {
+    if (is_last) {
+        if (scan_idx == 0) return 0;
+        if (scan_idx <= (height << bwl) >> 3) return 1;
+        if (scan_idx <= (height << bwl) >> 2) return 2;
+        return 3;
+    }
+    return get_lower_levels_ctx(levels, coeff_idx, bwl, tx_size, tx_class);
+}
+static INLINE int get_lower_levels_ctx_eob(int bwl, int height, int scan_idx) {
+    if (scan_idx == 0) return 0;
+    if (scan_idx <= (height << bwl) / 8) return 1;
+    if (scan_idx <= (height << bwl) / 4) return 2;
+    return 3;
+}
 static INLINE void update_coeff_general(
     int *accu_rate, 
     int64_t *accu_dist, 
@@ -640,17 +719,21 @@ static AOM_FORCE_INLINE void update_coeff_simple(
     }
 }
 int av1_optimize_txb_new(
-    const tran_low_t        *coeff_ptr,
-    int32_t                  stride,
-    intptr_t                 n_coeffs,
-    const MacroblockPlane   *p,
-    tran_low_t              *qcoeff_ptr,
-    tran_low_t              *dqcoeff_ptr,
-    uint16_t                 eob,
-    const SCAN_ORDER        *sc,
-    const QUANT_PARAM       *qparam,
-    TxSize                   tx_size,
-    TxType                   tx_type) {
+    MdRateEstimationContext_t  *md_rate_estimation_ptr,
+    uint32_t                    full_lambda,
+    int16_t                     txb_skip_context,
+    const tran_low_t           *coeff_ptr,
+    int32_t                     stride,
+    intptr_t                    n_coeffs,
+    const MacroblockPlane      *p,
+    tran_low_t                 *qcoeff_ptr,
+    tran_low_t                 *dqcoeff_ptr,
+    uint16_t                    eob,
+    const SCAN_ORDER           *sc,
+    const QUANT_PARAM          *qparam,
+    TxSize                      tx_size,
+    TxType                      tx_type,
+    int                         plane) {
 #if 0
     const struct AV1_COMP *cpi, 
     MACROBLOCK *x, 
@@ -691,22 +774,36 @@ int av1_optimize_txb_new(
     }
 
     const AV1_COMMON *cm = &cpi->common;
+#endif
     const PLANE_TYPE plane_type = get_plane_type(plane);
-    const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
+
+    const TxSize txs_ctx = get_txsize_entropy_ctx(tx_size);
     const TX_CLASS tx_class = tx_type_to_class[tx_type];
+#if 0
     const MB_MODE_INFO *mbmi = xd->mi[0];
 #endif
     const int bwl = get_txb_bwl(tx_size);
     const int width = get_txb_wide(tx_size);
     const int height = get_txb_high(tx_size);
-#if 0
     assert(width == (1 << bwl));
+#if 0   
     const int is_inter = is_inter_block(mbmi);
+#endif
+#if 1
+    const LV_MAP_COEFF_COST *txb_costs = &md_rate_estimation_ptr->coeffFacBits[txs_ctx][plane_type];
+#else
     const LV_MAP_COEFF_COST *txb_costs = &x->coeff_costs[txs_ctx][plane_type];
-    const int eob_multi_size = txsize_log2_minus4[tx_size];
-    const LV_MAP_EOB_COST *txb_eob_costs =
-        &x->eob_costs[eob_multi_size][plane_type];
+#endif
 
+    const int eob_multi_size = txsize_log2_minus4[tx_size];
+#if 1
+    const LV_MAP_EOB_COST *txb_eob_costs = &md_rate_estimation_ptr->eobFracBits[eob_multi_size][plane_type];
+#else
+    const LV_MAP_EOB_COST *txb_eob_costs = &x->eob_costs[eob_multi_size][plane_type];
+#endif
+#if 1
+    const int64_t rdmult = full_lambda;
+#else
     const int rshift =
         (sharpness +
         (cpi->oxcf.aq_mode == VARIANCE_AQ && mbmi->segment_id < 4
@@ -730,14 +827,13 @@ int av1_optimize_txb_new(
 #else
     if (eob > 1) av1_txb_init_levels(qcoeff, width, height, levels);
 #endif
-#if 0
-    // TODO(angirbird): check iqmatrix
 
-    const int non_skip_cost = txb_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][0];
-    const int skip_cost = txb_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][1];
+    // TODO(angirbird): check iqmatrix
+    const int non_skip_cost = txb_costs->txb_skip_cost[txb_skip_context][0];
+    const int skip_cost = txb_costs->txb_skip_cost[txb_skip_context][1];
     const int eob_cost = get_eob_cost(eob, txb_eob_costs, txb_costs, tx_class);
     int accu_rate = eob_cost;
-#endif
+
 
     int64_t accu_dist = 0;
     int si = eob - 1;
@@ -752,28 +848,54 @@ int av1_optimize_txb_new(
     const int max_nz_num = 2;
     int nz_num = 1;
     int nz_ci[3] = { ci, 0, 0 };
-#if 0
+
     if (abs_qc >= 2) {
-        update_coeff_general(&accu_rate, &accu_dist, si, eob, tx_size, tx_class,
-            bwl, height, rdmult, shift, txb_ctx->dc_sign_ctx,
-            dequant, scan, txb_costs, tcoeff, qcoeff, dqcoeff,
+#if 0
+        update_coeff_general(
+            &accu_rate, 
+            &accu_dist, 
+            si, 
+            eob, 
+            tx_size, 
+            tx_class,
+            bwl, 
+            height, 
+            rdmult, 
+            shift, 
+            txb_ctx->dc_sign_ctx,
+            dequant,
+            scan, 
+            txb_costs, 
+            tcoeff, 
+            qcoeff, 
+            dqcoeff,
             levels);
+#endif
         --si;
     }
     else {
         assert(abs_qc == 1);
         const int coeff_ctx = get_lower_levels_ctx_eob(bwl, height, si);
-        accu_rate +=
-            get_coeff_cost_eob(ci, abs_qc, sign, coeff_ctx, txb_ctx->dc_sign_ctx,
-                txb_costs, bwl, tx_class);
+#if 0
+        accu_rate += get_coeff_cost_eob(
+            ci, 
+            abs_qc, 
+            sign, 
+            coeff_ctx, 
+            txb_ctx->dc_sign_ctx,
+            txb_costs, 
+            bwl, 
+            tx_class);
+
         const tran_low_t tqc = tcoeff[ci];
         const tran_low_t dqc = dqcoeff[ci];
         const int64_t dist = get_coeff_dist(tqc, dqc, shift);
         const int64_t dist0 = get_coeff_dist(tqc, 0, shift);
         accu_dist += dist - dist0;
         --si;
+#endif
     }
-
+#if 0
 #define UPDATE_COEFF_EOB_CASE(tx_class_literal)                            \
   case tx_class_literal:                                                   \
     for (; si >= 0 && nz_num <= max_nz_num && !fast_mode; --si) {          \
@@ -841,17 +963,21 @@ int av1_optimize_txb_new(
 #endif
 }
 int av1_optimize_b(
-    const tran_low_t        *coeff_ptr,
-    int32_t                  stride,
-    intptr_t                 n_coeffs,
-    const MacroblockPlane   *p,
-    tran_low_t              *qcoeff_ptr,
-    tran_low_t              *dqcoeff_ptr,
-    uint16_t                 eob,
-    const SCAN_ORDER        *sc,
-    const QUANT_PARAM       *qparam,
-    TxSize                   tx_size,
-    TxType                   tx_type) {
+    MdRateEstimationContext_t  *md_rate_estimation_ptr,
+    uint32_t                    full_lambda,
+    int16_t                     txb_skip_context,
+    const tran_low_t           *coeff_ptr,
+    int32_t                     stride,
+    intptr_t                    n_coeffs,
+    const MacroblockPlane      *p,
+    tran_low_t                 *qcoeff_ptr,
+    tran_low_t                 *dqcoeff_ptr,
+    uint16_t                    eob,
+    const SCAN_ORDER           *sc,
+    const QUANT_PARAM          *qparam,
+    TxSize                      tx_size,
+    TxType                      tx_type,
+    int                         plane) {
 
 #if 0
     const struct AV1_COMP *cpi, 
@@ -877,6 +1003,9 @@ int av1_optimize_b(
     }
 #endif
     return av1_optimize_txb_new(
+        md_rate_estimation_ptr,
+        full_lambda,
+        txb_skip_context,
         coeff_ptr,
         stride,
         n_coeffs,
@@ -887,7 +1016,8 @@ int av1_optimize_b(
         sc,
         qparam,
         tx_size,
-        tx_type
+        tx_type,
+        plane);
 #if 0
         cpi, 
         mb, 
@@ -898,9 +1028,9 @@ int av1_optimize_b(
         txb_ctx,
         rate_cost, 
         cpi->oxcf.sharpness, 
-        fast_mode
+        fast_mode    );
 #endif    
-    );
+
 }
 #endif
 
@@ -930,6 +1060,8 @@ void av1_quantize_inv_quantize_ii(
     uint32_t                    bit_increment,
     TxType                      tx_type,
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
+    uint32_t                    full_lambda,
+    int16_t                     txb_skip_context,
     EbBool                      is_final_stage)
 {
 #if !PF_N2_SUPPORT
@@ -1066,6 +1198,9 @@ void av1_quantize_inv_quantize_ii(
     // Hsan_vod: only luma for now and only @ encode pass  
     if (*eob != 0 && is_final_stage && component_type == COMPONENT_LUMA) {
         av1_optimize_b(
+            md_rate_estimation_ptr,
+            full_lambda,
+            txb_skip_context,
             (tran_low_t*)coeff,
             coeff_stride,
             n_coeffs,
@@ -1076,7 +1211,8 @@ void av1_quantize_inv_quantize_ii(
             scan_order,
             &qparam,          
             transform_size,
-            tx_type);
+            tx_type,
+            0);
 #if 0
             cpi,
             x,
@@ -1117,6 +1253,8 @@ void av1_quantize_inv_quantize(
     uint32_t                     bit_increment,
     TxType                       tx_type,
     MdRateEstimationContext_t   *md_rate_estimation_ptr,
+    uint32_t                     full_lambda,
+    int16_t                      txb_skip_context,
     EbBool                       is_final_stage)
 {
     (void)coeff_stride;
@@ -1155,7 +1293,10 @@ void av1_quantize_inv_quantize(
         bit_increment,
         tx_type,
         md_rate_estimation_ptr,
+        full_lambda,
+        txb_skip_context, 
         is_final_stage);
+
 }
 
 /****************************************
@@ -1226,6 +1367,8 @@ void ProductFullLoop(
             BIT_INCREMENT_8BIT,
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
             context_ptr->md_rate_estimation_ptr,
+            context_ptr->full_lambda,
+            0,
             EB_FALSE);
 
         candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[txb_1d_offset]);
@@ -1551,6 +1694,8 @@ void ProductFullLoopTxSearch(
                 BIT_INCREMENT_8BIT,
                 tx_type,
                 context_ptr->md_rate_estimation_ptr,
+                context_ptr->full_lambda,
+                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]);
@@ -1755,6 +1900,8 @@ void encode_pass_tx_search(
             BIT_INCREMENT_8BIT,
             tx_type,
             context_ptr->md_rate_estimation_ptr,
+            context_ptr->full_lambda,
+            0,
             EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
@@ -1963,6 +2110,8 @@ void encode_pass_tx_search_hbd(
             BIT_INCREMENT_10BIT,
             tx_type,
             context_ptr->md_rate_estimation_ptr,
+            context_ptr->full_lambda,
+            0,
             EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
@@ -2168,6 +2317,8 @@ void FullLoop_R(
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 context_ptr->md_rate_estimation_ptr,
+                context_ptr->full_lambda,
+                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[1] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCb)[txb_1d_offset]);
@@ -2263,6 +2414,8 @@ void FullLoop_R(
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 context_ptr->md_rate_estimation_ptr,
+                context_ptr->full_lambda,
+                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[2] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCr)[txb_1d_offset]);
