@@ -565,6 +565,226 @@ static INLINE int32_t get_eob_pos_token(const int32_t eob, int32_t *const extra)
 
     return t;
 }
+static const uint8_t clip_max3[256] = {
+  0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+};
+
+static AOM_FORCE_INLINE int get_nz_mag(const uint8_t *const levels,
+    const int bwl, const TX_CLASS tx_class) {
+    int mag;
+
+    // Note: AOMMIN(level, 3) is useless for decoder since level < 3.
+    mag = clip_max3[levels[1]];                         // { 0, 1 }
+    mag += clip_max3[levels[(1 << bwl) + TX_PAD_HOR]];  // { 1, 0 }
+
+    if (tx_class == TX_CLASS_2D) {
+        mag += clip_max3[levels[(1 << bwl) + TX_PAD_HOR + 1]];          // { 1, 1 }
+        mag += clip_max3[levels[2]];                                    // { 0, 2 }
+        mag += clip_max3[levels[(2 << bwl) + (2 << TX_PAD_HOR_LOG2)]];  // { 2, 0 }
+    }
+    else if (tx_class == TX_CLASS_VERT) {
+        mag += clip_max3[levels[(2 << bwl) + (2 << TX_PAD_HOR_LOG2)]];  // { 2, 0 }
+        mag += clip_max3[levels[(3 << bwl) + (3 << TX_PAD_HOR_LOG2)]];  // { 3, 0 }
+        mag += clip_max3[levels[(4 << bwl) + (4 << TX_PAD_HOR_LOG2)]];  // { 4, 0 }
+    }
+    else {
+        mag += clip_max3[levels[2]];  // { 0, 2 }
+        mag += clip_max3[levels[3]];  // { 0, 3 }
+        mag += clip_max3[levels[4]];  // { 0, 4 }
+    }
+
+    return mag;
+}
+
+// The ctx offset table when TX is TX_CLASS_2D.
+// TX col and row indices are clamped to 4.
+const static int8_t av1_nz_map_ctx_offset[TX_SIZES_ALL][5][5] = {
+    // TX_4X4
+    { { 0, 1, 6, 6, 0 },
+    { 1, 6, 6, 21, 0 },
+    { 6, 6, 21, 21, 0 },
+    { 6, 21, 21, 21, 0 },
+    { 0, 0, 0, 0, 0 } },
+    // TX_8X8
+    { { 0, 1, 6, 6, 21 },
+    { 1, 6, 6, 21, 21 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_16X16
+    { { 0, 1, 6, 6, 21 },
+    { 1, 6, 6, 21, 21 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_32X32
+    { { 0, 1, 6, 6, 21 },
+    { 1, 6, 6, 21, 21 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_64X64
+    { { 0, 1, 6, 6, 21 },
+    { 1, 6, 6, 21, 21 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_4X8
+    { { 0, 11, 11, 11, 0 },
+    { 11, 11, 11, 11, 0 },
+    { 6, 6, 21, 21, 0 },
+    { 6, 21, 21, 21, 0 },
+    { 21, 21, 21, 21, 0 } },
+    // TX_8X4
+    { { 0, 16, 6, 6, 21 },
+    { 16, 16, 6, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 0, 0, 0, 0, 0 } },
+    // TX_8X16
+    { { 0, 11, 11, 11, 11 },
+    { 11, 11, 11, 11, 11 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_16X8
+    { { 0, 16, 6, 6, 21 },
+    { 16, 16, 6, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 } },
+    // TX_16X32
+    { { 0, 11, 11, 11, 11 },
+    { 11, 11, 11, 11, 11 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_32X16
+    { { 0, 16, 6, 6, 21 },
+    { 16, 16, 6, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 } },
+    // TX_32X64
+    { { 0, 11, 11, 11, 11 },
+    { 11, 11, 11, 11, 11 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_64X32
+    { { 0, 16, 6, 6, 21 },
+    { 16, 16, 6, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 } },
+    // TX_4X16
+    { { 0, 11, 11, 11, 0 },
+    { 11, 11, 11, 11, 0 },
+    { 6, 6, 21, 21, 0 },
+    { 6, 21, 21, 21, 0 },
+    { 21, 21, 21, 21, 0 } },
+    // TX_16X4
+    { { 0, 16, 6, 6, 21 },
+    { 16, 16, 6, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 0, 0, 0, 0, 0 } },
+    // TX_8X32
+    { { 0, 11, 11, 11, 11 },
+    { 11, 11, 11, 11, 11 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_32X8
+    { { 0, 16, 6, 6, 21 },
+    { 16, 16, 6, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 } },
+    // TX_16X64
+    { { 0, 11, 11, 11, 11 },
+    { 11, 11, 11, 11, 11 },
+    { 6, 6, 21, 21, 21 },
+    { 6, 21, 21, 21, 21 },
+    { 21, 21, 21, 21, 21 } },
+    // TX_64X16
+    { { 0, 16, 6, 6, 21 },
+    { 16, 16, 6, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 },
+    { 16, 16, 21, 21, 21 } }
+};
+
+#define NZ_MAP_CTX_0 SIG_COEF_CONTEXTS_2D
+#define NZ_MAP_CTX_5 (NZ_MAP_CTX_0 + 5)
+#define NZ_MAP_CTX_10 (NZ_MAP_CTX_0 + 10)
+
+static const int nz_map_ctx_offset_1d[32] = {
+  NZ_MAP_CTX_0,  NZ_MAP_CTX_5,  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+  NZ_MAP_CTX_10, NZ_MAP_CTX_10,
+};
+static AOM_FORCE_INLINE int get_nz_map_ctx_from_stats(
+    const int stats,
+    const int coeff_idx,  // raster order
+    const int bwl, const TxSize tx_size, const TX_CLASS tx_class) {
+    // tx_class == 0(TX_CLASS_2D)
+    if ((tx_class | coeff_idx) == 0) return 0;
+    int ctx = (stats + 1) >> 1;
+    ctx = AOMMIN(ctx, 4);
+    switch (tx_class) {
+    case TX_CLASS_2D: {
+        // This is the algorithm to generate av1_nz_map_ctx_offset[][]
+        //   const int width = tx_size_wide[tx_size];
+        //   const int height = tx_size_high[tx_size];
+        //   if (width < height) {
+        //     if (row < 2) return 11 + ctx;
+        //   } else if (width > height) {
+        //     if (col < 2) return 16 + ctx;
+        //   }
+        //   if (row + col < 2) return ctx + 1;
+        //   if (row + col < 4) return 5 + ctx + 1;
+        //   return 21 + ctx;
+        return ctx + av1_nz_map_ctx_offset[tx_size][coeff_idx];
+    }
+    case TX_CLASS_HORIZ: {
+        const int row = coeff_idx >> bwl;
+        const int col = coeff_idx - (row << bwl);
+        return ctx + nz_map_ctx_offset_1d[col];
+    }
+    case TX_CLASS_VERT: {
+        const int row = coeff_idx >> bwl;
+        return ctx + nz_map_ctx_offset_1d[row];
+    }
+    default: break;
+    }
+    return 0;
+}
+static INLINE int get_padded_idx(const int idx, const int bwl) {
+    return idx + ((idx >> bwl) << TX_PAD_HOR_LOG2);
+}
+
+static AOM_FORCE_INLINE int get_lower_levels_ctx(const uint8_t *levels,
+    int coeff_idx, int bwl,
+    TxSize tx_size,
+    TX_CLASS tx_class) {
+    const int stats =
+        get_nz_mag(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
+    return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, tx_size, tx_class);
+}
 static INLINE int get_lower_levels_ctx_general(int is_last, int scan_idx,
     int bwl, int height,
     const uint8_t *levels,
@@ -584,6 +804,113 @@ static INLINE int get_lower_levels_ctx_eob(int bwl, int height, int scan_idx) {
     if (scan_idx <= (height << bwl) / 4) return 2;
     return 3;
 }
+
+static INLINE int32_t get_br_ctx(const uint8_t *const levels,
+    const int32_t c,  // raster order
+    const int32_t bwl, const TxType tx_type) {
+    const int32_t row = c >> bwl;
+    const int32_t col = c - (row << bwl);
+    const int32_t stride = (1 << bwl) + TX_PAD_HOR;
+    const TX_CLASS tx_class = tx_type_to_class[tx_type];
+    const int32_t pos = row * stride + col;
+    int32_t mag = levels[pos + 1];
+    mag += levels[pos + stride];
+    switch (tx_class) {
+    case TX_CLASS_2D:
+        mag += levels[pos + stride + 1];
+        mag = AOMMIN((mag + 1) >> 1, 6);
+        if (c == 0) return mag;
+        if ((row < 2) && (col < 2)) return mag + 7;
+        break;
+    case TX_CLASS_HORIZ:
+        mag += levels[pos + 2];
+        mag = AOMMIN((mag + 1) >> 1, 6);
+        if (c == 0) return mag;
+        if (col == 0) return mag + 7;
+        break;
+    case TX_CLASS_VERT:
+        mag += levels[pos + (stride << 1)];
+        mag = AOMMIN((mag + 1) >> 1, 6);
+        if (c == 0) return mag;
+        if (row == 0) return mag + 7;
+        break;
+    default: break;
+    }
+
+    return mag + 14;
+}
+static AOM_FORCE_INLINE int get_br_ctx_eob(const int c,  // raster order
+    const int bwl,
+    const TX_CLASS tx_class) {
+    const int row = c >> bwl;
+    const int col = c - (row << bwl);
+    if (c == 0) return 0;
+    if ((tx_class == TX_CLASS_2D && row < 2 && col < 2) ||
+        (tx_class == TX_CLASS_HORIZ && col == 0) ||
+        (tx_class == TX_CLASS_VERT && row == 0))
+        return 7;
+    return 14;
+}
+static INLINE int get_coeff_cost_general(int is_last, int ci, tran_low_t abs_qc,
+    int sign, int coeff_ctx,
+    int dc_sign_ctx,
+    const LV_MAP_COEFF_COST *txb_costs,
+    int bwl, TX_CLASS tx_class,
+    const uint8_t *levels) {
+    int cost = 0;
+    if (is_last) {
+        cost += txb_costs->base_eob_cost[coeff_ctx][AOMMIN(abs_qc, 3) - 1];
+    }
+    else {
+        cost += txb_costs->base_cost[coeff_ctx][AOMMIN(abs_qc, 3)];
+    }
+    if (abs_qc != 0) {
+        if (ci == 0) {
+            cost += txb_costs->dc_sign_cost[dc_sign_ctx][sign];
+        }
+        else {
+            cost += av1_cost_literal(1);
+        }
+        if (abs_qc > NUM_BASE_LEVELS) {
+            int br_ctx;
+            if (is_last)
+                br_ctx = get_br_ctx_eob(ci, bwl, tx_class);
+            else
+                br_ctx = get_br_ctx(levels, ci, bwl, tx_class);
+            cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
+        }
+    }
+    return cost;
+}
+static INLINE int32_t get_golomb_cost(int32_t abs_qc) {
+    if (abs_qc >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+        const int32_t r = abs_qc - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
+        const int32_t length = get_msb(r) + 1;
+        return av1_cost_literal(2 * length - 1);
+    }
+    return 0;
+}
+static INLINE int get_br_cost(tran_low_t level, const int *coeff_lps) {
+    const int base_range = AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
+    return coeff_lps[base_range] + get_golomb_cost(level);
+}
+static INLINE int64_t get_coeff_dist(tran_low_t tcoeff, tran_low_t dqcoeff,
+    int shift) {
+    const int64_t diff = (tcoeff - dqcoeff) * (1 << shift);
+    const int64_t error = diff * diff;
+    return error;
+}
+static INLINE void get_qc_dqc_low(tran_low_t abs_qc, int sign, int dqv,
+    int shift, tran_low_t *qc_low,
+    tran_low_t *dqc_low) {
+    tran_low_t abs_qc_low = abs_qc - 1;
+    *qc_low = (-sign ^ abs_qc_low) + sign;
+    assert((sign ? -abs_qc_low : abs_qc_low) == *qc_low);
+    tran_low_t abs_dqc_low = (abs_qc_low * dqv) >> shift;
+    *dqc_low = (-sign ^ abs_dqc_low) + sign;
+    assert((sign ? -abs_dqc_low : abs_dqc_low) == *dqc_low);
+}
+
 static INLINE void update_coeff_general(
     int *accu_rate, 
     int64_t *accu_dist, 
@@ -718,10 +1045,33 @@ static AOM_FORCE_INLINE void update_coeff_simple(
         }
     }
 }
+static INLINE int get_coeff_cost_eob(int ci, tran_low_t abs_qc, int sign,
+    int coeff_ctx, int dc_sign_ctx,
+    const LV_MAP_COEFF_COST *txb_costs,
+    int bwl, TX_CLASS tx_class) {
+    int cost = 0;
+    cost += txb_costs->base_eob_cost[coeff_ctx][AOMMIN(abs_qc, 3) - 1];
+    if (abs_qc != 0) {
+        if (ci == 0) {
+            cost += txb_costs->dc_sign_cost[dc_sign_ctx][sign];
+        }
+        else {
+            cost += av1_cost_literal(1);
+        }
+        if (abs_qc > NUM_BASE_LEVELS) {
+            int br_ctx;
+            br_ctx = get_br_ctx_eob(ci, bwl, tx_class);
+            cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
+        }
+    }
+    return cost;
+}
+
 int av1_optimize_txb_new(
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
     uint32_t                    full_lambda,
     int16_t                     txb_skip_context,
+    int16_t                     dc_sign_context,
     const tran_low_t           *coeff_ptr,
     int32_t                     stride,
     intptr_t                    n_coeffs,
@@ -756,8 +1106,9 @@ int av1_optimize_txb_new(
     const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
 #endif
     const int16_t *scan = scan_order->scan;
-#if 0
+
     const int shift = av1_get_tx_scale(tx_size);
+#if 0
     int eob = p->eobs[block];
     const int16_t *dequant = p->dequant_QTX;
     tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -850,7 +1201,6 @@ int av1_optimize_txb_new(
     int nz_ci[3] = { ci, 0, 0 };
 
     if (abs_qc >= 2) {
-#if 0
         update_coeff_general(
             &accu_rate, 
             &accu_dist, 
@@ -862,38 +1212,36 @@ int av1_optimize_txb_new(
             height, 
             rdmult, 
             shift, 
-            txb_ctx->dc_sign_ctx,
-            dequant,
+            dc_sign_context,
+            p->dequant_QTX,
             scan, 
             txb_costs, 
-            tcoeff, 
-            qcoeff, 
-            dqcoeff,
+            coeff_ptr,
+            qcoeff_ptr,
+            dqcoeff_ptr,
             levels);
-#endif
         --si;
     }
     else {
         assert(abs_qc == 1);
         const int coeff_ctx = get_lower_levels_ctx_eob(bwl, height, si);
-#if 0
         accu_rate += get_coeff_cost_eob(
             ci, 
             abs_qc, 
             sign, 
             coeff_ctx, 
-            txb_ctx->dc_sign_ctx,
+            dc_sign_context,
             txb_costs, 
             bwl, 
             tx_class);
 
-        const tran_low_t tqc = tcoeff[ci];
-        const tran_low_t dqc = dqcoeff[ci];
+        const tran_low_t tqc = coeff_ptr[ci];
+        const tran_low_t dqc = dqcoeff_ptr[ci];
         const int64_t dist = get_coeff_dist(tqc, dqc, shift);
         const int64_t dist0 = get_coeff_dist(tqc, 0, shift);
         accu_dist += dist - dist0;
         --si;
-#endif
+
     }
 #if 0
 #define UPDATE_COEFF_EOB_CASE(tx_class_literal)                            \
@@ -966,6 +1314,7 @@ int av1_optimize_b(
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
     uint32_t                    full_lambda,
     int16_t                     txb_skip_context,
+    int16_t                     dc_sign_context,
     const tran_low_t           *coeff_ptr,
     int32_t                     stride,
     intptr_t                    n_coeffs,
@@ -1006,6 +1355,7 @@ int av1_optimize_b(
         md_rate_estimation_ptr,
         full_lambda,
         txb_skip_context,
+        dc_sign_context,
         coeff_ptr,
         stride,
         n_coeffs,
@@ -1062,6 +1412,7 @@ void av1_quantize_inv_quantize_ii(
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
     uint32_t                    full_lambda,
     int16_t                     txb_skip_context,
+    int16_t                     dc_sign_context,
     EbBool                      is_final_stage)
 {
 #if !PF_N2_SUPPORT
@@ -1199,8 +1550,9 @@ void av1_quantize_inv_quantize_ii(
     if (*eob != 0 && is_final_stage && component_type == COMPONENT_LUMA) {
         av1_optimize_b(
             md_rate_estimation_ptr,
-            full_lambda,
+            full_lambda,    // Hsan_vod spatial or frequency
             txb_skip_context,
+            dc_sign_context,
             (tran_low_t*)coeff,
             coeff_stride,
             n_coeffs,
@@ -1255,6 +1607,7 @@ void av1_quantize_inv_quantize(
     MdRateEstimationContext_t   *md_rate_estimation_ptr,
     uint32_t                     full_lambda,
     int16_t                      txb_skip_context,
+    int16_t                      dc_sign_context,
     EbBool                       is_final_stage)
 {
     (void)coeff_stride;
@@ -1295,6 +1648,7 @@ void av1_quantize_inv_quantize(
         md_rate_estimation_ptr,
         full_lambda,
         txb_skip_context, 
+        dc_sign_context,
         is_final_stage);
 
 }
@@ -1368,6 +1722,7 @@ void ProductFullLoop(
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
+            0, 
             0,
             EB_FALSE);
 
@@ -1696,6 +2051,7 @@ void ProductFullLoopTxSearch(
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
                 0,
+                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]);
@@ -1901,6 +2257,7 @@ void encode_pass_tx_search(
             tx_type,
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
+            0,
             0,
             EB_FALSE);
 
@@ -2112,6 +2469,7 @@ void encode_pass_tx_search_hbd(
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
             0,
+            0,
             EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
@@ -2319,6 +2677,7 @@ void FullLoop_R(
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
                 0,
+                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[1] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCb)[txb_1d_offset]);
@@ -2415,6 +2774,7 @@ void FullLoop_R(
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
+                0,
                 0,
                 EB_FALSE);
 

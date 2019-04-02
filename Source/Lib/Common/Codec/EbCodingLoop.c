@@ -695,6 +695,7 @@ static void Av1EncodeLoop(
             context_ptr->md_rate_estimation_ptr,
             context_ptr->md_context->full_lambda,
             cu_ptr->luma_txb_skip_context,
+            cu_ptr->luma_dc_sign_context,
             EB_TRUE);
 
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -908,7 +909,6 @@ static void Av1EncodeLoop(
 
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
-
             ((tran_low_t*)transform16bit->bufferCb) + context_ptr->coded_area_sb_uv,
             NOT_USED_VALUE,
             ((int32_t*)coeffSamplesTB->bufferCb) + context_ptr->coded_area_sb_uv,
@@ -931,6 +931,7 @@ static void Av1EncodeLoop(
             context_ptr->md_rate_estimation_ptr,
             context_ptr->md_context->full_lambda,
             cu_ptr->cb_txb_skip_context,
+            cu_ptr->cb_dc_sign_context,
             EB_TRUE);
 
         txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -980,6 +981,7 @@ static void Av1EncodeLoop(
             context_ptr->md_rate_estimation_ptr,
             context_ptr->md_context->full_lambda,
             cu_ptr->cr_txb_skip_context,
+            cu_ptr->cr_dc_sign_context,
             EB_TRUE);
 
         txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
@@ -1176,6 +1178,7 @@ static void Av1EncodeLoop16bit(
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->md_context->full_lambda,
                 cu_ptr->luma_txb_skip_context,
+                cu_ptr->luma_dc_sign_context,
                 EB_TRUE);
 
             txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -1316,7 +1319,6 @@ static void Av1EncodeLoop16bit(
                 sb_ptr->picture_control_set_ptr,
                 ((int32_t*)transform16bit->bufferCb) + context_ptr->coded_area_sb_uv,
                 NOT_USED_VALUE,
-
                 ((int32_t*)coeffSamplesTB->bufferCb) + context_ptr->coded_area_sb_uv,
                 ((int32_t*)inverse_quant_buffer->bufferCb) + context_ptr->coded_area_sb_uv,
                 qp,
@@ -1337,6 +1339,7 @@ static void Av1EncodeLoop16bit(
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->md_context->full_lambda,
                 cu_ptr->cr_txb_skip_context,
+                cu_ptr->cr_dc_sign_context,
                 EB_TRUE);
 
             txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -1392,6 +1395,7 @@ static void Av1EncodeLoop16bit(
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->md_context->full_lambda,
                 cu_ptr->cb_txb_skip_context,
+                cu_ptr->cr_dc_sign_context,
                 EB_TRUE);
 
             txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
