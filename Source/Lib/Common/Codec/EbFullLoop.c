@@ -1278,7 +1278,7 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 17, 13 },
   { 16, 10 },
 };
-int av1_optimize_txb_new(
+void av1_optimize_txb_new(
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
     uint32_t                    full_lambda,
     int16_t                     txb_skip_context,
@@ -1372,6 +1372,9 @@ int av1_optimize_txb_new(
     const LV_MAP_EOB_COST *txb_eob_costs = &x->eob_costs[eob_multi_size][plane_type];
 #endif
 
+#if 0 // Hsan (Trellis): use default lambda
+    const int64_t rdmult = (int64_t)full_lambda;
+#else
     const int rshift =
         (sharpness +
         (aq_mode == VARIANCE_AQ && segment_id < 4
@@ -1386,7 +1389,7 @@ int av1_optimize_txb_new(
         (plane_rd_mult[is_inter][plane_type] << (2 * bit_increment))) +
             2) >>
         rshift;
-
+#endif
     uint8_t levels_buf[TX_PAD_2D];
     uint8_t *const levels = set_levels(levels_buf, width);
 
@@ -1504,7 +1507,7 @@ int av1_optimize_txb_new(
     if (si == 0) {
         // no need to update accu_dist because it's not used after this point
         int64_t dummy_dist = 0;
-        update_coeff_general(&accu_rate, &dummy_dist, si, eob, tx_size, tx_class,
+        update_coeff_general(&accu_rate, &dummy_dist, si, *eob, tx_size, tx_class,
             bwl, height, rdmult, shift, dc_sign_context,
             p->dequant_QTX, scan, txb_costs, coeff_ptr, qcoeff_ptr, dqcoeff_ptr,
             levels);
@@ -1526,11 +1529,10 @@ int av1_optimize_txb_new(
         av1_get_txb_entropy_context(qcoeff, scan_order, p->eobs[block]);
     
     *rate_cost = accu_rate;
-#endif
     return eob;
-
+#endif
 }
-int av1_optimize_b(
+void av1_optimize_b(
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
     uint32_t                    full_lambda,
     int16_t                     txb_skip_context,
@@ -1573,7 +1575,7 @@ int av1_optimize_b(
         return eob;
     }
 #endif
-    return av1_optimize_txb_new(
+    av1_optimize_txb_new(
         md_rate_estimation_ptr,
         full_lambda,
         txb_skip_context,
@@ -1771,44 +1773,33 @@ void av1_quantize_inv_quantize_ii(
 
 #if OPT_QUANT_OEFF
     // Hsan (Trellis) : only luma for now and only @ encode pass  
-    if (*eob != 0 && is_final_stage && component_type == COMPONENT_LUMA) {
-        av1_optimize_b(
-            md_rate_estimation_ptr,
-            full_lambda,    // Hsan (Trellis)  spatial or frequency
-            txb_skip_context,
-            dc_sign_context,
-            (tran_low_t*)coeff,
-            coeff_stride,
-            n_coeffs,
-            &candidate_plane,
-            quant_coeff,
-            (tran_low_t*)recon_coeff,
-            eob,
-            scan_order,
-            &qparam,          
-            transform_size,
-            tx_type, 
-            is_inter,
-            bit_increment,
-            0);
-#if 0
-            cpi,
-            x,
-            plane,
-            block,
-
-            tx_size,
-            tx_type,
-            txb_ctx,
-            cpi->sf.trellis_eob_fast,
-            &rate_cost);
-#endif      
-
+    if(picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE) {
+        if (*eob != 0 && is_final_stage  && is_inter && component_type == COMPONENT_LUMA) {
+            av1_optimize_b(
+                md_rate_estimation_ptr,
+                full_lambda,
+                txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
+                dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
+                (tran_low_t*)coeff,
+                coeff_stride,
+                n_coeffs,
+                &candidate_plane,
+                quant_coeff,
+                (tran_low_t*)recon_coeff,
+                eob,
+                scan_order,
+                &qparam,
+                transform_size,
+                tx_type,
+                is_inter,
+                bit_increment,
+                (component_type == COMPONENT_LUMA) ? 0 : 1);
+        }
     }
 #endif
     *y_count_non_zero_coeffs = *eob;
+}
 
-    }
 void av1_quantize_inv_quantize(
     PictureControlSet_t         *picture_control_set_ptr,
     int32_t                     *coeff,
