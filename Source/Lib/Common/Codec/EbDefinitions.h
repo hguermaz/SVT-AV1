@@ -108,6 +108,9 @@ extern "C" {
 #define M5_Chroma                           1
 #define FIX_WIKI                            1
 
+#define M6_Fast_Loop_Search_Method          1
+#define M5_TX_search                        1
+#define M9_adopted_HME                      1
 
 #endif
 
@@ -121,9 +124,7 @@ extern "C" {
 #define M7_Intra                            1
 #define M1_CABAC_UP                         1 // not in excel
 
-#define M6_Fast_Loop_Search_Method          1
-#define M5_TX_search                        1
-#define M9_adopted_HME                      1
+
 #endif
 
 
