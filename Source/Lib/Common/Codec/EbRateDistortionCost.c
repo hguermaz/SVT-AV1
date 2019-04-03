@@ -362,7 +362,7 @@ static int32_t get_eob_cost(int32_t eob, const LV_MAP_EOB_COST *txb_eob_costs,
     }
     return eob_cost;
 }
-
+#if !OPT_QUANT_COEFF
 // The ctx offset table when TX is TX_CLASS_2D.
 // TX col and row indices are clamped to 4.
 const int8_t av1_nz_map_ctx_offset[TX_SIZES_ALL][5][5] = {
@@ -481,6 +481,7 @@ const int8_t av1_nz_map_ctx_offset[TX_SIZES_ALL][5][5] = {
     { 16, 16, 21, 21, 21 },
     { 16, 16, 21, 21, 21 } }
 };
+#endif
 
 static INLINE int32_t get_br_ctx(const uint8_t *const levels,
     const int32_t c,  // raster order
