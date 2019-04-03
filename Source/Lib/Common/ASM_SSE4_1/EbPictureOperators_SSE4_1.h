@@ -20,7 +20,7 @@ extern "C" {
         uint64_t *dc_value,
         uint32_t  src_stride);
 
-    uint64_t SpatialFullDistortionKernel4x4_SSSE3_INTRIN(
+    uint64_t SpatialFullDistortionKernel4xN_SSE2_INTRIN(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
@@ -28,7 +28,7 @@ extern "C" {
         uint32_t   area_width,
         uint32_t   area_height);
 
-    uint64_t SpatialFullDistortionKernel8x8_SSSE3_INTRIN(
+    uint64_t SpatialFullDistortionKernel8xN_SSE2_INTRIN(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
@@ -36,7 +36,7 @@ extern "C" {
         uint32_t   area_width,
         uint32_t   area_height);
 
-    uint64_t SpatialFullDistortionKernel16MxN_SSSE3_INTRIN(
+    uint64_t SpatialFullDistortionKernel16MxN_SSE2_INTRIN(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
