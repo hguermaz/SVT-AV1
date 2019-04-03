@@ -186,7 +186,11 @@ EbErrorType signal_derivation_me_kernel_oq(
         context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH ; 
     else 
 #endif
+#if M7_UPDATED_SETTINGS
+		if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#endif
         context_ptr->me_context_ptr->fractionalSearchMethod = SSD_SEARCH ; 
 #if M9_FRAC_ME_SEARCH_METHOD
         else if (picture_control_set_ptr->enc_mode <= ENC_M8)

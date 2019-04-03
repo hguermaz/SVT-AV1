@@ -943,7 +943,11 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
         cm->wn_filter_mode = 3;
+#if M7_UPDATED_SETTINGS
+	else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#else
     else if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#endif
         cm->wn_filter_mode = 2;
     else
         cm->wn_filter_mode = 0;
@@ -1034,7 +1038,11 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
 #if M9_INTRA
+#if M7_UPDATED_SETTINGS
+		if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
             picture_control_set_ptr->intra_pred_mode = 0;
         else            
             picture_control_set_ptr->intra_pred_mode = 4;
@@ -1089,8 +1097,10 @@ EbErrorType signal_derivation_multi_processes_oq(
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
 #if M9_INTRA
+#if !M7_UPDATED_SETTINGS
         else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
             picture_control_set_ptr->intra_pred_mode = 5;
+#endif
         else
             picture_control_set_ptr->intra_pred_mode = 4;
 #else
