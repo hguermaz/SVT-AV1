@@ -673,6 +673,7 @@ static void Av1EncodeLoop(
 
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
+            context_ptr->md_context,
             ((tran_low_t*)transform16bit->buffer_y) + coeff1dOffset,
             NOT_USED_VALUE,
             ((int32_t*)coeffSamplesTB->buffer_y) + coeff1dOffset,
@@ -682,7 +683,6 @@ static void Av1EncodeLoop(
             context_ptr->blk_geom->tx_height[context_ptr->txb_itr],
             context_ptr->blk_geom->txsize[context_ptr->txb_itr],
             &eob[0],
-            candidate_plane[0],
             asm_type,
             &(count_non_zero_coeffs[0]),
 #if !PF_N2_SUPPORT
@@ -909,6 +909,7 @@ static void Av1EncodeLoop(
 
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
+            context_ptr->md_context,
             ((tran_low_t*)transform16bit->bufferCb) + context_ptr->coded_area_sb_uv,
             NOT_USED_VALUE,
             ((int32_t*)coeffSamplesTB->bufferCb) + context_ptr->coded_area_sb_uv,
@@ -918,7 +919,6 @@ static void Av1EncodeLoop(
             context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
             context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
             &eob[1],
-            candidate_plane[1],
             asm_type,
             &(count_non_zero_coeffs[1]),
 #if !PF_N2_SUPPORT
@@ -959,6 +959,7 @@ static void Av1EncodeLoop(
 
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
+            context_ptr->md_context,
             ((tran_low_t*)transform16bit->bufferCr) + context_ptr->coded_area_sb_uv,
             NOT_USED_VALUE,
             ((int32_t*)coeffSamplesTB->bufferCr) + context_ptr->coded_area_sb_uv,
@@ -968,7 +969,6 @@ static void Av1EncodeLoop(
             context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
             context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
             &eob[2],
-            candidate_plane[2],
             asm_type,
             &(count_non_zero_coeffs[2]),
 #if !PF_N2_SUPPORT
@@ -1156,6 +1156,7 @@ static void Av1EncodeLoop16bit(
 
             av1_quantize_inv_quantize(
                 sb_ptr->picture_control_set_ptr,
+                context_ptr->md_context,
                 ((int32_t*)transform16bit->buffer_y) + coeff1dOffset,
                 NOT_USED_VALUE,
                 ((int32_t*)coeffSamplesTB->buffer_y) + coeff1dOffset,
@@ -1165,7 +1166,6 @@ static void Av1EncodeLoop16bit(
                 context_ptr->blk_geom->tx_height[context_ptr->txb_itr],
                 context_ptr->blk_geom->txsize[context_ptr->txb_itr],
                 &eob[0],
-                candidate_plane[0],
                 asm_type,
                 &(count_non_zero_coeffs[0]),
 #if !PF_N2_SUPPORT
@@ -1317,6 +1317,7 @@ static void Av1EncodeLoop16bit(
 
             av1_quantize_inv_quantize(
                 sb_ptr->picture_control_set_ptr,
+                context_ptr->md_context,
                 ((int32_t*)transform16bit->bufferCb) + context_ptr->coded_area_sb_uv,
                 NOT_USED_VALUE,
                 ((int32_t*)coeffSamplesTB->bufferCb) + context_ptr->coded_area_sb_uv,
@@ -1326,7 +1327,6 @@ static void Av1EncodeLoop16bit(
                 context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
                 context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
                 &eob[1],
-                candidate_plane[1],
                 asm_type,
                 &(count_non_zero_coeffs[1]),
 #if !PF_N2_SUPPORT
@@ -1373,6 +1373,7 @@ static void Av1EncodeLoop16bit(
 
             av1_quantize_inv_quantize(
                 sb_ptr->picture_control_set_ptr,
+                context_ptr->md_context,
                 ((int32_t*)transform16bit->bufferCr) + context_ptr->coded_area_sb_uv,
                 NOT_USED_VALUE,
                 ((int32_t*)coeffSamplesTB->bufferCr) + context_ptr->coded_area_sb_uv,
@@ -1382,7 +1383,6 @@ static void Av1EncodeLoop16bit(
                 context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
                 context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
                 &eob[2],
-                candidate_plane[2],
                 asm_type,
                 &(count_non_zero_coeffs[2]),
 #if !PF_N2_SUPPORT

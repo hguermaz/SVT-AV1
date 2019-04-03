@@ -1901,37 +1901,40 @@ void av1_optimize_b(
 }
 #endif
 
-/*********************************************************************
-* UnifiedQuantizeInvQuantize
-*
-*  Unified Quant +iQuant
-*********************************************************************/
-void av1_quantize_inv_quantize_ii(
-    PictureControlSet_t        *picture_control_set_ptr,
-    int32_t                    *coeff,
-    const uint32_t              coeff_stride,
-    int32_t                    *quant_coeff,
-    int32_t                    *recon_coeff,
-    uint32_t                    qp,
-    uint32_t                    width,
-    uint32_t                    height,
-    TxSize                      transform_size,
-    uint16_t                   *eob,
-    EbAsm                       asm_type,
-    uint32_t                   *count_non_zero_coeffs,
-#if !PF_N2_SUPPORT            
+void av1_quantize_inv_quantize(
+    PictureControlSet_t         *picture_control_set_ptr,
+    ModeDecisionContext_t       *md_context,
+    int32_t                     *coeff,
+    const uint32_t               coeff_stride,
+    int32_t                     *quant_coeff,
+    int32_t                     *recon_coeff,
+    uint32_t                     qp,
+    uint32_t                     width,
+    uint32_t                     height,
+    TxSize                       txsize,
+    uint16_t                    *eob,
+    EbAsm                        asm_type,
+    uint32_t                    *count_non_zero_coeffs,
+#if !PF_N2_SUPPORT             
     EbPfMode                     pf_mode,
-#endif                        
-    EbBool                      is_inter,
-    uint32_t                    component_type,
-    uint32_t                    bit_increment,
-    TxType                      tx_type,
-    MdRateEstimationContext_t  *md_rate_estimation_ptr,
-    uint32_t                    full_lambda,
-    int16_t                     txb_skip_context,
-    int16_t                     dc_sign_context,
-    EbBool                      is_final_stage)
+#endif                         
+    EbBool                       is_inter,
+    uint32_t                     component_type,
+    uint32_t                     bit_increment,
+    TxType                       tx_type,
+    MdRateEstimationContext_t   *md_rate_estimation_ptr,
+    uint32_t                     full_lambda,
+    int16_t                      txb_skip_context,
+    int16_t                      dc_sign_context,
+    EbBool                       is_final_stage)
 {
+    (void)coeff_stride;
+#if !PF_N2_SUPPORT
+    (void)pf_mode;
+#endif
+    //Note: Transformed, Quantized, iQuantized coeff are stored in 1D fashion. 64x64 is hence in the first 32x32 corner.
+
+
 #if !PF_N2_SUPPORT
     (void)pf_mode;
 #endif
@@ -1939,7 +1942,16 @@ void av1_quantize_inv_quantize_ii(
 #if !ADD_DELTA_QP_SUPPORT
     (void) qp;
 #endif
-    MacroblockPlane      candidate_plane ;
+
+    uint32_t i;
+
+    for (i = 0; i < height; i++)
+    {
+        memset(quant_coeff + i * width, 0, width * sizeof(int32_t));
+        memset(recon_coeff + i * width, 0, width * sizeof(int32_t));
+    }
+
+    MacroblockPlane      candidate_plane;
 
     //    EB_SLICE          slice_type = picture_control_set_ptr->slice_type;
     //    uint32_t            temporal_layer_index = picture_control_set_ptr->temporal_layer_index;
@@ -1953,8 +1965,8 @@ void av1_quantize_inv_quantize_ii(
     //    ? pd->seg_iqmatrix[seg_id][qm_tx_size]
     //    : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
 
-    const qm_val_t *qMatrix = picture_control_set_ptr->parent_pcs_ptr->gqmatrix[NUM_QM_LEVELS - 1][0][transform_size];
-    const qm_val_t *iqMatrix = picture_control_set_ptr->parent_pcs_ptr->giqmatrix[NUM_QM_LEVELS - 1][0][transform_size];
+    const qm_val_t *qMatrix = picture_control_set_ptr->parent_pcs_ptr->gqmatrix[NUM_QM_LEVELS - 1][0][txsize];
+    const qm_val_t *iqMatrix = picture_control_set_ptr->parent_pcs_ptr->giqmatrix[NUM_QM_LEVELS - 1][0][txsize];
 #if ADD_DELTA_QP_SUPPORT
     uint32_t qIndex = qp;
 #else
@@ -2027,14 +2039,14 @@ void av1_quantize_inv_quantize_ii(
         }
     }
 
-    const SCAN_ORDER *const scan_order = &av1_scan_orders[transform_size][tx_type];  //get_scan(tx_size, tx_type);
+    const SCAN_ORDER *const scan_order = &av1_scan_orders[txsize][tx_type];  //get_scan(tx_size, tx_type);
 
-    const int32_t n_coeffs = av1_get_max_eob(transform_size);
+    const int32_t n_coeffs = av1_get_max_eob(txsize);
 
     QUANT_PARAM qparam;
 
-    qparam.log_scale = av1_get_tx_scale(transform_size);
-    qparam.tx_size = transform_size;
+    qparam.log_scale = av1_get_tx_scale(txsize);
+    qparam.tx_size = txsize;
     qparam.qmatrix = qMatrix;
     qparam.iqmatrix = iqMatrix;
 
@@ -2050,7 +2062,7 @@ void av1_quantize_inv_quantize_ii(
             &qparam);
     else
         av1_quantize_b_facade_II(
-            (tran_low_t*)coeff,
+        (tran_low_t*)coeff,
             coeff_stride,
             width,
             height,
@@ -2065,101 +2077,126 @@ void av1_quantize_inv_quantize_ii(
 #if OPT_QUANT_COEFF
     // Hsan (Trellis) : only luma for now and only @ encode pass  
 #if DEBUG_TRELLIS
-        if (*eob != 0 && is_final_stage )
-#else
-         if (*eob != 0 && is_final_stage && is_inter && component_type == COMPONENT_LUMA) 
+    if (*eob != 0 && is_final_stage) {
+#else 
+    if (*eob != 0 && is_final_stage && is_inter && component_type == COMPONENT_LUMA) {
 #endif
-            av1_optimize_b(
-                md_rate_estimation_ptr,
-                full_lambda,
-                txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
-                dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
-                (tran_low_t*)coeff,
-                coeff_stride,
-                n_coeffs,
-                &candidate_plane,
+        uint64_t coeff_rate_non_opt = (uint64_t)~0;
+        uint64_t coeff_rate_opt = (uint64_t)~0;
+
+        uint64_t distortion_non_opt = (uint64_t)~0;
+        uint64_t distortion_opt = (uint64_t)~0;
+
+        // Compute the cost when using non-optimized coefficients (i.e. original coefficients)
+
+
+        // Use the 1st spot of the candidate buffer to hold cfl settings to use same kernel as MD for coef cost estimation
+        ModeDecisionCandidateBuffer_t  *candidateBuffer = &(md_context->candidate_buffer_ptr_array[0][0]);
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = tx_type;
+        candidateBuffer->candidate_ptr->type = is_inter ?
+            INTER_MODE :
+            INTRA_MODE;
+        candidateBuffer->candidate_ptr->pred_mode = DC_PRED; // Hsan TBD
+
+        coeff_rate_non_opt = av1_cost_coeffs_txb(
+            0, // allow_update_cdf,
+            0, // &picture_control_set_ptr->ec_ctx_array[tbAddr],
+            candidateBuffer,
+            quant_coeff,
+            *eob,
+            (component_type == COMPONENT_LUMA) ? 0 : 1,
+            transform_size,
+            txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
+            dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+            picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+
+        full_distortion_kernel32_bits_func_ptr_array[asm_type](
+            coeff,
+            get_txb_wide(transform_size),
+            recon_coeff,
+            get_txb_wide(transform_size),
+            distortion_non_opt,
+            get_txb_wide(transform_size),
+            get_txb_wide(transform_size));
+
+        // Perform Trellis
+        av1_optimize_b(
+            md_rate_estimation_ptr,
+            full_lambda,
+            txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
+            dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
+            (tran_low_t*)coeff,
+            coeff_stride,
+            n_coeffs,
+            &candidate_plane,
+            quant_coeff,
+            (tran_low_t*)recon_coeff,
+            eob,
+            scan_order,
+            &qparam,
+            transform_size,
+            tx_type,
+            is_inter,
+            bit_increment,
+            (component_type == COMPONENT_LUMA) ? 0 : 1);
+
+        // Compute the cost when using optimized coefficients(i.e.after Trellis coefficients)
+        if (*eob != 0) {
+            coeff_rate_opt = av1_cost_coeffs_txb(
+                0, // allow_update_cdf,
+                0, // &picture_control_set_ptr->ec_ctx_array[tbAddr],
+                candidateBuffer,
                 quant_coeff,
-                (tran_low_t*)recon_coeff,
-                eob,
-                scan_order,
-                &qparam,
+                *eob,
+                (component_type == COMPONENT_LUMA) ? 0 : 1,
                 transform_size,
-                tx_type,
-                is_inter,
-                bit_increment,
-                (component_type == COMPONENT_LUMA) ? 0 : 1);
-        
+                txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
+                dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+                picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+        }
+        full_distortion_kernel32_bits_func_ptr_array[asm_type](
+            coeff,
+            get_txb_wide(transform_size),
+            recon_coeff,
+            get_txb_wide(transform_size),
+            distortion_opt,
+            get_txb_wide(transform_size),
+            get_txb_wide(transform_size));
+
+        // Hsan (Trellis): redo Q/Q-1 if original cost better than Trellis cost (extra cycles are spent here but better than keeping a copy of original Q/Q-1 buffers then copy again to the final Q/Q-1 buffers
+#if 1
+        if (*eob != 0 && coeff_rate_non_opt < coeff_rate_opt) {
+            if (bit_increment)
+                av1_highbd_quantize_b_facade(
+                (tran_low_t*)coeff,
+                    n_coeffs,
+                    &candidate_plane,
+                    quant_coeff,
+                    (tran_low_t*)recon_coeff,
+                    eob,
+                    scan_order,
+                    &qparam);
+            else
+                av1_quantize_b_facade_II(
+                (tran_low_t*)coeff,
+                    coeff_stride,
+                    width,
+                    height,
+                    n_coeffs,
+                    &candidate_plane,
+                    quant_coeff,
+                    (tran_low_t*)recon_coeff,
+                    eob,
+                    scan_order,
+                    &qparam);
+        }
 #endif
-    *count_non_zero_coeffs = *eob;
-}
-
-void av1_quantize_inv_quantize(
-    PictureControlSet_t         *picture_control_set_ptr,
-    int32_t                     *coeff,
-    const uint32_t               coeff_stride,
-    int32_t                     *quant_coeff,
-    int32_t                     *recon_coeff,
-    uint32_t                     qp,
-    uint32_t                     width,
-    uint32_t                     height,
-    TxSize                       txsize,
-    uint16_t                    *eob,
-    MacroblockPlane              candidate_plane,
-    EbAsm                        asm_type,
-    uint32_t                    *y_count_non_zero_coeffs,
-#if !PF_N2_SUPPORT             
-    EbPfMode                     pf_mode,
-#endif                         
-    EbBool                       is_inter,
-    uint32_t                     component_type,
-    uint32_t                     bit_increment,
-    TxType                       tx_type,
-    MdRateEstimationContext_t   *md_rate_estimation_ptr,
-    uint32_t                     full_lambda,
-    int16_t                      txb_skip_context,
-    int16_t                      dc_sign_context,
-    EbBool                       is_final_stage)
-{
-    (void)coeff_stride;
-    (void)candidate_plane;
-#if !PF_N2_SUPPORT
-    (void)pf_mode;
-#endif
-    //Note: Transformed, Quantized, iQuantized coeff are stored in 1D fashion. 64x64 is hence in the first 32x32 corner.
-
-    uint32_t i;
-
-    for (i = 0; i < height; i++)
-    {
-        memset(quant_coeff + i * width, 0, width * sizeof(int32_t));
-        memset(recon_coeff + i * width, 0, width * sizeof(int32_t));
     }
 
-    av1_quantize_inv_quantize_ii(
-        picture_control_set_ptr,
-        coeff,
-        0,
-        quant_coeff,
-        recon_coeff,
-        qp,
-        width,
-        height,
-        txsize,
-        &eob[0],
-        asm_type,
-        y_count_non_zero_coeffs,
-#if !PF_N2_SUPPORT
-        0,
 #endif
-        is_inter,
-        component_type,
-        bit_increment,
-        tx_type,
-        md_rate_estimation_ptr,
-        full_lambda,
-        txb_skip_context, 
-        dc_sign_context,
-        is_final_stage);
+    *count_non_zero_coeffs = *eob;
 
 }
 
@@ -2211,6 +2248,7 @@ void ProductFullLoop(
 #endif
         av1_quantize_inv_quantize(
             picture_control_set_ptr,
+            context_ptr,
             &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tuTransCoeff2Nx2NPtr->buffer_y)[txb_1d_offset]),
             NOT_USED_VALUE,
             &(((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[txb_1d_offset]),
@@ -2220,7 +2258,6 @@ void ProductFullLoop(
             context_ptr->blk_geom->tx_height[txb_itr],
             context_ptr->blk_geom->txsize[txb_itr],
             &candidateBuffer->candidate_ptr->eob[0][txb_itr],
-            candidateBuffer->candidate_ptr->candidate_plane[0],
             asm_type,
             &(y_count_non_zero_coeffs[txb_itr]),
 #if !PF_N2_SUPPORT
@@ -2539,6 +2576,7 @@ void ProductFullLoopTxSearch(
 
             av1_quantize_inv_quantize(
                 picture_control_set_ptr,
+                context_ptr,
                 &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tuTransCoeff2Nx2NPtr->buffer_y)[tuOriginIndex]),
                 NOT_USED_VALUE,
                 &(((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]),
@@ -2548,7 +2586,6 @@ void ProductFullLoopTxSearch(
                 context_ptr->blk_geom->bheight,
                 context_ptr->blk_geom->txsize[txb_itr],
                 &candidateBuffer->candidate_ptr->eob[0][txb_itr],
-                candidateBuffer->candidate_ptr->candidate_plane[0],
                 asm_type,
                 &yCountNonZeroCoeffsTemp,
 #if !PF_N2_SUPPORT
@@ -2746,6 +2783,7 @@ void encode_pass_tx_search(
 
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
+            context_ptr->md_context,
             ((tran_low_t*)transform16bit->buffer_y) + coeff1dOffset,
             NOT_USED_VALUE,
             ((int32_t*)coeffSamplesTB->buffer_y) + coeff1dOffset,
@@ -2755,7 +2793,6 @@ void encode_pass_tx_search(
             context_ptr->blk_geom->tx_height[context_ptr->txb_itr],
             context_ptr->blk_geom->txsize[context_ptr->txb_itr],
             &eob[0],
-            candidate_plane[0],
             asm_type,
             &yCountNonZeroCoeffsTemp,
 #if !PF_N2_SUPPORT
@@ -2957,6 +2994,7 @@ void encode_pass_tx_search_hbd(
 #endif
         av1_quantize_inv_quantize(
             sb_ptr->picture_control_set_ptr,
+            context_ptr->md_context,
             ((int32_t*)transform16bit->buffer_y) + coeff1dOffset,
             NOT_USED_VALUE,
             ((int32_t*)coeffSamplesTB->buffer_y) + coeff1dOffset,
@@ -2966,7 +3004,6 @@ void encode_pass_tx_search_hbd(
             context_ptr->blk_geom->tx_height[context_ptr->txb_itr],
             context_ptr->blk_geom->txsize[context_ptr->txb_itr],
             &eob[0],
-            candidate_plane[0],
             asm_type,
             &yCountNonZeroCoeffsTemp,
 #if !PF_N2_SUPPORT
@@ -3165,6 +3202,7 @@ void FullLoop_R(
 #endif
             av1_quantize_inv_quantize(
                 picture_control_set_ptr,
+                context_ptr,
                 &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tuTransCoeff2Nx2NPtr->bufferCb)[txb_1d_offset]),
                 NOT_USED_VALUE,
                 &(((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCb)[txb_1d_offset]),
@@ -3174,7 +3212,6 @@ void FullLoop_R(
                 context_ptr->blk_geom->tx_height_uv[txb_itr],
                 context_ptr->blk_geom->txsize_uv[txb_itr],
                 &candidateBuffer->candidate_ptr->eob[1][txb_itr],
-                candidateBuffer->candidate_ptr->candidate_plane[1],
                 asm_type,
                 &(cb_count_non_zero_coeffs[txb_itr]),
 #if !PF_N2_SUPPORT
@@ -3263,6 +3300,7 @@ void FullLoop_R(
 
             av1_quantize_inv_quantize(
                 picture_control_set_ptr,
+                context_ptr,
                 &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tuTransCoeff2Nx2NPtr->bufferCr)[txb_1d_offset]),
                 NOT_USED_VALUE,
                 &(((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCr)[txb_1d_offset]),
@@ -3272,7 +3310,6 @@ void FullLoop_R(
                 context_ptr->blk_geom->tx_height_uv[txb_itr],
                 context_ptr->blk_geom->txsize_uv[txb_itr],
                 &candidateBuffer->candidate_ptr->eob[2][txb_itr],
-                candidateBuffer->candidate_ptr->candidate_plane[2],
                 asm_type,
                 &(cr_count_non_zero_coeffs[txb_itr]),
 #if !PF_N2_SUPPORT
