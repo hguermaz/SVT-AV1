@@ -1386,6 +1386,12 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
             context_ptr->chroma_level = CHROMA_MODE_2;
     }
 #else
+#if FIX_WIKI
+    
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)        
+            context_ptr->chroma_level = CHROMA_MODE_0;
+    else
+#endif
 #if M5_Chroma
     context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
         CHROMA_MODE_1 :
