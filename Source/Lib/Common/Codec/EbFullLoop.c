@@ -1549,16 +1549,50 @@ void av1_optimize_txb_new(
 #endif
 
 #if DEBUG_TRELLIS
-    if (tx_size == TX_8X8) {
-        *eob = 63;
+    tx_type = DCT_DCT;
+    const SCAN_ORDER *const scan_order = &av1_scan_orders[tx_size][tx_type];
+    const int16_t *scan = scan_order->scan;
+    if (tx_size == TX_16X16) {
+        *eob = 10;
         txb_skip_context = 0;
         dc_sign_context = 0;
-        tx_type = DCT_DCT;
-        for (int i = 0; i < 64; i++) {
-            coeff_ptr[i] = 20;
-            qcoeff_ptr[i] = 5;
-            dqcoeff_ptr[i] = 10;
-        }
+
+
+        coeff_ptr[scan[0]] = -300;
+        coeff_ptr[scan[1]] = -200;
+        coeff_ptr[scan[2]] = -100;
+        coeff_ptr[scan[3]] = -50;
+        coeff_ptr[scan[4]] = 10;
+        coeff_ptr[scan[5]] = 22;
+        coeff_ptr[scan[6]] = 30;
+        coeff_ptr[scan[7]] = 55;
+        coeff_ptr[scan[8]] = 33;
+        coeff_ptr[scan[9]] =  -1;
+
+
+        qcoeff_ptr[scan[0]] = 550;
+        qcoeff_ptr[scan[1]] = -323;
+        qcoeff_ptr[scan[2]] = 10;
+        qcoeff_ptr[scan[3]] = 120;
+        qcoeff_ptr[scan[4]] = 112;
+        qcoeff_ptr[scan[5]] = 8;
+        qcoeff_ptr[scan[6]] = -9;
+        qcoeff_ptr[scan[7]] = 5;
+        qcoeff_ptr[scan[8]] = 3;
+        qcoeff_ptr[scan[9]] = 1;
+
+
+        dqcoeff_ptr[scan[0]] = -20;
+        dqcoeff_ptr[scan[1]] = -10;
+        dqcoeff_ptr[scan[2]] = -7;
+        dqcoeff_ptr[scan[3]] = -3;
+        dqcoeff_ptr[scan[4]] = 22;
+        dqcoeff_ptr[scan[5]] = 22;
+        dqcoeff_ptr[scan[6]] = 22;
+        dqcoeff_ptr[scan[7]] = 22;
+        dqcoeff_ptr[scan[8]] = 22;
+        dqcoeff_ptr[scan[9]] = 1;
+       
     }
 #endif
 
@@ -1574,12 +1608,15 @@ void av1_optimize_txb_new(
     struct macroblockd_plane *pd = &xd->plane[plane];
     const struct macroblock_plane *p = &x->plane[plane];
 #endif
+#if !DEBUG_TRELLIS
     const SCAN_ORDER *const scan_order = &av1_scan_orders[tx_size][tx_type];
+#endif
 #if 0
     const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
 #endif
+#if !DEBUG_TRELLIS
     const int16_t *scan = scan_order->scan;
-
+#endif
     const int shift = av1_get_tx_scale(tx_size);
 #if 0
     int eob = p->eobs[block];
@@ -1881,7 +1918,7 @@ void av1_quantize_inv_quantize_ii(
     TxSize                      transform_size,
     uint16_t                   *eob,
     EbAsm                       asm_type,
-    uint32_t                   *y_count_non_zero_coeffs,
+    uint32_t                   *count_non_zero_coeffs,
 #if !PF_N2_SUPPORT            
     EbPfMode                     pf_mode,
 #endif                        
@@ -2027,8 +2064,11 @@ void av1_quantize_inv_quantize_ii(
 
 #if OPT_QUANT_COEFF
     // Hsan (Trellis) : only luma for now and only @ encode pass  
-    if(picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_FALSE) {
-        if (*eob != 0 && is_final_stage  && is_inter && component_type == COMPONENT_LUMA) {
+#if DEBUG_TRELLIS
+        if (*eob != 0 && is_final_stage )
+#else
+         if (*eob != 0 && is_final_stage && is_inter && component_type == COMPONENT_LUMA) 
+#endif
             av1_optimize_b(
                 md_rate_estimation_ptr,
                 full_lambda,
@@ -2048,10 +2088,9 @@ void av1_quantize_inv_quantize_ii(
                 is_inter,
                 bit_increment,
                 (component_type == COMPONENT_LUMA) ? 0 : 1);
-        }
-    }
+        
 #endif
-    *y_count_non_zero_coeffs = *eob;
+    *count_non_zero_coeffs = *eob;
 }
 
 void av1_quantize_inv_quantize(
