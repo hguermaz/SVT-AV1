@@ -891,7 +891,11 @@ EbErrorType signal_derivation_multi_processes_oq(
 #else
         if (picture_control_set_ptr->enc_mode <= ENC_M5)
             picture_control_set_ptr->cdef_filter_mode = 4;
+#if M8_UPDATED_SETTINGS		
+		else if (picture_control_set_ptr->enc_mode <= ENC_M8)
+#else
         else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
             picture_control_set_ptr->cdef_filter_mode = 2;
         else
             picture_control_set_ptr->cdef_filter_mode = 1;

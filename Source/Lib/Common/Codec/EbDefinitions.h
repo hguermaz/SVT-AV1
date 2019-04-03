@@ -36,7 +36,7 @@ extern "C" {
 #endif
 /********/
 #define M7_UPDATED_SETTINGS				  1 
-
+#define M8_UPDATED_SETTINGS				  1
 /******/
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
 #define HARD_CODE_SC_SETTING              0
