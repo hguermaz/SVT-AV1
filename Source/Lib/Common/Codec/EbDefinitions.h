@@ -108,7 +108,9 @@ extern "C" {
 #endif
 #define OPT_QUANT_COEFF                                 0
 #if OPT_QUANT_COEFF
-#define DEBUG_TRELLIS                                   0       
+#define DEBUG_TRELLIS                                   0     
+#define TRELLIS_SKIP                                    0
+#define TRELLIS_MD                                      1
 #endif
 #if !M9_SETTINGS || M9_ADP
 #define FRAC_64x64_BUG_FIX                              1

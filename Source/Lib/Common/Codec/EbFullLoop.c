@@ -1494,6 +1494,26 @@ static INLINE void update_skip(int *accu_rate, int64_t accu_dist, uint16_t *eob,
         *eob = 0;
     }
 }
+static INLINE int32_t av1_cost_skip_txb(
+#if CABAC_UP
+    uint8_t        allow_update_cdf,
+    FRAME_CONTEXT *ec_ctx,
+#endif
+    struct ModeDecisionCandidateBuffer_s    *candidate_buffer_ptr,
+    TxSize                                  transform_size,
+    PLANE_TYPE                               plane_type,
+    int16_t                                   txb_skip_ctx)
+{
+    const TxSize txs_ctx = (TxSize)((txsize_sqr_map[transform_size] + txsize_sqr_up_map[transform_size] + 1) >> 1);
+    const LV_MAP_COEFF_COST *const coeff_costs = &candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->coeffFacBits[txs_ctx][plane_type];
+
+#if CABAC_UP   
+    if (allow_update_cdf) {
+        update_cdf(ec_ctx->txb_skip_cdf[txs_ctx][txb_skip_ctx], 1, 2);
+    }
+#endif 
+    return coeff_costs->txb_skip_cost[txb_skip_ctx][1];
+}
 enum {
     NO_AQ = 0,
     VARIANCE_AQ = 1,
@@ -1906,33 +1926,34 @@ void av1_optimize_b(
 #endif
 
 void av1_quantize_inv_quantize(
-    PictureControlSet_t         *picture_control_set_ptr,
-    ModeDecisionContext_t       *md_context,
-    int32_t                     *coeff,
-    const uint32_t               coeff_stride,
-    int32_t                     *quant_coeff,
-    int32_t                     *recon_coeff,
-    uint32_t                     qp,
-    uint32_t                     width,
-    uint32_t                     height,
-    TxSize                       txsize,
-    uint16_t                    *eob,
-    EbAsm                        asm_type,
-    uint32_t                    *count_non_zero_coeffs,
-#if !PF_N2_SUPPORT             
-    EbPfMode                     pf_mode,
-#endif                         
-    EbBool                       is_inter,
-    uint32_t                     component_type,
-    uint32_t                     bit_increment,
-    TxType                       tx_type,
-    MdRateEstimationContext_t   *md_rate_estimation_ptr,
-    uint32_t                     full_lambda,
-    int16_t                      txb_skip_context,
-    int16_t                      dc_sign_context,
-    PredictionMode               pred_mode,
-    uint32_t                     sb_index,
-    EbBool                       is_final_stage)
+    PictureControlSet_t           *picture_control_set_ptr,
+    ModeDecisionContext_t         *md_context,
+    int32_t                       *coeff,
+    const uint32_t                 coeff_stride,
+    int32_t                       *quant_coeff,
+    int32_t                       *recon_coeff,
+    uint32_t                       qp,
+    uint32_t                       width,
+    uint32_t                       height,
+    TxSize                         txsize,
+    uint16_t                      *eob,
+    EbAsm                          asm_type,
+    uint32_t                      *count_non_zero_coeffs,
+#if !PF_N2_SUPPORT                
+    EbPfMode                       pf_mode,
+#endif                            
+    EbBool                         is_inter,
+    uint32_t                       component_type,
+    uint32_t                       bit_increment,
+    TxType                         tx_type,      
+    ModeDecisionCandidateBuffer_t *candidateBuffer,
+    MdRateEstimationContext_t     *md_rate_estimation_ptr,
+    uint32_t                       full_lambda,
+    int16_t                        txb_skip_context,
+    int16_t                        dc_sign_context,
+    PredictionMode                 pred_mode,
+    uint32_t                       sb_index,
+    EbBool                         is_final_stage)
 {
     (void)coeff_stride;
 #if !PF_N2_SUPPORT
@@ -2085,7 +2106,11 @@ void av1_quantize_inv_quantize(
 #if DEBUG_TRELLIS
     if (*eob != 0 && is_final_stage) {
 #else 
+#if TRELLIS_MD  
+    if (*eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
+#else
     if (*eob != 0 && is_final_stage && is_inter && component_type == COMPONENT_LUMA) {
+#endif
 #endif
         uint64_t coeff_rate_non_opt;
         uint64_t coeff_rate_opt;
@@ -2096,18 +2121,23 @@ void av1_quantize_inv_quantize(
         uint64_t cost_non_opt;
         uint64_t cost_opt;
         
+        uint64_t coeff_rate_skip_non_opt;
+        uint64_t coeff_rate_skip_opt;
+
         uint64_t cost_skip_non_opt;
         uint64_t cost_skip_opt;
 
         // Use the 1st spot of the candidate buffer to hold cfl settings to use same kernel as MD for coef cost estimation
-        ModeDecisionCandidateBuffer_t  *candidateBuffer = &(md_context->candidate_buffer_ptr_array[0][0]);
-        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
-        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = tx_type;
-        candidateBuffer->candidate_ptr->type = is_inter ?
-            INTER_MODE :
-            INTRA_MODE;
-        candidateBuffer->candidate_ptr->pred_mode = pred_mode;
-        candidateBuffer->candidate_ptr->md_rate_estimation_ptr = md_rate_estimation_ptr;
+        if (is_final_stage) 
+        {
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = tx_type;
+            candidateBuffer->candidate_ptr->type = is_inter ?
+                INTER_MODE :
+                INTRA_MODE;
+            candidateBuffer->candidate_ptr->pred_mode = pred_mode;
+            candidateBuffer->candidate_ptr->md_rate_estimation_ptr = md_rate_estimation_ptr;
+        }
 
         // Compute the cost when using non-optimized coefficients (i.e. original coefficients) 
         coeff_rate_non_opt = av1_cost_coeffs_txb(
@@ -2121,6 +2151,15 @@ void av1_quantize_inv_quantize(
             txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
             dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
             picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+        coeff_rate_skip_non_opt = av1_cost_skip_txb(
+            0,//picture_control_set_ptr->update_cdf,
+            0,//picture_control_set_ptr->ec_ctx_array[sb_index],
+            candidateBuffer,
+            txsize,
+            (component_type == COMPONENT_LUMA) ? 0 : 1,
+            txb_skip_context);
+
         full_distortion_kernel32_bits_func_ptr_array[asm_type](
             coeff,
             get_txb_wide(txsize),
@@ -2133,9 +2172,9 @@ void av1_quantize_inv_quantize(
         distortion_non_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_RESIDUAL], shift);
         distortion_non_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_PREDICTION], shift);
 
-        cost_non_opt = RDCOST(full_lambda, coeff_rate_non_opt, distortion_non_opt[0]);
-        cost_skip_non_opt = RDCOST(full_lambda, 0, distortion_non_opt[1]);
-#if 0 // To test
+        cost_non_opt = RDCOST(full_lambda, coeff_rate_non_opt, distortion_non_opt[DIST_CALC_RESIDUAL]);
+        cost_skip_non_opt = RDCOST(full_lambda, coeff_rate_skip_non_opt, distortion_non_opt[DIST_CALC_PREDICTION]);
+#if TRELLIS_SKIP // To test
         if (cost_skip_non_opt < cost_non_opt)
             *eob = 0;
 #endif
@@ -2174,6 +2213,15 @@ void av1_quantize_inv_quantize(
                     txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
                     dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
                     picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+                coeff_rate_skip_opt = av1_cost_skip_txb(
+                    0,//picture_control_set_ptr->update_cdf,
+                    0,//picture_control_set_ptr->ec_ctx_array[sb_index],
+                    candidateBuffer,
+                    txsize,
+                    (component_type == COMPONENT_LUMA) ? 0 : 1,
+                    txb_skip_context);
+
                 full_distortion_kernel32_bits_func_ptr_array[asm_type](
                     coeff,
                     get_txb_wide(txsize),
@@ -2188,8 +2236,8 @@ void av1_quantize_inv_quantize(
                 distortion_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_PREDICTION], shift);
 
                 cost_opt = RDCOST(full_lambda, coeff_rate_opt, distortion_opt[0]);
-                cost_skip_opt = RDCOST(full_lambda, 0, distortion_opt[1]);
-#if 0 // To test
+                cost_skip_opt = RDCOST(full_lambda, coeff_rate_skip_opt, distortion_opt[1]);
+#if TRELLIS_SKIP // To test
                 if (cost_skip_opt < cost_opt)
                     *eob = 0;
 #endif
@@ -2296,11 +2344,12 @@ void ProductFullLoop(
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+            candidateBuffer,
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
-            0, 
-            0, 
-            0,
+            context_ptr->cu_ptr->luma_txb_skip_context,
+            context_ptr->cu_ptr->luma_dc_sign_context,
+            candidateBuffer->candidate_ptr->pred_mode,
             0,
             EB_FALSE);
 
@@ -2626,11 +2675,12 @@ void ProductFullLoopTxSearch(
                 COMPONENT_LUMA,
                 BIT_INCREMENT_8BIT,
                 tx_type,
+                candidateBuffer,
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
-                0,
-                0,
-                0,
+                context_ptr->cu_ptr->luma_txb_skip_context,
+                context_ptr->cu_ptr->luma_dc_sign_context,
+                candidateBuffer->candidate_ptr->pred_mode,
                 0,
                 EB_FALSE);
 
@@ -2835,6 +2885,7 @@ void encode_pass_tx_search(
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             tx_type,
+            &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
             0,
@@ -3048,6 +3099,7 @@ void encode_pass_tx_search_hbd(
             COMPONENT_LUMA,
             BIT_INCREMENT_10BIT,
             tx_type,
+            &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
             0,
@@ -3258,6 +3310,7 @@ void FullLoop_R(
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+                candidateBuffer,
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
                 0,
@@ -3358,6 +3411,7 @@ void FullLoop_R(
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+                candidateBuffer,
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
                 0,
