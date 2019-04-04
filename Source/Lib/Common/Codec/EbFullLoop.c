@@ -1511,7 +1511,11 @@ enum {
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 17, 13 },
+#if 1
+  { 40, 10},
+#else
   { 16, 10 },
+#endif
 };
 void av1_optimize_txb_new(
     MdRateEstimationContext_t  *md_rate_estimation_ptr,
@@ -1926,6 +1930,8 @@ void av1_quantize_inv_quantize(
     uint32_t                     full_lambda,
     int16_t                      txb_skip_context,
     int16_t                      dc_sign_context,
+    PredictionMode               pred_mode,
+    uint32_t                     sb_index,
     EbBool                       is_final_stage)
 {
     (void)coeff_stride;
@@ -2081,14 +2087,17 @@ void av1_quantize_inv_quantize(
 #else 
     if (*eob != 0 && is_final_stage && is_inter && component_type == COMPONENT_LUMA) {
 #endif
-        uint64_t coeff_rate_non_opt = (uint64_t)~0;
-        uint64_t coeff_rate_opt = (uint64_t)~0;
+        uint64_t coeff_rate_non_opt;
+        uint64_t coeff_rate_opt;
 
-        uint64_t distortion_non_opt = (uint64_t)~0;
-        uint64_t distortion_opt = (uint64_t)~0;
+        uint64_t distortion_non_opt[2];
+        uint64_t distortion_opt[2];
 
-        // Compute the cost when using non-optimized coefficients (i.e. original coefficients)
-
+        uint64_t cost_non_opt;
+        uint64_t cost_opt;
+        
+        uint64_t cost_skip_non_opt;
+        uint64_t cost_skip_opt;
 
         // Use the 1st spot of the candidate buffer to hold cfl settings to use same kernel as MD for coef cost estimation
         ModeDecisionCandidateBuffer_t  *candidateBuffer = &(md_context->candidate_buffer_ptr_array[0][0]);
@@ -2097,29 +2106,30 @@ void av1_quantize_inv_quantize(
         candidateBuffer->candidate_ptr->type = is_inter ?
             INTER_MODE :
             INTRA_MODE;
-        candidateBuffer->candidate_ptr->pred_mode = DC_PRED; // Hsan TBD
+        candidateBuffer->candidate_ptr->pred_mode = pred_mode;
+        candidateBuffer->candidate_ptr->md_rate_estimation_ptr = md_rate_estimation_ptr;
 
+        // Compute the cost when using non-optimized coefficients (i.e. original coefficients) 
         coeff_rate_non_opt = av1_cost_coeffs_txb(
-            0, // allow_update_cdf,
-            0, // &picture_control_set_ptr->ec_ctx_array[tbAddr],
+            picture_control_set_ptr->update_cdf,
+            picture_control_set_ptr->ec_ctx_array[sb_index],
             candidateBuffer,
             quant_coeff,
             *eob,
             (component_type == COMPONENT_LUMA) ? 0 : 1,
-            transform_size,
+            txsize,
             txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
             dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
             picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-
-
         full_distortion_kernel32_bits_func_ptr_array[asm_type](
             coeff,
-            get_txb_wide(transform_size),
+            get_txb_wide(txsize),
             recon_coeff,
-            get_txb_wide(transform_size),
+            get_txb_wide(txsize),
             distortion_non_opt,
-            get_txb_wide(transform_size),
-            get_txb_wide(transform_size));
+            get_txb_wide(txsize),
+            get_txb_wide(txsize));
+        cost_non_opt = RDCOST(full_lambda, coeff_rate_non_opt, distortion_non_opt[0]);
 
         // Perform Trellis
         av1_optimize_b(
@@ -2136,7 +2146,7 @@ void av1_quantize_inv_quantize(
             eob,
             scan_order,
             &qparam,
-            transform_size,
+            txsize,
             tx_type,
             is_inter,
             bit_increment,
@@ -2145,32 +2155,32 @@ void av1_quantize_inv_quantize(
         // Compute the cost when using optimized coefficients(i.e.after Trellis coefficients)
         if (*eob != 0) {
             coeff_rate_opt = av1_cost_coeffs_txb(
-                0, // allow_update_cdf,
-                0, // &picture_control_set_ptr->ec_ctx_array[tbAddr],
+                picture_control_set_ptr->update_cdf,
+                picture_control_set_ptr->ec_ctx_array[sb_index],
                 candidateBuffer,
                 quant_coeff,
                 *eob,
                 (component_type == COMPONENT_LUMA) ? 0 : 1,
-                transform_size,
+                txsize,
                 txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
                 dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
                 picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+            full_distortion_kernel32_bits_func_ptr_array[asm_type](
+                coeff,
+                get_txb_wide(txsize),
+                recon_coeff,
+                get_txb_wide(txsize),
+                distortion_opt,
+                get_txb_wide(txsize),
+                get_txb_wide(txsize));
+            cost_opt = RDCOST(full_lambda, coeff_rate_opt, distortion_opt[0]);
         }
-        full_distortion_kernel32_bits_func_ptr_array[asm_type](
-            coeff,
-            get_txb_wide(transform_size),
-            recon_coeff,
-            get_txb_wide(transform_size),
-            distortion_opt,
-            get_txb_wide(transform_size),
-            get_txb_wide(transform_size));
 
         // Hsan (Trellis): redo Q/Q-1 if original cost better than Trellis cost (extra cycles are spent here but better than keeping a copy of original Q/Q-1 buffers then copy again to the final Q/Q-1 buffers
-#if 1
-        if (*eob != 0 && coeff_rate_non_opt < coeff_rate_opt) {
+        if (*eob != 0 && cost_non_opt < cost_opt) {
             if (bit_increment)
                 av1_highbd_quantize_b_facade(
-                (tran_low_t*)coeff,
+                    (tran_low_t*)coeff,
                     n_coeffs,
                     &candidate_plane,
                     quant_coeff,
@@ -2180,7 +2190,7 @@ void av1_quantize_inv_quantize(
                     &qparam);
             else
                 av1_quantize_b_facade_II(
-                (tran_low_t*)coeff,
+                    (tran_low_t*)coeff,
                     coeff_stride,
                     width,
                     height,
@@ -2192,7 +2202,6 @@ void av1_quantize_inv_quantize(
                     scan_order,
                     &qparam);
         }
-#endif
     }
 
 #endif
@@ -2270,6 +2279,8 @@ void ProductFullLoop(
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
             0, 
+            0, 
+            0,
             0,
             EB_FALSE);
 
@@ -2599,6 +2610,8 @@ void ProductFullLoopTxSearch(
                 context_ptr->full_lambda,
                 0,
                 0,
+                0,
+                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]);
@@ -2804,6 +2817,8 @@ void encode_pass_tx_search(
             tx_type,
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
+            0,
+            0,
             0,
             0,
             EB_FALSE);
@@ -3017,6 +3032,8 @@ void encode_pass_tx_search_hbd(
             context_ptr->full_lambda,
             0,
             0,
+            0,
+            0,
             EB_FALSE);
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
@@ -3225,6 +3242,8 @@ void FullLoop_R(
                 context_ptr->full_lambda,
                 0,
                 0,
+                0,
+                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[1] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCb)[txb_1d_offset]);
@@ -3321,6 +3340,8 @@ void FullLoop_R(
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
+                0,
+                0,
                 0,
                 0,
                 EB_FALSE);

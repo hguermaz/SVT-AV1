@@ -696,6 +696,8 @@ static void Av1EncodeLoop(
             context_ptr->md_context->full_lambda,
             cu_ptr->luma_txb_skip_context,
             cu_ptr->luma_dc_sign_context,
+            cu_ptr->pred_mode,
+            sb_ptr->index,
             EB_TRUE);
 
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -932,6 +934,8 @@ static void Av1EncodeLoop(
             context_ptr->md_context->full_lambda,
             cu_ptr->cb_txb_skip_context,
             cu_ptr->cb_dc_sign_context,
+            cu_ptr->pred_mode,
+            sb_ptr->index,
             EB_TRUE);
 
         txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -982,6 +986,8 @@ static void Av1EncodeLoop(
             context_ptr->md_context->full_lambda,
             cu_ptr->cr_txb_skip_context,
             cu_ptr->cr_dc_sign_context,
+            cu_ptr->pred_mode,
+            sb_ptr->index,
             EB_TRUE);
 
         txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
@@ -1179,6 +1185,8 @@ static void Av1EncodeLoop16bit(
                 context_ptr->md_context->full_lambda,
                 cu_ptr->luma_txb_skip_context,
                 cu_ptr->luma_dc_sign_context,
+                cu_ptr->pred_mode,
+                sb_ptr->index,
                 EB_TRUE);
 
             txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
@@ -1340,6 +1348,8 @@ static void Av1EncodeLoop16bit(
                 context_ptr->md_context->full_lambda,
                 cu_ptr->cb_txb_skip_context,
                 cu_ptr->cb_dc_sign_context,
+                cu_ptr->pred_mode,
+                sb_ptr->index,
                 EB_TRUE);
 
             txb_ptr->u_has_coeff = count_non_zero_coeffs[1] ? EB_TRUE : EB_FALSE;
@@ -1396,6 +1406,8 @@ static void Av1EncodeLoop16bit(
                 context_ptr->md_context->full_lambda,
                 cu_ptr->cr_txb_skip_context,
                 cu_ptr->cr_dc_sign_context,
+                cu_ptr->pred_mode,
+                sb_ptr->index,
                 EB_TRUE);
 
             txb_ptr->v_has_coeff = count_non_zero_coeffs[2] ? EB_TRUE : EB_FALSE;
