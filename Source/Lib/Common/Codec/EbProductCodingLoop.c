@@ -1564,29 +1564,6 @@ uint64_t ProductGenerateChromaWeight(
     return (weight << 1);
 }
 #endif
-uint64_t spatial_full_distortion_kernel(
-    uint8_t   *input,
-    uint32_t   input_stride,
-    uint8_t   *recon,
-    uint32_t   recon_stride,
-    uint32_t   area_width,
-    uint32_t   area_height);
-
-uint64_t SpatialFullDistortionKernel8x8_SSSE3_INTRIN(
-    uint8_t   *input,
-    uint32_t   input_stride,
-    uint8_t   *recon,
-    uint32_t   recon_stride,
-    uint32_t   area_width,
-    uint32_t   area_height);
-
-uint64_t SpatialFullDistortionKernel16MxN_SSSE3_INTRIN(
-    uint8_t   *input,
-    uint32_t   input_stride,
-    uint8_t   *recon,
-    uint32_t   recon_stride,
-    uint32_t   area_width,
-    uint32_t   area_height);
 
 void ProductMdFastPuPrediction(
     PictureControlSet_t                 *picture_control_set_ptr,
