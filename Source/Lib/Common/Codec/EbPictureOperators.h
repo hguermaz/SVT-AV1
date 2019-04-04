@@ -459,33 +459,33 @@ extern "C" {
     static EB_SPATIALFULLDIST_TYPE FUNC_TABLE spatial_full_distortion_kernel_func_ptr_array[ASM_TYPE_TOTAL][6] = {
         // NON_AVX2
         {
-            // 4x4
-            spatial_full_distortion_kernel,
-            // 8x8
-            spatial_full_distortion_kernel,
-            // 16x16
-            spatial_full_distortion_kernel,
-            // 32x32
-            spatial_full_distortion_kernel,
-            // 64x64
-            spatial_full_distortion_kernel,
-            // 128x128
-            spatial_full_distortion_kernel
+            // 4xN
+            SpatialFullDistortionKernel4xN_SSE2_INTRIN,
+            // 8xN
+            SpatialFullDistortionKernel8xN_SSE2_INTRIN,
+            // 16xN
+            SpatialFullDistortionKernel16xN_SSE2_INTRIN,
+            // 32xN
+            SpatialFullDistortionKernel32xN_SSE2_INTRIN,
+            // 64xN
+            SpatialFullDistortionKernel64xN_SSE2_INTRIN,
+            // 128xN
+            SpatialFullDistortionKernel128xN_SSE2_INTRIN
         },
         // ASM_AVX2
         {
-            // 4x4
-            SpatialFullDistortionKernel4xN_SSE2_INTRIN,
-            // 8x8
-            SpatialFullDistortionKernel8xN_SSE2_INTRIN,
-            // 16x16
-            SpatialFullDistortionKernel16MxN_SSE2_INTRIN,
-            // 32x32
-            SpatialFullDistortionKernel16MxN_SSE2_INTRIN,
-            // 64x64
-            SpatialFullDistortionKernel16MxN_SSE2_INTRIN,
-            // 128x128
-            SpatialFullDistortionKernel16MxN_SSE2_INTRIN
+            // 4xN
+            SpatialFullDistortionKernel4xN_AVX2_INTRIN,
+            // 8xN
+            SpatialFullDistortionKernel8xN_AVX2_INTRIN,
+            // 16xN
+            SpatialFullDistortionKernel16xN_AVX2_INTRIN,
+            // 32xN
+            SpatialFullDistortionKernel32xN_AVX2_INTRIN,
+            // 64xN
+            SpatialFullDistortionKernel64xN_AVX2_INTRIN,
+            // 128xN
+            SpatialFullDistortionKernel128xN_AVX2_INTRIN
         },
     };
 
