@@ -1511,8 +1511,8 @@ enum {
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 17, 13 },
-#if 1
-  { 40, 10},
+#if 0
+  { 16, 10 },
 #else
   { 16, 10 },
 #endif
@@ -2111,8 +2111,8 @@ void av1_quantize_inv_quantize(
 
         // Compute the cost when using non-optimized coefficients (i.e. original coefficients) 
         coeff_rate_non_opt = av1_cost_coeffs_txb(
-            picture_control_set_ptr->update_cdf,
-            picture_control_set_ptr->ec_ctx_array[sb_index],
+            0,//picture_control_set_ptr->update_cdf,
+            0,//picture_control_set_ptr->ec_ctx_array[sb_index],
             candidateBuffer,
             quant_coeff,
             *eob,
@@ -2129,78 +2129,98 @@ void av1_quantize_inv_quantize(
             distortion_non_opt,
             get_txb_wide(txsize),
             get_txb_wide(txsize));
+        int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txsize)) * 2;
+        distortion_non_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_RESIDUAL], shift);
+        distortion_non_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_PREDICTION], shift);
+
         cost_non_opt = RDCOST(full_lambda, coeff_rate_non_opt, distortion_non_opt[0]);
-
+        cost_skip_non_opt = RDCOST(full_lambda, 0, distortion_non_opt[1]);
+#if 0 // To test
+        if (cost_skip_non_opt < cost_non_opt)
+            *eob = 0;
+#endif
         // Perform Trellis
-        av1_optimize_b(
-            md_rate_estimation_ptr,
-            full_lambda,
-            txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
-            dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
-            (tran_low_t*)coeff,
-            coeff_stride,
-            n_coeffs,
-            &candidate_plane,
-            quant_coeff,
-            (tran_low_t*)recon_coeff,
-            eob,
-            scan_order,
-            &qparam,
-            txsize,
-            tx_type,
-            is_inter,
-            bit_increment,
-            (component_type == COMPONENT_LUMA) ? 0 : 1);
-
-        // Compute the cost when using optimized coefficients(i.e.after Trellis coefficients)
         if (*eob != 0) {
-            coeff_rate_opt = av1_cost_coeffs_txb(
-                picture_control_set_ptr->update_cdf,
-                picture_control_set_ptr->ec_ctx_array[sb_index],
-                candidateBuffer,
-                quant_coeff,
-                *eob,
-                (component_type == COMPONENT_LUMA) ? 0 : 1,
-                txsize,
+            av1_optimize_b(
+                md_rate_estimation_ptr,
+                full_lambda,
                 txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
-                dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
-                picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-            full_distortion_kernel32_bits_func_ptr_array[asm_type](
-                coeff,
-                get_txb_wide(txsize),
-                recon_coeff,
-                get_txb_wide(txsize),
-                distortion_opt,
-                get_txb_wide(txsize),
-                get_txb_wide(txsize));
-            cost_opt = RDCOST(full_lambda, coeff_rate_opt, distortion_opt[0]);
-        }
+                dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
+                (tran_low_t*)coeff,
+                coeff_stride,
+                n_coeffs,
+                &candidate_plane,
+                quant_coeff,
+                (tran_low_t*)recon_coeff,
+                eob,
+                scan_order,
+                &qparam,
+                txsize,
+                tx_type,
+                is_inter,
+                bit_increment,
+                (component_type == COMPONENT_LUMA) ? 0 : 1);
 
-        // Hsan (Trellis): redo Q/Q-1 if original cost better than Trellis cost (extra cycles are spent here but better than keeping a copy of original Q/Q-1 buffers then copy again to the final Q/Q-1 buffers
-        if (*eob != 0 && cost_non_opt < cost_opt) {
-            if (bit_increment)
-                av1_highbd_quantize_b_facade(
-                    (tran_low_t*)coeff,
-                    n_coeffs,
-                    &candidate_plane,
+            // Compute the cost when using optimized coefficients(i.e.after Trellis coefficients)
+            if (*eob != 0) {
+                coeff_rate_opt = av1_cost_coeffs_txb(
+                    0,//picture_control_set_ptr->update_cdf,
+                    0,//picture_control_set_ptr->ec_ctx_array[sb_index],
+                    candidateBuffer,
                     quant_coeff,
-                    (tran_low_t*)recon_coeff,
-                    eob,
-                    scan_order,
-                    &qparam);
-            else
-                av1_quantize_b_facade_II(
+                    *eob,
+                    (component_type == COMPONENT_LUMA) ? 0 : 1,
+                    txsize,
+                    txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
+                    dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+                    picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+                full_distortion_kernel32_bits_func_ptr_array[asm_type](
+                    coeff,
+                    get_txb_wide(txsize),
+                    recon_coeff,
+                    get_txb_wide(txsize),
+                    distortion_opt,
+                    get_txb_wide(txsize),
+                    get_txb_wide(txsize));
+
+                int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txsize)) * 2;
+                distortion_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_RESIDUAL], shift);
+                distortion_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_PREDICTION], shift);
+
+                cost_opt = RDCOST(full_lambda, coeff_rate_opt, distortion_opt[0]);
+                cost_skip_opt = RDCOST(full_lambda, 0, distortion_opt[1]);
+#if 0 // To test
+                if (cost_skip_opt < cost_opt)
+                    *eob = 0;
+#endif
+            }
+
+            // Hsan (Trellis): redo Q/Q-1 if original cost better than Trellis cost (extra cycles are spent here but better than keeping a copy of original Q/Q-1 buffers then copy again to the final Q/Q-1 buffers
+            if (*eob != 0 && cost_non_opt < cost_opt) {
+                if (bit_increment)
+                    av1_highbd_quantize_b_facade(
                     (tran_low_t*)coeff,
-                    coeff_stride,
-                    width,
-                    height,
-                    n_coeffs,
-                    &candidate_plane,
-                    quant_coeff,
-                    (tran_low_t*)recon_coeff,
-                    eob,
-                    scan_order,
-                    &qparam);
+                        n_coeffs,
+                        &candidate_plane,
+                        quant_coeff,
+                        (tran_low_t*)recon_coeff,
+                        eob,
+                        scan_order,
+                        &qparam);
+                else
+                    av1_quantize_b_facade_II(
+                    (tran_low_t*)coeff,
+                        coeff_stride,
+                        width,
+                        height,
+                        n_coeffs,
+                        &candidate_plane,
+                        quant_coeff,
+                        (tran_low_t*)recon_coeff,
+                        eob,
+                        scan_order,
+                        &qparam);
+            }
         }
     }
 
