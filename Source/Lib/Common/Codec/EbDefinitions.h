@@ -147,7 +147,12 @@ extern "C" {
 #define M9_adopted_SUBPEL_SELECTION         1
 #define M7_enable_restoration               1 // not in excel
 
+#define M1_Spatial_SSE                      1 // not in excel
 
+
+#define M9_adopted_CU_8x8                   1
+
+#define M8_NFL                              1
 
 #endif
 #define Mx_DISABLE_TX_SEARCH_FOR_NSQ                0
@@ -157,7 +162,6 @@ extern "C" {
 // Run with enc-mode 0 will give M1
 
 
-#define M1_Spatial_SSE                      0 // not in excel
 #define M2_NFL                              0
 
 #define M3_Partitioning_Method              0 // coupled with M3_NSQ_search and M2_SB_block_size
@@ -203,11 +207,9 @@ extern "C" {
 
 #define M8_Full_loop_escape                 0
 #define M8_Global_MV_Injection              0
-#define M8_NFL                              0
 
 
 
-#define M9_adopted_CU_8x8                   0
 #define M9_adopted_INTER_SRC_SRC_FAST_LOOP  0
 #define M9_adopted_HME_level                0
 
