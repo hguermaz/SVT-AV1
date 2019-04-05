@@ -1545,6 +1545,12 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->inter_fast_loop_src_src = 1;
 #endif
+
+#if BLK_SKIP_DECISION
+    context_ptr->blk_skip_decision = EB_TRUE;
+#endif
+
+
     return return_error;
 }
 void move_cu_data(

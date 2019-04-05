@@ -62,11 +62,7 @@ extern "C" {
 #define M9_INTER_SRC_SRC_FAST_LOOP        1
 
 #define OPT_LOSSLESS_0                    1
-#if OPT_LOSSLESS_0
-#define CDEF_OFF_NON_REF                  1
-#define REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY  1
-#define PF_N2_SUPPORT                     1
-#endif
+
 #define OPT_LOSSLESS_1                    1
 #if OPT_LOSSLESS_1
 #define UNPACK_REF_POST_EP                1
@@ -106,6 +102,18 @@ extern "C" {
 #define NO_ENCDEC                         0 // bypass encDec to test cmpliance of MD. complained achieved when skip_flag is OFF. Port sample code from VCI-SW_AV1_Candidate1 branch
 
 #endif
+
+#define BLK_SKIP_DECISION                 1 // For now enabled for all mode. to be evaluated. Lossless optimization can be performed.
+#if OPT_LOSSLESS_0
+#define CDEF_OFF_NON_REF                  1
+#if BLK_SKIP_DECISION
+#define REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY  0
+#else
+#define REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY  1
+#endif
+#define PF_N2_SUPPORT                     1
+#endif
+
 #define OPT_QUANT_COEFF                                 0
 #if OPT_QUANT_COEFF
 #define DEBUG_TRELLIS                                   0     

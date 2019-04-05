@@ -1758,20 +1758,32 @@ EbErrorType Av1FullCost(
     }
 
     // Coeff rate
+#if  BLK_SKIP_DECISION
+
+    if (context_ptr->blk_skip_decision && candidate_buffer_ptr->candidate_ptr->type != INTRA_MODE) {
+
+        uint64_t non_skip_cost = RDCOST(lambda, (*y_coeff_bits + *cb_coeff_bits + *cr_coeff_bits + (uint64_t)candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->skipFacBits[cu_ptr->skip_coeff_context][0]), (y_distortion[0] + cb_distortion[0] + cr_distortion[0]));
+        uint64_t skip_cost = RDCOST(lambda, ((uint64_t)candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->skipFacBits[cu_ptr->skip_coeff_context][1]), (y_distortion[1] + cb_distortion[1] + cr_distortion[1]));
+        if ((candidate_buffer_ptr->candidate_ptr->block_has_coeff == 0) || (skip_cost < non_skip_cost)) {
+            y_distortion[0] = y_distortion[1];
+            cb_distortion[0] = cb_distortion[1];
+            cr_distortion[0] = cr_distortion[1];
+            candidate_buffer_ptr->candidate_ptr->block_has_coeff = 0;
+        }
+        if (candidate_buffer_ptr->candidate_ptr->block_has_coeff)
+            coeffRate = (*y_coeff_bits + *cb_coeff_bits + *cr_coeff_bits + (uint64_t)candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->skipFacBits[cu_ptr->skip_coeff_context][0]);
+        else
+            coeffRate = MIN((uint64_t)candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->skipFacBits[cu_ptr->skip_coeff_context][1],
+            (*y_coeff_bits + *cb_coeff_bits + *cr_coeff_bits + (uint64_t)candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->skipFacBits[cu_ptr->skip_coeff_context][0]));
+    }
+    else {
+        coeffRate = (*y_coeff_bits + *cb_coeff_bits + *cr_coeff_bits + (uint64_t)candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->skipFacBits[cu_ptr->skip_coeff_context][0]);
+    }
+#else
     coeffRate = (*y_coeff_bits + *cb_coeff_bits + *cr_coeff_bits);
+#endif
     luma_sse = y_distortion[0];
     chromaSse = cb_distortion[0] + cr_distortion[0];
-
-    // *Note - As of Oct 2011, the JCT-VC uses the PSNR forumula
-    //  PSNR = (LUMA_WEIGHT * PSNRy + PSNRu + PSNRv) / (2+LUMA_WEIGHT)
-    luma_sse = LUMA_WEIGHT * (luma_sse << AV1_COST_PRECISION);
-
-    // *Note - As in JCTVC-G1102, the JCT-VC uses the Mode Decision forumula where the chromaSse has been weighted
-    //  CostMode = (luma_sse + wchroma * chromaSse) + lambdaSse * rateMode
-    //chromaSse = (((chromaSse * ChromaWeightFactorLd[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT); // Low delay and Random access have the same value of chroma weight
-
-    chromaSse = (chromaSse << AV1_COST_PRECISION);
-
     totalDistortion = luma_sse + chromaSse;
 
     rate = lumaRate + chromaRate + coeffRate;
@@ -1853,70 +1865,12 @@ EbErrorType  Av1MergeSkipFullCost(
     skipLumaSse = y_distortion[1] << AV1_COST_PRECISION;
     skipChromaSse = (cb_distortion[1] + cr_distortion[1]) << AV1_COST_PRECISION;
 
-    // *Note - As in JCTVC-G1102, the JCT-VC uses the Mode Decision forumula where the chromaSse has been weighted
-    //  CostMode = (luma_sse + wchroma * chromaSse) + lambdaSse * rateMode
-
-    //if (picture_control_set_ptr->parent_pcs_ptr->pred_structure == EB_PRED_RANDOM_ACCESS) {
-    //    // Random Access
-    //    if (picture_control_set_ptr->temporal_layer_index == 0) {
-    //        mergeChromaSse = (((mergeChromaSse * ChromaWeightFactorRa[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //    else if (picture_control_set_ptr->temporal_layer_index < 3) {
-    //        mergeChromaSse = (((mergeChromaSse * ChromaWeightFactorRaQpScalingL1[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //    else {
-    //        mergeChromaSse = (((mergeChromaSse * ChromaWeightFactorRaQpScalingL3[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //}
-    //else {
-    //    // Low delay
-    //    if (picture_control_set_ptr->temporal_layer_index == 0) {
-    //        mergeChromaSse = (((mergeChromaSse * ChromaWeightFactorLd[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //    else {
-    //        mergeChromaSse = (((mergeChromaSse * ChromaWeightFactorLdQpScaling[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //}
-
-    // Add fast rate to get the total rate of the subject mode
+     // Add fast rate to get the total rate of the subject mode
     mergeRate += candidate_buffer_ptr->candidate_ptr->fast_luma_rate;
     mergeRate += candidate_buffer_ptr->candidate_ptr->fast_chroma_rate;
-
-
     mergeRate += coeffRate;
-
     mergeDistortion = (mergeLumaSse + mergeChromaSse);
-
-    //merge_cost = mergeDistortion + (((lambda * coeffRate + lambda * mergeLumaRate + lambda_chroma * mergeChromaRate) + MD_OFFSET) >> MD_SHIFT);
-
     merge_cost = RDCOST(lambda, mergeRate, mergeDistortion);
-    // mergeLumaCost = mergeLumaSse    + (((lambda * lumaCoeffRate + lambda * mergeLumaRate) + MD_OFFSET) >> MD_SHIFT);
-
-
-    // *Note - As in JCTVC-G1102, the JCT-VC uses the Mode Decision forumula where the chromaSse has been weighted
-    //  CostMode = (luma_sse + wchroma * chromaSse) + lambdaSse * rateMode
-
-    //if (picture_control_set_ptr->parent_pcs_ptr->pred_structure == EB_PRED_RANDOM_ACCESS) {
-
-    //    if (picture_control_set_ptr->temporal_layer_index == 0) {
-    //        skipChromaSse = (((skipChromaSse * ChromaWeightFactorRa[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //    else if (picture_control_set_ptr->temporal_layer_index < 3) {
-    //        skipChromaSse = (((skipChromaSse * ChromaWeightFactorRaQpScalingL1[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //    else {
-    //        skipChromaSse = (((skipChromaSse * ChromaWeightFactorRaQpScalingL3[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //}
-    //else {
-    //    // Low Delay
-    //    if (picture_control_set_ptr->temporal_layer_index == 0) {
-    //        skipChromaSse = (((skipChromaSse * ChromaWeightFactorLd[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //    else {
-    //        skipChromaSse = (((skipChromaSse * ChromaWeightFactorLdQpScaling[qp]) + CHROMA_WEIGHT_OFFSET) >> CHROMA_WEIGHT_SHIFT);
-    //    }
-    //}
 
     skipDistortion = skipLumaSse + skipChromaSse;
     skipRate = skipModeRate;
@@ -1933,12 +1887,7 @@ EbErrorType  Av1MergeSkipFullCost(
     // Assigne merge flag
     candidate_buffer_ptr->candidate_ptr->merge_flag = EB_TRUE;
     // Assigne skip flag
-
     candidate_buffer_ptr->candidate_ptr->skip_flag = (skip_cost <= merge_cost) ? EB_TRUE : EB_FALSE;
-
-    //CHKN:  skip_flag context is not accurate as MD does not keep skip info in sync with EncDec.
-
-
 
     return return_error;
 }
@@ -1974,8 +1923,6 @@ EbErrorType av1_intra_full_cost(
 
 {
     EbErrorType return_error = EB_ErrorNone;
-
-
     Av1FullCost(
         picture_control_set_ptr,
         context_ptr,
@@ -1989,9 +1936,6 @@ EbErrorType av1_intra_full_cost(
         cb_coeff_bits,
         cr_coeff_bits,
         bsize);
-
-
-
     return return_error;
 }
 

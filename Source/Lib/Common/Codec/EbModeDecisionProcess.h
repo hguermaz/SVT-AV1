@@ -247,6 +247,9 @@ extern "C" {
 #if M9_INTER_SRC_SRC_FAST_LOOP
         uint8_t                           inter_fast_loop_src_src;
 #endif
+#if  BLK_SKIP_DECISION
+        EbBool                            blk_skip_decision;
+#endif  
     } ModeDecisionContext_t;
 
     typedef void(*EB_AV1_LAMBDA_ASSIGN_FUNC)(
