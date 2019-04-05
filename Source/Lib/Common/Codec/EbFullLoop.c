@@ -1537,41 +1537,27 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 16, 10 },
 #endif
 };
-void av1_optimize_txb_new(
-    MdRateEstimationContext_t  *md_rate_estimation_ptr,
-    uint32_t                    full_lambda,
-    int16_t                     txb_skip_context,
-    int16_t                     dc_sign_context,
-#if DEBUG_TRELLIS
-    tran_low_t                 *coeff_ptr,
-#else
-    const tran_low_t           *coeff_ptr,
-#endif
-    int32_t                     stride,
-    intptr_t                    n_coeffs,
-    const MacroblockPlane      *p,
-    tran_low_t                 *qcoeff_ptr,
-    tran_low_t                 *dqcoeff_ptr,
-    uint16_t                   *eob,
-    const SCAN_ORDER           *sc,
-    const QUANT_PARAM          *qparam,
-    TxSize                      tx_size,
-    TxType                      tx_type,
-    EbBool                      is_inter,
-    uint32_t                    bit_increment,
-    int                         plane) {
-#if 0
-    const struct AV1_COMP *cpi, 
-    MACROBLOCK *x, 
-    int plane
-    int block, 
-    TX_SIZE tx_size, 
-    TX_TYPE tx_type,
-    const TXB_CTX *const txb_ctx, 
-    int *rate_cost,
-    int sharpness, int fast_mode) {
-#endif
 
+void av1_optimize_b(
+    ModeDecisionContext_t  *md_context,
+    int16_t                 txb_skip_context,
+    int16_t                 dc_sign_context,
+    const tran_low_t       *coeff_ptr,
+    int32_t                 stride,
+    intptr_t                n_coeffs,
+    const MacroblockPlane  *p,
+    tran_low_t             *qcoeff_ptr,
+    tran_low_t             *dqcoeff_ptr,
+    uint16_t               *eob,
+    const SCAN_ORDER       *sc,
+    const QUANT_PARAM      *qparam,
+    TxSize                  tx_size,
+    TxType                  tx_type,
+    EbBool                  is_inter,
+    uint32_t                bit_increment,
+    int                     plane)
+
+{
 #if DEBUG_TRELLIS
     tx_type = DCT_DCT;
     const SCAN_ORDER *const scan_order = &av1_scan_orders[tx_size][tx_type];
@@ -1591,7 +1577,7 @@ void av1_optimize_txb_new(
         coeff_ptr[scan[6]] = 30;
         coeff_ptr[scan[7]] = 55;
         coeff_ptr[scan[8]] = 33;
-        coeff_ptr[scan[9]] =  -1;
+        coeff_ptr[scan[9]] = -1;
 
 
         qcoeff_ptr[scan[0]] = 550;
@@ -1616,14 +1602,13 @@ void av1_optimize_txb_new(
         dqcoeff_ptr[scan[7]] = 22;
         dqcoeff_ptr[scan[8]] = 22;
         dqcoeff_ptr[scan[9]] = 1;
-       
+
     }
 #endif
-
     // Hsan (Trellis): hardcoded as not supported:
     int sharpness = 0; // No Sharpness
     int fast_mode = 0; // TBD
-    AQ_MODE aq_mode = NO_AQ;  
+    AQ_MODE aq_mode = NO_AQ;
     DELTAQ_MODE deltaq_mode = NO_DELTA_Q;
     int8_t segment_id = 0;
     int sb_energy_level = 0;
@@ -1675,14 +1660,14 @@ void av1_optimize_txb_new(
     const int is_inter = is_inter_block(mbmi);
 #endif
 #if 1
-    const LV_MAP_COEFF_COST *txb_costs = &md_rate_estimation_ptr->coeffFacBits[txs_ctx][plane_type];
+    const LV_MAP_COEFF_COST *txb_costs = &md_context->md_rate_estimation_ptr->coeffFacBits[txs_ctx][plane_type];
 #else
     const LV_MAP_COEFF_COST *txb_costs = &x->coeff_costs[txs_ctx][plane_type];
 #endif
 
     const int eob_multi_size = txsize_log2_minus4[tx_size];
 #if 1
-    const LV_MAP_EOB_COST *txb_eob_costs = &md_rate_estimation_ptr->eobFracBits[eob_multi_size][plane_type];
+    const LV_MAP_EOB_COST *txb_eob_costs = &md_context->md_rate_estimation_ptr->eobFracBits[eob_multi_size][plane_type];
 #else
     const LV_MAP_EOB_COST *txb_eob_costs = &x->eob_costs[eob_multi_size][plane_type];
 #endif
@@ -1700,7 +1685,7 @@ void av1_optimize_txb_new(
                 ? (3 - sb_energy_level)
                 : 0));
     const int64_t rdmult =
-        (((int64_t)full_lambda *
+        (((int64_t)md_context->full_lambda *
         (plane_rd_mult[is_inter][plane_type] << (2 * bit_increment))) +
             2) >>
         rshift;
@@ -1737,20 +1722,20 @@ void av1_optimize_txb_new(
 
     if (abs_qc >= 2) {
         update_coeff_general(
-            &accu_rate, 
-            &accu_dist, 
-            si, 
-            *eob, 
-            tx_size, 
+            &accu_rate,
+            &accu_dist,
+            si,
+            *eob,
+            tx_size,
             tx_class,
-            bwl, 
-            height, 
-            rdmult, 
-            shift, 
+            bwl,
+            height,
+            rdmult,
+            shift,
             dc_sign_context,
             p->dequant_QTX,
-            scan, 
-            txb_costs, 
+            scan,
+            txb_costs,
             coeff_ptr,
             qcoeff_ptr,
             dqcoeff_ptr,
@@ -1761,13 +1746,13 @@ void av1_optimize_txb_new(
         assert(abs_qc == 1);
         const int coeff_ctx = get_lower_levels_ctx_eob(bwl, height, si);
         accu_rate += get_coeff_cost_eob(
-            ci, 
-            abs_qc, 
-            sign, 
-            coeff_ctx, 
+            ci,
+            abs_qc,
+            sign,
+            coeff_ctx,
             dc_sign_context,
-            txb_costs, 
-            bwl, 
+            txb_costs,
+            bwl,
             tx_class);
 
         const tran_low_t tqc = coeff_ptr[ci];
@@ -1827,101 +1812,21 @@ void av1_optimize_txb_new(
             p->dequant_QTX, scan, txb_costs, coeff_ptr, qcoeff_ptr, dqcoeff_ptr,
             levels);
     }
-#if 0 // Hsan (Trellis)  - TBD
+#if 0 
     const int tx_type_cost = get_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
-#endif
+
     if (*eob == 0)
         accu_rate += skip_cost;
     else
-#if 1 // Hsan (Trellis)  - TBD
-        accu_rate += non_skip_cost;
-#else
         accu_rate += non_skip_cost + tx_type_cost;
-#endif
-#if 0 // Hsan (Trellis)  - TBD
+
     p->eobs[block] = eob;
     p->txb_entropy_ctx[block] =
         av1_get_txb_entropy_context(qcoeff, scan_order, p->eobs[block]);
-    
+
     *rate_cost = accu_rate;
     return eob;
 #endif
-}
-void av1_optimize_b(
-    MdRateEstimationContext_t  *md_rate_estimation_ptr,
-    uint32_t                    full_lambda,
-    int16_t                     txb_skip_context,
-    int16_t                     dc_sign_context,
-    const tran_low_t           *coeff_ptr,
-    int32_t                     stride,
-    intptr_t                    n_coeffs,
-    const MacroblockPlane      *p,
-    tran_low_t                 *qcoeff_ptr,
-    tran_low_t                 *dqcoeff_ptr,
-    uint16_t                   *eob,
-    const SCAN_ORDER           *sc,
-    const QUANT_PARAM          *qparam,
-    TxSize                      tx_size,
-    TxType                      tx_type,
-    EbBool                      is_inter,
-    uint32_t                    bit_increment,
-    int                         plane) {
-
-#if 0
-    const struct AV1_COMP *cpi, 
-    MACROBLOCK *mb, 
-    int plane
-    int block, 
-    TX_SIZE tx_size, 
-    TX_TYPE tx_type,
-    const TXB_CTX *const txb_ctx, 
-    int fast_mode,
-    int *rate_cost) {
-#endif
-
-#if 0
-    MACROBLOCKD *const xd = &mb->e_mbd;
-    struct macroblock_plane *const p = &mb->plane[plane];
-    const int eob = p->eobs[block];
-    const int segment_id = xd->mi[0]->segment_id;
-
-    if (eob == 0 || !cpi->optimize_seg_arr[segment_id] || xd->lossless[segment_id]) {
-        *rate_cost = av1_cost_skip_txb(mb, txb_ctx, plane, tx_size);
-        return eob;
-    }
-#endif
-    av1_optimize_txb_new(
-        md_rate_estimation_ptr,
-        full_lambda,
-        txb_skip_context,
-        dc_sign_context,
-        coeff_ptr,
-        stride,
-        n_coeffs,
-        p,
-        qcoeff_ptr,
-        dqcoeff_ptr,
-        eob,
-        sc,
-        qparam,
-        tx_size,
-        tx_type,
-        is_inter,
-        bit_increment,
-        plane);
-#if 0
-        cpi, 
-        mb, 
-        plane
-        block, 
-        tx_size, 
-        tx_type, 
-        txb_ctx,
-        rate_cost, 
-        cpi->oxcf.sharpness, 
-        fast_mode    );
-#endif    
-
 }
 #endif
 
@@ -2186,8 +2091,7 @@ void av1_quantize_inv_quantize(
         // Perform Trellis
         if (*eob != 0) {
             av1_optimize_b(
-                md_context->md_rate_estimation_ptr,
-                md_context->full_lambda,
+                md_context,
                 txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
                 dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
                 (tran_low_t*)coeff,
