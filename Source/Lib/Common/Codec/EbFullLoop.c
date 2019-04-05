@@ -2108,12 +2108,12 @@ void av1_quantize_inv_quantize(
 #else 
 #if TRELLIS_MD  
 #if TRELLIS_INTRA
-    if (*eob != 0 && component_type == COMPONENT_LUMA) {
+    if (md_context->trellis_quant_coeff_optimization && *eob != 0 && component_type == COMPONENT_LUMA) {
 #else
 #if TRELLIS_CHROMA
-    if (*eob != 0 && is_inter) {
+    if (md_context->trellis_quant_coeff_optimization && *eob != 0 && is_inter) {
 #else
-    if (*eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
+    if (md_context->trellis_quant_coeff_optimization && *eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
 #endif
 #endif
 #else

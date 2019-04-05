@@ -250,6 +250,9 @@ extern "C" {
 #if  BLK_SKIP_DECISION
         EbBool                            blk_skip_decision;
 #endif  
+#if OPT_QUANT_COEFF
+        EbBool                            trellis_quant_coeff_optimization;
+#endif
     } ModeDecisionContext_t;
 
     typedef void(*EB_AV1_LAMBDA_ASSIGN_FUNC)(
