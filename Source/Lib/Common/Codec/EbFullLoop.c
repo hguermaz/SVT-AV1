@@ -1947,12 +1947,9 @@ void av1_quantize_inv_quantize(
     uint32_t                       bit_increment,
     TxType                         tx_type,      
     ModeDecisionCandidateBuffer_t *candidateBuffer,
-    MdRateEstimationContext_t     *md_rate_estimation_ptr,
-    uint32_t                       full_lambda,
     int16_t                        txb_skip_context,
     int16_t                        dc_sign_context,
     PredictionMode                 pred_mode,
-    uint32_t                       sb_index,
     EbBool                         is_final_stage)
 {
     (void)coeff_stride;
@@ -2144,7 +2141,7 @@ void av1_quantize_inv_quantize(
                 INTER_MODE :
                 INTRA_MODE;
             candidateBuffer->candidate_ptr->pred_mode = pred_mode;
-            candidateBuffer->candidate_ptr->md_rate_estimation_ptr = md_rate_estimation_ptr;
+            candidateBuffer->candidate_ptr->md_rate_estimation_ptr = md_context->md_rate_estimation_ptr;
         }
 
         // Compute the cost when using non-optimized coefficients (i.e. original coefficients) 
@@ -2180,8 +2177,8 @@ void av1_quantize_inv_quantize(
         distortion_non_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_RESIDUAL], shift);
         distortion_non_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_PREDICTION], shift);
 
-        cost_non_opt = RDCOST(full_lambda, coeff_rate_non_opt, distortion_non_opt[DIST_CALC_RESIDUAL]);
-        cost_skip_non_opt = RDCOST(full_lambda, coeff_rate_skip_non_opt, distortion_non_opt[DIST_CALC_PREDICTION]);
+        cost_non_opt = RDCOST(md_context->full_lambda, coeff_rate_non_opt, distortion_non_opt[DIST_CALC_RESIDUAL]);
+        cost_skip_non_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_non_opt, distortion_non_opt[DIST_CALC_PREDICTION]);
 #if TRELLIS_SKIP // To test
         if (cost_skip_non_opt < cost_non_opt)
             *eob = 0;
@@ -2189,8 +2186,8 @@ void av1_quantize_inv_quantize(
         // Perform Trellis
         if (*eob != 0) {
             av1_optimize_b(
-                md_rate_estimation_ptr,
-                full_lambda,
+                md_context->md_rate_estimation_ptr,
+                md_context->full_lambda,
                 txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
                 dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
                 (tran_low_t*)coeff,
@@ -2243,8 +2240,8 @@ void av1_quantize_inv_quantize(
                 distortion_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_RESIDUAL], shift);
                 distortion_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_PREDICTION], shift);
 
-                cost_opt = RDCOST(full_lambda, coeff_rate_opt, distortion_opt[0]);
-                cost_skip_opt = RDCOST(full_lambda, coeff_rate_skip_opt, distortion_opt[1]);
+                cost_opt = RDCOST(md_context->full_lambda, coeff_rate_opt, distortion_opt[0]);
+                cost_skip_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_opt, distortion_opt[1]);
 #if TRELLIS_SKIP // To test
                 if (cost_skip_opt < cost_opt)
                     *eob = 0;
@@ -2353,12 +2350,9 @@ void ProductFullLoop(
             BIT_INCREMENT_8BIT,
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
             candidateBuffer,
-            context_ptr->md_rate_estimation_ptr,
-            context_ptr->full_lambda,
             context_ptr->cu_ptr->luma_txb_skip_context,
             context_ptr->cu_ptr->luma_dc_sign_context,
             candidateBuffer->candidate_ptr->pred_mode,
-            0,
             EB_FALSE);
 
         candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[txb_1d_offset]);
@@ -2684,12 +2678,9 @@ void ProductFullLoopTxSearch(
                 BIT_INCREMENT_8BIT,
                 tx_type,
                 candidateBuffer,
-                context_ptr->md_rate_estimation_ptr,
-                context_ptr->full_lambda,
                 context_ptr->cu_ptr->luma_txb_skip_context,
                 context_ptr->cu_ptr->luma_dc_sign_context,
                 candidateBuffer->candidate_ptr->pred_mode,
-                0,
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->buffer_y)[tuOriginIndex]);
@@ -2894,16 +2885,12 @@ void encode_pass_tx_search(
             BIT_INCREMENT_8BIT,
             tx_type,
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-            context_ptr->md_rate_estimation_ptr,
-            context_ptr->full_lambda,
 #if TRELLIS_CHROMA
             cu_ptr->luma_txb_skip_context,
             cu_ptr->luma_dc_sign_context,
             cu_ptr->pred_mode,
-            0,
             EB_TRUE);
 #else
-            0,
             0,
             0,
             0,
@@ -3116,8 +3103,6 @@ void encode_pass_tx_search_hbd(
             BIT_INCREMENT_10BIT,
             tx_type,
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-            context_ptr->md_rate_estimation_ptr,
-            context_ptr->full_lambda,
 #if TRELLIS_CHROMA
             cu_ptr->luma_txb_skip_context,
             cu_ptr->luma_dc_sign_context,
@@ -3125,7 +3110,6 @@ void encode_pass_tx_search_hbd(
             0,
             EB_TRUE);
 #else
-            0,
             0,
             0,
             0,
@@ -3335,8 +3319,6 @@ void FullLoop_R(
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 candidateBuffer,
-                context_ptr->md_rate_estimation_ptr,
-                context_ptr->full_lambda,
 #if TRELLIS_CHROMA
                 context_ptr->cu_ptr->cb_txb_skip_context,
                 context_ptr->cu_ptr->cb_dc_sign_context,
@@ -3344,7 +3326,6 @@ void FullLoop_R(
                 0,
                 EB_FALSE);
 #else
-                0,
                 0,
                 0,
                 0,
@@ -3443,16 +3424,12 @@ void FullLoop_R(
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
                 candidateBuffer,
-                context_ptr->md_rate_estimation_ptr,
-                context_ptr->full_lambda,
 #if TRELLIS_CHROMA
                 context_ptr->cu_ptr->cr_txb_skip_context,
                 context_ptr->cu_ptr->cr_dc_sign_context,
                 candidateBuffer->candidate_ptr->pred_mode,
-                0,
                 EB_FALSE);
 #else
-                0,
                 0,
                 0,
                 0,

@@ -693,12 +693,9 @@ static void Av1EncodeLoop(
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_Y],   
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-            context_ptr->md_rate_estimation_ptr,
-            context_ptr->md_context->full_lambda,
             cu_ptr->luma_txb_skip_context,
             cu_ptr->luma_dc_sign_context,
             cu_ptr->pred_mode,
-            sb_ptr->index,
             EB_TRUE);
 
 #if BLK_SKIP_DECISION
@@ -938,12 +935,9 @@ static void Av1EncodeLoop(
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-            context_ptr->md_rate_estimation_ptr,
-            context_ptr->md_context->full_lambda,
             cu_ptr->cb_txb_skip_context,
             cu_ptr->cb_dc_sign_context,
             cu_ptr->pred_mode,
-            sb_ptr->index,
             EB_TRUE);
 
 #if BLK_SKIP_DECISION
@@ -997,12 +991,9 @@ static void Av1EncodeLoop(
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-            context_ptr->md_rate_estimation_ptr,
-            context_ptr->md_context->full_lambda,
             cu_ptr->cr_txb_skip_context,
             cu_ptr->cr_dc_sign_context,
             cu_ptr->pred_mode,
-            sb_ptr->index,
             EB_TRUE);
 #if BLK_SKIP_DECISION
         if (context_ptr->md_skip_blk) {
@@ -1202,12 +1193,9 @@ static void Av1EncodeLoop16bit(
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_Y],
                 &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-                context_ptr->md_rate_estimation_ptr,
-                context_ptr->md_context->full_lambda,
                 cu_ptr->luma_txb_skip_context,
                 cu_ptr->luma_dc_sign_context,
                 cu_ptr->pred_mode,
-                sb_ptr->index,
                 EB_TRUE);
 #if BLK_SKIP_DECISION
             if (context_ptr->md_skip_blk) {
@@ -1371,12 +1359,9 @@ static void Av1EncodeLoop16bit(
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-                context_ptr->md_rate_estimation_ptr,
-                context_ptr->md_context->full_lambda,
                 cu_ptr->cb_txb_skip_context,
                 cu_ptr->cb_dc_sign_context,
                 cu_ptr->pred_mode,
-                sb_ptr->index,
                 EB_TRUE);
 
 #if BLK_SKIP_DECISION
@@ -1437,12 +1422,9 @@ static void Av1EncodeLoop16bit(
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
                 &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
-                context_ptr->md_rate_estimation_ptr,      
-                context_ptr->md_context->full_lambda,
                 cu_ptr->cr_txb_skip_context,
                 cu_ptr->cr_dc_sign_context,
                 cu_ptr->pred_mode,
-                sb_ptr->index,
                 EB_TRUE);
 #if BLK_SKIP_DECISION
             if (context_ptr->md_skip_blk) {

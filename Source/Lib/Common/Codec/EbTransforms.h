@@ -3913,12 +3913,9 @@ extern "C" {
         uint32_t                       bit_increment,
         TxType                         tx_type,
         ModeDecisionCandidateBuffer_t *candidateBuffer,
-        MdRateEstimationContext_t     *md_rate_estimation_ptr,
-        uint32_t                       full_lambda,
         int16_t                        txb_skip_context,
         int16_t                        dc_sign_context,
         PredictionMode                 pred_mode,
-        uint32_t                       sb_index,
         EbBool                         is_final_stage);
 
     extern EbErrorType av1_estimate_inv_transform(
