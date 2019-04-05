@@ -2107,7 +2107,15 @@ void av1_quantize_inv_quantize(
     if (*eob != 0 && is_final_stage) {
 #else 
 #if TRELLIS_MD  
+#if TRELLIS_INTRA
+    if (*eob != 0 && component_type == COMPONENT_LUMA) {
+#else
+#if TRELLIS_CHROMA
+    if (*eob != 0 && is_inter) {
+#else
     if (*eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
+#endif
+#endif
 #else
     if (*eob != 0 && is_final_stage && is_inter && component_type == COMPONENT_LUMA) {
 #endif
@@ -2888,11 +2896,19 @@ void encode_pass_tx_search(
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
+#if TRELLIS_CHROMA
+            cu_ptr->luma_txb_skip_context,
+            cu_ptr->luma_dc_sign_context,
+            cu_ptr->pred_mode,
+            0,
+            EB_TRUE);
+#else
             0,
             0,
             0,
             0,
             EB_FALSE);
+#endif
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
         if (yCountNonZeroCoeffsTemp == 0 && tx_type != DCT_DCT) {
@@ -3102,11 +3118,19 @@ void encode_pass_tx_search_hbd(
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
             context_ptr->md_rate_estimation_ptr,
             context_ptr->full_lambda,
+#if TRELLIS_CHROMA
+            cu_ptr->luma_txb_skip_context,
+            cu_ptr->luma_dc_sign_context,
+            cu_ptr->pred_mode,
+            0,
+            EB_TRUE);
+#else
             0,
             0,
             0,
             0,
             EB_FALSE);
+#endif
 
         //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
         if (yCountNonZeroCoeffsTemp == 0 && tx_type != DCT_DCT) {
@@ -3313,12 +3337,19 @@ void FullLoop_R(
                 candidateBuffer,
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
+#if TRELLIS_CHROMA
+                context_ptr->cu_ptr->cb_txb_skip_context,
+                context_ptr->cu_ptr->cb_dc_sign_context,
+                candidateBuffer->candidate_ptr->pred_mode,
+                0,
+                EB_FALSE);
+#else
                 0,
                 0,
                 0,
                 0,
                 EB_FALSE);
-
+#endif
             candidateBuffer->candidate_ptr->quantized_dc[1] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCb)[txb_1d_offset]);
 #if SPATIAL_SSE
             if (context_ptr->spatial_sse_full_loop) {
@@ -3414,12 +3445,19 @@ void FullLoop_R(
                 candidateBuffer,
                 context_ptr->md_rate_estimation_ptr,
                 context_ptr->full_lambda,
+#if TRELLIS_CHROMA
+                context_ptr->cu_ptr->cr_txb_skip_context,
+                context_ptr->cu_ptr->cr_dc_sign_context,
+                candidateBuffer->candidate_ptr->pred_mode,
+                0,
+                EB_FALSE);
+#else
                 0,
                 0,
                 0,
                 0,
                 EB_FALSE);
-
+#endif
             candidateBuffer->candidate_ptr->quantized_dc[2] = (((int32_t*)candidateBuffer->residualQuantCoeffPtr->bufferCr)[txb_1d_offset]);
 #if SPATIAL_SSE
             if (context_ptr->spatial_sse_full_loop) {

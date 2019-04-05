@@ -114,11 +114,13 @@ extern "C" {
 #define PF_N2_SUPPORT                     1
 #endif
 
-#define OPT_QUANT_COEFF                                 0
+#define OPT_QUANT_COEFF                                 1
 #if OPT_QUANT_COEFF
 #define DEBUG_TRELLIS                                   0     
 #define TRELLIS_SKIP                                    0
 #define TRELLIS_MD                                      1
+#define TRELLIS_INTRA                                   0     
+#define TRELLIS_CHROMA                                  0  
 #endif
 #if !M9_SETTINGS || M9_ADP
 #define FRAC_64x64_BUG_FIX                              1
