@@ -1696,8 +1696,8 @@ void perform_fast_loop(
                     input_picture_ptr->stride_y,
                     prediction_ptr->buffer_y + cuOriginIndex,
                     prediction_ptr->stride_y,
-                    context_ptr->blk_geom->bheight,
-                    context_ptr->blk_geom->bwidth);
+                    context_ptr->blk_geom->bwidth,
+                    context_ptr->blk_geom->bheight);
 
             }
             else {
@@ -1719,16 +1719,16 @@ void perform_fast_loop(
                         input_picture_ptr->strideCb,
                         candidateBuffer->prediction_ptr->bufferCb + cuChromaOriginIndex,
                         prediction_ptr->strideCb,
-                        context_ptr->blk_geom->bheight_uv,
-                        context_ptr->blk_geom->bwidth_uv);
+                        context_ptr->blk_geom->bwidth_uv,
+                        context_ptr->blk_geom->bheight_uv);
 
                     chromaFastDistortion += spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->bwidth_uv) - 2]( //spatial_full_distortion_kernel(
                         input_picture_ptr->bufferCr + inputCrOriginIndex,
                         input_picture_ptr->strideCb,
                         candidateBuffer->prediction_ptr->bufferCr + cuChromaOriginIndex,
                         prediction_ptr->strideCr,
-                        context_ptr->blk_geom->bheight_uv,
-                        context_ptr->blk_geom->bwidth_uv);
+                        context_ptr->blk_geom->bwidth_uv,
+                        context_ptr->blk_geom->bheight_uv);
                 }
                 else {
                     chromaFastDistortion = NxMSadKernelSubSampled_funcPtrArray[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
