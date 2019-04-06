@@ -35,14 +35,55 @@
 extern "C" {
 #endif
 
-#define NEW_PRESETS   1
+#define NEW_PRESETS         1
+#define NEW_I7_PRESETS      0
+
+#if NEW_I7_PRESETS
+
+#define NEW_I7_M1							        1
+#define NEW_I7_M2							        1
+#define NEW_I7_M3							        1
 
 
+#if NEW_I7_M1
+#define M3_TX_search_Reduced_Set                    1
+#define M2_SB_block_size                            1
+#define M2_NFL                                      1
+#define M3_Intra                                    1
+#define M3_TX_search_Skip_TH                        1
 
+#define M1_NSQ_search                               1
+#define M1_Interpolation_search                     1
+#define M1_ME                                       1
+#define M1_Uni_Bi_Pred                              1
+#define M1_NFL                                      1
+#define M1_ME_Search_Method                         1
+#endif
+
+#if NEW_I7_M2
+#define M3_ME                                       1
+#define M3_Interpolation_search                     1
+#define M2_NSQ_search                               1
+
+#define M2_NFL                                      1
+#define M3_TX_search_Reduced_Set                    1
+#define M3_Intra                                    1
+#define M3_TX_search_Skip_TH                        1
+
+#define M3_Partitioning_Method                      1 // coupled with M3_NSQ_search and M2_SB_block_size
+#define M3_NSQ_search                               1 // coupled with M3_Partitioning_Method and M2_SB_block_size
+#endif
+
+
+#if NEW_I7_M3
+#define M4_Partitioning_Method                      1
+#define M4_NSQ_search                               1
+
+#endif
    
 
 
-#if NEW_PRESETS
+#elif NEW_PRESETS
 
 #define NEW_M1								        1
 #define NEW_M2								        1
