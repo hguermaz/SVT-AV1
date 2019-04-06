@@ -3908,7 +3908,6 @@ extern "C" {
 #if !PF_N2_SUPPORT                    
         EbPfMode                       pf_mode,
 #endif                                
-        EbBool                         is_inter,
         uint32_t                       component_type,
         uint32_t                       bit_increment,
         TxType                         tx_type,

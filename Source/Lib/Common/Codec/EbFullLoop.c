@@ -1846,8 +1846,7 @@ void av1_quantize_inv_quantize(
     uint32_t                      *count_non_zero_coeffs,
 #if !PF_N2_SUPPORT                
     EbPfMode                       pf_mode,
-#endif                            
-    EbBool                         is_inter,
+#endif                               
     uint32_t                       component_type,
     uint32_t                       bit_increment,
     TxType                         tx_type,      
@@ -2004,6 +2003,7 @@ void av1_quantize_inv_quantize(
             &qparam);
 
 #if OPT_QUANT_COEFF
+    EbBool is_inter = (pred_mode >= NEARESTMV);
     // Hsan (Trellis) : only luma for now and only @ encode pass  
 #if DEBUG_TRELLIS
     if (*eob != 0 && is_final_stage) {
@@ -2249,7 +2249,6 @@ void ProductFullLoop(
 #if !PF_N2_SUPPORT
             context_ptr->pf_md_mode,
 #endif
-            candidateBuffer->candidate_ptr->type == INTER_MODE,
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
@@ -2577,7 +2576,6 @@ void ProductFullLoopTxSearch(
 #if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
-                candidateBuffer->candidate_ptr->type == INTER_MODE,
                 COMPONENT_LUMA,
                 BIT_INCREMENT_8BIT,
                 tx_type,
@@ -2784,7 +2782,6 @@ void encode_pass_tx_search(
 #if !PF_N2_SUPPORT
             0,
 #endif
-            context_ptr->is_inter,
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             tx_type,
@@ -3002,7 +2999,6 @@ void encode_pass_tx_search_hbd(
 #if !PF_N2_SUPPORT
             0,
 #endif
-            context_ptr->is_inter,
             COMPONENT_LUMA,
             BIT_INCREMENT_10BIT,
             tx_type,
@@ -3218,7 +3214,6 @@ void FullLoop_R(
 #if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
-                candidateBuffer->candidate_ptr->type == INTER_MODE,
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
@@ -3323,7 +3318,6 @@ void FullLoop_R(
 #if !PF_N2_SUPPORT
                 context_ptr->pf_md_mode,
 #endif
-                candidateBuffer->candidate_ptr->type == INTER_MODE, 
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_8BIT,
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],

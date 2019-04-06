@@ -688,7 +688,6 @@ static void Av1EncodeLoop(
 #if !PF_N2_SUPPORT
             0,
 #endif
-            context_ptr->is_inter,
             COMPONENT_LUMA,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_Y],   
@@ -930,7 +929,6 @@ static void Av1EncodeLoop(
 #if !PF_N2_SUPPORT
             0,
 #endif
-            context_ptr->is_inter,
             COMPONENT_CHROMA_CB,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
@@ -986,7 +984,6 @@ static void Av1EncodeLoop(
 #if !PF_N2_SUPPORT
             0,
 #endif
-            context_ptr->is_inter,
             COMPONENT_CHROMA_CR,
             BIT_INCREMENT_8BIT,
             txb_ptr->transform_type[PLANE_TYPE_UV],
@@ -1188,7 +1185,6 @@ static void Av1EncodeLoop16bit(
 #if !PF_N2_SUPPORT
                 0,
 #endif
-                context_ptr->is_inter,
                 COMPONENT_LUMA,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_Y],
@@ -1354,7 +1350,6 @@ static void Av1EncodeLoop16bit(
 #if !PF_N2_SUPPORT
                 0,
 #endif
-                context_ptr->is_inter,
                 COMPONENT_CHROMA_CB,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
@@ -1417,7 +1412,6 @@ static void Av1EncodeLoop16bit(
 #if !PF_N2_SUPPORT
                 0,
 #endif
-                context_ptr->is_inter,
                 COMPONENT_CHROMA_CR,
                 BIT_INCREMENT_10BIT,
                 txb_ptr->transform_type[PLANE_TYPE_UV],
