@@ -154,6 +154,12 @@ typedef struct {
     int row_max;
 } MvLimits;
 
+typedef struct {
+    uint8_t by;
+    uint8_t bx;
+    uint8_t skip;
+} cdef_list;
+
 /*!\brief force enum to be unsigned 1 byte*/
 #define UENUM1BYTE(enumvar) \
   ;                         \

@@ -15,6 +15,7 @@
 */
 
 #include <stdlib.h>
+#include "aom_dsp_rtcd.h"
 #include "EbDefinitions.h"
 #include "EbCdefProcess.h"
 #include "EbEncDecResults.h"
@@ -33,9 +34,6 @@ void copy_sb16_16(uint16_t *dst, int32_t dstride, const uint16_t *src,
 void *aom_memalign(size_t align, size_t size);
 void aom_free(void *memblk);
 void *aom_malloc(size_t size);
-uint64_t compute_cdef_dist(uint16_t *dst, int32_t dstride, uint16_t *src,
-    cdef_list *dlist, int32_t cdef_count, block_size bsize,
-    int32_t coeff_shift, int32_t pli);
 int32_t sb_all_skip(PictureControlSet_t   *picture_control_set_ptr, const Av1Common *const cm, int32_t mi_row, int32_t mi_col);
 int32_t sb_compute_cdef_list(PictureControlSet_t   *picture_control_set_ptr, const Av1Common *const cm, int32_t mi_row, int32_t mi_col,
     cdef_list *dlist, block_size bs);

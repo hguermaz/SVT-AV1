@@ -83,6 +83,10 @@ extern "C" {
     void cdef_filter_block_avx2(uint8_t *dst8, uint16_t *dst16, int32_t dstride, const uint16_t *in, int32_t pri_strength, int32_t sec_strength, int32_t dir, int32_t pri_damping, int32_t sec_damping, int32_t bsize, int32_t max, int32_t coeff_shift);
     RTCD_EXTERN void(*cdef_filter_block)(uint8_t *dst8, uint16_t *dst16, int32_t dstride, const uint16_t *in, int32_t pri_strength, int32_t sec_strength, int32_t dir, int32_t pri_damping, int32_t sec_damping, int32_t bsize, int32_t max, int32_t coeff_shift);
 
+    uint64_t compute_cdef_dist_c(const uint16_t *dst, int32_t dstride, const uint16_t *src, const cdef_list *dlist, int32_t cdef_count, block_size bsize, int32_t coeff_shift, int32_t pli);
+    uint64_t compute_cdef_dist_avx2(const uint16_t *dst, int32_t dstride, const uint16_t *src, const cdef_list *dlist, int32_t cdef_count, block_size bsize, int32_t coeff_shift, int32_t pli);
+    RTCD_EXTERN uint64_t(*compute_cdef_dist)(const uint16_t *dst, int32_t dstride, const uint16_t *src, const cdef_list *dlist, int32_t cdef_count, block_size bsize, int32_t coeff_shift, int32_t pli);
+
     void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int32_t dstride, const uint8_t *src, int32_t sstride, int32_t v, int32_t h);
     void copy_rect8_8bit_to_16bit_avx2(uint16_t *dst, int32_t dstride, const uint8_t *src, int32_t sstride, int32_t v, int32_t h);
     RTCD_EXTERN void(*copy_rect8_8bit_to_16bit)(uint16_t *dst, int32_t dstride, const uint8_t *src, int32_t sstride, int32_t v, int32_t h);
@@ -267,13 +271,6 @@ extern "C" {
     void get_proj_subspace_avx2(const uint8_t *src8, int width, int height, int src_stride, const uint8_t *dat8, int dat_stride, int use_highbitdepth, int32_t *flt0, int flt0_stride, int32_t *flt1, int flt1_stride, int *xq, const sgr_params_type *params);
     RTCD_EXTERN void(*get_proj_subspace)(const uint8_t *src8, int width, int height, int src_stride, const uint8_t *dat8, int dat_stride, int use_highbitdepth, int32_t *flt0, int flt0_stride, int32_t *flt1, int flt1_stride, int *xq, const sgr_params_type *params);
 
-    uint64_t mse_4x4_16bit_c(uint16_t *dst, int dstride, uint16_t *src, int sstride);
-    uint64_t mse_4x4_16bit_avx2(uint16_t *dst, int dstride, uint16_t *src, int sstride);
-    RTCD_EXTERN uint64_t(*mse_4x4_16bit)(uint16_t *dst, int dstride, uint16_t *src, int sstride);
-
-    uint64_t dist_8x8_16bit_c(uint16_t *dst, int dstride, uint16_t *src, int sstride, int coeff_shift);
-    uint64_t dist_8x8_16bit_avx2(uint16_t *dst, int dstride, uint16_t *src, int sstride, int coeff_shift);
-    RTCD_EXTERN uint64_t(*dist_8x8_16bit)(uint16_t *dst, int dstride, uint16_t *src, int sstride, int coeff_shift);
     uint64_t search_one_dual_c(int *lev0, int *lev1, int nb_strengths, uint64_t(**mse)[64], int sb_count, int fast, int start_gi, int end_gi);
     uint64_t search_one_dual_avx2(int *lev0, int *lev1, int nb_strengths, uint64_t(**mse)[64], int sb_count, int fast, int start_gi, int end_gi);
     RTCD_EXTERN uint64_t(*search_one_dual)(int *lev0, int *lev1, int nb_strengths, uint64_t(**mse)[64], int sb_count, int fast, int start_gi, int end_gi);
@@ -2412,6 +2409,9 @@ extern "C" {
         cdef_filter_block = cdef_filter_block_c;
         if (flags & HAS_AVX2) cdef_filter_block = cdef_filter_block_avx2;
 
+        compute_cdef_dist = compute_cdef_dist_c;
+        if (flags & HAS_AVX2) compute_cdef_dist = compute_cdef_dist_avx2;
+
         copy_rect8_8bit_to_16bit = copy_rect8_8bit_to_16bit_c;
         if (flags & HAS_AVX2) copy_rect8_8bit_to_16bit = copy_rect8_8bit_to_16bit_avx2;
 
@@ -2457,12 +2457,6 @@ extern "C" {
 
         get_proj_subspace = get_proj_subspace_c;
         if (flags & HAS_AVX2) get_proj_subspace = get_proj_subspace_avx2;
-
-        mse_4x4_16bit = mse_4x4_16bit_c;
-        if (flags & HAS_AVX2) mse_4x4_16bit = mse_4x4_16bit_avx2;
-
-        dist_8x8_16bit = dist_8x8_16bit_c;
-        if (flags & HAS_AVX2) dist_8x8_16bit = dist_8x8_16bit_avx2;
 
         search_one_dual = search_one_dual_c;
         if (flags & HAS_AVX2) search_one_dual = search_one_dual_avx2;
