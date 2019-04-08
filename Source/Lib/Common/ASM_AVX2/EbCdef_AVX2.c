@@ -118,7 +118,7 @@ static INLINE uint32_t sum32(const __m256i src) {
     dst = _mm_hadd_epi32(s, s);
     dst = _mm_hadd_epi32(dst, dst);
 
-    return _mm_cvtsi128_si32(dst);
+    return (uint32_t)_mm_cvtsi128_si32(dst);
 }
 
 static INLINE uint64_t dist_8x8_16bit_avx2(const uint16_t **src, const uint16_t *dst, const int32_t dstride, const int32_t coeff_shift) {
@@ -167,6 +167,22 @@ static INLINE uint64_t dist_8x8_16bit_avx2(const uint16_t **src, const uint16_t 
         (sqrt((20000 << 4 * coeff_shift) + svar * (double)dvar)));
 }
 
+static INLINE void sum_32_to_64(const __m256i src, __m256i *dst) {
+    const __m256i src_L = _mm256_unpacklo_epi32(src, _mm256_setzero_si256());
+    const __m256i src_H = _mm256_unpackhi_epi32(src, _mm256_setzero_si256());
+    *dst = _mm256_add_epi64(*dst, src_L);
+    *dst = _mm256_add_epi64(*dst, src_H);
+}
+
+static INLINE uint64_t sum64(const __m256i src) {
+    const __m128i src_L = _mm256_extracti128_si256(src, 0);
+    const __m128i src_H = _mm256_extracti128_si256(src, 1);
+    const __m128i s = _mm_add_epi64(src_L, src_H);
+    const __m128i dst = _mm_add_epi64(s, _mm_srli_si128(s, 8));
+
+    return (uint64_t)_mm_cvtsi128_si64(dst);
+}
+
 /* Compute MSE only on the blocks we filtered. */
 uint64_t compute_cdef_dist_avx2(const uint16_t *dst, int32_t dstride, const uint16_t *src, const cdef_list *dlist, int32_t cdef_count, block_size bsize, int32_t coeff_shift, int32_t pli) {
     uint64_t sum;
@@ -181,41 +197,49 @@ uint64_t compute_cdef_dist_avx2(const uint16_t *dst, int32_t dstride, const uint
         }
     }
     else {
-        __m256i mse = _mm256_setzero_si256();
+        __m256i mse64 = _mm256_setzero_si256();
 
         if (bsize == BLOCK_8X8) {
             for (bi = 0; bi < cdef_count; bi++) {
+                __m256i mse32 = _mm256_setzero_si256();
                 by = dlist[bi].by;
                 bx = dlist[bi].bx;
-                mse_8x4_16bit_avx2(&src, dst + (8 * by + 0) * dstride + 8 * bx, dstride, &mse);
-                mse_8x4_16bit_avx2(&src, dst + (8 * by + 4) * dstride + 8 * bx, dstride, &mse);
+                mse_8x4_16bit_avx2(&src, dst + (8 * by + 0) * dstride + 8 * bx, dstride, &mse32);
+                mse_8x4_16bit_avx2(&src, dst + (8 * by + 4) * dstride + 8 * bx, dstride, &mse32);
+                sum_32_to_64(mse32, &mse64);
             }
         }
         else if (bsize == BLOCK_4X8) {
             for (bi = 0; bi < cdef_count; bi++) {
+                __m256i mse32 = _mm256_setzero_si256();
                 by = dlist[bi].by;
                 bx = dlist[bi].bx;
-                mse_4x4_16bit_avx2(&src, dst + (8 * by + 0) * dstride + 4 * bx, dstride, &mse);
-                mse_4x4_16bit_avx2(&src, dst + (8 * by + 4) * dstride + 4 * bx, dstride, &mse);
+                mse_4x4_16bit_avx2(&src, dst + (8 * by + 0) * dstride + 4 * bx, dstride, &mse32);
+                mse_4x4_16bit_avx2(&src, dst + (8 * by + 4) * dstride + 4 * bx, dstride, &mse32);
+                sum_32_to_64(mse32, &mse64);
             }
         }
         else if (bsize == BLOCK_8X4) {
             for (bi = 0; bi < cdef_count; bi++) {
+                __m256i mse32 = _mm256_setzero_si256();
                 by = dlist[bi].by;
                 bx = dlist[bi].bx;
-                mse_8x4_16bit_avx2(&src, dst + 4 * by * dstride + 8 * bx, dstride, &mse);
+                mse_8x4_16bit_avx2(&src, dst + 4 * by * dstride + 8 * bx, dstride, &mse32);
+                sum_32_to_64(mse32, &mse64);
             }
         }
         else {
             assert(bsize == BLOCK_4X4);
             for (bi = 0; bi < cdef_count; bi++) {
+                __m256i mse32 = _mm256_setzero_si256();
                 by = dlist[bi].by;
                 bx = dlist[bi].bx;
-                mse_4x4_16bit_avx2(&src, dst + 4 * by * dstride + 4 * bx, dstride, &mse);
+                mse_4x4_16bit_avx2(&src, dst + 4 * by * dstride + 4 * bx, dstride, &mse32);
+                sum_32_to_64(mse32, &mse64);
             }
         }
 
-        sum = sum32(mse);
+        sum = sum64(mse64);
     }
 
     return sum >> 2 * coeff_shift;
