@@ -46,41 +46,24 @@ EbErrorType ProductGenerateMdCandidatesCu(
     EbPtr                           interPredContextPtr,
     PictureControlSet_t            *picture_control_set_ptr);
 
-
-
-void PfZeroOutUselessQuadrants(
-    int16_t* transformCoeffBuffer,
-    uint32_t  transformCoeffStride,
-    uint32_t  quadrantSize,
-    EbAsm  asm_type);
-
-
-
-/*******************************************
-* set Penalize Skip Flag
-*
-* Summary: Set the PenalizeSkipFlag to true
-* When there is luminance/chrominance change
-* or in noisy clip with low motion at meduim
-* varince area
-*
-*******************************************/
-
-const EB_PREDICTION_FUNC  ProductPredictionFunTable[3] = { NULL, inter_pu_prediction_av1, AV1IntraPredictionCL};
+const EB_PREDICTION_FUNC  ProductPredictionFunTable[3] = 
+{   NULL, 
+    inter_pu_prediction_av1, /*INTER */
+    AV1IntraPredictionCL     /*INTRA */
+};
 
 const EB_FAST_COST_FUNC   Av1ProductFastCostFuncTable[3] =
 {
     NULL,
-
-    av1_inter_fast_cost, /*INTER */
-    av1_intra_fast_cost /*INTRA */
+    av1_inter_fast_cost,     /*INTER */
+    av1_intra_fast_cost      /*INTRA */
 };
 
 const EB_AV1_FULL_COST_FUNC   Av1ProductFullCostFuncTable[3] =
 {
     NULL,
-    av1_inter_full_cost, /*INTER */
-    av1_intra_full_cost/*INTRA */
+    av1_inter_full_cost,     /*INTER */
+    av1_intra_full_cost      /*INTRA */
 
 };
 
@@ -3579,6 +3562,361 @@ uint8_t check_skip_sub_blks(
 
 #endif
 
+#if SEARCH_UV_MODE
+// Hsan (search_uv_mode) : av1_get_tx_type() to define as extern
+static INLINE PredictionMode get_uv_mode(UV_PredictionMode mode) {
+    assert(mode < UV_INTRA_MODES);
+    static const PredictionMode uv2y[] = {
+        DC_PRED,        // UV_DC_PRED
+        V_PRED,         // UV_V_PRED
+        H_PRED,         // UV_H_PRED
+        D45_PRED,       // UV_D45_PRED
+        D135_PRED,      // UV_D135_PRED
+        D113_PRED,      // UV_D113_PRED
+        D157_PRED,      // UV_D157_PRED
+        D203_PRED,      // UV_D203_PRED
+        D67_PRED,       // UV_D67_PRED
+        SMOOTH_PRED,    // UV_SMOOTH_PRED
+        SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
+        SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED
+        PAETH_PRED,     // UV_PAETH_PRED
+        DC_PRED,        // UV_CFL_PRED
+        INTRA_INVALID,  // UV_INTRA_MODES
+        INTRA_INVALID,  // UV_MODE_INVALID
+    };
+    return uv2y[mode];
+}
+static TxType intra_mode_to_tx_type(const MbModeInfo *mbmi,
+    PLANE_TYPE plane_type) {
+    static const TxType _intra_mode_to_tx_type[INTRA_MODES] = {
+        DCT_DCT,    // DC
+        ADST_DCT,   // V
+        DCT_ADST,   // H
+        DCT_DCT,    // D45
+        ADST_ADST,  // D135
+        ADST_DCT,   // D117
+        DCT_ADST,   // D153
+        DCT_ADST,   // D207
+        ADST_DCT,   // D63
+        ADST_ADST,  // SMOOTH
+        ADST_DCT,   // SMOOTH_V
+        DCT_ADST,   // SMOOTH_H
+        ADST_ADST,  // PAETH
+    };
+    const PredictionMode mode =
+        (plane_type == PLANE_TYPE_Y) ? mbmi->mode : get_uv_mode(mbmi->uv_mode);
+    assert(mode < INTRA_MODES);
+    return _intra_mode_to_tx_type[mode];
+}
+static INLINE TxType av1_get_tx_type(
+    block_size  sb_type,
+    int32_t   is_inter,
+    PredictionMode pred_mode,
+    UV_PredictionMode pred_mode_uv,
+    PLANE_TYPE plane_type,
+    const MacroBlockD *xd, int32_t blk_row,
+    int32_t blk_col, TxSize tx_size,
+    int32_t reduced_tx_set)
+{
+    UNUSED(sb_type);
+    UNUSED(*xd);
+    UNUSED(blk_row);
+    UNUSED(blk_col);
+
+    // block_size  sb_type = BLOCK_8X8;
+
+    MbModeInfo  mbmi;
+    mbmi.mode = pred_mode;
+    mbmi.uv_mode = pred_mode_uv;
+
+
+    // const MbModeInfo *const mbmi = xd->mi[0];
+    // const struct MacroblockdPlane *const pd = &xd->plane[plane_type];
+    const TxSetType tx_set_type =
+        /*av1_*/get_ext_tx_set_type(tx_size, is_inter, reduced_tx_set);
+
+    TxType tx_type = DCT_DCT;
+    if ( /*xd->lossless[mbmi->segment_id] ||*/ txsize_sqr_up_map[tx_size] > TX_32X32) {
+        tx_type = DCT_DCT;
+    }
+    else {
+        if (plane_type == PLANE_TYPE_Y) {
+            //const int32_t txk_type_idx =
+            //    av1_get_txk_type_index(/*mbmi->*/sb_type, blk_row, blk_col);
+            //tx_type = mbmi->txk_type[txk_type_idx];
+        }
+        else if (is_inter /*is_inter_block(mbmi)*/) {
+            // scale back to y plane's coordinate
+            //blk_row <<= pd->subsampling_y;
+            //blk_col <<= pd->subsampling_x;
+            //const int32_t txk_type_idx =
+            //    av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
+            //tx_type = mbmi->txk_type[txk_type_idx];
+        }
+        else {
+            // In intra mode, uv planes don't share the same prediction mode as y
+            // plane, so the tx_type should not be shared
+            tx_type = intra_mode_to_tx_type(&mbmi, PLANE_TYPE_UV);
+        }
+    }
+    ASSERT(tx_type < TX_TYPES);
+    if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
+    return tx_type;
+}
+
+void search_uv_mode(
+    SequenceControlSet_t    *sequence_control_set_ptr,
+    PictureControlSet_t     *picture_control_set_ptr,
+    EbPictureBufferDesc_t   *input_picture_ptr,
+    ModeDecisionContext_t   *context_ptr)
+{
+    context_ptr->uv_search_path = EB_TRUE;
+    EbAsm asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
+#if 0
+    QUANTS *quants = &picture_control_set_ptr->parent_pcs_ptr->cpi->quants;
+#if SEG_SUPPORT
+    VP9_COMMON *const cm = &cpi->common;
+    struct segmentation *const seg = &cm->seg;
+    const int qindex = vp9_get_qindex(seg, candidate_ptr->mode_info->segment_id, picture_control_set_ptr->base_qindex);
+
+#else
+    const int qindex = picture_control_set_ptr->base_qindex;
+#endif
+
+    context_ptr->uv_mode_search_eob[1][0] = 1;
+    context_ptr->uv_mode_search_eob[2][0] = 1;
+
+    PREDICTION_MODE mode;
+#endif
+    UV_PredictionMode uv_mode;
+#if 0 
+    PREDICTION_MODE best_uv_mode = DC_PRED;
+
+    int rate;
+    int coeff_rate[TM_PRED + 1];
+    int distortion[TM_PRED + 1];
+#endif
+
+    // Use the 1st spot of the candidate buffer to hold cfl settings to use same kernel as MD for coef cost estimation
+    ModeDecisionCandidateBuffer_t  *candidateBuffer = &(context_ptr->candidate_buffer_ptr_array[0][0]);
+    candidateBuffer->candidate_ptr = &(context_ptr->fast_candidate_array[0]);
+
+    candidateBuffer->candidate_ptr->type = INTRA_MODE;
+    //candidateBuffer->candidate_ptr->intra_luma_mode = openLoopIntraCandidate;
+    candidateBuffer->candidate_ptr->distortion_ready = 0;
+    candidateBuffer->candidate_ptr->use_intrabc = 0;
+    //candidateBuffer->candidate_ptr->is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
+    //candidateBuffer->candidate_ptr->use_angle_delta = candidateArray[canTotalCnt].is_directional_mode_flag;
+    //candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y] = 0;
+
+
+     //candidateBuffer->cfl_alpha_signs = 0;
+     //candidateBuffer->cfl_alpha_idx = 0;
+
+     candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
+     //candidateBuffer->transform_type[PLANE_TYPE_Y] = DCT_DCT;
+
+    //if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
+    //    candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+    //else
+    //    candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] =
+
+    //    av1_get_tx_type(
+    //        context_ptr->blk_geom->bsize,
+    //        0,
+    //        (PredictionMode)candidateArray[canTotalCnt].intra_luma_mode,
+    //        (UV_PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode,
+    //        PLANE_TYPE_UV,
+    //        0,
+    //        0,
+    //        0,
+    //        context_ptr->blk_geom->txsize_uv[0],
+    //        picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+    //candidateArray[canTotalCnt].ref_frame_type = INTRA_FRAME;
+    //candidateArray[canTotalCnt].pred_mode = (PredictionMode)openLoopIntraCandidate;
+    //candidateArray[canTotalCnt].motion_mode = SIMPLE_TRANSLATION;
+
+
+    for (uv_mode = UV_DC_PRED; uv_mode <= UV_PAETH_PRED; uv_mode++) {
+        candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
+        candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(uv_mode);
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
+            av1_get_tx_type(
+                context_ptr->blk_geom->bsize,
+                0,
+                (PredictionMode) NULL,
+                (UV_PredictionMode) uv_mode,
+                PLANE_TYPE_UV,
+                0,
+                0,
+                0,
+                context_ptr->blk_geom->txsize_uv[0],
+                picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+#if 0
+        int cb_coeff_bits = 0;
+        int cr_coeff_bits = 0;
+        int cbfull_distortion[DIST_CALC_TOTAL] = { 0,0 };
+        int crfull_distortion[DIST_CALC_TOTAL] = { 0,0 };
+        context_ptr->uv_mode_search_eob[1][0] = 1;
+        context_ptr->uv_mode_search_eob[2][0] = 1;
+
+        // Set the WebM mi 
+        context_ptr->uv_mode_search_mode_info->uv_mode = uv_mode;
+        context_ptr->uv_mode_search_mode_info->sb_type = context_ptr->ep_block_stats_ptr->bsize;
+#if SEG_SUPPORT // Hsan: segmentation not supported
+        context_ptr->uv_mode_search_mode_info->segment_id = context_ptr->segment_id;
+#endif
+        context_ptr->uv_mode_search_mode_info->ref_frame[0] = INTRA_FRAME;
+        context_ptr->uv_mode_search_mode_info->ref_frame[1] = INTRA_FRAME;
+
+        context_ptr->e_mbd->mi[0] = context_ptr->uv_mode_search_mode_info;
+#endif
+
+        ProductPredictionFunTable[INTRA_MODE](          
+            context_ptr,
+            picture_control_set_ptr,          
+            candidateBuffer,
+            asm_type);
+
+#if 0
+        perform_coding_loop(
+            context_ptr,
+            &(((int16_t*)context_ptr->uv_mode_search_residual_quant_coeff_buffer->buffer_cb)[0]),
+            (uint16_t)tu_size[context_ptr->ep_block_stats_ptr->tx_size_uv],
+            &(input_picture_ptr->buffer_cb[context_ptr->input_chroma_origin_index]),
+            input_picture_ptr->stride_cb,
+            &(context_ptr->uv_mode_search_prediction_buffer->buffer_cb[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_prediction_buffer->stride_cb,
+            &(((int16_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_cb)[0]),             // Hsan - does not match block location (i.e. stride not used) - kept as is to do not change WebM kernels 
+            &(((int16_t*)context_ptr->uv_mode_search_recon_coeff_buffer->buffer_cb)[0]),                          // Hsan - does not match block location (i.e. stride not used) - kept as is to do not change WebM kernels   
+            &(context_ptr->uv_mode_search_recon_buffer->buffer_cb[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_recon_buffer->stride_cb,
+            quants->uv_zbin[qindex],
+            quants->uv_round[qindex],
+            quants->uv_quant[qindex],
+            quants->uv_quant_shift[qindex],
+            &picture_control_set_ptr->parent_pcs_ptr->cpi->uv_dequant[qindex][0],
+            &context_ptr->uv_mode_search_eob[1][0],
+            context_ptr->ep_block_stats_ptr->tx_size_uv,
+            1,
+            0,
+            0);
+
+        // Cb Distortion and Rate Calculation
+        perform_dist_rate_calc(
+            context_ptr,
+            picture_control_set_ptr,
+            &(((int16_t*)context_ptr->uv_mode_search_residual_quant_coeff_buffer->buffer_cb)[0]),
+            &(input_picture_ptr->buffer_cb[context_ptr->input_chroma_origin_index]),
+            input_picture_ptr->stride_cb,
+            &(context_ptr->uv_mode_search_prediction_buffer->buffer_cb[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_prediction_buffer->stride_cb,
+            &(((int16_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_cb)[0]),
+            &(((int16_t*)context_ptr->uv_mode_search_recon_coeff_buffer->buffer_cb)[0]),
+            &(context_ptr->uv_mode_search_recon_buffer->buffer_cb[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_recon_buffer->stride_cb,
+            &context_ptr->uv_mode_search_eob[1][0],
+            context_ptr->ep_block_stats_ptr->tx_size_uv,
+            1,
+            0,
+            uv_mode,
+            &cbfull_distortion[0],
+            &cb_coeff_bits);
+#endif
+#if 0
+        perform_coding_loop(
+            context_ptr,
+            &(((int16_t*)context_ptr->uv_mode_search_residual_quant_coeff_buffer->buffer_cr)[0]),
+            (uint16_t)tu_size[context_ptr->ep_block_stats_ptr->tx_size_uv],
+            &(input_picture_ptr->buffer_cr[context_ptr->input_chroma_origin_index]),
+            input_picture_ptr->stride_cr,
+            &(context_ptr->uv_mode_search_prediction_buffer->buffer_cr[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_prediction_buffer->stride_cr,
+            &(((int16_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_cr)[0]),  // Hsan - does not match block location (i.e. stride not used) - kept as is to do not change WebM kernels 
+            &(((int16_t*)context_ptr->uv_mode_search_recon_coeff_buffer->buffer_cr)[0]),                          // Hsan - does not match block location (i.e. stride not used) - kept as is to do not change WebM kernels   
+            &(context_ptr->uv_mode_search_recon_buffer->buffer_cr[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_recon_buffer->stride_cr,
+            quants->uv_zbin[qindex],
+            quants->uv_round[qindex],
+            quants->uv_quant[qindex],
+            quants->uv_quant_shift[qindex],
+            &picture_control_set_ptr->parent_pcs_ptr->cpi->uv_dequant[qindex][0],
+            &context_ptr->uv_mode_search_eob[2][0],
+            context_ptr->ep_block_stats_ptr->tx_size_uv,
+            2,
+            0,
+            0);
+
+        // Cr Distortion and Rate Calculation
+        perform_dist_rate_calc(
+            context_ptr,
+            picture_control_set_ptr,
+            &(((int16_t*)context_ptr->uv_mode_search_residual_quant_coeff_buffer->buffer_cr)[0]),
+            &(input_picture_ptr->buffer_cr[context_ptr->input_chroma_origin_index]),
+            input_picture_ptr->stride_cr,
+            &(context_ptr->uv_mode_search_prediction_buffer->buffer_cr[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_prediction_buffer->stride_cr,
+            &(((int16_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_cr)[0]),
+            &(((int16_t*)context_ptr->uv_mode_search_recon_coeff_buffer->buffer_cr)[0]),
+            &(context_ptr->uv_mode_search_recon_buffer->buffer_cr[context_ptr->block_chroma_origin_index]),
+            context_ptr->uv_mode_search_recon_buffer->stride_cr,
+            &context_ptr->uv_mode_search_eob[2][0],
+            context_ptr->ep_block_stats_ptr->tx_size_uv,
+            2,
+            0,
+            best_uv_mode,
+            &crfull_distortion[0],
+            &cr_coeff_bits);
+
+
+#if 1
+        coeff_rate[uv_mode] = cb_coeff_bits + cr_coeff_bits;
+        distortion[uv_mode] = cbfull_distortion[DIST_CALC_RESIDUAL] + crfull_distortion[DIST_CALC_RESIDUAL];
+#else
+
+        if (candidate_buffer_ptr->candidate_ptr->mode_info->skip == EB_TRUE) {
+            rate = (int)candidate_buffer_ptr->candidate_ptr->fast_luma_rate + (int)candidate_buffer_ptr->candidate_ptr->fast_chroma_rate + vp9_cost_bit(vp9_get_skip_prob(&cpi->common, xd), 1);
+            distortion = y_distortion[DIST_CALC_PREDICTION] + cb_distortion[DIST_CALC_PREDICTION] + cr_distortion[DIST_CALC_PREDICTION];
+        }
+        else {
+            rate = *y_coeff_bits + *cb_coeff_bits + *cr_coeff_bits + (int)candidate_buffer_ptr->candidate_ptr->fast_luma_rate + (int)candidate_buffer_ptr->candidate_ptr->fast_chroma_rate + vp9_cost_bit(vp9_get_skip_prob(&cpi->common, xd), 0);
+            distortion = y_distortion[DIST_CALC_RESIDUAL] + cb_distortion[DIST_CALC_RESIDUAL] + cr_distortion[DIST_CALC_RESIDUAL];
+        }
+
+        // The cost of Split flag for 8x8 to be added here. It is assumed that 8x8 is not splited. If 4x4 is selected later, the cost of 8x8 will be replaced by 4x4 with split flag =1
+        if (context_ptr->ep_block_stats_ptr->bsize == BLOCK_8X8) {
+            rate += cpi->partition_cost[context_ptr->block_ptr->partition_context][PARTITION_NONE];
+        }
+
+        *candidate_buffer_ptr->full_cost_ptr = RDCOST(context_ptr->RDMULT, rd->RDDIV, rate, distortion);
+#endif
+#endif
+    }
+#if 0
+    // 
+    uint64_t uv_cost;
+    uint64_t best_uv_mode_cost;
+    VP9_COMP   *cpi = picture_control_set_ptr->parent_pcs_ptr->cpi;
+    RD_OPT *const rd = &cpi->rd;
+
+    for (mode = DC_PRED; mode <= TM_PRED; mode++) {
+        best_uv_mode_cost = MAX_BLOCK_COST;
+        for (uv_mode = DC_PRED; uv_mode <= TM_PRED; uv_mode++) {
+            int rate_uv_mode = cpi->intra_uv_mode_cost[cpi->common.frame_type][mode][uv_mode];
+            rate = coeff_rate[uv_mode] + rate_uv_mode;
+            uv_cost = RDCOST(context_ptr->RDMULT, rd->RDDIV, rate, distortion[uv_mode]);
+
+            if (uv_cost < best_uv_mode_cost) {
+                context_ptr->best_uv_mode[mode] = uv_mode;
+                best_uv_mode_cost = uv_cost;
+            }
+        }
+    }
+#endif
+    context_ptr->uv_search_path = EB_FALSE;
+}
+#endif
 
 void md_encode_block(
     SequenceControlSet_t             *sequence_control_set_ptr,
@@ -3672,6 +4010,15 @@ void md_encode_block(
             context_ptr
         );
 
+
+#if SEARCH_UV_MODE
+        // Search the best intra chroma mode
+        search_uv_mode(
+            sequence_control_set_ptr,
+            picture_control_set_ptr,
+            input_picture_ptr,
+            context_ptr);
+#endif
 
         ProductGenerateMdCandidatesCu(
             context_ptr->sb_ptr,

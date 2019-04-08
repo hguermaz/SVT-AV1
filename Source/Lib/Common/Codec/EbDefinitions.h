@@ -122,6 +122,9 @@ extern "C" {
 #define TRELLIS_INTRA                                   0     
 #define TRELLIS_CHROMA                                  0  
 #endif
+
+#define SEARCH_UV_MODE                                  0
+
 #if !M9_SETTINGS || M9_ADP
 #define FRAC_64x64_BUG_FIX                              1
 #endif

@@ -189,7 +189,9 @@ extern "C" {
         EbBool                          cu_use_ref_src_flag;
         uint16_t                        qp_index;
         uint64_t                        three_quad_energy;
-
+#if SEARCH_UV_MODE
+        EbBool                          uv_search_path;
+#endif
         // Needed for DC prediction
         EbBool                          is_left_availble;
         EbBool                          is_above_availble;

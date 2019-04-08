@@ -422,25 +422,6 @@ extern "C" {
         uint32_t  area_width,
         uint32_t  area_height);
 
-    static EB_ZEROCOEFF_TYPE FUNC_TABLE pic_zero_out_coef_func_ptr_array[ASM_TYPE_TOTAL][5] = {
-        // NON_AVX2
-        {
-            /*0 4x4   */     zero_out_coeff4x4_sse,
-            /*1 8x8   */     zero_out_coeff8x8_sse2,
-            /*2 16x16 */     zero_out_coeff16x16_sse2,
-            /*3       */     (EB_ZEROCOEFF_TYPE)pic_zero_out_coef_void_func,
-            /*4 32x32 */     zero_out_coeff32x32_sse2
-        },
-        // AVX2
-        {
-            /*0 4x4   */     zero_out_coeff4x4_sse,
-            /*1 8x8   */     zero_out_coeff8x8_sse2,
-            /*2 16x16 */     zero_out_coeff16x16_sse2,
-            /*3       */     (EB_ZEROCOEFF_TYPE)pic_zero_out_coef_void_func,
-            /*4 32x32 */     zero_out_coeff32x32_sse2
-        },
-    };
-
     static EB_SATD_U8_TYPE FUNC_TABLE compute8x8_satd_u8_func_ptr_array[ASM_TYPE_TOTAL] = {
         // NON_AVX2
         Compute8x8Satd_U8_SSE4,

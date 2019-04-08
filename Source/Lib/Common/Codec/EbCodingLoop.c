@@ -476,36 +476,6 @@ void GeneratePuIntraLumaNeighborModes(
     return;
 }
 
-
-void PfZeroOutUselessQuadrants(
-    int16_t* transformCoeffBuffer,
-    uint32_t  transformCoeffStride,
-    uint32_t  quadrantSize,
-    EbAsm  asm_type) {
-
-    pic_zero_out_coef_func_ptr_array[asm_type][quadrantSize >> 3](
-        transformCoeffBuffer,
-        transformCoeffStride,
-        quadrantSize,
-        quadrantSize,
-        quadrantSize);
-
-    pic_zero_out_coef_func_ptr_array[asm_type][quadrantSize >> 3](
-        transformCoeffBuffer,
-        transformCoeffStride,
-        quadrantSize * transformCoeffStride,
-        quadrantSize,
-        quadrantSize);
-
-    pic_zero_out_coef_func_ptr_array[asm_type][quadrantSize >> 3](
-        transformCoeffBuffer,
-        transformCoeffStride,
-        quadrantSize * transformCoeffStride + quadrantSize,
-        quadrantSize,
-        quadrantSize);
-
-}
-
 void encode_pass_tx_search(
     PictureControlSet_t            *picture_control_set_ptr,
     EncDecContext_t                *context_ptr,

@@ -4960,9 +4960,16 @@ EbErrorType AV1IntraPredictionCL(
     uint8_t    topNeighArray[64 * 2 + 1];
     uint8_t    leftNeighArray[64 * 2 + 1];
     PredictionMode mode;
+#if SEARCH_UV_MODE
+    // Hsan: plane should be derived @ an earlier stage (e.g. @ the call of perform_fast_loop())
+    uint8_t start_plane = (md_context_ptr->uv_search_path) ? 1 : 0;
+    uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0) ? (int)MAX_MB_PLANE : 1;
+
+    for (int32_t plane = start_plane; plane < end_plane; ++plane) {
+#else
     uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0) ? (int) MAX_MB_PLANE : 1;
     for (int32_t plane = 0; plane < end_plane; ++plane) {
-        
+#endif      
 #if !INTRA_CORE_OPT
         if (plane == 0) {
             if (md_context_ptr->cu_origin_y != 0)
