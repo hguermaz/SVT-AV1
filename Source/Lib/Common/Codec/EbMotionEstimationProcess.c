@@ -152,7 +152,7 @@ void* set_me_hme_params_oq(
     hmeMeLevel = 7;
 #else
     hmeMeLevel = 8;
-
+#endif
 #endif
     // ME
     me_context_ptr->search_area_width = SearchAreaWidth[sc_content_detected][input_resolution][hmeMeLevel];
