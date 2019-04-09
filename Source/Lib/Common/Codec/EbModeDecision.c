@@ -2129,7 +2129,9 @@ void  inject_intra_candidates_ois(
             candidate_array[can_total_cnt].me_distortion = ois_blk_ptr[can_total_cnt].distortion;
             candidate_array[can_total_cnt].use_intrabc = 0;
             candidate_array[can_total_cnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
+#if !SEARCH_UV_CLEAN_UP
             candidate_array[can_total_cnt].use_angle_delta = use_angle_delta ? candidate_array[can_total_cnt].is_directional_mode_flag : 0;
+#endif
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
             candidate_array[can_total_cnt].intra_chroma_mode = disable_cfl_flag ? intra_luma_to_chroma[intra_mode] : 
                                                                context_ptr->chroma_level == CHROMA_MODE_0 ? UV_CFL_PRED : UV_DC_PRED;
@@ -2168,7 +2170,9 @@ void  inject_intra_candidates_ois(
             candidate_array[can_total_cnt].me_distortion = ois_blk_ptr[can_total_cnt].distortion;
             candidate_array[can_total_cnt].use_intrabc = 0;
             candidate_array[can_total_cnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
+#if !SEARCH_UV_CLEAN_UP
             candidate_array[can_total_cnt].use_angle_delta = candidate_array[can_total_cnt].is_directional_mode_flag;
+#endif
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_Y] = 0;
             candidate_array[can_total_cnt].intra_chroma_mode =  disable_cfl_flag ? intra_luma_to_chroma[intra_mode] : 
                                                                 context_ptr->chroma_level == CHROMA_MODE_0 ? UV_CFL_PRED : UV_DC_PRED;
@@ -2496,7 +2500,9 @@ void  inject_intra_bc_candidates(
         candidateArray[*cand_cnt].distortion_ready = 0;
         candidateArray[*cand_cnt].use_intrabc = 1;
         candidateArray[*cand_cnt].is_directional_mode_flag = 0;
+#if !SEARCH_UV_CLEAN_UP
         candidateArray[*cand_cnt].use_angle_delta = 0;
+#endif
         candidateArray[*cand_cnt].angle_delta[PLANE_TYPE_Y] = 0;
         candidateArray[*cand_cnt].intra_chroma_mode = UV_DC_PRED;
         candidateArray[*cand_cnt].cfl_alpha_signs = 0;
@@ -2649,7 +2655,9 @@ void  inject_intra_candidates(
                         candidateArray[canTotalCnt].distortion_ready = 0;
                         candidateArray[canTotalCnt].use_intrabc = 0;
                         candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
+#if !SEARCH_UV_CLEAN_UP
                         candidateArray[canTotalCnt].use_angle_delta = use_angle_delta ? candidateArray[canTotalCnt].is_directional_mode_flag : 0;
+#endif
                         candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
 
 #if SEARCH_UV_MODE
@@ -2705,7 +2713,9 @@ void  inject_intra_candidates(
             candidateArray[canTotalCnt].distortion_ready = 0;
             candidateArray[canTotalCnt].use_intrabc = 0;
             candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
+#if !SEARCH_UV_CLEAN_UP
             candidateArray[canTotalCnt].use_angle_delta = candidateArray[canTotalCnt].is_directional_mode_flag;
+#endif
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
 #if SEARCH_UV_MODE
             candidateArray[canTotalCnt].intra_chroma_mode =
@@ -2963,7 +2973,9 @@ uint8_t product_full_mode_decision(
             pu_ptr->intra_luma_mode = candidate_ptr->intra_luma_mode;
 
             pu_ptr->is_directional_mode_flag = candidate_ptr->is_directional_mode_flag;
+#if !SEARCH_UV_CLEAN_UP
             pu_ptr->use_angle_delta = candidate_ptr->use_angle_delta;
+#endif
             pu_ptr->angle_delta[PLANE_TYPE_Y] = candidate_ptr->angle_delta[PLANE_TYPE_Y];
 
 

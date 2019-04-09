@@ -3807,8 +3807,8 @@ void search_uv_mode(
         for (int8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
             best_uv_mode_cost = (uint64_t)~0;
             for (uv_mode = UV_DC_PRED; uv_mode <= UV_PAETH_PRED; uv_mode++) {
-                // Hsan (chroma search): do not check angular chroma if (1) not supported size or (2) non-angular luma to avoid a conformance problem => to check the specifications 
-                if (((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(uv_mode) == EB_TRUE)) || (av1_is_directional_mode(intra_mode) == EB_FALSE && av1_is_directional_mode(uv_mode) == EB_TRUE))
+               
+                if ((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(uv_mode) == EB_TRUE))
                     continue;
 
                 // Estimate chroma nominal intra mode bits

@@ -126,6 +126,9 @@ extern "C" {
 
 #define CHROMA_DC_ONLY                                  0
 #define SEARCH_UV_MODE                                  0
+#if SEARCH_UV_MODE
+#define SEARCH_UV_CLEAN_UP                              1
+#endif
 
 #if !M9_SETTINGS || M9_ADP
 #define FRAC_64x64_BUG_FIX                              1
