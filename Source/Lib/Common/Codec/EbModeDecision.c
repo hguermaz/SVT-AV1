@@ -2708,16 +2708,10 @@ void  inject_intra_candidates(
             candidateArray[canTotalCnt].use_angle_delta = candidateArray[canTotalCnt].is_directional_mode_flag;
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
 #if SEARCH_UV_MODE
-            if (openLoopIntraCandidate == 0) {
-                candidateArray[canTotalCnt].intra_chroma_mode =
-                    //(disable_cfl_flag == EB_FALSE && context_ptr->best_uv_mode[openLoopIntraCandidate] == UV_DC_PRED) ?
-                    //UV_CFL_PRED :
-                    context_ptr->best_uv_mode[openLoopIntraCandidate];
-            }
-            else {
-                candidateArray[canTotalCnt].intra_chroma_mode = UV_DC_PRED;
-            }
-           
+            candidateArray[canTotalCnt].intra_chroma_mode =
+                //(disable_cfl_flag == EB_FALSE && context_ptr->best_uv_mode[openLoopIntraCandidate] == UV_DC_PRED) ?
+                //UV_CFL_PRED :
+                context_ptr->best_uv_mode[openLoopIntraCandidate];          
 #else
             candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ? 
                 intra_luma_to_chroma[openLoopIntraCandidate] : 
