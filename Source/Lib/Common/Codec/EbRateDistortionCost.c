@@ -706,7 +706,7 @@ uint64_t av1_cost_coeffs_txb(  // Hsan (Trellis)
         const int32_t coeff_ctx = coeff_contexts[pos];
 
         if (c == eob - 1) {
-            //ASSERT((AOMMIN(level, 3) - 1) >= 0); Hsan (urgent): check the assert
+            ASSERT((AOMMIN(level, 3) - 1) >= 0);
             cost += coeff_costs->base_eob_cost[coeff_ctx][AOMMIN(level, 3) - 1];
         }
         else {

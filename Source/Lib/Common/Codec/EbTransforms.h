@@ -3915,7 +3915,7 @@ extern "C" {
         int16_t                        txb_skip_context,
         int16_t                        dc_sign_context,
         PredictionMode                 pred_mode,
-        EbBool                         is_final_stage);
+        EbBool                         is_encode_pass);
 
     extern EbErrorType av1_estimate_inv_transform(
         int32_t  *coeff_buffer,

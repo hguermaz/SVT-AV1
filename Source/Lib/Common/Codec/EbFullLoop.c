@@ -1854,7 +1854,7 @@ void av1_quantize_inv_quantize(
     int16_t                        txb_skip_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
     int16_t                        dc_sign_context,     // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
     PredictionMode                 pred_mode,
-    EbBool                         is_final_stage)
+    EbBool                         is_encode_pass)
 {
     (void)coeff_stride;
 #if !PF_N2_SUPPORT
@@ -2005,7 +2005,7 @@ void av1_quantize_inv_quantize(
     EbBool is_inter = (pred_mode >= NEARESTMV);
     // Hsan (Trellis) : only luma for now and only @ encode pass  
 #if DEBUG_TRELLIS
-    if (*eob != 0 && is_final_stage) {
+    if (*eob != 0 && is_encode_pass) {
 #else 
 #if TRELLIS_MD  
 #if TRELLIS_INTRA
@@ -2018,7 +2018,7 @@ void av1_quantize_inv_quantize(
 #endif
 #endif
 #else
-    if (*eob != 0 && is_final_stage && is_inter && component_type == COMPONENT_LUMA) {
+    if (*eob != 0 && is_encode_pass && is_inter && component_type == COMPONENT_LUMA) {
 #endif
 #endif
         uint64_t coeff_rate_non_opt;
@@ -2037,7 +2037,7 @@ void av1_quantize_inv_quantize(
         uint64_t cost_skip_opt;
 
         // Use the 1st spot of the candidate buffer to hold cfl settings to use same kernel as MD for coef cost estimation
-        if (is_final_stage) 
+        if (is_encode_pass) 
         {
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = tx_type;
@@ -2542,6 +2542,10 @@ void ProductFullLoopTxSearch(
             tuOriginIndex = context_ptr->blk_geom->origin_x + (context_ptr->blk_geom->origin_y * candidateBuffer->residual_ptr->stride_y);
             y_tu_coeff_bits = 0;
 
+#if ENHANCED_TRELLIS
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
+#endif
+
             // Y: T Q iQ
             av1_estimate_transform(
                 &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tuOriginIndex]),
@@ -2622,7 +2626,9 @@ void ProductFullLoopTxSearch(
             int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txSize)) * 2;
             tuFullDistortion[0][DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_RESIDUAL], shift);
             tuFullDistortion[0][DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_PREDICTION], shift);
+#if !ENHANCED_TRELLIS
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
+#endif
             //LUMA-ONLY
             Av1TuEstimateCoeffBits(
 #if CABAC_UP

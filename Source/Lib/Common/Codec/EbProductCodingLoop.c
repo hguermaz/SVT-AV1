@@ -3683,9 +3683,11 @@ void search_uv_mode(
 
     const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? 1 : 0;
     EbBool use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
+
+    // uv_mode can only be read when max(block width, block height) <= 32)
     EbBool isCflAllowed = (context_ptr->blk_geom->bwidth <= 32 && context_ptr->blk_geom->bheight <= 32) ? 1 : 0;
 
-    UV_PredictionMode chroma_mode;
+    UV_PredictionMode uv_mode;
     UV_PredictionMode best_uv_mode = UV_DC_PRED;
     int rate;
     int coeff_rate[UV_PAETH_PRED + 1];
@@ -3699,20 +3701,20 @@ void search_uv_mode(
     candidateBuffer->candidate_ptr->use_intrabc = 0;
     candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
 
-    uint8_t chroma_mode_start = UV_DC_PRED;
-    uint8_t chroma_mode_end = is16bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
+    uint8_t uv_mode_start = UV_DC_PRED;
+    uint8_t uv_mode_end = is16bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
 
-    for (chroma_mode = chroma_mode_start; chroma_mode <= chroma_mode_end; chroma_mode++) {
-        if ((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(chroma_mode) == EB_TRUE))
+    for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
+        if ((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(uv_mode) == EB_TRUE))
             continue;
-        candidateBuffer->candidate_ptr->intra_chroma_mode = chroma_mode;
-        candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(chroma_mode);
+        candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
+        candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(uv_mode);
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
             av1_get_tx_type(
                 context_ptr->blk_geom->bsize,
                 0,
                 (PredictionMode) NULL,
-                (UV_PredictionMode) chroma_mode,
+                (UV_PredictionMode) uv_mode,
                 PLANE_TYPE_UV,
                 0,
                 0,
@@ -3787,8 +3789,8 @@ void search_uv_mode(
             asm_type);
 
 
-        coeff_rate[chroma_mode] = cb_coeff_bits + cr_coeff_bits;
-        distortion[chroma_mode] = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
+        coeff_rate[uv_mode] = cb_coeff_bits + cr_coeff_bits;
+        distortion[uv_mode] = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
     }
 
 #if 1
@@ -3804,24 +3806,24 @@ void search_uv_mode(
         uint8_t angleDeltaCandidateCount = (use_angle_delta && av1_is_directional_mode(intra_mode)) ? 7 : 1;
         for (int8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
             best_uv_mode_cost = (uint64_t)~0;
-            for (chroma_mode = UV_DC_PRED; chroma_mode <= UV_PAETH_PRED; chroma_mode++) {
+            for (uv_mode = UV_DC_PRED; uv_mode <= UV_PAETH_PRED; uv_mode++) {
                 // Hsan (chroma search): do not check angular chroma if (1) not supported size or (2) non-angular luma to avoid a conformance problem => to check the specifications 
-                if (((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(chroma_mode) == EB_TRUE)) || (av1_is_directional_mode(intra_mode) == EB_FALSE && av1_is_directional_mode(chroma_mode) == EB_TRUE))
+                if (((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(uv_mode) == EB_TRUE)) || (av1_is_directional_mode(intra_mode) == EB_FALSE && av1_is_directional_mode(uv_mode) == EB_TRUE))
                     continue;
 
                 // Estimate chroma nominal intra mode bits
-                intraChromaModeBitsNum = (uint64_t)context_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][intra_mode][chroma_mode];
+                intraChromaModeBitsNum = (uint64_t)context_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][intra_mode][uv_mode];
                 // Estimate chroma angular mode bits
-                if (av1_is_directional_mode(chroma_mode) && use_angle_delta) {
-                    intraChromaAngModeBitsNum = context_ptr->md_rate_estimation_ptr->angleDeltaFacBits[chroma_mode - V_PRED][MAX_ANGLE_DELTA + uv_angle_delta];
+                if (av1_is_directional_mode(uv_mode) && use_angle_delta) {
+                    intraChromaAngModeBitsNum = context_ptr->md_rate_estimation_ptr->angleDeltaFacBits[uv_mode - V_PRED][MAX_ANGLE_DELTA + uv_angle_delta];
                 }
 
 
                 int rate_uv_mode;
-                rate = coeff_rate[chroma_mode] + intraChromaModeBitsNum + intraChromaAngModeBitsNum;
-                uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[chroma_mode]);
+                rate = coeff_rate[uv_mode] + intraChromaModeBitsNum + intraChromaAngModeBitsNum;
+                uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
                 if (uv_cost < best_uv_mode_cost) {
-                    context_ptr->best_uv_mode[intra_mode] = chroma_mode;
+                    context_ptr->best_uv_mode[intra_mode] = uv_mode;
                     best_uv_mode_cost = uv_cost;
                 }
             }

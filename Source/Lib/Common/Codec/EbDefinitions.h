@@ -121,6 +121,7 @@ extern "C" {
 #define TRELLIS_MD                                      1
 #define TRELLIS_INTRA                                   0     
 #define TRELLIS_CHROMA                                  0  
+#define ENHANCED_TRELLIS                                0
 #endif
 
 #define CHROMA_DC_ONLY                                  0
