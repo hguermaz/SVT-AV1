@@ -2651,6 +2651,15 @@ void  inject_intra_candidates(
                         candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
                         candidateArray[canTotalCnt].use_angle_delta = use_angle_delta ? candidateArray[canTotalCnt].is_directional_mode_flag : 0;
                         candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
+
+#if SEARCH_UV_MODE
+                        candidateArray[canTotalCnt].intra_chroma_mode = (disable_cfl_flag == EB_FALSE && context_ptr->best_uv_mode[openLoopIntraCandidate] == UV_DC_PRED) ?
+                            UV_CFL_PRED :
+                            context_ptr->best_uv_mode[openLoopIntraCandidate] ;
+
+                        candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
+                            UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
+#else
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ? 
                             intra_luma_to_chroma[openLoopIntraCandidate] : 
                             (context_ptr->chroma_level == CHROMA_MODE_0) ?
@@ -2658,6 +2667,7 @@ void  inject_intra_candidates(
                                 UV_DC_PRED;
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
                             UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
+#endif
                         candidateArray[canTotalCnt].cfl_alpha_signs = 0;
                         candidateArray[canTotalCnt].cfl_alpha_idx = 0;
                         candidateArray[canTotalCnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode);
