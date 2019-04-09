@@ -1410,8 +1410,11 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
             CHROMA_MODE_2 ;
 #endif
 #endif
-
-
+    
+//#if ENABLE_ICOPY_WIKI
+//        context_ptr->chroma_level = CHROMA_MODE_0;
+//
+//#endif
     
     // Set fast loop method
     // 1 fast loop: SSD_SEARCH not supported    

@@ -142,7 +142,12 @@ void* set_me_hme_params_oq(
 #elif M6_HME || M9_adopted_HME
     hmeMeLevel = picture_control_set_ptr->enc_mode;
 #endif
+#if ENABLE_ME_WIKI
+    sc_content_detected = 1;
 
+    hmeMeLevel = 8;
+
+#endif
     // ME
     me_context_ptr->search_area_width = SearchAreaWidth[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->search_area_height = SearchAreaHeight[sc_content_detected][input_resolution][hmeMeLevel];

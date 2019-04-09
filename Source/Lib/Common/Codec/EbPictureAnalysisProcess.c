@@ -5018,7 +5018,12 @@ void* picture_analysis_kernel(void *input_ptr)
             else
                 picture_control_set_ptr->sc_content_detected = 0;
         }
-
+#if TURN_ON_WIKI
+                picture_control_set_ptr->sc_content_detected = 1;
+#endif
+#if TURN_OFF_WIKI
+                picture_control_set_ptr->sc_content_detected = 0;
+#endif
         
 #if HARD_CODE_SC_SETTING
         picture_control_set_ptr->sc_content_detected = EB_TRUE;

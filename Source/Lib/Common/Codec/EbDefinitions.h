@@ -35,14 +35,14 @@
 extern "C" {
 #endif
 
-#define NEW_PRESETS         1
+#define NEW_PRESETS         0
 #define NEW_I7_PRESETS      0
 
 #if NEW_I7_PRESETS
 
 #define NEW_I7_M1							        1
 #define NEW_I7_M2							        1
-#define NEW_I7_M3							        1
+#define NEW_I7_M3							        0
 
 
 #if NEW_I7_M1
@@ -178,99 +178,147 @@ extern "C" {
 #endif
 
 #else
-#define Mx_DISABLE_TX_SEARCH_FOR_NSQ                0
-#define Mx_DISABLE_BIPRED_UNIPRED_NSQ               0
-#define Mx_DISABLE_INTERPOLATION_SEARCH_FOR_NSQ     0
+
+#define TURN_OFF_WIKI                               1
+#define TURN_ON_WIKI                                0
+#define ENABLE_ME_WIKI                              1
+#define ENABLE_ICOPY_WIKI                           1
 
 
+#define Mx_DISABLE_BIPRED_UNIPRED_NSQ               1
+#define Mx_DISABLE_INTERPOLATION_SEARCH_FOR_NSQ     1
+
+#define M2_SB_block_size                            1
+
+//##################### PARTITION #####################
 #define M1_NSQ_search                               0
-#define M1_Interpolation_search                     0
-#define M1_Interpolation_search_blk_Size            0
-#define M1_ME                                       0
-#define M1_Uni_Bi_Pred                              0
-#define M1_NFL                                      0
-#define M1_HME_Search_Method                        0
-#define M1_ME_Search_Method                         0
-#define M1_RED_CU                                   0 // not in excel
-#define M1_CABAC_UP                                 0 // not in excel
-#define M1_Fast_Loop_Method                         0 // not in excel
-#define M1_Spatial_SSE                              0 // not in excel
-#define M1_WARPED_MV                                0 // not in excel
-
-#define M2_SB_block_size                            0
 #define M2_NSQ_search                               0
-#define M2_ADP_level                                0 // no difference in 1080p and below
-#define M2_NFL                                      0
-
-#define M3_Partitioning_Method                      0 // coupled with M3_NSQ_search and M2_SB_block_size
-#define M3_NSQ_search                               0 // coupled with M3_Partitioning_Method and M2_SB_block_size
-#define M3_ADP_level                                0 // no difference in 1080p and below
-#define M3_Interpolation_search                     0
-#define M3_Interpolation_search_blk_Size            0
-#define M3_TX_search_Skip_TH                        0
-#define M3_TX_search_Reduced_Set                    0
-#define M3_ME                                       0
-#define M3_Intra                                    0
-
+#define M3_Partitioning_Method                      1 // coupled with M3_NSQ_search and M2_SB_block_size
+#define M3_NSQ_search                               1 // coupled with M3_Partitioning_Method and M2_SB_block_size
 #define M4_Partitioning_Method                      0
 #define M4_NSQ_search                               0
-#define M4_ADP_level                                0
-#define M4_DLF                                      0
-#define M4_SG_filter                                0
-#define M4_TX_search                                0
-#define M4_Uni_Bi_Pred                              0
-#define M4_NFL                                      0
-
 #define M5_Partitioning_Method                      0
 #define M5_NSQ_search                               0
-#define M5_ADP_level                                0
-#define M5_DLF                                      0
-#define M5_SG_filter                                0
-#define M5_TX_search                                0
-#define M5_TX_search_Skip_TH                        0
-#define M5_TX_search_Reduced_Set                    0
-#define M5_Chroma                                   0
-
 #define M6_Partitioning_Method                      0
+
+#define M2_ADP_level                                0 // no difference in 1080p and below
+#define M3_ADP_level                                0 // no difference in 1080p and below
+#define M4_ADP_level                                0
+#define M5_ADP_level                                0
 #define M6_ADP_level                                0
-#define M6_Interpolation_search                     0
-#define M6_CDEF_filter                              0
-#define M6_SG_filter                                0
-#define M6_Wiener_filter                            0
-#define M6_TX_search                                0
-#define M6_TX_search_Skip_TH                        0
-#define M6_Disable_TX_search_based_on_NFL           0
-#define M6_ME                                       0
-#define M6_HME                                      0
-#define M6_Intra                                    0
-#define M6_NFL                                      0
-#define M6_Fast_Loop_Search_Method                  0
-#define M6_Warped_Motion_Injection                  0
-
 #define M7_ADP_level                                0
-#define M7_Wiener_filter                            0
-#define M7_Subpel_fractional_Search_Method          0
-#define M7_Intra                                    0
-#define M7_enable_restoration                       0 // not in excel
-
 #define M8_ADP_level                                0
-#define M8_CDEF_filter                              0
-#define M8_ME                                       0
-#define M8_Intra                                    0
-#define M8_Full_loop_escape                         0
-#define M8_Global_MV_Injection                      0
-#define M8_NFL                                      0
-
-#define M9_adopted_FULL_LOOP_ESCAPE                 0
-#define M9_adopted_HME                              0
-#define M9_adopted_ME                               0
-#define M9_adopted_SUBPEL_SELECTION                 0
-#define M9_adopted_CU_8x8                           0
 #define M9_adopted_ADP_level                        0
-#define M9_adopted_INTER_SRC_SRC_FAST_LOOP          0
-#define M9_adopted_HME_level                        0
-#endif
 
+
+
+//##################### INTERPOLATION #####################
+#define M1_Interpolation_search                     0
+#define M3_Interpolation_search                     0
+#define M6_Interpolation_search                     1
+
+#define M1_Interpolation_search_blk_Size            0
+#define M3_Interpolation_search_blk_Size            1
+
+
+
+#define M1_Uni_Bi_Pred                              0
+#define M4_Uni_Bi_Pred                              1
+
+
+//##################### ME #####################
+#define M1_ME                                       0
+#define M3_ME                                       0
+#define M6_ME                                       0
+#define M8_ME                                       0
+#define M9_adopted_ME                               0
+
+
+//##################### HME #####################
+
+#define M6_HME                                      0
+#define M9_adopted_HME                              0
+#define M9_adopted_HME_level                        1
+#define M1_HME_Search_Method                        0
+#define M1_ME_Search_Method                         0
+
+//##################### NFL #####################
+#define M1_NFL                                      0
+#define M2_NFL                                      0
+#define M4_NFL                                      0
+#define M6_NFL                                      0
+#define M8_NFL                                      1
+
+//##################### FILTER #####################
+#define M4_DLF                                      0
+#define M5_DLF                                      1
+
+#define M4_SG_filter                                0
+#define M5_SG_filter                                0
+#define M6_SG_filter                                1
+
+#define M6_CDEF_filter                              0
+#define M8_CDEF_filter                              1
+
+#define M6_Wiener_filter                            0
+#define M7_Wiener_filter                            1
+
+//##################### TX SEARCH #####################
+#define M4_TX_search                                0
+#define M5_TX_search                                1
+#define M6_TX_search                                0
+
+#define M3_TX_search_Skip_TH                        0
+#define M5_TX_search_Skip_TH                        0
+#define M6_TX_search_Skip_TH                        1
+
+#define M3_TX_search_Reduced_Set                    0
+#define M5_TX_search_Reduced_Set                    1
+
+
+#define M6_Disable_TX_search_based_on_NFL           0
+
+#define Mx_DISABLE_TX_SEARCH_FOR_NSQ                0
+
+//##################### TX SEARCH #####################
+
+#define M5_Chroma                                   1
+
+
+
+//##################### TX SEARCH #####################
+#define M3_Intra                                    0
+#define M6_Intra                                    1
+#define M7_Intra                                    0
+#define M8_Intra                                    0
+
+#define M6_Fast_Loop_Search_Method                  1
+#define M6_Warped_Motion_Injection                  1
+
+#define M7_Subpel_fractional_Search_Method          1
+#define M7_enable_restoration                       1 // not in excel
+
+
+#define M8_Full_loop_escape                         0
+#define M9_adopted_FULL_LOOP_ESCAPE                 1
+
+#define M8_Global_MV_Injection                      1
+
+
+#define M9_adopted_SUBPEL_SELECTION                 1
+#define M9_adopted_CU_8x8                           1
+
+#define M9_adopted_INTER_SRC_SRC_FAST_LOOP          0
+
+
+
+#define M1_RED_CU                                   1 // not in excel
+#define M1_CABAC_UP                                 0 // not in excel
+#define M1_Fast_Loop_Method                         1 // not in excel
+#define M1_Spatial_SSE                              1 // not in excel
+#define M1_WARPED_MV                                1 // not in excel
+
+#endif
 
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
 #define HARD_CODE_SC_SETTING              0

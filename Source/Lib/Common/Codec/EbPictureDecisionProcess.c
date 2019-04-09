@@ -897,6 +897,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         //turn OFF intra bc for some specific modes
         if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->allow_intrabc = 0;
+        
+#if ENABLE_ICOPY_WIKI
+        picture_control_set_ptr->allow_screen_content_tools = 0;
+        picture_control_set_ptr->allow_intrabc =  0;
+
+#endif
     }
     else {
         picture_control_set_ptr->allow_screen_content_tools = 0;
