@@ -1851,8 +1851,8 @@ void av1_quantize_inv_quantize(
     uint32_t                       bit_increment,
     TxType                         tx_type,      
     ModeDecisionCandidateBuffer_t *candidateBuffer,
-    int16_t                        txb_skip_context,
-    int16_t                        dc_sign_context,
+    int16_t                        txb_skip_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+    int16_t                        dc_sign_context,     // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
     PredictionMode                 pred_mode,
     EbBool                         is_final_stage)
 {
@@ -1861,7 +1861,6 @@ void av1_quantize_inv_quantize(
     (void)pf_mode;
 #endif
     //Note: Transformed, Quantized, iQuantized coeff are stored in 1D fashion. 64x64 is hence in the first 32x32 corner.
-
 
 #if !PF_N2_SUPPORT
     (void)pf_mode;
@@ -2058,8 +2057,8 @@ void av1_quantize_inv_quantize(
             *eob,
             (component_type == COMPONENT_LUMA) ? 0 : 1,
             txsize,
-            txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
-            dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+            txb_skip_context,     
+            dc_sign_context,    
             picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
         coeff_rate_skip_non_opt = av1_cost_skip_txb(
@@ -2092,8 +2091,8 @@ void av1_quantize_inv_quantize(
         if (*eob != 0) {
             av1_optimize_b(
                 md_context,
-                txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
-                dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)   
+                txb_skip_context,  
+                dc_sign_context,   
                 (tran_low_t*)coeff,
                 coeff_stride,
                 n_coeffs,
@@ -2119,8 +2118,8 @@ void av1_quantize_inv_quantize(
                     *eob,
                     (component_type == COMPONENT_LUMA) ? 0 : 1,
                     txsize,
-                    txb_skip_context,   // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)  
-                    dc_sign_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+                    txb_skip_context,    
+                    dc_sign_context,   
                     picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
                 coeff_rate_skip_opt = av1_cost_skip_txb(

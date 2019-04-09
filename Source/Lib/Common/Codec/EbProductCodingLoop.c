@@ -3991,8 +3991,8 @@ void md_encode_block(
                     context_ptr,
                     candidateBufferPtrArrayBase,
                     fast_candidate_array,
-                    0,                                                              // fast candidate buffer start index (Hsan: to move to the context to reduce the # of input to perform_fast_loop())
-                    context_ptr->fast_candidate_intra_count - 1,                    // fast candidate buffer end index (Hsan: to move to the context to reduce the # of input to perform_fast_loop())
+                    0,                                                              // fast candidate buffer start index
+                    context_ptr->fast_candidate_intra_count - 1,                    // fast candidate buffer end index
                     input_picture_ptr,
                     inputOriginIndex,
                     inputCbOriginIndex,
@@ -4000,8 +4000,8 @@ void md_encode_block(
                     cu_ptr,
                     cuOriginIndex,
                     cuChromaOriginIndex,
-                    0,                                                              // full candidate buffer start index (Hsan: to move to the context to reduce the # of input to perform_fast_loop())
-                    intra_buffer_count,                                             // full candidate buffer length (Hsan: to move to the context to reduce the # of input to perform_fast_loop())
+                    0,                                                              // full candidate buffer start index
+                    intra_buffer_count,                                             // full candidate buffer length
                     intra_buffer_count > full_recon_intra_search_count,
                     context_ptr->decoupled_fast_loop_search_method == SSD_SEARCH,
                     asm_type);
