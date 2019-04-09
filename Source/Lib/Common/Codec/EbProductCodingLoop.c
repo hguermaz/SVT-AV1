@@ -3563,7 +3563,7 @@ uint8_t check_skip_sub_blks(
 #endif
 
 #if SEARCH_UV_MODE
-// Hsan (search_uv_mode) : av1_get_tx_type() to define as extern
+// Hsan (chroma search) : av1_get_tx_type() to define as extern
 static INLINE PredictionMode get_uv_mode(UV_PredictionMode mode) {
     assert(mode < UV_INTRA_MODES);
     static const PredictionMode uv2y[] = {
@@ -3676,20 +3676,15 @@ void search_uv_mode(
     context_ptr->uv_search_path = EB_TRUE;
     EbAsm   asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
     uint8_t is16bit = (sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
-#if 0
-    QUANTS *quants = &picture_control_set_ptr->parent_pcs_ptr->cpi->quants;
-#if SEG_SUPPORT
-    VP9_COMMON *const cm = &cpi->common;
-    struct segmentation *const seg = &cm->seg;
-    const int qindex = vp9_get_qindex(seg, candidate_ptr->mode_info->segment_id, picture_control_set_ptr->base_qindex);
 
-#else
-    const int qindex = picture_control_set_ptr->base_qindex;
-#endif
 
-    context_ptr->uv_mode_search_eob[1][0] = 1;
-    context_ptr->uv_mode_search_eob[2][0] = 1;
-#endif
+
+    int32_t uv_angle_delta = 0;
+
+    const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? 1 : 0;
+    EbBool use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
+    EbBool isCflAllowed = (context_ptr->blk_geom->bwidth <= 32 && context_ptr->blk_geom->bheight <= 32) ? 1 : 0;
+
     UV_PredictionMode chroma_mode;
     UV_PredictionMode best_uv_mode = UV_DC_PRED;
     int rate;
@@ -3706,7 +3701,10 @@ void search_uv_mode(
 
     uint8_t chroma_mode_start = UV_DC_PRED;
     uint8_t chroma_mode_end = is16bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
+
     for (chroma_mode = chroma_mode_start; chroma_mode <= chroma_mode_end; chroma_mode++) {
+        if ((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(chroma_mode) == EB_TRUE))
+            continue;
         candidateBuffer->candidate_ptr->intra_chroma_mode = chroma_mode;
         candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(chroma_mode);
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
@@ -3799,8 +3797,6 @@ void search_uv_mode(
 
     uint8_t intra_mode_start = DC_PRED;
     uint8_t intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
-    EbBool  use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
-    EbBool  isCflAllowed = (context_ptr->blk_geom->bwidth <= 32 && context_ptr->blk_geom->bheight <= 32) ? 1 : 0;
     uint64_t intraChromaModeBitsNum = 0;
     uint64_t intraChromaAngModeBitsNum = 0;
 
@@ -3809,12 +3805,18 @@ void search_uv_mode(
         for (int8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
             best_uv_mode_cost = (uint64_t)~0;
             for (chroma_mode = UV_DC_PRED; chroma_mode <= UV_PAETH_PRED; chroma_mode++) {
+                // Hsan (chroma search): do not check angular chroma if (1) not supported size or (2) non-angular luma to avoid a conformance problem => to check the specifications 
+                if (((disable_ang_uv == EB_TRUE) && (av1_is_directional_mode(chroma_mode) == EB_TRUE)) || (av1_is_directional_mode(intra_mode) == EB_FALSE && av1_is_directional_mode(chroma_mode) == EB_TRUE))
+                    continue;
+
                 // Estimate chroma nominal intra mode bits
                 intraChromaModeBitsNum = (uint64_t)context_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][intra_mode][chroma_mode];
                 // Estimate chroma angular mode bits
                 if (av1_is_directional_mode(chroma_mode) && use_angle_delta) {
-                    intraChromaAngModeBitsNum = context_ptr->md_rate_estimation_ptr->angleDeltaFacBits[chroma_mode - V_PRED][MAX_ANGLE_DELTA];
+                    intraChromaAngModeBitsNum = context_ptr->md_rate_estimation_ptr->angleDeltaFacBits[chroma_mode - V_PRED][MAX_ANGLE_DELTA + uv_angle_delta];
                 }
+
+
                 int rate_uv_mode;
                 rate = coeff_rate[chroma_mode] + intraChromaModeBitsNum + intraChromaAngModeBitsNum;
                 uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[chroma_mode]);

@@ -123,6 +123,7 @@ extern "C" {
 #define TRELLIS_CHROMA                                  0  
 #endif
 
+#define CHROMA_DC_ONLY                                  0
 #define SEARCH_UV_MODE                                  0
 
 #if !M9_SETTINGS || M9_ADP
