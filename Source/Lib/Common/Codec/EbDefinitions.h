@@ -182,8 +182,14 @@ extern "C" {
 #define TURN_OFF_WIKI                               1
 #define TURN_ON_WIKI                                0
 #define ENABLE_ME_WIKI                              1
-#define ENABLE_ICOPY_WIKI                           1
 
+#define ME_WIKI_M0  1
+#define ME_WIKI_M3  0
+#define ME_WIKI_M7  0
+#define ME_WIKI_M8  0
+
+#define ENABLE_ICOPY_WIKI                           1
+#define DISABLE_ICOPY_WIKI                          0
 
 #define Mx_DISABLE_BIPRED_UNIPRED_NSQ               1
 #define Mx_DISABLE_INTERPOLATION_SEARCH_FOR_NSQ     1
@@ -193,12 +199,12 @@ extern "C" {
 //##################### PARTITION #####################
 #define M1_NSQ_search                               0
 #define M2_NSQ_search                               0
-#define M3_Partitioning_Method                      1 // coupled with M3_NSQ_search and M2_SB_block_size
-#define M3_NSQ_search                               1 // coupled with M3_Partitioning_Method and M2_SB_block_size
+#define M3_Partitioning_Method                      0 // coupled with M3_NSQ_search and M2_SB_block_size
+#define M3_NSQ_search                               0 // coupled with M3_Partitioning_Method and M2_SB_block_size
 #define M4_Partitioning_Method                      0
 #define M4_NSQ_search                               0
-#define M5_Partitioning_Method                      0
-#define M5_NSQ_search                               0
+#define M5_Partitioning_Method                      1
+#define M5_NSQ_search                               1
 #define M6_Partitioning_Method                      0
 
 #define M2_ADP_level                                0 // no difference in 1080p and below
