@@ -2636,7 +2636,7 @@ void  inject_intra_candidates(
 #if !M9_INTRA
     angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
 #endif    
-    const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+
     for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate <= intra_mode_end ; ++openLoopIntraCandidate) {
 
         if (av1_is_directional_mode((PredictionMode)openLoopIntraCandidate)) {
@@ -2666,6 +2666,8 @@ void  inject_intra_candidates(
                             //UV_CFL_PRED :
                             context_ptr->best_uv_mode[openLoopIntraCandidate] ;
 #else
+                        const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ? 
                             intra_luma_to_chroma[openLoopIntraCandidate] : 
                             (context_ptr->chroma_level == CHROMA_MODE_0) ?
@@ -2723,6 +2725,8 @@ void  inject_intra_candidates(
                 //UV_CFL_PRED :
                 context_ptr->best_uv_mode[openLoopIntraCandidate];          
 #else
+            const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+
             candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ? 
                 intra_luma_to_chroma[openLoopIntraCandidate] : 
                 (context_ptr->chroma_level == CHROMA_MODE_0) ?
