@@ -2542,7 +2542,7 @@ void ProductFullLoopTxSearch(
             tuOriginIndex = context_ptr->blk_geom->origin_x + (context_ptr->blk_geom->origin_y * candidateBuffer->residual_ptr->stride_y);
             y_tu_coeff_bits = 0;
 
-#if ENHANCED_TRELLIS
+#if OPT_QUANT_COEFF
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
 #endif
 
@@ -2626,7 +2626,7 @@ void ProductFullLoopTxSearch(
             int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txSize)) * 2;
             tuFullDistortion[0][DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_RESIDUAL], shift);
             tuFullDistortion[0][DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_PREDICTION], shift);
-#if !ENHANCED_TRELLIS
+#if !OPT_QUANT_COEFF
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
 #endif
             //LUMA-ONLY

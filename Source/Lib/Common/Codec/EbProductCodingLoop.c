@@ -2612,13 +2612,14 @@ void AV1PerformFullLoop(
                 EbBool use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
                 uint64_t intraChromaModeBitsNum = 0;
                 uint64_t intraChromaAngModeBitsNum = 0;
+#if 0
                 // Estimate chroma nominal intra mode bits
                 intraChromaModeBitsNum = (uint64_t)context_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[CFL_ALLOWED][candidateBuffer->candidate_ptr->intra_luma_mode][UV_CFL_PRED];
                 // Estimate chroma angular mode bits
                 if (av1_is_directional_mode(candidateBuffer->candidate_ptr->intra_luma_mode) && use_angle_delta) {
                     intraChromaAngModeBitsNum = context_ptr->md_rate_estimation_ptr->angleDeltaFacBits[UV_CFL_PRED - V_PRED][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV]];
                 }
-
+#endif
 
                 int rate = coeff_rate + intraChromaModeBitsNum + intraChromaAngModeBitsNum;
                 uint64_t cfl_uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion);
