@@ -2661,10 +2661,11 @@ void  inject_intra_candidates(
                         candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
 
 #if SEARCH_UV_MODE
-                        candidateArray[canTotalCnt].intra_chroma_mode = 
-                            //(disable_cfl_flag == EB_FALSE && context_ptr->best_uv_mode[openLoopIntraCandidate] == UV_DC_PRED) ?
-                            //UV_CFL_PRED :
-                            context_ptr->best_uv_mode[openLoopIntraCandidate] ;
+                        candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                            context_ptr->best_uv_mode[openLoopIntraCandidate] :
+                            (context_ptr->chroma_level == CHROMA_MODE_0) ?
+                                UV_CFL_PRED :
+                                UV_DC_PRED;
 #else
                         const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
 
@@ -2720,10 +2721,11 @@ void  inject_intra_candidates(
 #endif
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
 #if SEARCH_UV_MODE
-            candidateArray[canTotalCnt].intra_chroma_mode =
-                //(disable_cfl_flag == EB_FALSE && context_ptr->best_uv_mode[openLoopIntraCandidate] == UV_DC_PRED) ?
-                //UV_CFL_PRED :
-                context_ptr->best_uv_mode[openLoopIntraCandidate];          
+            candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                context_ptr->best_uv_mode[openLoopIntraCandidate] :
+                    (context_ptr->chroma_level == CHROMA_MODE_0) ?
+                        UV_CFL_PRED :
+                        UV_DC_PRED;
 #else
             const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
 
