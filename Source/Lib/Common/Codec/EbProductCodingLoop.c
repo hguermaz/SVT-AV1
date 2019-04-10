@@ -3809,8 +3809,8 @@ void search_uv_mode(
 {
     // Start uv search path
     context_ptr->uv_search_path = EB_TRUE;
-    EbAsm   asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
-    uint8_t is16bit = (sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
+    EbAsm   asm_type  = sequence_control_set_ptr->encode_context_ptr->asm_type;
+    uint8_t is_16_bit = (sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
 
 
     EbBool use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
@@ -3832,17 +3832,11 @@ void search_uv_mode(
     candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
 
     uint8_t uv_mode_start = UV_DC_PRED;
-    uint8_t uv_mode_end = UV_DC_PRED;// is16bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
+    uint8_t uv_mode_end = UV_D67_PRED;// is_16_bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
 
     for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
 
-        //uint8_t angleDeltaCandidateCount = (use_angle_delta && av1_is_directional_mode(uv_mode)) ? 7 : 1; // TBD
-        //for (int8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) // TBD
         {
-
-            if (use_angle_delta == EB_FALSE && av1_is_directional_mode(uv_mode) == EB_TRUE)
-                continue;
-
             candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
             candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(uv_mode);
             //candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = ??? ; // TBD
@@ -3936,23 +3930,125 @@ void search_uv_mode(
     uint64_t uv_cost;
     uint64_t best_uv_mode_cost;
 
-    EbBool angle_search = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
+
+#if 1
     uint8_t intra_mode_start = DC_PRED;
-    uint8_t intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
+    uint8_t intra_mode_end = is_16_bit ? SMOOTH_H_PRED : PAETH_PRED;
+    uint8_t angleDeltaCandidateCount = use_angle_delta ? 7 : 1;
+    uint8_t angle_delta_shift = 1;
+
+    // intra mode loop
+    for (uint8_t intra_mode = intra_mode_start; intra_mode <= intra_mode_end; ++intra_mode) {
+        if (av1_is_directional_mode((PredictionMode)intra_mode)) {
+
+            for (uint8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
+                int32_t angle_delta = CLIP(angle_delta_shift * (angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1)), -3, 3);
+                int32_t p_angle = mode_to_angle_map[(PredictionMode)intra_mode] + angle_delta * ANGLE_STEP;
+
+                candidateBuffer->candidate_ptr->type = INTRA_MODE;
+                candidateBuffer->candidate_ptr->intra_luma_mode = intra_mode;
+                candidateBuffer->candidate_ptr->distortion_ready = 0;
+                candidateBuffer->candidate_ptr->use_intrabc = 0;
+                candidateBuffer->candidate_ptr->is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
+                candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y] = angle_delta;
+                candidateBuffer->candidate_ptr->cfl_alpha_signs = 0;
+                candidateBuffer->candidate_ptr->cfl_alpha_idx = 0;               
+                candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = DCT_DCT;
+                candidateBuffer->candidate_ptr->ref_frame_type = INTRA_FRAME;
+                candidateBuffer->candidate_ptr->pred_mode = (PredictionMode)intra_mode;
+                candidateBuffer->candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
+
+                // uv mode loop
+                context_ptr->best_uv_cost[intra_mode] = (uint64_t)~0;
+                for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
+                    candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
+                    candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)uv_mode);
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
+                        av1_get_tx_type(
+                            context_ptr->blk_geom->bsize,
+                            0,
+                            (PredictionMode)candidateBuffer->candidate_ptr->intra_luma_mode,
+                            (UV_PredictionMode)candidateBuffer->candidate_ptr->intra_chroma_mode,
+                            PLANE_TYPE_UV,
+                            0,
+                            0,
+                            0,
+                            context_ptr->blk_geom->txsize_uv[0],
+                            picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+                    int rate_uv_mode;
+                    rate = coeff_rate[uv_mode];
+                    uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
+                    if (uv_cost < context_ptr->best_uv_cost[intra_mode]) {
+                        context_ptr->best_uv_mode[intra_mode] = uv_mode;
+                        context_ptr->best_uv_cost[intra_mode] = uv_cost;
+                    }
+
+                }
+
+
+            }
+        }
+        else {
+            candidateBuffer->candidate_ptr->type = INTRA_MODE;
+            candidateBuffer->candidate_ptr->intra_luma_mode = intra_mode;
+            candidateBuffer->candidate_ptr->distortion_ready = 0;
+            candidateBuffer->candidate_ptr->use_intrabc = 0;
+            candidateBuffer->candidate_ptr->is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
+            candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y] = 0;
+            candidateBuffer->candidate_ptr->cfl_alpha_signs = 0;
+            candidateBuffer->candidate_ptr->cfl_alpha_idx = 0;
+            candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = DCT_DCT;
+            candidateBuffer->candidate_ptr->ref_frame_type = INTRA_FRAME;
+            candidateBuffer->candidate_ptr->pred_mode = (PredictionMode)intra_mode;
+            candidateBuffer->candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
+
+            // uv mode loop
+            context_ptr->best_uv_cost[intra_mode] = (uint64_t)~0;
+            for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
+                candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
+                candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)uv_mode);
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
+                    av1_get_tx_type(
+                        context_ptr->blk_geom->bsize,
+                        0,
+                        (PredictionMode)candidateBuffer->candidate_ptr->intra_luma_mode,
+                        (UV_PredictionMode)candidateBuffer->candidate_ptr->intra_chroma_mode,
+                        PLANE_TYPE_UV,
+                        0,
+                        0,
+                        0,
+                        context_ptr->blk_geom->txsize_uv[0],
+                        picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+                int rate_uv_mode;
+                rate = coeff_rate[uv_mode];
+                uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
+                if (uv_cost < context_ptr->best_uv_cost[intra_mode]) {
+                    context_ptr->best_uv_mode[intra_mode] = uv_mode;
+                    context_ptr->best_uv_cost[intra_mode] = uv_cost;
+                }
+            }
+        }
+    }
+#else
+    uint8_t intra_mode_start = DC_PRED;
+    uint8_t intra_mode_end = is_16_bit ? SMOOTH_H_PRED : PAETH_PRED;
     uint64_t intraChromaModeBitsNum = 0;
     uint64_t intraChromaAngModeBitsNum = 0;
 
+
     for (uint8_t intra_mode = intra_mode_start; intra_mode <= intra_mode_end; ++intra_mode) {
 
-        uint8_t angleDeltaCandidateCount = (angle_search && av1_is_directional_mode(intra_mode)) ? 7 : 1;
+        uint8_t angleDeltaCandidateCount = (use_angle_delta && av1_is_directional_mode(intra_mode)) ? 7 : 1;
         for (int8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
 
             context_ptr->best_uv_cost[intra_mode] = (uint64_t)~0;
 
             for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
                
-                if (use_angle_delta == EB_FALSE && av1_is_directional_mode(uv_mode) == EB_TRUE)
-                    continue;
 #if 0
                 // Estimate chroma nominal intra mode bits
                 intraChromaModeBitsNum = (uint64_t)context_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][intra_mode][uv_mode];
@@ -3973,7 +4069,7 @@ void search_uv_mode(
             }
         }
     }
-
+#endif
     // End uv search path
     context_ptr->uv_search_path = EB_FALSE;
 }
