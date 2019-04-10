@@ -2660,7 +2660,7 @@ void  inject_intra_candidates(
 #endif
                         candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
 
-#if SEARCH_UV_MODE
+#if 0//SEARCH_UV_MODE
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
                             context_ptr->best_uv_mode[openLoopIntraCandidate] :
                             (context_ptr->chroma_level == CHROMA_MODE_0) ?
@@ -2720,7 +2720,7 @@ void  inject_intra_candidates(
             candidateArray[canTotalCnt].use_angle_delta = candidateArray[canTotalCnt].is_directional_mode_flag;
 #endif
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
-#if SEARCH_UV_MODE
+#if 0//SEARCH_UV_MODE
             candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
                 context_ptr->best_uv_mode[openLoopIntraCandidate] :
                     (context_ptr->chroma_level == CHROMA_MODE_0) ?

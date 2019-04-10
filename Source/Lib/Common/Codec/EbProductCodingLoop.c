@@ -2428,7 +2428,6 @@ void AV1PerformFullLoop(
         memset(candidate_ptr->eob[2], 0, sizeof(uint16_t));
 
 
-
         candidate_ptr->chroma_distortion = 0;
         candidate_ptr->chroma_distortion_inter_depth = 0;
         // Set Skip Flag
@@ -2606,6 +2605,7 @@ void AV1PerformFullLoop(
         // Check independant chroma vs. cfl
         if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
             if (candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
+
                 // compute cfl cost 
                 int coeff_rate = cb_coeff_bits + cr_coeff_bits;
                 int distortion = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
@@ -2645,6 +2645,11 @@ void AV1PerformFullLoop(
                     // Start uv search path
                     context_ptr->uv_search_path = EB_TRUE;
 
+
+                    memset(candidate_ptr->eob[1], 0, sizeof(uint16_t));
+                    memset(candidate_ptr->eob[2], 0, sizeof(uint16_t));
+                    candidate_ptr->u_has_coeff = 0;
+                    candidate_ptr->v_has_coeff = 0;
                     cbFullDistortion[DIST_CALC_RESIDUAL] = 0;
                     crFullDistortion[DIST_CALC_RESIDUAL] = 0;
                     cbFullDistortion[DIST_CALC_PREDICTION] = 0;
@@ -2714,6 +2719,19 @@ void AV1PerformFullLoop(
                     
                     // End uv search path
                     context_ptr->uv_search_path = EB_FALSE;
+
+
+
+#if 0 // TBD (to remove)
+                    // compute cfl cost 
+                    coeff_rate = cb_coeff_bits + cr_coeff_bits;
+                    distortion = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
+                    int rate = coeff_rate;
+                    uint64_t check_cost = RDCOST(context_ptr->full_lambda, rate, distortion);
+                    if (check_cost != context_ptr->best_uv_cost[candidateBuffer->candidate_ptr->intra_luma_mode])
+                        printf("");
+
+#endif
                 }
             }
         }
@@ -3813,7 +3831,7 @@ void search_uv_mode(
     candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
 
     uint8_t uv_mode_start = UV_DC_PRED;
-    uint8_t uv_mode_end = is16bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
+    uint8_t uv_mode_end = UV_DC_PRED;// is16bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
 
     for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
 
@@ -3928,28 +3946,27 @@ void search_uv_mode(
         uint8_t angleDeltaCandidateCount = (angle_search && av1_is_directional_mode(intra_mode)) ? 7 : 1;
         for (int8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
 
-            best_uv_mode_cost = (uint64_t)~0;
+            context_ptr->best_uv_cost[intra_mode] = (uint64_t)~0;
 
-            for (uv_mode = UV_DC_PRED; uv_mode <= UV_PAETH_PRED; uv_mode++) {
+            for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
                
                 if (use_angle_delta == EB_FALSE && av1_is_directional_mode(uv_mode) == EB_TRUE)
                     continue;
-
+#if 0
                 // Estimate chroma nominal intra mode bits
                 intraChromaModeBitsNum = (uint64_t)context_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][intra_mode][uv_mode];
                 // Estimate chroma angular mode bits
                 if (av1_is_directional_mode(uv_mode) && use_angle_delta) {
                     intraChromaAngModeBitsNum = context_ptr->md_rate_estimation_ptr->angleDeltaFacBits[uv_mode - V_PRED][MAX_ANGLE_DELTA + uv_angle_delta[uv_mode]];
                 }
-
+#endif 
 
                 int rate_uv_mode;
                 rate = coeff_rate[uv_mode] + intraChromaModeBitsNum + intraChromaAngModeBitsNum;
                 uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
-                if (uv_cost < best_uv_mode_cost) {
+                if (uv_cost < context_ptr->best_uv_cost[intra_mode]) {
                     context_ptr->best_uv_mode[intra_mode] = uv_mode;
                     context_ptr->best_uv_cost[intra_mode] = uv_cost;
-                    best_uv_mode_cost = uv_cost;
                 }
 
             }
