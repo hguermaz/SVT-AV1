@@ -2607,28 +2607,32 @@ void AV1PerformFullLoop(
             if (candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
 
                 // compute cfl cost 
-                int coeff_rate = cb_coeff_bits + cr_coeff_bits;
-                int distortion = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
-                EbBool use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
-                uint64_t intraChromaModeBitsNum = 0;
-                uint64_t intraChromaAngModeBitsNum = 0;
-#if 0
-                // Estimate chroma nominal intra mode bits
-                intraChromaModeBitsNum = (uint64_t)context_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[CFL_ALLOWED][candidateBuffer->candidate_ptr->intra_luma_mode][UV_CFL_PRED];
-                // Estimate chroma angular mode bits
-                if (av1_is_directional_mode(candidateBuffer->candidate_ptr->intra_luma_mode) && use_angle_delta) {
-                    intraChromaAngModeBitsNum = context_ptr->md_rate_estimation_ptr->angleDeltaFacBits[UV_CFL_PRED - V_PRED][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV]];
-                }
-#endif
+                uint64_t chromaRate = 0;
 
-                int rate = coeff_rate + intraChromaModeBitsNum + intraChromaAngModeBitsNum;
+                EbBool isCflAllowed = (context_ptr->blk_geom->bwidth <= 32 && context_ptr->blk_geom->bheight <= 32) ? 1 : 0;
+
+                chromaRate += candidateBuffer->candidate_ptr->md_rate_estimation_ptr->cflAlphaFacBits[candidateBuffer->candidate_ptr->cfl_alpha_signs][CFL_PRED_U][CFL_IDX_U(candidateBuffer->candidate_ptr->cfl_alpha_idx)] +
+                    candidateBuffer->candidate_ptr->md_rate_estimation_ptr->cflAlphaFacBits[candidateBuffer->candidate_ptr->cfl_alpha_signs][CFL_PRED_V][CFL_IDX_V(candidateBuffer->candidate_ptr->cfl_alpha_idx)];
+
+                chromaRate += (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][candidateBuffer->candidate_ptr->intra_luma_mode][UV_CFL_PRED];
+                chromaRate -= (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][candidateBuffer->candidate_ptr->intra_luma_mode][UV_DC_PRED];
+        
+                int coeff_rate = cb_coeff_bits + cr_coeff_bits + chromaRate;
+                int distortion = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
+                int rate = coeff_rate;
                 uint64_t cfl_uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion);
+
+
+
 
                 if (context_ptr->best_uv_cost[candidateBuffer->candidate_ptr->intra_luma_mode] < cfl_uv_cost) {
 
-                    // Update the current candidates
+                    // Update the current candidate
                     candidateBuffer->candidate_ptr->intra_chroma_mode = context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode];
                     candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode]);
+                    // check if candidateBuffer->candidate_ptr->fast_luma_rate = context_ptr->fast_luma_rate[candidateBuffer->candidate_ptr->intra_luma_mode];
+                    candidateBuffer->candidate_ptr->fast_chroma_rate = context_ptr->fast_chroma_rate[candidateBuffer->candidate_ptr->intra_luma_mode];
+
                     //candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = ??? ; // TBD
                     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
                         av1_get_tx_type(
@@ -2645,7 +2649,6 @@ void AV1PerformFullLoop(
 
                     // Start uv search path
                     context_ptr->uv_search_path = EB_TRUE;
-
 
                     memset(candidate_ptr->eob[1], 0, sizeof(uint16_t));
                     memset(candidate_ptr->eob[2], 0, sizeof(uint16_t));
@@ -2666,7 +2669,6 @@ void AV1PerformFullLoop(
                         picture_control_set_ptr,
                         candidateBuffer,
                         asm_type);
-
 
                     ResidualKernel(
                         &(input_picture_ptr->bufferCb[inputCbOriginIndex]),
@@ -2699,7 +2701,6 @@ void AV1PerformFullLoop(
                         crQp,
                         &(*count_non_zero_coeffs[1]),
                         &(*count_non_zero_coeffs[2]));
-
 
                     CuFullDistortionFastTuMode_R(
                         context_ptr->sb_ptr,
@@ -3977,17 +3978,34 @@ void search_uv_mode(
                             context_ptr->blk_geom->txsize_uv[0],
                             picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
+                    // Fast Cost
+                    *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidateBuffer->candidate_ptr->type](
+                        context_ptr->cu_ptr,
+                        candidateBuffer->candidate_ptr,
+                        context_ptr->qp,
+                        0,
+                        0,
+                        0,
+                        0,
+                        picture_control_set_ptr,
+                        &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidateBuffer->candidate_ptr->ref_frame_type][0]),
+                        context_ptr->blk_geom,
+                        context_ptr->cu_origin_y >> MI_SIZE_LOG2,
+                        context_ptr->cu_origin_x >> MI_SIZE_LOG2,
+                        context_ptr->intra_luma_left_mode,
+                        context_ptr->intra_luma_top_mode);
+
+
                     int rate_uv_mode;
-                    rate = coeff_rate[uv_mode];
+                    rate = coeff_rate[uv_mode] + candidateBuffer->candidate_ptr->fast_luma_rate + candidateBuffer->candidate_ptr->fast_chroma_rate;
                     uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
                     if (uv_cost < context_ptr->best_uv_cost[intra_mode]) {
                         context_ptr->best_uv_mode[intra_mode] = uv_mode;
                         context_ptr->best_uv_cost[intra_mode] = uv_cost;
+                        context_ptr->fast_luma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_luma_rate;
+                        context_ptr->fast_chroma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_chroma_rate;
                     }
-
                 }
-
-
             }
         }
         else {
@@ -4023,12 +4041,32 @@ void search_uv_mode(
                         context_ptr->blk_geom->txsize_uv[0],
                         picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
+                // Fast Cost
+                *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidateBuffer->candidate_ptr->type](
+                    context_ptr->cu_ptr,
+                    candidateBuffer->candidate_ptr,
+                    context_ptr->qp,
+                    0,
+                    0,
+                    0,
+                    0,
+                    picture_control_set_ptr,
+                    &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidateBuffer->candidate_ptr->ref_frame_type][0]),
+                    context_ptr->blk_geom,
+                    context_ptr->cu_origin_y >> MI_SIZE_LOG2,
+                    context_ptr->cu_origin_x >> MI_SIZE_LOG2,
+                    context_ptr->intra_luma_left_mode,
+                    context_ptr->intra_luma_top_mode);
+
+
                 int rate_uv_mode;
-                rate = coeff_rate[uv_mode];
+                rate = coeff_rate[uv_mode] + candidateBuffer->candidate_ptr->fast_luma_rate + candidateBuffer->candidate_ptr->fast_chroma_rate;
                 uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
                 if (uv_cost < context_ptr->best_uv_cost[intra_mode]) {
                     context_ptr->best_uv_mode[intra_mode] = uv_mode;
                     context_ptr->best_uv_cost[intra_mode] = uv_cost;
+                    context_ptr->fast_luma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_luma_rate;
+                    context_ptr->fast_chroma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_chroma_rate;
                 }
             }
         }

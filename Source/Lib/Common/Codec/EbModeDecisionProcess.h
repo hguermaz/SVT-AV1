@@ -193,6 +193,8 @@ extern "C" {
         EbBool                          uv_search_path;
         UV_PredictionMode               best_uv_mode[UV_PAETH_PRED + 1];
         uint64_t                        best_uv_cost[UV_PAETH_PRED + 1];
+        uint64_t                        fast_luma_rate[UV_PAETH_PRED + 1];
+        uint64_t                        fast_chroma_rate[UV_PAETH_PRED + 1];
 #endif
         // Needed for DC prediction
         EbBool                          is_left_availble;
