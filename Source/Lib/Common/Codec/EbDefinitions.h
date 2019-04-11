@@ -35,8 +35,8 @@
 extern "C" {
 #endif
 
-#define NEW_PRESETS         1
-#define NEW_I7_PRESETS      0
+#define NEW_PRESETS         0
+#define NEW_I7_PRESETS      1
 
 #if NEW_I7_PRESETS
 
@@ -74,7 +74,35 @@ extern "C" {
 #define M3_NSQ_search                               1 // coupled with M3_Partitioning_Method and M2_SB_block_size
 #endif
 
+/*******M3 TEST**********/
+	/***T0***/
+#define T0											0
+#if T0
+#define M4_SG_filter                                1
+#define M8_Full_loop_escape                         1
+#endif
+	/****T1****/
+#define T1										0
+#if T1
+#define M4_SG_filter                                1
+#define M9_adopted_FULL_LOOP_ESCAPE                 1
+#define M9_adopted_INTER_SRC_SRC_FAST_LOOP          1
+#define M8_Global_MV_Injection                      1
+#define M9_adopted_SUBPEL_SELECTION                 1
+#define Mx_DISABLE_INTERPOLATION_SEARCH_FOR_NSQ     1
+#endif
+#define T2								0 //T2 in top of T1
+#if T2
+#define	M6_Wiener_filter				1
+#define M6_SG_filter                    1
+#define M6_CDEF_filter                              1
+#endif
 
+#define T3								0 //T3 in top of T0
+#if T3
+#define M8_NFL                                      1
+#endif
+	/******************/
 #if NEW_I7_M3
 #define M4_Partitioning_Method                      1
 #define M4_NSQ_search                               1

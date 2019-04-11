@@ -667,12 +667,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         else
             picture_control_set_ptr->pic_depth_mode = PIC_SB_SWITCH_DEPTH_MODE;
 #elif M5_Partitioning_Method
-        picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+		picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
 #elif M4_Partitioning_Method
-        if (picture_control_set_ptr->slice_type == I_SLICE)
-            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
-        else
-            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+		if (picture_control_set_ptr->slice_type == I_SLICE)
+			picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+		else
+			picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
 #elif M3_Partitioning_Method
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
@@ -738,10 +738,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if M5_NSQ_search
         picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
 #elif M4_NSQ_search
-        if (picture_control_set_ptr->slice_type == I_SLICE)
-            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL6;
-        else
-            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
+		picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
 #elif M3_NSQ_search
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL5;
