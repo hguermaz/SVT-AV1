@@ -2617,21 +2617,19 @@ void AV1PerformFullLoop(
                 chromaRate += (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][candidateBuffer->candidate_ptr->intra_luma_mode][UV_CFL_PRED];
                 chromaRate -= (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][candidateBuffer->candidate_ptr->intra_luma_mode][UV_DC_PRED];
         
-                int coeff_rate = cb_coeff_bits + cr_coeff_bits + chromaRate;
+                int coeff_rate = cb_coeff_bits + cr_coeff_bits;
                 int distortion = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
-                int rate = coeff_rate;
+                int rate = coeff_rate + chromaRate;
                 uint64_t cfl_uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion);
 
 
-
-
-                if (context_ptr->best_uv_cost[candidateBuffer->candidate_ptr->intra_luma_mode] < cfl_uv_cost) {
+                if (context_ptr->best_uv_cost[candidateBuffer->candidate_ptr->intra_luma_mode][3 + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]] < cfl_uv_cost) {
 
                     // Update the current candidate
-                    candidateBuffer->candidate_ptr->intra_chroma_mode = context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode];
-                    candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode]);
+                    candidateBuffer->candidate_ptr->intra_chroma_mode = context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode][3 + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]];
+                    candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode][3 + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]]);
                     // check if candidateBuffer->candidate_ptr->fast_luma_rate = context_ptr->fast_luma_rate[candidateBuffer->candidate_ptr->intra_luma_mode];
-                    candidateBuffer->candidate_ptr->fast_chroma_rate = context_ptr->fast_chroma_rate[candidateBuffer->candidate_ptr->intra_luma_mode];
+                    candidateBuffer->candidate_ptr->fast_chroma_rate = context_ptr->fast_chroma_rate[candidateBuffer->candidate_ptr->intra_luma_mode][3 + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]];
 
                     //candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = ??? ; // TBD
                     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
@@ -2639,7 +2637,7 @@ void AV1PerformFullLoop(
                             context_ptr->blk_geom->bsize,
                             0,
                             (PredictionMode)NULL,
-                            (UV_PredictionMode)context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode],
+                            (UV_PredictionMode)context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode][3 + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]],
                             PLANE_TYPE_UV,
                             0,
                             0,
@@ -3935,86 +3933,22 @@ void search_uv_mode(
 #if 1
     uint8_t intra_mode_start = DC_PRED;
     uint8_t intra_mode_end = is_16_bit ? SMOOTH_H_PRED : PAETH_PRED;
-    uint8_t angleDeltaCandidateCount = use_angle_delta ? 7 : 1;
-    uint8_t angle_delta_shift = 1;
 
-    // intra mode loop
+    // Loop over all intra mode, then over all uv move to derive the best uv mode for a given intra mode in term of rate
     for (uint8_t intra_mode = intra_mode_start; intra_mode <= intra_mode_end; ++intra_mode) {
-        if (av1_is_directional_mode((PredictionMode)intra_mode)) {
 
-            for (uint8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
-                int32_t angle_delta = CLIP(angle_delta_shift * (angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1)), -3, 3);
-                int32_t p_angle = mode_to_angle_map[(PredictionMode)intra_mode] + angle_delta * ANGLE_STEP;
+        uint8_t angleDeltaCandidateCount = (use_angle_delta && av1_is_directional_mode((PredictionMode)intra_mode)) ? 7 : 1;
+        uint8_t angle_delta_shift = 1;
 
-                candidateBuffer->candidate_ptr->type = INTRA_MODE;
-                candidateBuffer->candidate_ptr->intra_luma_mode = intra_mode;
-                candidateBuffer->candidate_ptr->distortion_ready = 0;
-                candidateBuffer->candidate_ptr->use_intrabc = 0;
-                candidateBuffer->candidate_ptr->is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
-                candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y] = angle_delta;
-                candidateBuffer->candidate_ptr->cfl_alpha_signs = 0;
-                candidateBuffer->candidate_ptr->cfl_alpha_idx = 0;               
-                candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
-                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = DCT_DCT;
-                candidateBuffer->candidate_ptr->ref_frame_type = INTRA_FRAME;
-                candidateBuffer->candidate_ptr->pred_mode = (PredictionMode)intra_mode;
-                candidateBuffer->candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
+        for (uint8_t angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
+            int32_t angle_delta = CLIP(angle_delta_shift * (angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1)), -3, 3);
 
-                // uv mode loop
-                context_ptr->best_uv_cost[intra_mode] = (uint64_t)~0;
-                for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
-                    candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
-                    candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)uv_mode);
-                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
-                        av1_get_tx_type(
-                            context_ptr->blk_geom->bsize,
-                            0,
-                            (PredictionMode)candidateBuffer->candidate_ptr->intra_luma_mode,
-                            (UV_PredictionMode)candidateBuffer->candidate_ptr->intra_chroma_mode,
-                            PLANE_TYPE_UV,
-                            0,
-                            0,
-                            0,
-                            context_ptr->blk_geom->txsize_uv[0],
-                            picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-
-                    // Fast Cost
-                    *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidateBuffer->candidate_ptr->type](
-                        context_ptr->cu_ptr,
-                        candidateBuffer->candidate_ptr,
-                        context_ptr->qp,
-                        0,
-                        0,
-                        0,
-                        0,
-                        picture_control_set_ptr,
-                        &(context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[candidateBuffer->candidate_ptr->ref_frame_type][0]),
-                        context_ptr->blk_geom,
-                        context_ptr->cu_origin_y >> MI_SIZE_LOG2,
-                        context_ptr->cu_origin_x >> MI_SIZE_LOG2,
-                        context_ptr->intra_luma_left_mode,
-                        context_ptr->intra_luma_top_mode);
-
-
-                    int rate_uv_mode;
-                    rate = coeff_rate[uv_mode] + candidateBuffer->candidate_ptr->fast_luma_rate + candidateBuffer->candidate_ptr->fast_chroma_rate;
-                    uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
-                    if (uv_cost < context_ptr->best_uv_cost[intra_mode]) {
-                        context_ptr->best_uv_mode[intra_mode] = uv_mode;
-                        context_ptr->best_uv_cost[intra_mode] = uv_cost;
-                        context_ptr->fast_luma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_luma_rate;
-                        context_ptr->fast_chroma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_chroma_rate;
-                    }
-                }
-            }
-        }
-        else {
             candidateBuffer->candidate_ptr->type = INTRA_MODE;
             candidateBuffer->candidate_ptr->intra_luma_mode = intra_mode;
             candidateBuffer->candidate_ptr->distortion_ready = 0;
             candidateBuffer->candidate_ptr->use_intrabc = 0;
             candidateBuffer->candidate_ptr->is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
-            candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y] = 0;
+            candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y] = angle_delta;
             candidateBuffer->candidate_ptr->cfl_alpha_signs = 0;
             candidateBuffer->candidate_ptr->cfl_alpha_idx = 0;
             candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = 0;
@@ -4024,7 +3958,7 @@ void search_uv_mode(
             candidateBuffer->candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
 
             // uv mode loop
-            context_ptr->best_uv_cost[intra_mode] = (uint64_t)~0;
+            context_ptr->best_uv_cost[intra_mode][3 + angle_delta] = (uint64_t)~0;
             for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
                 candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
                 candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)uv_mode);
@@ -4062,14 +3996,15 @@ void search_uv_mode(
                 int rate_uv_mode;
                 rate = coeff_rate[uv_mode] + candidateBuffer->candidate_ptr->fast_luma_rate + candidateBuffer->candidate_ptr->fast_chroma_rate;
                 uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion[uv_mode]);
-                if (uv_cost < context_ptr->best_uv_cost[intra_mode]) {
-                    context_ptr->best_uv_mode[intra_mode] = uv_mode;
-                    context_ptr->best_uv_cost[intra_mode] = uv_cost;
-                    context_ptr->fast_luma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_luma_rate;
-                    context_ptr->fast_chroma_rate[intra_mode] = candidateBuffer->candidate_ptr->fast_chroma_rate;
+                if (uv_cost < context_ptr->best_uv_cost[intra_mode][3 + angle_delta]) {
+                    context_ptr->best_uv_mode[intra_mode][3 + angle_delta] = uv_mode;
+                    context_ptr->best_uv_cost[intra_mode][3 + angle_delta] = uv_cost;
+                    context_ptr->fast_luma_rate[intra_mode][3 + angle_delta] = candidateBuffer->candidate_ptr->fast_luma_rate;
+                    context_ptr->fast_chroma_rate[intra_mode][3 + angle_delta] = candidateBuffer->candidate_ptr->fast_chroma_rate;
                 }
             }
         }
+
     }
 #else
     uint8_t intra_mode_start = DC_PRED;

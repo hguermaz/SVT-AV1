@@ -2662,7 +2662,7 @@ void  inject_intra_candidates(
 
 #if SEARCH_UV_MODE
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
-                            context_ptr->best_uv_mode[openLoopIntraCandidate] :
+                            context_ptr->best_uv_mode[openLoopIntraCandidate][3 + candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y]] :
                             (context_ptr->chroma_level == CHROMA_MODE_0) ?
                                 UV_CFL_PRED :
                                 UV_DC_PRED;
@@ -2722,7 +2722,7 @@ void  inject_intra_candidates(
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
 #if SEARCH_UV_MODE
             candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
-                context_ptr->best_uv_mode[openLoopIntraCandidate] :
+                context_ptr->best_uv_mode[openLoopIntraCandidate][3] :
                     (context_ptr->chroma_level == CHROMA_MODE_0) ?
                         UV_CFL_PRED :
                         UV_DC_PRED;
