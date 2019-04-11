@@ -2859,7 +2859,11 @@ EB_EXTERN void AV1EncodePass(
                                         plane ? blk_geom->bheight_uv : blk_geom->bheight,                  //int32_t hpx,
                                         tx_size,
                                         mode,                                                       //PredictionMode mode,
+#if SEARCH_UV_MODE // conformance
+                                        plane ? pu_ptr->angle_delta[PLANE_TYPE_UV] : pu_ptr->angle_delta[PLANE_TYPE_Y],
+#else
                                         plane ? 0 : pu_ptr->angle_delta[PLANE_TYPE_Y],                //int32_t angle_delta,
+#endif
                                         0,                                                          //int32_t use_palette,
                                         FILTER_INTRA_MODES,                                         //CHKN FILTER_INTRA_MODE filter_intra_mode,
                                         topNeighArray + 1,
@@ -2937,7 +2941,11 @@ EB_EXTERN void AV1EncodePass(
                                         plane ? blk_geom->bheight_uv : blk_geom->bheight,                  //int32_t hpx,
                                         tx_size,
                                         mode,                                                       //PredictionMode mode,
+#if SEARCH_UV_MODE // conformance
+                                        plane ? pu_ptr->angle_delta[PLANE_TYPE_UV] : pu_ptr->angle_delta[PLANE_TYPE_Y],
+#else
                                         plane ? 0 : pu_ptr->angle_delta[PLANE_TYPE_Y],                //int32_t angle_delta,
+#endif
                                         0,                                                          //int32_t use_palette,
                                         FILTER_INTRA_MODES,                                         //CHKN FILTER_INTRA_MODE filter_intra_mode,
                                         topNeighArray + 1,

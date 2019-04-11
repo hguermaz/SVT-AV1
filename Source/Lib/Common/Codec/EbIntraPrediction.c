@@ -5025,7 +5025,11 @@ EbErrorType AV1IntraPredictionCL(
             plane ? md_context_ptr->blk_geom->bheight_uv : md_context_ptr->blk_geom->bheight,          //int32_t hpx,
             plane ? tx_size_Chroma : tx_size,                                               //TxSize tx_size,
             mode,                                                                           //PredictionMode mode,
+#if SEARCH_UV_MODE // conformance
+            plane ? candidate_buffer_ptr->candidate_ptr->angle_delta[PLANE_TYPE_UV] : candidate_buffer_ptr->candidate_ptr->angle_delta[PLANE_TYPE_Y],
+#else
             plane ? 0 : candidate_buffer_ptr->candidate_ptr->angle_delta[PLANE_TYPE_Y],         //int32_t angle_delta,
+#endif
             0,                                                                              //int32_t use_palette,
             FILTER_INTRA_MODES,                                                             //CHKN FILTER_INTRA_MODE filter_intra_mode,
             topNeighArray + 1,
