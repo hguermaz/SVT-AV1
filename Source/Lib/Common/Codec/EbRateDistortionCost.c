@@ -1742,7 +1742,7 @@ EbErrorType Av1FullCost(
     uint64_t chromaSse;
     uint64_t totalDistortion;
     uint64_t rate;
-    // ------------------> SEARCH_UV_MODE
+
     //Estimate the rate of the transform type and coefficient for Luma
     // Add fast rate to get the total rate of the subject mode
     lumaRate += candidate_buffer_ptr->candidate_ptr->fast_luma_rate;

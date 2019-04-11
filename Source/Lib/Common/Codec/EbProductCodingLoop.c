@@ -2603,7 +2603,7 @@ void AV1PerformFullLoop(
 
  #if SEARCH_UV_MODE
         // Check independant chroma vs. cfl
-        if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level <= CHROMA_MODE_1) {
+        if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
             if (candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
 
                 // cfl cost 
@@ -2718,19 +2718,6 @@ void AV1PerformFullLoop(
                     
                     // End uv search path
                     context_ptr->uv_search_path = EB_FALSE;
-
-
-
-#if 0 // TBD (to remove)
-                    // compute cfl cost 
-                    coeff_rate = cb_coeff_bits + cr_coeff_bits;
-                    distortion = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
-                    int rate = coeff_rate;
-                    uint64_t check_cost = RDCOST(context_ptr->full_lambda, rate, distortion);
-                    if (check_cost != context_ptr->best_uv_cost[candidateBuffer->candidate_ptr->intra_luma_mode])
-                        printf("");
-
-#endif
                 }
             }
         }
@@ -4113,16 +4100,18 @@ void md_encode_block(
 
 
 #if SEARCH_UV_MODE
-        // Search the best intra chroma mode
-        if (context_ptr->blk_geom->sq_size < 128) {
-            if (context_ptr->blk_geom->has_uv) {
-                search_uv_mode(
-                    sequence_control_set_ptr,
-                    picture_control_set_ptr,
-                    input_picture_ptr,
-                    inputCbOriginIndex,
-                    cuChromaOriginIndex,
-                    context_ptr);
+        // Search the best independent intra chroma mode
+        if (context_ptr->chroma_level == CHROMA_MODE_0) {
+            if (context_ptr->blk_geom->sq_size < 128) {
+                if (context_ptr->blk_geom->has_uv) {
+                    search_uv_mode(
+                        sequence_control_set_ptr,
+                        picture_control_set_ptr,
+                        input_picture_ptr,
+                        inputCbOriginIndex,
+                        cuChromaOriginIndex,
+                        context_ptr);
+                }
             }
         }
 #endif

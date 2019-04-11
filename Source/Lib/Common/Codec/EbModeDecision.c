@@ -2661,11 +2661,23 @@ void  inject_intra_candidates(
                         candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
 
 #if SEARCH_UV_MODE
-                        candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
-                            context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA + candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y]] :
-                            (context_ptr->chroma_level <= CHROMA_MODE_1) ?
+                        // Search the best independent intra chroma mode
+                        if (context_ptr->chroma_level == CHROMA_MODE_0) {
+                            candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                                context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA + candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y]] :
+                                UV_CFL_PRED ;
+                        }
+                        else {
+                            // Hsan: why the restriction below ? (i.e. disable_ang_uv)
+                            const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+                            candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                                intra_luma_to_chroma[openLoopIntraCandidate] :
+                                (context_ptr->chroma_level <= CHROMA_MODE_1) ?
                                 UV_CFL_PRED :
                                 UV_DC_PRED;
+                            candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
+                                UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
+                        }
 #else
                         const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
 
@@ -2721,11 +2733,19 @@ void  inject_intra_candidates(
 #endif
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
 #if SEARCH_UV_MODE
-            candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
-                context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA] :
+            // Search the best independent intra chroma mode
+            if (context_ptr->chroma_level == CHROMA_MODE_0) {
+                candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                    context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA + candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y]] :
+                    UV_CFL_PRED;
+            }
+            else {
+                candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                    context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA] :
                     (context_ptr->chroma_level <= CHROMA_MODE_1) ?
-                        UV_CFL_PRED :
-                        UV_DC_PRED;
+                    UV_CFL_PRED :
+                    UV_DC_PRED;
+            }
 #else
             const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
 
