@@ -3034,7 +3034,7 @@ EbErrorType warped_motion_prediction_md(
 
     if (!blk_geom->has_uv)
         return return_error;
-    if (md_context_ptr->chroma_level == CHROMA_MODE_0) {
+    if (md_context_ptr->chroma_level <= CHROMA_MODE_1) {
 
      if (blk_geom->bwidth >= 16  && blk_geom->bheight >= 16 ) {
         // Cb
@@ -3677,7 +3677,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 
 
     const Av1Common *cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;//&cpi->common;
-    EbBool use_uv = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0 &&
+    EbBool use_uv = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level <= CHROMA_MODE_1 &&
         picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level != IT_SEARCH_FAST_LOOP_UV_BLIND) ? EB_TRUE : EB_FALSE;
     const int32_t num_planes = use_uv ? MAX_MB_PLANE : 1;
 
@@ -4019,7 +4019,7 @@ static const int32_t filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 
     const Av1Common *cm = picture_control_set_ptr->parent_pcs_ptr->av1_cm;//&cpi->common;
 
-    EbBool use_uv = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0 &&
+    EbBool use_uv = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level <= CHROMA_MODE_1 &&
         picture_control_set_ptr->parent_pcs_ptr->interpolation_search_level != IT_SEARCH_FAST_LOOP_UV_BLIND) ? EB_TRUE : EB_FALSE;
     const int32_t num_planes = use_uv ? MAX_MB_PLANE : 1;
     int32_t i;
@@ -4388,7 +4388,7 @@ EbErrorType inter_pu_prediction_av1(
             candidate_buffer_ptr->prediction_ptr,
             md_context_ptr->blk_geom->origin_x,
             md_context_ptr->blk_geom->origin_y,
-            md_context_ptr->chroma_level == CHROMA_MODE_0,
+            md_context_ptr->chroma_level <= CHROMA_MODE_1,
             asm_type);
 
         return return_error;
@@ -4415,7 +4415,7 @@ EbErrorType inter_pu_prediction_av1(
                 candidate_buffer_ptr->prediction_ptr,
                 md_context_ptr->blk_geom->origin_x,
                 md_context_ptr->blk_geom->origin_y,
-                md_context_ptr->chroma_level == CHROMA_MODE_0,
+                md_context_ptr->chroma_level <= CHROMA_MODE_1,
 
                 asm_type);
 
@@ -4443,7 +4443,7 @@ EbErrorType inter_pu_prediction_av1(
                 candidate_buffer_ptr->prediction_ptr,
                 md_context_ptr->blk_geom->origin_x,
                 md_context_ptr->blk_geom->origin_y,
-                md_context_ptr->chroma_level == CHROMA_MODE_0,
+                md_context_ptr->chroma_level <= CHROMA_MODE_1,
                 asm_type);
 
             return return_error;
@@ -4505,7 +4505,7 @@ EbErrorType inter_pu_prediction_av1(
                 md_context_ptr->blk_geom->origin_y,
                 &candidate_ptr->wm_params,
                 (uint8_t) sequence_control_set_ptr->static_config.encoder_bit_depth,
-                md_context_ptr->chroma_level == CHROMA_MODE_0,
+                md_context_ptr->chroma_level <= CHROMA_MODE_1,
 
                 asm_type);
         }
@@ -4551,7 +4551,7 @@ EbErrorType inter_pu_prediction_av1(
         candidate_buffer_ptr->prediction_ptr,
         md_context_ptr->blk_geom->origin_x,
         md_context_ptr->blk_geom->origin_y,
-        md_context_ptr->chroma_level == CHROMA_MODE_0,
+        md_context_ptr->chroma_level <= CHROMA_MODE_1,
         asm_type);
 #else
     if (is16bit) {
@@ -4590,7 +4590,7 @@ EbErrorType inter_pu_prediction_av1(
             candidate_buffer_ptr->prediction_ptr,
             md_context_ptr->blk_geom->origin_x,
             md_context_ptr->blk_geom->origin_y,
-            md_context_ptr->chroma_level == CHROMA_MODE_0,
+            md_context_ptr->chroma_level <= CHROMA_MODE_1,
 
             asm_type);
     } else {
@@ -4628,7 +4628,7 @@ EbErrorType inter_pu_prediction_av1(
             candidate_buffer_ptr->prediction_ptr,
             md_context_ptr->blk_geom->origin_x,
             md_context_ptr->blk_geom->origin_y,
-            md_context_ptr->chroma_level == CHROMA_MODE_0,
+            md_context_ptr->chroma_level <= CHROMA_MODE_1,
 
             asm_type);
     }

@@ -3681,7 +3681,7 @@ void generate_intra_reference_samples(
     uint32_t bl_org_x_pict = md_context_ptr->cu_origin_x;
     uint32_t bl_org_y_pict = md_context_ptr->cu_origin_y;
 #if CHROMA_BLIND
-    uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0) ? (int) MAX_MB_PLANE : 1;
+    uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level <= CHROMA_MODE_1) ? (int) MAX_MB_PLANE : 1;
 #else
     uint8_t end_plane = /*(int)MAX_MB_PLANE;*/ md_context_ptr->blk_geom->has_uv ? (int)MAX_MB_PLANE : 1;
 #endif
@@ -4963,11 +4963,11 @@ EbErrorType AV1IntraPredictionCL(
 #if SEARCH_UV_MODE
     // Hsan: plane should be derived @ an earlier stage (e.g. @ the call of perform_fast_loop())
     uint8_t start_plane = (md_context_ptr->uv_search_path) ? 1 : 0;
-    uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0) ? (int)MAX_MB_PLANE : 1;
+    uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level <= CHROMA_MODE_1) ? (int)MAX_MB_PLANE : 1;
 
     for (int32_t plane = start_plane; plane < end_plane; ++plane) {
 #else
-    uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level == CHROMA_MODE_0) ? (int) MAX_MB_PLANE : 1;
+    uint8_t end_plane = (md_context_ptr->blk_geom->has_uv && md_context_ptr->chroma_level <= CHROMA_MODE_1) ? (int) MAX_MB_PLANE : 1;
     for (int32_t plane = 0; plane < end_plane; ++plane) {
 #endif      
 #if !INTRA_CORE_OPT

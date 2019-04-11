@@ -2176,7 +2176,7 @@ void coding_loop_context_generation(
             &cu_ptr->luma_dc_sign_context);
 
 
-        if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
+        if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level <= CHROMA_MODE_1) {
             GetTxbCtx(
                 COMPONENT_CHROMA,
                 cb_dc_sign_level_coeff_neighbor_array,

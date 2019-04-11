@@ -2134,7 +2134,7 @@ void  inject_intra_candidates_ois(
 #endif
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
             candidate_array[can_total_cnt].intra_chroma_mode = disable_cfl_flag ? intra_luma_to_chroma[intra_mode] : 
-                                                               context_ptr->chroma_level == CHROMA_MODE_0 ? UV_CFL_PRED : UV_DC_PRED;
+                                                               context_ptr->chroma_level <= CHROMA_MODE_1 ? UV_CFL_PRED : UV_DC_PRED;
 
             candidate_array[can_total_cnt].cfl_alpha_signs = 0;
             candidate_array[can_total_cnt].cfl_alpha_idx = 0;
@@ -2175,7 +2175,7 @@ void  inject_intra_candidates_ois(
 #endif
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_Y] = 0;
             candidate_array[can_total_cnt].intra_chroma_mode =  disable_cfl_flag ? intra_luma_to_chroma[intra_mode] : 
-                                                                context_ptr->chroma_level == CHROMA_MODE_0 ? UV_CFL_PRED : UV_DC_PRED;
+                                                                context_ptr->chroma_level <= CHROMA_MODE_1 ? UV_CFL_PRED : UV_DC_PRED;
 
             candidate_array[can_total_cnt].cfl_alpha_signs = 0;
             candidate_array[can_total_cnt].cfl_alpha_idx = 0;
@@ -2663,7 +2663,7 @@ void  inject_intra_candidates(
 #if SEARCH_UV_MODE
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
                             context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA + candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y]] :
-                            (context_ptr->chroma_level == CHROMA_MODE_0) ?
+                            (context_ptr->chroma_level <= CHROMA_MODE_1) ?
                                 UV_CFL_PRED :
                                 UV_DC_PRED;
 #else
@@ -2671,7 +2671,7 @@ void  inject_intra_candidates(
 
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ? 
                             intra_luma_to_chroma[openLoopIntraCandidate] : 
-                            (context_ptr->chroma_level == CHROMA_MODE_0) ?
+                            (context_ptr->chroma_level <= CHROMA_MODE_1) ?
                                 UV_CFL_PRED :
                                 UV_DC_PRED;
                         candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
@@ -2723,7 +2723,7 @@ void  inject_intra_candidates(
 #if SEARCH_UV_MODE
             candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
                 context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA] :
-                    (context_ptr->chroma_level == CHROMA_MODE_0) ?
+                    (context_ptr->chroma_level <= CHROMA_MODE_1) ?
                         UV_CFL_PRED :
                         UV_DC_PRED;
 #else
@@ -2731,7 +2731,7 @@ void  inject_intra_candidates(
 
             candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ? 
                 intra_luma_to_chroma[openLoopIntraCandidate] : 
-                (context_ptr->chroma_level == CHROMA_MODE_0) ?
+                (context_ptr->chroma_level <= CHROMA_MODE_1) ?
                     UV_CFL_PRED :
                     UV_DC_PRED;
 
