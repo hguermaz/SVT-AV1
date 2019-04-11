@@ -3831,10 +3831,6 @@ void search_uv_mode(
 
     for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
 
-
-        if (uv_mode >= UV_SMOOTH_PRED && uv_mode <= UV_SMOOTH_H_PRED)
-            continue;
-
         uint8_t uv_angleDeltaCandidateCount = (use_angle_delta && av1_is_directional_mode((PredictionMode)uv_mode)) ? 7 : 1;
         uint8_t uv_angle_delta_shift = 1;
 
@@ -3959,11 +3955,6 @@ void search_uv_mode(
             // uv mode loop
             context_ptr->best_uv_cost[intra_mode][MAX_ANGLE_DELTA + angle_delta] = (uint64_t)~0;
             for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
-
-
-                if (uv_mode >= UV_SMOOTH_PRED && uv_mode <= UV_SMOOTH_H_PRED)
-                    continue;
-
 
                 uint8_t uv_angleDeltaCandidateCount = (use_angle_delta && av1_is_directional_mode((PredictionMode)uv_mode)) ? 7 : 1;
                 uint8_t uv_angle_delta_shift = 1;
