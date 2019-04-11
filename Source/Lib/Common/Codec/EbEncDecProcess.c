@@ -1340,35 +1340,12 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // CHROMA_MODE_0  0     Chroma @ MD
     // CHROMA_MODE_1  1     Chroma blind @ MD + CFL @ EP
     // CHROMA_MODE_2  2     Chroma blind @ MD + no CFL @ EP
-#if M9_CHROMA
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) {
-        if (picture_control_set_ptr->enc_mode <= ENC_M4)
-            context_ptr->chroma_level = CHROMA_MODE_0;
-        else
-            context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
-            CHROMA_MODE_1 :
-            CHROMA_MODE_2;
-    }
-    else {
-        if (picture_control_set_ptr->enc_mode <= ENC_M4)
-            context_ptr->chroma_level = CHROMA_MODE_0;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M8)
-            context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
-            CHROMA_MODE_1 :
-            CHROMA_MODE_2;
-        else
-            context_ptr->chroma_level = CHROMA_MODE_2;
-    }
-#else
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
         context_ptr->chroma_level = CHROMA_MODE_0;
     else 
         context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
             CHROMA_MODE_1 :
             CHROMA_MODE_2 ;
-#endif
-
-
     
     // Set fast loop method
     // 1 fast loop: SSD_SEARCH not supported    
