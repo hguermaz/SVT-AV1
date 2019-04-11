@@ -2606,23 +2606,21 @@ void AV1PerformFullLoop(
         if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
             if (candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
 
-                // compute cfl cost 
+                // cfl cost 
                 uint64_t chromaRate = 0;
 
-                EbBool isCflAllowed = (context_ptr->blk_geom->bwidth <= 32 && context_ptr->blk_geom->bheight <= 32) ? 1 : 0;
-
                 chromaRate += candidateBuffer->candidate_ptr->md_rate_estimation_ptr->cflAlphaFacBits[candidateBuffer->candidate_ptr->cfl_alpha_signs][CFL_PRED_U][CFL_IDX_U(candidateBuffer->candidate_ptr->cfl_alpha_idx)] +
-                    candidateBuffer->candidate_ptr->md_rate_estimation_ptr->cflAlphaFacBits[candidateBuffer->candidate_ptr->cfl_alpha_signs][CFL_PRED_V][CFL_IDX_V(candidateBuffer->candidate_ptr->cfl_alpha_idx)];
+                              candidateBuffer->candidate_ptr->md_rate_estimation_ptr->cflAlphaFacBits[candidateBuffer->candidate_ptr->cfl_alpha_signs][CFL_PRED_V][CFL_IDX_V(candidateBuffer->candidate_ptr->cfl_alpha_idx)] ;
 
-                chromaRate += (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][candidateBuffer->candidate_ptr->intra_luma_mode][UV_CFL_PRED];
-                chromaRate -= (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[isCflAllowed][candidateBuffer->candidate_ptr->intra_luma_mode][UV_DC_PRED];
+                chromaRate += (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[CFL_ALLOWED][candidateBuffer->candidate_ptr->intra_luma_mode][UV_CFL_PRED];
+                chromaRate -= (uint64_t)candidateBuffer->candidate_ptr->md_rate_estimation_ptr->intraUVmodeFacBits[CFL_ALLOWED][candidateBuffer->candidate_ptr->intra_luma_mode][UV_DC_PRED];
         
                 int coeff_rate = cb_coeff_bits + cr_coeff_bits;
                 int distortion = cbFullDistortion[DIST_CALC_RESIDUAL] + crFullDistortion[DIST_CALC_RESIDUAL];
                 int rate = coeff_rate + chromaRate;
                 uint64_t cfl_uv_cost = RDCOST(context_ptr->full_lambda, rate, distortion);
                 
-
+                // cfl vs. best independant
                 if (context_ptr->best_uv_cost[candidateBuffer->candidate_ptr->intra_luma_mode][3 + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]] < cfl_uv_cost) {
 
                     // Update the current candidate
