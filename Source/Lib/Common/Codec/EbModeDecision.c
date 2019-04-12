@@ -2668,7 +2668,7 @@ void  inject_intra_candidates(
                                 UV_CFL_PRED ;
                         }
                         else {
-                            // Hsan: why the restriction below ? (i.e. disable_ang_uv)
+                            // Hsan/Omar: why the restriction below ? (i.e. disable_ang_uv)
                             const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
                             candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
                                 intra_luma_to_chroma[openLoopIntraCandidate] :
