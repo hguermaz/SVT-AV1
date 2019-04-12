@@ -144,14 +144,14 @@ void* set_me_hme_params_oq(
 #endif
 #if ENABLE_ME_WIKI
     sc_content_detected = 1;
-#if ME_WIKI_M0
-    hmeMeLevel = 0;
-#elif ME_WIKI_M3
-    hmeMeLevel = 3;
+#if ME_WIKI_M8
+    hmeMeLevel = 8;
 #elif ME_WIKI_M7
     hmeMeLevel = 7;
+#elif ME_WIKI_M3
+    hmeMeLevel = 3;
 #else
-    hmeMeLevel = 8;
+    hmeMeLevel = 0;
 #endif
 #endif
     // ME

@@ -897,17 +897,22 @@ EbErrorType signal_derivation_multi_processes_oq(
         //turn OFF intra bc for some specific modes
         if (picture_control_set_ptr->enc_mode >= ENC_M3)
             picture_control_set_ptr->allow_intrabc = 0;
-          
-#if DISABLE_ICOPY_WIKI
-        picture_control_set_ptr->allow_screen_content_tools = 0;
-        picture_control_set_ptr->allow_intrabc =  0;
+#if ICOPY_L1
 
-#endif      
+        picture_control_set_ptr->ibc_mode = 0;
+#elif ICOPY_L2 
+        picture_control_set_ptr->ibc_mode = 0;
+#endif
 #if ENABLE_ICOPY_WIKI
         picture_control_set_ptr->allow_screen_content_tools = 1;
         picture_control_set_ptr->allow_intrabc =  1;
 
-#endif
+#endif        
+#if DISABLE_ICOPY_WIKI
+        picture_control_set_ptr->allow_screen_content_tools = 0;
+        picture_control_set_ptr->allow_intrabc =  0;
+
+#endif   
     }
     else {
         picture_control_set_ptr->allow_screen_content_tools = 0;
