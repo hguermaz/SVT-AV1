@@ -1967,13 +1967,13 @@ EbErrorType av1_inter_full_cost(
     ModeDecisionContext_t                  *context_ptr,
     struct ModeDecisionCandidateBuffer_s   *candidate_buffer_ptr,
     CodingUnit_t                           *cu_ptr,
-    uint64_t                                 *y_distortion,
-    uint64_t                                 *cb_distortion,
-    uint64_t                                 *cr_distortion,
-    uint64_t                                  lambda,
-    uint64_t                                 *y_coeff_bits,
-    uint64_t                                 *cb_coeff_bits,
-    uint64_t                                 *cr_coeff_bits,
+    uint64_t                               *y_distortion,
+    uint64_t                               *cb_distortion,
+    uint64_t                               *cr_distortion,
+    uint64_t                                lambda,
+    uint64_t                               *y_coeff_bits,
+    uint64_t                               *cb_coeff_bits,
+    uint64_t                               *cr_coeff_bits,
     block_size                              bsize
 )
 {

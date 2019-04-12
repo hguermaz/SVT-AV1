@@ -3132,11 +3132,11 @@ void FullLoop_R(
     ModeDecisionContext_t          *context_ptr,
     EbPictureBufferDesc_t          *input_picture_ptr,
     PictureControlSet_t            *picture_control_set_ptr,
-    uint32_t                          component_mask,
-    uint32_t                          cbQp,
-    uint32_t                          crQp,
-    uint32_t                          *cb_count_non_zero_coeffs,
-    uint32_t                          *cr_count_non_zero_coeffs)
+    uint32_t                        component_mask,
+    uint32_t                        cbQp,
+    uint32_t                        crQp,
+    uint32_t                        *cb_count_non_zero_coeffs,
+    uint32_t                        *cr_count_non_zero_coeffs)
 {
     (void)sb_ptr;
     (void)crQp;
@@ -3398,19 +3398,19 @@ void FullLoop_R(
 void CuFullDistortionFastTuMode_R(
     LargestCodingUnit_t            *sb_ptr,
     ModeDecisionCandidateBuffer_t  *candidateBuffer,
-    ModeDecisionContext_t            *context_ptr,
-    ModeDecisionCandidate_t           *candidate_ptr,
+    ModeDecisionContext_t          *context_ptr,
+    ModeDecisionCandidate_t        *candidate_ptr,
     PictureControlSet_t            *picture_control_set_ptr,
-    uint64_t                          cbFullDistortion[DIST_CALC_TOTAL],
-    uint64_t                          crFullDistortion[DIST_CALC_TOTAL],
-    uint32_t                          count_non_zero_coeffs[3][MAX_NUM_OF_TU_PER_CU],
+    uint64_t                        cbFullDistortion[DIST_CALC_TOTAL],
+    uint64_t                        crFullDistortion[DIST_CALC_TOTAL],
+    uint32_t                        count_non_zero_coeffs[3][MAX_NUM_OF_TU_PER_CU],
     COMPONENT_TYPE                  component_type,
-    uint64_t                         *cb_coeff_bits,
-    uint64_t                         *cr_coeff_bits,
+    uint64_t                       *cb_coeff_bits,
+    uint64_t                       *cr_coeff_bits,
 #if SPATIAL_SSE
-    EbBool                           is_full_loop,
+    EbBool                         is_full_loop,
 #endif
-    EbAsm                            asm_type)
+    EbAsm                          asm_type)
 {
     (void)sb_ptr;
 

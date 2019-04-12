@@ -124,8 +124,11 @@ extern "C" {
 #endif
 
 #define CHROMA_DC_ONLY                                  0
-#define SEARCH_UV_MODE                                  0
+#define SEARCH_UV_MODE                                  1
 #if SEARCH_UV_MODE
+#define SEARCH_UV_BASE                                  0
+#define SEARCH_UV_REF_OFF                               0
+#define SEARCH_SMOOTH_OFF                               0
 #define SEARCH_UV_CLEAN_UP                              1
 #endif
 #define FIX_INTRA_UV                                    1   //mismatch in intra prediction 
