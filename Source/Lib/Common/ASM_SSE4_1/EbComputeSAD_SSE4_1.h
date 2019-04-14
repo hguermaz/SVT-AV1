@@ -63,8 +63,7 @@ extern "C" {
         uint32_t *p_best_sad16x16,
         uint32_t *p_best_mv16x16,
         uint32_t  mv,
-        uint16_t *p_sad16x16,
-        EbBool    skip);
+        uint16_t *p_sad16x16);
 
     void get_eight_horizontal_search_point_results_32x32_64x64_pu_sse41_intrin(
         uint16_t *p_sad16x16,
@@ -85,8 +84,7 @@ extern "C" {
         uint32_t *p_best_mv16x16,
         uint32_t  mv,
         uint32_t *p_sad16x16,
-        uint32_t *p_sad8x8,
-        EbBool    skip);
+        uint32_t *p_sad8x8);
 
     void ext_sad_calculation_32x32_64x64_sse4_intrin(
         uint32_t *p_sad16x16,

@@ -24,19 +24,21 @@
 #endif
 
 EbErrorType motion_compensation_prediction_context_ctor(
-    MotionCompensationPredictionContext_t **context_dbl_ptr,
+    MotionCompensationPredictionContext **context_dbl_ptr,
+    EbColorFormat                             color_format,
     uint16_t                                  max_cu_width,
     uint16_t                                  max_cu_height)
 
 {
     EbErrorType return_error = EB_ErrorNone;
-    MotionCompensationPredictionContext_t *context_ptr;
-    EB_MALLOC(MotionCompensationPredictionContext_t *, context_ptr, sizeof(MotionCompensationPredictionContext_t), EB_N_PTR);
+    MotionCompensationPredictionContext *context_ptr;
+    EB_MALLOC(MotionCompensationPredictionContext *, context_ptr, sizeof(MotionCompensationPredictionContext), EB_N_PTR);
     *(context_dbl_ptr) = context_ptr;
+    UNUSED(color_format);
 #if !EXTRA_ALLOCATION
-    EB_MALLOC(EbByte, context_ptr->avc_style_mcp_intermediate_result_buf0, sizeof(uint8_t)*max_cu_width*max_cu_height * 6 * 3 / 2 + 16, EB_N_PTR);        //Y + U + V;
-
-    EB_MALLOC(EbByte, context_ptr->avc_style_mcp_intermediate_result_buf1, sizeof(uint8_t)*max_cu_width*max_cu_height * 6 * 3 / 2 + 16, EB_N_PTR);        //Y + U + V;
+    uint32_t frame_size = (max_cu_width * max_cu_height) + 2 * ((max_cu_width * max_cu_height) >> (3 - color_format));
+    EB_MALLOC(EbByte, context_ptr->avc_style_mcp_intermediate_result_buf0, sizeof(uint8_t) * frame_size * 6 + 16, EB_N_PTR);//Y + U + V;
+    EB_MALLOC(EbByte, context_ptr->avc_style_mcp_intermediate_result_buf1, sizeof(uint8_t) * frame_size * 6 + 16, EB_N_PTR);//Y + U + V;
 
 #if !USE_PRE_COMPUTE
     EB_MALLOC(EbByte, context_ptr->avc_style_mcp_two_d_interpolation_first_pass_filter_result_buf, sizeof(uint8_t)*(6 * max_cu_width + MaxHorizontalLumaFliterTag - 1)*(max_cu_height + MaxVerticalLumaFliterTag - 1), EB_N_PTR);
@@ -48,20 +50,21 @@ EbErrorType motion_compensation_prediction_context_ctor(
 
     //if(is16bit)
     {
-        EbPictureBufferDescInitData_t initData;
+        EbPictureBufferDescInitData initData;
 
-        initData.bufferEnableMask = PICTURE_BUFFER_DESC_FULL_MASK;
+        initData.buffer_enable_mask = PICTURE_BUFFER_DESC_FULL_MASK;
 
-        initData.maxWidth = max_cu_width + 16;//4 pixel on each side used for interpolation
-        initData.maxHeight = max_cu_height + 16;
+        initData.max_width = max_cu_width + 16;//4 pixel on each side used for interpolation
+        initData.max_height = max_cu_height + 16;
 
         initData.bit_depth = EB_16BIT;
+        initData.color_format = EB_YUV420; //always use 420 for MD
         initData.left_padding = 0;
         initData.right_padding = 0;
         initData.top_padding = 0;
         initData.bot_padding = 0;
 
-        initData.splitMode = EB_FALSE;
+        initData.split_mode = EB_FALSE;
 #if !EXTRA_ALLOCATION
         return_error = eb_picture_buffer_desc_ctor(
             (EbPtr*)&context_ptr->local_reference_block_l0,
@@ -78,8 +81,8 @@ EbErrorType motion_compensation_prediction_context_ctor(
 #endif
 
         initData.bit_depth = EB_8BIT;
-        initData.maxWidth = max_cu_width + 32;
-        initData.maxHeight = max_cu_height + 32;
+        initData.max_width = max_cu_width + 32;
+        initData.max_height = max_cu_height + 32;
 
         return_error = eb_picture_buffer_desc_ctor((EbPtr*)&context_ptr->local_reference_block8_bitl0, (EbPtr)&initData);
         if (return_error == EB_ErrorInsufficientResources) {
@@ -96,14 +99,14 @@ EbErrorType motion_compensation_prediction_context_ctor(
 }
 
 void encode_uni_pred_interpolation(
-    EbPictureBufferDesc_t *ref_pic,                  //input parameter, please refer to the detailed explanation above.
-    uint32_t                 posX,                    //input parameter, please refer to the detailed explanation above.
-    uint32_t                 posY,                    //input parameter, please refer to the detailed explanation above.
+    EbPictureBufferDesc *ref_pic,                  //input parameter, please refer to the detailed explanation above.
+    uint32_t                 pos_x,                    //input parameter, please refer to the detailed explanation above.
+    uint32_t                 pos_y,                    //input parameter, please refer to the detailed explanation above.
     uint32_t                 pu_width,                 //input parameter
     uint32_t                 pu_height,                //input parameter
-    EbPictureBufferDesc_t *dst,                     //output parameter, please refer to the detailed explanation above.
-    uint32_t                 dstLumaIndex,            //input parameter, please refer to the detailed explanation above.
-    uint32_t                 dstChromaIndex,          //input parameter, please refer to the detailed explanation above.
+    EbPictureBufferDesc *dst,                     //output parameter, please refer to the detailed explanation above.
+    uint32_t                 dst_luma_index,            //input parameter, please refer to the detailed explanation above.
+    uint32_t                 dst_chroma_index,          //input parameter, please refer to the detailed explanation above.
     int16_t                *tempBuf0,                //input parameter, please refer to the detailed explanation above.
     int16_t                *tempBuf1,                //input parameter, please refer to the detailed explanation above.
     EbAsm                 asm_type)
@@ -120,15 +123,15 @@ void encode_uni_pred_interpolation(
 
     //luma
     //compute the luma fractional position
-    integPosx = (posX >> 2);
-    integPosy = (posY >> 2);
-    frac_pos_x = posX & 0x03;
-    frac_pos_y = posY & 0x03;
+    integPosx = (pos_x >> 2);
+    integPosy = (pos_y >> 2);
+    frac_pos_x = pos_x & 0x03;
+    frac_pos_y = pos_y & 0x03;
 
-    uniPredLumaIFFunctionPtrArrayNew[asm_type][frac_pos_x + (frac_pos_y << 2)](
+    uni_pred_luma_if_function_ptr_array_new[asm_type][frac_pos_x + (frac_pos_y << 2)](
         ref_pic->buffer_y + integPosx + integPosy * ref_pic->stride_y,
         ref_pic->stride_y,
-        dst->buffer_y + dstLumaIndex,
+        dst->buffer_y + dst_luma_index,
         dst->stride_y,
         pu_width,
         pu_height,
@@ -136,17 +139,17 @@ void encode_uni_pred_interpolation(
 
     //chroma
     //compute the chroma fractional position
-    integPosx = (posX >> 3);
-    integPosy = (posY >> 3);
-    frac_pos_x = posX & 0x07;
-    frac_pos_y = posY & 0x07;
+    integPosx = (pos_x >> 3);
+    integPosy = (pos_y >> 3);
+    frac_pos_x = pos_x & 0x07;
+    frac_pos_y = pos_y & 0x07;
 
 
-    uniPredChromaIFFunctionPtrArrayNew[asm_type][frac_pos_x + (frac_pos_y << 3)](
-        ref_pic->bufferCb + integPosx + integPosy * ref_pic->strideCb,
-        ref_pic->strideCb,
-        dst->bufferCb + dstChromaIndex,
-        dst->strideCb,
+    uni_pred_chroma_if_function_ptr_array_new[asm_type][frac_pos_x + (frac_pos_y << 3)](
+        ref_pic->buffer_cb + integPosx + integPosy * ref_pic->stride_cb,
+        ref_pic->stride_cb,
+        dst->buffer_cb + dst_chroma_index,
+        dst->stride_cb,
         chromaPuWidth,
         chromaPuHeight,
         tempBuf0,
@@ -154,11 +157,11 @@ void encode_uni_pred_interpolation(
         frac_pos_y);
 
     //doing the chroma Cr interpolation
-    uniPredChromaIFFunctionPtrArrayNew[asm_type][frac_pos_x + (frac_pos_y << 3)](
-        ref_pic->bufferCr + integPosx + integPosy * ref_pic->strideCr,
-        ref_pic->strideCr,
-        dst->bufferCr + dstChromaIndex,
-        dst->strideCr,
+    uni_pred_chroma_if_function_ptr_array_new[asm_type][frac_pos_x + (frac_pos_y << 3)](
+        ref_pic->buffer_cr + integPosx + integPosy * ref_pic->stride_cr,
+        ref_pic->stride_cr,
+        dst->buffer_cr + dst_chroma_index,
+        dst->stride_cr,
         chromaPuWidth,
         chromaPuHeight,
         tempBuf0,
