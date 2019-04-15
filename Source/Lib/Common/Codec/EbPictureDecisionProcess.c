@@ -82,9 +82,7 @@ EbErrorType picture_decision_context_ctor(
 
     context_ptr->is_scene_change_detected = EB_FALSE;
 
-#if BASE_LAYER_REF
     context_ptr->last_islice_picture_number = 0;
-#endif
 
     return EB_ErrorNone;
 }
@@ -511,16 +509,12 @@ EbErrorType update_base_layer_reference_queue_dependent_count(
                 // 3rd step: update the dependant count
                 dependant_list_removed_entries = input_entry_ptr->dep_list0_count + input_entry_ptr->dep_list1_count - input_entry_ptr->dependent_count;
                 input_entry_ptr->dep_list0_count = input_entry_ptr->list0.list_count;
-#if BASE_LAYER_REF
                 if (input_entry_ptr->p_pcs_ptr->slice_type == I_SLICE)
                     input_entry_ptr->dep_list1_count = input_entry_ptr->list1.list_count + sequence_control_set_ptr->extra_frames_to_ref_islice;
                 else if (input_entry_ptr->p_pcs_ptr->temporal_layer_index == 0 && picture_control_set_ptr->picture_number + (1 << sequence_control_set_ptr->static_config.hierarchical_levels) < sequence_control_set_ptr->max_frame_window_to_ref_islice + input_entry_ptr->p_pcs_ptr->last_islice_picture_number)
                     input_entry_ptr->dep_list1_count = MAX((int32_t)input_entry_ptr->list1.list_count - 1, 0);
                 else
                     input_entry_ptr->dep_list1_count = input_entry_ptr->list1.list_count;
-#else
-                input_entry_ptr->dep_list1_count = input_entry_ptr->list1.list_count;
-#endif
                 input_entry_ptr->dependent_count = input_entry_ptr->dep_list0_count + input_entry_ptr->dep_list1_count - dependant_list_removed_entries;
 
             }
@@ -749,6 +743,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
         picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
 
+#if  RED_CU_DEBUG
+    picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_FULL;
+#endif
     switch (picture_control_set_ptr->nsq_search_level) {
     case NSQ_SEARCH_OFF:
         picture_control_set_ptr->nsq_max_shapes_md = 0;
@@ -869,12 +866,25 @@ EbErrorType signal_derivation_multi_processes_oq(
     SequenceControlSet                    *sequence_control_set_ptr;
     sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
+#if  M9_CDEF
+        {
+            if (picture_control_set_ptr->enc_mode <= ENC_M5)
+                picture_control_set_ptr->cdef_filter_mode = 4;
+            else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+                picture_control_set_ptr->cdef_filter_mode = 2;
+            else if (picture_control_set_ptr->enc_mode <= ENC_M8)
+                picture_control_set_ptr->cdef_filter_mode = 1;
+            else
+                picture_control_set_ptr->cdef_filter_mode = 0;
+        }
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M5)
             picture_control_set_ptr->cdef_filter_mode = 4;
         else if (picture_control_set_ptr->enc_mode <= ENC_M7)
             picture_control_set_ptr->cdef_filter_mode = 2;
         else
             picture_control_set_ptr->cdef_filter_mode = 1;
+#endif
     }
     else
         picture_control_set_ptr->cdef_filter_mode = 0;
@@ -956,8 +966,15 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
         else
             picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+#if M9_TX_SEARCH
+    else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+    else
+        picture_control_set_ptr->tx_search_level = TX_SEARCH_OFF;
+#else
     else
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+#endif
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
     
@@ -1003,7 +1020,14 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 5                                            Light OIS based Intra
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
+#if M9_INTRA
+        if (picture_control_set_ptr->enc_mode <= ENC_M7)
+            picture_control_set_ptr->intra_pred_mode = 0;
+        else            
+            picture_control_set_ptr->intra_pred_mode = 4;
+#else
          picture_control_set_ptr->intra_pred_mode = 0;
+#endif
     else {
 #if SCENE_CONTENT_SETTINGS
         if (picture_control_set_ptr->sc_content_detected) {
@@ -1024,9 +1048,15 @@ EbErrorType signal_derivation_multi_processes_oq(
                 else
                     picture_control_set_ptr->intra_pred_mode = 3;
             else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#if M9_INTRA
+                picture_control_set_ptr->intra_pred_mode = 5;
+            else
+                picture_control_set_ptr->intra_pred_mode = 6;
+#else
                 picture_control_set_ptr->intra_pred_mode = 4;
             else
                 picture_control_set_ptr->intra_pred_mode = 5;
+#endif
         }
         else {
 #endif
@@ -1045,11 +1075,18 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->intra_pred_mode = 2;
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
+#if M9_INTRA
+        else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
+            picture_control_set_ptr->intra_pred_mode = 5;
+        else
+            picture_control_set_ptr->intra_pred_mode = 4;
+#else
         else if (picture_control_set_ptr->enc_mode <= ENC_M7) 
             picture_control_set_ptr->intra_pred_mode = 4;
         else
             picture_control_set_ptr->intra_pred_mode = 5;
 
+#endif
 #if SCENE_CONTENT_SETTINGS
         }
 #endif
@@ -1058,12 +1095,23 @@ EbErrorType signal_derivation_multi_processes_oq(
     if (MR_MODE)
         picture_control_set_ptr->intra_pred_mode = 0;
 
+#if RED_CU_DEBUG
+    picture_control_set_ptr->intra_pred_mode = 0;
+#endif
 #if M8_SKIP_BLK
     // Skip sub blk based on neighbors depth        Settings
     // 0                                            OFF  
     // 1                                            ON
     picture_control_set_ptr->skip_sub_blks =   0;
 
+#endif
+#if M9_CU_8x8
+        if (picture_control_set_ptr->enc_mode <= ENC_M8)
+            picture_control_set_ptr->cu8x8_mode = CU_8x8_MODE_0;
+        else
+            picture_control_set_ptr->cu8x8_mode = (picture_control_set_ptr->temporal_layer_index > 0) ?
+            CU_8x8_MODE_1 :
+            CU_8x8_MODE_0;
 #endif
     return return_error;
 }
@@ -1149,9 +1197,7 @@ void  Av1GenerateRpsInfo(
         //            2          6
         //                 4
         //base0:0                      base1:8
-#if BASE_LAYER_REF
         const uint8_t  islice_idx = 7;
-#endif
         const uint8_t  base0_idx = context_ptr->mini_gop_toggle ? 0 : 3; //Base layer for prediction from past
         const uint8_t  base1_idx = context_ptr->mini_gop_toggle ? 3 : 0; //Base layer for prediction from future
         const uint8_t  layer1_idx = 1;
@@ -1163,16 +1209,11 @@ void  Av1GenerateRpsInfo(
         case 0:
 
             av1Rps->ref_dpb_index[0] = base0_idx;
-#if BASE_LAYER_REF
             if (picture_control_set_ptr->picture_number < picture_control_set_ptr->sequence_control_set_ptr->max_frame_window_to_ref_islice + picture_control_set_ptr->last_islice_picture_number)
                 av1Rps->ref_dpb_index[6] = islice_idx;
             else
                 av1Rps->ref_dpb_index[6] = base0_idx;
             av1Rps->refresh_frame_mask = picture_control_set_ptr->slice_type == I_SLICE ? (context_ptr->mini_gop_toggle ? (128 + 8) : (128 + 1)) : (context_ptr->mini_gop_toggle ? 8 : 1);
-#else
-            av1Rps->ref_dpb_index[6] = base0_idx;
-            av1Rps->refresh_frame_mask = context_ptr->mini_gop_toggle ? 248 : 1;
-#endif
             break;
         case 1:
             av1Rps->ref_dpb_index[0] = base0_idx;
@@ -1326,9 +1367,7 @@ void  Av1GenerateRpsInfo(
     //                 4                        12
     //                              8
     //base0:0                                               base1:16
-#if BASE_LAYER_REF
     const uint8_t  islice_idx = 7;
-#endif
     const uint8_t  base0_idx = context_ptr->mini_gop_toggle ? 0 : 3; //Base layer for prediction from past
     const uint8_t  base1_idx = context_ptr->mini_gop_toggle ? 3 : 0; //Base layer for prediction from future
     const uint8_t  layer1_idx = 1;
@@ -1341,17 +1380,12 @@ void  Av1GenerateRpsInfo(
     case 0:
 
         av1Rps->ref_dpb_index[0] = base0_idx;
-#if BASE_LAYER_REF
         if (picture_control_set_ptr->picture_number < picture_control_set_ptr->sequence_control_set_ptr->max_frame_window_to_ref_islice + picture_control_set_ptr->last_islice_picture_number)
             av1Rps->ref_dpb_index[6] = islice_idx;
         else
             av1Rps->ref_dpb_index[6] = base0_idx;
         av1Rps->refresh_frame_mask = picture_control_set_ptr->slice_type == I_SLICE ? (context_ptr->mini_gop_toggle ? (128 + 8) : (128 + 1)) : (context_ptr->mini_gop_toggle ? 8 : 1);
 
-#else
-        av1Rps->ref_dpb_index[6] = base0_idx;
-        av1Rps->refresh_frame_mask = context_ptr->mini_gop_toggle ? 200 : 1;
-#endif
         break;
     case 1:
         av1Rps->ref_dpb_index[0] = base0_idx;
@@ -1693,9 +1727,7 @@ void* picture_decision_kernel(void *input_ptr)
         picture_control_set_ptr = (PictureParentControlSet*)inputResultsPtr->picture_control_set_wrapper_ptr->object_ptr;
         sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
         encode_context_ptr = (EncodeContext*)sequence_control_set_ptr->encode_context_ptr;
-#if BASE_LAYER_REF
         picture_control_set_ptr->last_islice_picture_number = 0;
-#endif
         loopCount++;
 
         // Input Picture Analysis Results into the Picture Decision Reordering Queue
@@ -1919,9 +1951,7 @@ void* picture_decision_kernel(void *input_ptr)
 
                             picture_control_set_ptr = (PictureParentControlSet*)encode_context_ptr->pre_assignment_buffer[pictureIndex]->object_ptr;
                             sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
-#if BASE_LAYER_REF
                             picture_control_set_ptr->last_islice_picture_number = context_ptr->last_islice_picture_number;
-#endif
                             // Keep track of the mini GOP size to which the input picture belongs - needed @ PictureManagerProcess()
                             picture_control_set_ptr->pre_assignment_buffer_count = context_ptr->mini_gop_length[mini_gop_index];
 
@@ -2064,9 +2094,7 @@ void* picture_decision_kernel(void *input_ptr)
                                     // Set a Random Access Point if not an IDR
                                     picture_control_set_ptr->cra_flag = EB_TRUE;
                                 }
-#if BASE_LAYER_REF
                                 context_ptr->last_islice_picture_number = picture_control_set_ptr->picture_number;
-#endif
                                 break;
 
                             case P_SLICE:
@@ -2141,7 +2169,6 @@ void* picture_decision_kernel(void *input_ptr)
                             picture_control_set_ptr->reference_mode = (ReferenceMode)0xFF;
 
                             if (picture_control_set_ptr->slice_type != I_SLICE) {
-#if BASE_LAYER_REF
                                 picture_control_set_ptr->allow_comp_inter_inter = 1;
                                 if (picture_control_set_ptr->slice_type == P_SLICE) {
                                     picture_control_set_ptr->is_skip_mode_allowed = 0;
@@ -2157,34 +2184,13 @@ void* picture_decision_kernel(void *input_ptr)
                                     picture_control_set_ptr->is_skip_mode_allowed = 1;
                                     picture_control_set_ptr->skip_mode_flag = 1;
                                 }
-
-#else
-                                if (picture_control_set_ptr->temporal_layer_index == 0 || picture_control_set_ptr->slice_type == P_SLICE) {
-
-                                    picture_control_set_ptr->allow_comp_inter_inter = 1;
-
-                                    picture_control_set_ptr->reference_mode = SINGLE_REFERENCE;
-                                    picture_control_set_ptr->is_skip_mode_allowed = 0;
-                                    picture_control_set_ptr->skip_mode_flag = 0;
-                                }
-                                else {
-                                    picture_control_set_ptr->allow_comp_inter_inter = 1;
-                                    picture_control_set_ptr->reference_mode = REFERENCE_MODE_SELECT;
-                                    picture_control_set_ptr->is_skip_mode_allowed = 1;
-                                    picture_control_set_ptr->skip_mode_flag = 1;
-                                }
-#endif
                             }
 
                             picture_control_set_ptr->av1_cm->mi_cols = picture_control_set_ptr->sequence_control_set_ptr->luma_width >> MI_SIZE_LOG2;
                             picture_control_set_ptr->av1_cm->mi_rows = picture_control_set_ptr->sequence_control_set_ptr->luma_height >> MI_SIZE_LOG2;
 
                             memset(picture_control_set_ptr->av1_cm->ref_frame_sign_bias, 0, 8 * sizeof(int32_t));
-#if BASE_LAYER_REF
                             if (picture_control_set_ptr->reference_mode == REFERENCE_MODE_SELECT && picture_control_set_ptr->temporal_layer_index)
-#else
-                            if (picture_control_set_ptr->reference_mode == REFERENCE_MODE_SELECT)
-#endif
                             {
                                 picture_control_set_ptr->av1_cm->ref_frame_sign_bias[ALTREF_FRAME] =
                                     picture_control_set_ptr->av1_cm->ref_frame_sign_bias[ALTREF2_FRAME] =
@@ -2201,12 +2207,25 @@ void* picture_decision_kernel(void *input_ptr)
                                 picture_control_set_ptr);
 
                             // Set the default settings of  subpel
+#if M9_SUBPEL
+                            {
+                                if (picture_control_set_ptr->enc_mode <= ENC_M8)
+                                    picture_control_set_ptr->use_subpel_flag = 1;
+                                else
+                                    picture_control_set_ptr->use_subpel_flag = (picture_control_set_ptr->temporal_layer_index == 0) ?
+                                    1 :
+                                    0;
+                            }
+#else
                             picture_control_set_ptr->use_subpel_flag = 1;
+#endif
 
                             picture_control_set_ptr->use_src_ref = EB_FALSE;
                             picture_control_set_ptr->enable_in_loop_motion_estimation_flag = EB_FALSE;
                             picture_control_set_ptr->limit_ois_to_dc_mode_flag = EB_FALSE;
+#if !M9_CU_8x8
                             picture_control_set_ptr->cu8x8_mode = CU_8x8_MODE_0;
+#endif
 
                             // Update the Dependant List Count - If there was an I-frame or Scene Change, then cleanup the Picture Decision PA Reference Queue Dependent Counts
                             if (picture_control_set_ptr->slice_type == I_SLICE)
@@ -2304,7 +2323,6 @@ void* picture_decision_kernel(void *input_ptr)
                             // set the Reference Counts Based on Temporal Layer and how many frames are active
                             picture_control_set_ptr->ref_list0_count = (picture_type == I_SLICE) ? 0 : (uint8_t)predPositionPtr->ref_list0.reference_list_count;
                             picture_control_set_ptr->ref_list1_count = (picture_type == I_SLICE) ? 0 : (uint8_t)predPositionPtr->ref_list1.reference_list_count;
-#if BASE_LAYER_REF
                             inputEntryPtr->list0_ptr->reference_list = predPositionPtr->ref_list0.reference_list;
                             inputEntryPtr->list0_ptr->reference_list_count = predPositionPtr->ref_list0.reference_list_count;
 
@@ -2314,10 +2332,6 @@ void* picture_decision_kernel(void *input_ptr)
                                 inputEntryPtr->list1_ptr->reference_list = predPositionPtr->ref_list1.reference_list;
                             inputEntryPtr->list1_ptr->reference_list_count = predPositionPtr->ref_list1.reference_list_count;
 
-#else
-                            inputEntryPtr->list0_ptr = &predPositionPtr->ref_list0;
-                            inputEntryPtr->list1_ptr = &predPositionPtr->ref_list1;
-#endif
                             {
 
                                 // Copy the Dependent Lists
@@ -2335,16 +2349,12 @@ void* picture_decision_kernel(void *input_ptr)
                                 }
 
                                 inputEntryPtr->dep_list0_count = inputEntryPtr->list0.list_count;
-#if BASE_LAYER_REF
                                 if (picture_control_set_ptr->slice_type == I_SLICE)
                                     inputEntryPtr->dep_list1_count = inputEntryPtr->list1.list_count + sequence_control_set_ptr->extra_frames_to_ref_islice;
                                 else if (picture_control_set_ptr->temporal_layer_index == 0 && picture_control_set_ptr->picture_number + (1 << sequence_control_set_ptr->static_config.hierarchical_levels) < sequence_control_set_ptr->max_frame_window_to_ref_islice + picture_control_set_ptr->last_islice_picture_number)
                                     inputEntryPtr->dep_list1_count = MAX((int32_t)inputEntryPtr->list1.list_count - 1, 0);
                                 else
                                     inputEntryPtr->dep_list1_count = inputEntryPtr->list1.list_count;
-#else
-                                inputEntryPtr->dep_list1_count = inputEntryPtr->list1.list_count;
-#endif
                                 inputEntryPtr->dependent_count = inputEntryPtr->dep_list0_count + inputEntryPtr->dep_list1_count;
 
                             }
@@ -2476,14 +2486,12 @@ void* picture_decision_kernel(void *input_ptr)
                                     --paReferenceEntryPtr->dependent_count;
                                 }
                             }
-#if BASE_LAYER_REF
                             if (picture_control_set_ptr->temporal_layer_index == 0) {
                                 if (picture_control_set_ptr->ref_pic_poc_array[0] == picture_control_set_ptr->ref_pic_poc_array[1])
                                     picture_control_set_ptr->is_skip_mode_allowed = 0;
                                 else
                                     picture_control_set_ptr->is_skip_mode_allowed = 1;
                             }
-#endif
                             // SB Loop to reset similarColocatedLcu Array
                             uint16_t *variancePtr;
                             uint32_t  NullVarCnt = 0;

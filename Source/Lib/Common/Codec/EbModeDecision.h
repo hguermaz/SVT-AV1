@@ -97,7 +97,9 @@ extern "C" {
         int32_t                                angle_delta[PLANE_TYPES];
         EbBool                                 is_directional_mode_flag;
         EbBool                                 is_directional_chroma_mode_flag;
+#if !SEARCH_UV_CLEAN_UP
         EbBool                                 use_angle_delta;
+#endif
         uint32_t                               intra_chroma_mode; // AV1 mode, no need to convert
 
         // Index of the alpha Cb and alpha Cr combination
@@ -151,6 +153,24 @@ extern "C" {
         uint32_t                                left_neighbor_mode,
         uint32_t                                top_neighbor_mode);
 
+    typedef EbErrorType(*EB_FULL_COST_FUNC)(
+        LargestCodingUnit                    *sb_ptr,
+        CodingUnit                           *cu_ptr,
+        uint32_t                                cu_size,
+        uint32_t                                cu_size_log2,
+        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        uint32_t                                qp,
+        uint64_t                               *y_distortion,
+        uint64_t                               *cb_distortion,
+        uint64_t                               *cr_distortion,
+        uint64_t                                lambda,
+        uint64_t                                lambda_chroma,
+        uint64_t                               *y_coeff_bits,
+        uint64_t                               *cb_coeff_bits,
+        uint64_t                               *cr_coeff_bits,
+        uint32_t                                transform_size,
+        uint32_t                                transform_chroma_size,
+        PictureControlSet                    *picture_control_set_ptr);
     typedef EbErrorType(*EbAv1FullCostFunc)(
         PictureControlSet                    *picture_control_set_ptr,
         struct ModeDecisionContext           *context_ptr,
@@ -165,6 +185,15 @@ extern "C" {
         uint64_t                               *cr_coeff_bits,
         BlockSize                               bsize);
 
+    typedef EbErrorType(*EB_FULL_LUMA_COST_FUNC)(
+        CodingUnit                           *cu_ptr,
+        uint32_t                                cu_size,
+        uint32_t                                cu_size_log2,
+        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        uint64_t                               *y_distortion,
+        uint64_t                                lambda,
+        uint64_t                               *y_coeff_bits,
+        uint32_t                                transform_size);
     /**************************************
     * Mode Decision Candidate Buffer
     **************************************/
@@ -242,7 +271,33 @@ extern "C" {
         uint8_t                        *best_candidate_index_array,
         uint8_t                        *sorted_candidate_index_array,
         uint64_t                       *ref_fast_cost);
+    typedef EbErrorType(*EB_INTRA_4x4_FAST_LUMA_COST_FUNC)(
+        struct ModeDecisionContext_s           *context_ptr,
+        uint32_t                                pu_index,
+        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        uint64_t                                luma_distortion,
+        uint64_t                                lambda);
 
+    typedef EbErrorType(*EB_INTRA_4x4_FULL_LUMA_COST_FUNC)(
+        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        uint64_t                               *y_distortion,
+        uint64_t                                lambda,
+        uint64_t                               *y_coeff_bits,
+        uint32_t                                transform_size);
+
+    typedef EbErrorType(*EB_FULL_NXN_COST_FUNC)(
+        PictureControlSet                    *picture_control_set_ptr,
+        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        uint32_t                                qp,
+        uint64_t                               *y_distortion,
+        uint64_t                               *cb_distortion,
+        uint64_t                               *cr_distortion,
+        uint64_t                                lambda,
+        uint64_t                                lambda_chroma,
+        uint64_t                               *y_coeff_bits,
+        uint64_t                               *cb_coeff_bits,
+        uint64_t                               *cr_coeff_bits,
+        uint32_t                                transform_size);
     struct CodingLoopContext_s;
 #ifdef __cplusplus
 }

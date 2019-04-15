@@ -249,16 +249,12 @@ void* picture_manager_kernel(void *input_ptr)
                             dependant_list_removed_entries = referenceEntryPtr->dep_list0_count + referenceEntryPtr->dep_list1_count - referenceEntryPtr->dependent_count;
 
                             referenceEntryPtr->dep_list0_count = referenceEntryPtr->list0.list_count;
-#if BASE_LAYER_REF
                             if (referenceEntryPtr->slice_type == I_SLICE)
                                 referenceEntryPtr->dep_list1_count = referenceEntryPtr->list1.list_count + sequence_control_set_ptr->extra_frames_to_ref_islice;
                             else if (referenceEntryPtr->temporal_layer_index == 0 && referenceEntryPtr->picture_number + (1 << sequence_control_set_ptr->static_config.hierarchical_levels) < sequence_control_set_ptr->max_frame_window_to_ref_islice + referenceEntryPtr->last_islice_picture_number)
                                 referenceEntryPtr->dep_list1_count = MAX((int32_t)referenceEntryPtr->list1.list_count - 1, 0);
                             else
                                 referenceEntryPtr->dep_list1_count = referenceEntryPtr->list1.list_count;
-#else
-                            referenceEntryPtr->dep_list1_count = referenceEntryPtr->list1.list_count;
-#endif
                             referenceEntryPtr->dependent_count = referenceEntryPtr->dep_list0_count + referenceEntryPtr->dep_list1_count - dependant_list_removed_entries;
 
                         }
@@ -419,7 +415,6 @@ void* picture_manager_kernel(void *input_ptr)
                 // set the Reference Counts Based on Temporal Layer and how many frames are active
                 picture_control_set_ptr->ref_list0_count = (picture_control_set_ptr->slice_type == I_SLICE) ? 0 : (uint8_t)predPositionPtr->ref_list0.reference_list_count;
                 picture_control_set_ptr->ref_list1_count = (picture_control_set_ptr->slice_type == I_SLICE) ? 0 : (uint8_t)predPositionPtr->ref_list1.reference_list_count;
-#if BASE_LAYER_REF
                 inputEntryPtr->list0_ptr->reference_list = predPositionPtr->ref_list0.reference_list;
                 inputEntryPtr->list0_ptr->reference_list_count = predPositionPtr->ref_list0.reference_list_count;
 
@@ -429,10 +424,6 @@ void* picture_manager_kernel(void *input_ptr)
                     inputEntryPtr->list1_ptr->reference_list = predPositionPtr->ref_list1.reference_list;
                 inputEntryPtr->list1_ptr->reference_list_count = predPositionPtr->ref_list1.reference_list_count;
 
-#else                
-                inputEntryPtr->list0_ptr = &predPositionPtr->ref_list0;
-                inputEntryPtr->list1_ptr = &predPositionPtr->ref_list1;
-#endif
 
                 // Check if the ReferencePictureQueue is full.
                 CHECK_REPORT_ERROR(
@@ -443,11 +434,9 @@ void* picture_manager_kernel(void *input_ptr)
                 // Create Reference Queue Entry even if picture will not be referenced
                 referenceEntryPtr = encode_context_ptr->reference_picture_queue[encode_context_ptr->reference_picture_queue_tail_index];
                 referenceEntryPtr->picture_number = picture_control_set_ptr->picture_number;
-#if BASE_LAYER_REF
                 referenceEntryPtr->slice_type = picture_control_set_ptr->slice_type;
                 referenceEntryPtr->temporal_layer_index = picture_control_set_ptr->temporal_layer_index;
                 referenceEntryPtr->last_islice_picture_number = picture_control_set_ptr->last_islice_picture_number;
-#endif
                 referenceEntryPtr->reference_object_ptr = (EbObjectWrapper*)EB_NULL;
                 referenceEntryPtr->release_enable = EB_TRUE;
                 referenceEntryPtr->reference_available = EB_FALSE;
@@ -473,16 +462,12 @@ void* picture_manager_kernel(void *input_ptr)
                 }
 
                 referenceEntryPtr->dep_list0_count = referenceEntryPtr->list0.list_count;
-#if BASE_LAYER_REF
                 if (picture_control_set_ptr->slice_type == I_SLICE)
                     referenceEntryPtr->dep_list1_count = referenceEntryPtr->list1.list_count + sequence_control_set_ptr->extra_frames_to_ref_islice;
                 else if (picture_control_set_ptr->temporal_layer_index == 0 && picture_control_set_ptr->picture_number + (1 << sequence_control_set_ptr->static_config.hierarchical_levels) < sequence_control_set_ptr->max_frame_window_to_ref_islice + picture_control_set_ptr->last_islice_picture_number)
                     referenceEntryPtr->dep_list1_count = MAX((int32_t)referenceEntryPtr->list1.list_count - 1, 0);
                 else
                     referenceEntryPtr->dep_list1_count = referenceEntryPtr->list1.list_count;
-#else
-                referenceEntryPtr->dep_list1_count = referenceEntryPtr->list1.list_count;
-#endif
                 referenceEntryPtr->dependent_count = referenceEntryPtr->dep_list0_count + referenceEntryPtr->dep_list1_count;
 
                 CHECK_REPORT_ERROR(

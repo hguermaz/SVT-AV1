@@ -27,6 +27,7 @@ typedef struct PictureDecisionContext
     EbBool        is_scene_change_detected;
 
     // Dynamic GOP
+    uint32_t        totalRegionActivityCost[MAX_NUMBER_OF_REGIONS_IN_WIDTH][MAX_NUMBER_OF_REGIONS_IN_HEIGHT];
 
     uint32_t      total_number_of_mini_gops;
                   
@@ -37,7 +38,10 @@ typedef struct PictureDecisionContext
     uint32_t      mini_gop_idr_count[MINI_GOP_WINDOW_MAX_COUNT];
     uint32_t      mini_gop_hierarchical_levels[MINI_GOP_WINDOW_MAX_COUNT];
     EbBool        mini_gop_activity_array[MINI_GOP_MAX_COUNT];
-                  
+    uint32_t        miniGopRegionActivityCostArray[MINI_GOP_MAX_COUNT][MAX_NUMBER_OF_REGIONS_IN_WIDTH][MAX_NUMBER_OF_REGIONS_IN_HEIGHT];
+
+    uint32_t        miniGopGroupFadedInPicturesCount[MINI_GOP_MAX_COUNT];
+    uint32_t        miniGopGroupFadedOutPicturesCount[MINI_GOP_MAX_COUNT];
     EbBool        mini_gop_toggle;    //mini GOP toggling since last Key Frame  K-0-1-0-1-0-K-0-1-0-1-K-0-1.....
     uint64_t      last_islice_picture_number;
     uint8_t       last_i_picture_sc_detection;

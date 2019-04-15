@@ -1057,6 +1057,9 @@ static void EncodeIntraLumaModeAv1(
     CodingUnit            *cu_ptr,
     uint32_t                  cu_origin_x,
     uint32_t                  cu_origin_y,
+#if SEARCH_UV_CLEAN_UP
+    BlockSize               bsize,
+#endif
     uint32_t                  luma_mode,
     NeighborArrayUnit    *mode_type_neighbor_array,
     NeighborArrayUnit    *intra_luma_mode_neighbor_array)
@@ -1095,8 +1098,11 @@ static void EncodeIntraLumaModeAv1(
         INTRA_MODES);
 
     if (cu_ptr->pred_mode != INTRA_MODE_4x4)
-
+#if SEARCH_UV_CLEAN_UP
+        if (bsize >= BLOCK_8X8 && cu_ptr->prediction_unit_array[0].is_directional_mode_flag) {
+#else
         if (cu_ptr->prediction_unit_array[0].use_angle_delta && cu_ptr->prediction_unit_array[0].is_directional_mode_flag) {
+#endif
             aom_write_symbol(ec_writer,
                 cu_ptr->prediction_unit_array[0].angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA,
                 frameContext->angle_delta_cdf[luma_mode - V_PRED],
@@ -1126,8 +1132,11 @@ static void EncodeIntraLumaModeNonKeyAv1(
         INTRA_MODES);
 
     if (cu_ptr->pred_mode != INTRA_MODE_4x4)
-
+#if SEARCH_UV_CLEAN_UP
+        if (bsize >= BLOCK_8X8 && cu_ptr->prediction_unit_array[0].is_directional_mode_flag) {
+#else
         if (cu_ptr->prediction_unit_array[0].use_angle_delta && cu_ptr->prediction_unit_array[0].is_directional_mode_flag) {
+#endif
             aom_write_symbol(ec_writer,
                 cu_ptr->prediction_unit_array[0].angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA,
                 frameContext->angle_delta_cdf[luma_mode - V_PRED],
@@ -1160,6 +1169,9 @@ static void EncodeIntraChromaModeAv1(
     FRAME_CONTEXT           *frameContext,
     AomWriter              *ec_writer,
     CodingUnit            *cu_ptr,
+#if SEARCH_UV_CLEAN_UP
+    BlockSize     bsize,
+#endif
     uint32_t                  luma_mode,
     uint32_t                  chroma_mode,
     uint8_t                   cflAllowed)
@@ -1174,7 +1186,11 @@ static void EncodeIntraChromaModeAv1(
         write_cfl_alphas(frameContext, cu_ptr->prediction_unit_array->cfl_alpha_idx, cu_ptr->prediction_unit_array->cfl_alpha_signs, ec_writer);
 
     if (cu_ptr->pred_mode != INTRA_MODE_4x4)
+#if SEARCH_UV_CLEAN_UP
+        if (bsize >= BLOCK_8X8 && cu_ptr->prediction_unit_array[0].is_directional_chroma_mode_flag) {
+#else
         if (cu_ptr->prediction_unit_array[0].use_angle_delta && cu_ptr->prediction_unit_array[0].is_directional_chroma_mode_flag) {
+#endif
             aom_write_symbol(ec_writer,
                 cu_ptr->prediction_unit_array[0].angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
                 frameContext->angle_delta_cdf[chroma_mode - V_PRED],
@@ -1390,9 +1406,6 @@ static int16_t Av1ModeContextAnalyzer(
         newmv_ctx, COMP_NEWMV_CTXS - 1)];
     return comp_ctx;
 }
-
-
-
 
 EbErrorType encode_slice_finish(
     EntropyCoder        *entropy_coder_ptr)
@@ -4945,6 +4958,9 @@ EbErrorType write_modes_b(
                 cu_ptr,
                 blkOriginX,
                 blkOriginY,
+#if SEARCH_UV_CLEAN_UP
+                bsize,
+#endif
                 intra_luma_mode,
                 mode_type_neighbor_array,
                 intra_luma_mode_neighbor_array);
@@ -4964,6 +4980,9 @@ EbErrorType write_modes_b(
                         frameContext,
                         ec_writer,
                         cu_ptr,
+#if SEARCH_UV_CLEAN_UP
+                        bsize,
+#endif
                         intra_luma_mode,
                         intra_chroma_mode,
                         blk_geom->bwidth <= 32 && blk_geom->bheight <= 32);
@@ -5096,6 +5115,9 @@ EbErrorType write_modes_b(
                         frameContext,
                         ec_writer,
                         cu_ptr,
+#if SEARCH_UV_CLEAN_UP
+                        bsize,
+#endif
                         intra_luma_mode,
                         intra_chroma_mode,
                         blk_geom->bwidth <= 32 && blk_geom->bheight <= 32);

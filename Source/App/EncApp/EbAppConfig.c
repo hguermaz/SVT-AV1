@@ -263,23 +263,23 @@ typedef struct config_entry_s {
 config_entry_t config_entry[] = {
 
     // File I/O
-    { SINGLE_INPUT, INPUT_FILE_TOKEN, "input_file", SetCfgInputFile },
+    { SINGLE_INPUT, INPUT_FILE_TOKEN, "InputFile", SetCfgInputFile },
     { SINGLE_INPUT, OUTPUT_BITSTREAM_TOKEN,   "StreamFile",       SetCfgStreamFile },
     { SINGLE_INPUT, ERROR_FILE_TOKEN, "ErrorFile", SetCfgErrorFile },
-    { SINGLE_INPUT, OUTPUT_RECON_TOKEN, "recon_file", SetCfgReconFile },
-    { SINGLE_INPUT, QP_FILE_TOKEN, "qp_file", SetCfgQpFile },
+    { SINGLE_INPUT, OUTPUT_RECON_TOKEN, "ReconFile", SetCfgReconFile },
+    { SINGLE_INPUT, QP_FILE_TOKEN, "QpFile", SetCfgQpFile },
 
     // Interlaced Video
-    { SINGLE_INPUT, INTERLACED_VIDEO_TOKEN , "interlaced_video" , SetInterlacedVideo },
+    { SINGLE_INPUT, INTERLACED_VIDEO_TOKEN , "InterlacedVideo" , SetInterlacedVideo },
     { SINGLE_INPUT, SEPERATE_FILDS_TOKEN, "SeperateFields", SetSeperateFields },
 
     // Picture Dimensions
-    { SINGLE_INPUT, WIDTH_TOKEN, "source_width", SetCfgSourceWidth },
-    { SINGLE_INPUT, HEIGHT_TOKEN, "source_height", SetCfgSourceHeight },
+    { SINGLE_INPUT, WIDTH_TOKEN, "SourceWidth", SetCfgSourceWidth },
+    { SINGLE_INPUT, HEIGHT_TOKEN, "SourceHeight", SetCfgSourceHeight },
 
     // Prediction Structure
     { SINGLE_INPUT, NUMBER_OF_PICTURES_TOKEN, "FrameToBeEncoded", SetCfgFramesToBeEncoded },
-    { SINGLE_INPUT, BUFFERED_INPUT_TOKEN, "buffered_input", SetBufferedInput },
+    { SINGLE_INPUT, BUFFERED_INPUT_TOKEN, "BufferedInput", SetBufferedInput },
     { SINGLE_INPUT, BASE_LAYER_SWITCH_MODE_TOKEN, "BaseLayerSwitchMode", SetBaseLayerSwitchMode },
     { SINGLE_INPUT, ENCMODE_TOKEN, "EncoderMode", SetencMode},
     { SINGLE_INPUT, INTRA_PERIOD_TOKEN, "IntraPeriod", SetCfgIntraPeriod },
@@ -300,9 +300,9 @@ config_entry_t config_entry[] = {
     { SINGLE_INPUT, SCENE_CHANGE_DETECTION_TOKEN, "SceneChangeDetection", SetSceneChangeDetection},
     { SINGLE_INPUT, QP_TOKEN, "QP", SetCfgQp },
     { SINGLE_INPUT, USE_QP_FILE_TOKEN, "UseQpFile", SetCfgUseQpFile },
-    { SINGLE_INPUT, RATE_CONTROL_ENABLE_TOKEN, "rate_control_mode", SetRateControlMode },
+    { SINGLE_INPUT, RATE_CONTROL_ENABLE_TOKEN, "RateControlMode", SetRateControlMode },
     { SINGLE_INPUT, LOOK_AHEAD_DIST_TOKEN, "LookAheadDistance",                             SetLookAheadDistance},
-    { SINGLE_INPUT, TARGET_BIT_RATE_TOKEN, "target_bit_rate", SetTargetBitRate },
+    { SINGLE_INPUT, TARGET_BIT_RATE_TOKEN, "TargetBitRate", SetTargetBitRate },
     { SINGLE_INPUT, MAX_QP_TOKEN, "MaxQpAllowed", SetMaxQpAllowed },
     { SINGLE_INPUT, MIN_QP_TOKEN, "MinQpAllowed", SetMinQpAllowed },
 
@@ -322,21 +322,21 @@ config_entry_t config_entry[] = {
     { SINGLE_INPUT, IN_LOOP_ME, "InLoopMeFlag", SetEnableInLoopMeFlag },
 
     // ME Parameters
-    { SINGLE_INPUT, SEARCH_AREA_WIDTH_TOKEN, "search_area_width", SetCfgSearchAreaWidth },
-    { SINGLE_INPUT, SEARCH_AREA_HEIGHT_TOKEN, "search_area_height", SetCfgSearchAreaHeight },
+    { SINGLE_INPUT, SEARCH_AREA_WIDTH_TOKEN, "SearchAreaWidth", SetCfgSearchAreaWidth },
+    { SINGLE_INPUT, SEARCH_AREA_HEIGHT_TOKEN, "SearchAreaHeight", SetCfgSearchAreaHeight },
 
     // HME Parameters
     { SINGLE_INPUT, NUM_HME_SEARCH_WIDTH_TOKEN, "number_hme_search_region_in_width", SetCfgNumberHmeSearchRegionInWidth },
-    { SINGLE_INPUT, NUM_HME_SEARCH_HEIGHT_TOKEN, "number_hme_search_region_in_height", SetCfgNumberHmeSearchRegionInHeight },
-    { SINGLE_INPUT, HME_SRCH_T_L0_WIDTH_TOKEN, "hme_level0_total_search_area_width", SetCfgHmeLevel0TotalSearchAreaWidth },
-    { SINGLE_INPUT, HME_SRCH_T_L0_HEIGHT_TOKEN, "hme_level0_total_search_area_height", SetCfgHmeLevel0TotalSearchAreaHeight },
+    { SINGLE_INPUT, NUM_HME_SEARCH_HEIGHT_TOKEN, "NumberHmeSearchRegionInHeight", SetCfgNumberHmeSearchRegionInHeight },
+    { SINGLE_INPUT, HME_SRCH_T_L0_WIDTH_TOKEN, "HmeLevel0TotalSearchAreaWidth", SetCfgHmeLevel0TotalSearchAreaWidth },
+    { SINGLE_INPUT, HME_SRCH_T_L0_HEIGHT_TOKEN, "HmeLevel0TotalSearchAreaHeight", SetCfgHmeLevel0TotalSearchAreaHeight },
 
     // MD Parameters
     { SINGLE_INPUT, CONSTRAINED_INTRA_ENABLE_TOKEN, "ConstrainedIntra", SetEnableConstrainedIntra},
 
     // Thread Management
-    { SINGLE_INPUT, THREAD_MGMNT, "logical_processors", SetLogicalProcessors },
-    { SINGLE_INPUT, TARGET_SOCKET, "target_socket", SetTargetSocket },
+    { SINGLE_INPUT, THREAD_MGMNT, "logicalProcessors", SetLogicalProcessors },
+    { SINGLE_INPUT, TARGET_SOCKET, "TargetSocket", SetTargetSocket },
 
     // Optional Features
 
@@ -353,10 +353,10 @@ config_entry_t config_entry[] = {
     { SINGLE_INPUT, PROFILE_TOKEN, "Profile", SetProfile },
     { SINGLE_INPUT, TIER_TOKEN, "Tier", SetTier },
     { SINGLE_INPUT, LEVEL_TOKEN, "Level", SetLevel },
-    { SINGLE_INPUT, LATENCY_MODE, "latency_mode", SetLatencyMode },
+    { SINGLE_INPUT, LATENCY_MODE, "LatencyMode", SetLatencyMode },
 
     // Asm Type
-    { SINGLE_INPUT, ASM_TYPE_TOKEN, "asm_type", SetAsmType },
+    { SINGLE_INPUT, ASM_TYPE_TOKEN, "AsmType", SetAsmType },
 
     // HME
     { ARRAY_INPUT,HME_LEVEL0_WIDTH, "HmeLevel0SearchAreaInWidth", SetHmeLevel0SearchAreaInWidthArray },

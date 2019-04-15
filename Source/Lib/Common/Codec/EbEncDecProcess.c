@@ -236,9 +236,10 @@ static void ResetEncodePassNeighborArrays(PictureControlSet *picture_control_set
     neighbor_array_unit_reset(picture_control_set_ptr->ep_luma_recon_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cb_recon_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cr_recon_neighbor_array);
+#if !OPT_LOSSLESS_0
     neighbor_array_unit_reset(picture_control_set_ptr->amvp_mv_merge_mv_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->amvp_mv_merge_mode_type_neighbor_array);
-
+#endif
     return;
 }
 
@@ -295,12 +296,13 @@ static void ResetEncDec(
     // Reset MD rate Estimation table to initial values by copying from md_rate_estimation_array
 
     context_ptr->md_rate_estimation_ptr = md_rate_estimation_array;
-
+#if !OPT_LOSSLESS_0
     // TMVP Map Writer pointer
     if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag == EB_TRUE)
         context_ptr->reference_object_write_ptr = (EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr;
     else
         context_ptr->reference_object_write_ptr = (EbReferenceObject*)EB_NULL;
+#endif
     if (segment_index == 0) {
         ResetEncodePassNeighborArrays(picture_control_set_ptr);
     }
@@ -1097,12 +1099,47 @@ void PadRefAndSetFlags(
             refPic16BitPtr->origin_x,
             refPic16BitPtr->origin_y >> 1);
 
-    }
+#if UNPACK_REF_POST_EP 
+        // Hsan: unpack ref samples (to be used @ MD) 
+        un_pack2d(
+            (uint16_t*) refPic16BitPtr->buffer_y,
+            refPic16BitPtr->stride_y,
+            refPicPtr->buffer_y,
+            refPicPtr->stride_y,
+            refPicPtr->buffer_bit_inc_y,
+            refPicPtr->stride_bit_inc_y,
+            refPic16BitPtr->width  + (refPicPtr->origin_x << 1),
+            refPic16BitPtr->height + (refPicPtr->origin_y << 1),
+            sequence_control_set_ptr->static_config.asm_type);
 
+        un_pack2d(
+            (uint16_t*)refPic16BitPtr->buffer_cb,
+            refPic16BitPtr->stride_cb,
+            refPicPtr->buffer_cb,
+            refPicPtr->stride_cb,
+            refPicPtr->buffer_bit_inc_cb,
+            refPicPtr->stride_bit_inc_cb,
+            (refPic16BitPtr->width + (refPicPtr->origin_x << 1)) >> 1,
+            (refPic16BitPtr->height + (refPicPtr->origin_y << 1)) >> 1,
+            sequence_control_set_ptr->static_config.asm_type);
+
+        un_pack2d(
+            (uint16_t*)refPic16BitPtr->buffer_cr,
+            refPic16BitPtr->stride_cr,
+            refPicPtr->buffer_cr,
+            refPicPtr->stride_cr,
+            refPicPtr->buffer_bit_inc_cr,
+            refPicPtr->stride_bit_inc_cr,
+            (refPic16BitPtr->width + (refPicPtr->origin_x << 1)) >> 1,
+            (refPic16BitPtr->height + (refPicPtr->origin_y << 1)) >> 1,
+            sequence_control_set_ptr->static_config.asm_type);
+#endif
+    }
+#if !OPT_LOSSLESS_1
     // set up TMVP flag for the reference picture
 
     referenceObject->tmvp_enable_flag = (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag) ? EB_TRUE : EB_FALSE;
-
+#endif
     // set up the ref POC
     referenceObject->ref_poc = picture_control_set_ptr->parent_pcs_ptr->picture_number;
 
@@ -1135,7 +1172,7 @@ void CopyStatisticsToRefObject(
     for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
         ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->non_moving_index_array[sb_index] = picture_control_set_ptr->parent_pcs_ptr->non_moving_index_array[sb_index];
     }
-
+#if !DISABLE_OIS_USE
     EbReferenceObject  * refObjL0, *refObjL1;
     ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->penalize_skipflag = EB_FALSE;
     if (picture_control_set_ptr->slice_type == B_SLICE) {
@@ -1151,6 +1188,7 @@ void CopyStatisticsToRefObject(
             ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->penalize_skipflag = (refObjL0->penalize_skipflag || refObjL1->penalize_skipflag) ? EB_TRUE : EB_FALSE;
         }
     }
+#endif
     ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->tmp_layer_idx = (uint8_t)picture_control_set_ptr->temporal_layer_index;
     ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->is_scene_change = picture_control_set_ptr->parent_pcs_ptr->scene_change_flag;
 
@@ -1265,10 +1303,14 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else {
 #endif
     if (picture_control_set_ptr->enc_mode == ENC_M0)
+#if MOD_M0
+        context_ptr->nfl_level = 2;
+#else
         if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
             context_ptr->nfl_level = (sequence_control_set_ptr->input_resolution <= INPUT_SIZE_576p_RANGE_OR_LOWER) ? 0 : 1;
         else
             context_ptr->nfl_level = 2;
+#endif
     else if (picture_control_set_ptr->enc_mode <= ENC_M1)
         if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
             context_ptr->nfl_level = 2;
@@ -1301,12 +1343,21 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // CHROMA_MODE_0  0     Chroma @ MD
     // CHROMA_MODE_1  1     Chroma blind @ MD + CFL @ EP
     // CHROMA_MODE_2  2     Chroma blind @ MD + no CFL @ EP
-    if (picture_control_set_ptr->enc_mode <= ENC_M4)
+#if SEARCH_UV_MODE
+#if SEARCH_UV_BASE
+    if (picture_control_set_ptr->enc_mode == ENC_M0 && picture_control_set_ptr->temporal_layer_index == 0)
+#else
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
+#endif
         context_ptr->chroma_level = CHROMA_MODE_0;
     else 
+#endif
+    if (picture_control_set_ptr->enc_mode <= ENC_M4)
+        context_ptr->chroma_level = CHROMA_MODE_1;
+    else 
         context_ptr->chroma_level = (sequence_control_set_ptr->encoder_bit_depth == EB_8BIT) ?
-            CHROMA_MODE_1 :
-            CHROMA_MODE_2 ;
+            CHROMA_MODE_2 :
+            CHROMA_MODE_3 ;
 
     
     // Set fast loop method
@@ -1340,10 +1391,19 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    Off
     // 1                    On but only INTRA
     // 2                    On both INTRA and INTER
+#if M9_FULL_LOOP_ESCAPE
+    if (picture_control_set_ptr->enc_mode <= ENC_M7)
+        context_ptr->full_loop_escape = 0;
+    else if (picture_control_set_ptr->enc_mode <= ENC_M8)
+        context_ptr->full_loop_escape = 1;
+    else
+        context_ptr->full_loop_escape = 2;
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M7)
         context_ptr->full_loop_escape = 0;
     else
         context_ptr->full_loop_escape = 1;
+#endif
 
 
     // Set global MV injection
@@ -1355,6 +1415,20 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->global_mv_injection = 0;
 
+#if M9_NEAR_INJECTION
+    // Set NEAR injection
+    // Level                Settings
+    // 0                    Off
+    // 1                    On
+    if (picture_control_set_ptr->enc_mode <= ENC_M8)
+        context_ptr->near_mv_injection = 1;
+    else
+        //context_ptr->near_mv_injection = 0;
+        context_ptr->near_mv_injection =
+        (picture_control_set_ptr->temporal_layer_index == 0) ?
+            1 :
+            0;
+#endif
     
     // Set warped motion injection
     // Level                Settings
@@ -1436,13 +1510,55 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->interpolation_filter_search_blk_size = 2;
     
 
+#if PF_N2_SUPPORT
+    // Set PF MD
+    context_ptr->pf_md_mode = PF_OFF;
+#endif
 
+#if SPATIAL_SSE
+    // Derive Spatial SSE Flag
+    if (picture_control_set_ptr->enc_mode == ENC_M0) 
+#if MOD_M0
+        context_ptr->spatial_sse_full_loop = EB_FALSE;
+#else
+        context_ptr->spatial_sse_full_loop = EB_TRUE;
+#endif
+    else
+        context_ptr->spatial_sse_full_loop = EB_FALSE;
+#endif
+
+
+#if M9_INTER_SRC_SRC_FAST_LOOP
+    // Derive Spatial SSE Flag
+    if (picture_control_set_ptr->enc_mode <= ENC_M8)
+        context_ptr->inter_fast_loop_src_src = 0;
+    else
+        context_ptr->inter_fast_loop_src_src = 1;
+#endif
+
+#if BLK_SKIP_DECISION
+    context_ptr->blk_skip_decision = EB_TRUE;
+#endif
+
+#if OPT_QUANT_COEFF
+    // Derive Trellis Quant Coeff Optimization Flag
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
+        context_ptr->trellis_quant_coeff_optimization = EB_TRUE;
+    else
+        context_ptr->trellis_quant_coeff_optimization = EB_FALSE;
+#endif
     return return_error;
 }
 void move_cu_data(
     CodingUnit *src_cu,
     CodingUnit *dst_cu);
 
+#if CABAC_UP
+void av1_estimate_syntax_rate___partial(
+    MdRateEstimationContext      *md_rate_estimation_array,
+    EbBool                          is_i_slice,
+    FRAME_CONTEXT                  *fc);
+#endif
 /******************************************************
  * EncDec Kernel
  ******************************************************/
@@ -1573,6 +1689,48 @@ void* enc_dec_kernel(void *input_ptr)
                     context_ptr->sb_index = sb_index;
                     context_ptr->md_context->cu_use_ref_src_flag = (picture_control_set_ptr->parent_pcs_ptr->use_src_ref) && (picture_control_set_ptr->parent_pcs_ptr->edge_results_ptr[sb_index].edge_block_num == EB_FALSE || picture_control_set_ptr->parent_pcs_ptr->sb_flat_noise_array[sb_index]) ? EB_TRUE : EB_FALSE;
 
+#if CABAC_UP
+                    if (picture_control_set_ptr->update_cdf)
+                    {
+                        MdRateEstimationContext* md_rate_estimation_array = sequence_control_set_ptr->encode_context_ptr->md_rate_estimation_array;
+                        md_rate_estimation_array += picture_control_set_ptr->slice_type * TOTAL_NUMBER_OF_QP_VALUES + context_ptr->md_context->qp;
+
+                        //this is temp, copy all default tables
+                        picture_control_set_ptr->rate_est_array[sb_index] = *md_rate_estimation_array;
+#if CABAC_SERIAL
+                        if (sb_index == 0) {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = *picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc;
+                        }
+                        else {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = picture_control_set_ptr->ec_ctx_array[sb_index - 1];
+                    }
+#else
+                        if (sb_origin_x == 0) {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = *picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc;
+                        }
+                        else {
+                            picture_control_set_ptr->ec_ctx_array[sb_index] = picture_control_set_ptr->ec_ctx_array[sb_index - 1];
+                        }
+#endif
+
+                        //construct the tables using the latest CDFs : Coeff Only here ---to check if I am using all the uptodate CDFs here
+                        av1_estimate_syntax_rate___partial(
+                            &picture_control_set_ptr->rate_est_array[sb_index],
+                            picture_control_set_ptr->slice_type == I_SLICE ? EB_TRUE : EB_FALSE,
+                            &picture_control_set_ptr->ec_ctx_array[sb_index]);
+
+                        av1_estimate_coefficients_rate(
+                            &picture_control_set_ptr->rate_est_array[sb_index],
+                            &picture_control_set_ptr->ec_ctx_array[sb_index]);
+
+                        //let the candidate point to the new rate table.
+                        uint32_t  candidateIndex;
+                        for (candidateIndex = 0; candidateIndex < MODE_DECISION_CANDIDATE_MAX_COUNT; ++candidateIndex) {
+                            context_ptr->md_context->fast_candidate_ptr_array[candidateIndex]->md_rate_estimation_ptr = &picture_control_set_ptr->rate_est_array[sb_index];
+                        }
+
+                    }
+#endif
                     // Configure the LCU
                     mode_decision_configure_lcu(
                         context_ptr->md_context,

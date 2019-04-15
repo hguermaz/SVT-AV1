@@ -98,7 +98,7 @@ void InitBeaQpmInfo(
 
 
     for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
-        LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
         if (sb_params->is_complete_sb) {
             zzSum += picture_control_set_ptr->zz_cost_array[sb_index];
             complete_sb_count++;
@@ -130,7 +130,7 @@ void DerivePictureActivityStatistics(
 
     uint32_t               sb_index;
     for (sb_index = 0; sb_index < sb_total_count; ++sb_index) {
-        LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
         if (sb_params->is_complete_sb) 
         { 
             nonMovingIndexMin = picture_control_set_ptr->non_moving_index_array[sb_index] < nonMovingIndexMin ?
@@ -166,7 +166,7 @@ void DerivePictureActivityStatistics(
 
 
 
-
+#if !DISABLE_OIS_USE
 /******************************************************
 * Pre-MD Uncovered Area Detection
 ******************************************************/
@@ -178,7 +178,7 @@ void FailingMotionLcu(
     uint32_t rasterScanCuIndex;
 
     // SB Loop : Failing motion detector for L2 only
-    LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
     // Detection variables
     uint64_t                  sortedcuOisSAD = 0;
     uint64_t                  cuMeSAD = 0;
@@ -228,7 +228,7 @@ void DetectUncoveredLcu(
     uint32_t rasterScanCuIndex;
 
     // SB Loop : Uncovered area detector -- ON only for 4k
-    LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
     // Detection variables
     uint64_t                  sortedcuOisSAD = 0;
     uint64_t                  cuMeSAD = 0;
@@ -278,6 +278,7 @@ void DetectUncoveredLcu(
 }
 
 
+#endif
 /******************************************************
 * Calculates AC Energy
 ******************************************************/
@@ -289,7 +290,7 @@ void CalculateAcEnergy(
     EbPictureBufferDesc    *input_picture_ptr = picture_control_set_ptr->enhanced_picture_ptr;
     uint32_t                     inputLumaStride = input_picture_ptr->stride_y;
     uint32_t                   inputOriginIndex;
-    LcuParameters  *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams  *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
 
     uint8_t       *meanPtr = picture_control_set_ptr->y_mean[sb_index];
     inputOriginIndex = (sb_params->origin_y + input_picture_ptr->origin_y) * inputLumaStride + (sb_params->origin_x + input_picture_ptr->origin_x);
@@ -343,6 +344,7 @@ void CalculateAcEnergy(
         picture_control_set_ptr->sb_y_src_mean_cu_array[sb_index][4] = 100000000;
     }
 }
+#if !DISABLE_OIS_USE
 
 void LumaContrastDetectorLcu(
     SourceBasedOperationsContext *context_ptr,
@@ -355,7 +357,7 @@ void LumaContrastDetectorLcu(
 
     // Calculate Luma mean of the frame by averaging the mean of LCUs to Detect Dark Frames (On only for 4k and BQMode)
     uint8_t  *y_mean_ptr = context_ptr->y_mean_ptr;
-    LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
     if (sb_params->is_complete_sb) {
         if (picture_control_set_ptr->slice_type != I_SLICE && picture_control_set_ptr->temporal_layer_index == 0) {
 
@@ -401,7 +403,7 @@ void LumaContrastDetectorPicture(
         picture_control_set_ptr->intra_coded_block_probability = (uint8_t)(context_ptr->depth1_block_num != 0 ? context_ptr->to_be_intra_coded_probability * 100 / context_ptr->depth1_block_num : 0);
     }
 }
-
+#endif
 void GrassLcu(
     SourceBasedOperationsContext        *context_ptr,
     SequenceControlSet                *sequence_control_set_ptr,
@@ -416,7 +418,7 @@ void GrassLcu(
     uint32_t processedCus;
     uint32_t  rasterScanCuIndex;
 
-    LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
     SbStat *sb_stat_ptr = &(picture_control_set_ptr->sb_stat_array[sb_index]);
 
     _mm_prefetch((const char*)sb_stat_ptr, _MM_HINT_T0);
@@ -502,7 +504,7 @@ void DetermineIsolatedNonHomogeneousRegionInPicture(
 
     for (sb_index = 0; sb_index < sb_total_count; ++sb_index) {
 
-        LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
         // Initialize
         picture_control_set_ptr->sb_isolated_non_homogeneous_area_array[sb_index] = EB_FALSE;
         if ((sb_params->horizontal_index > 0) && (sb_params->horizontal_index < picture_width_in_sb - 1) && (sb_params->vertical_index > 0) && (sb_params->vertical_index < picture_height_in_sb - 1)) {
@@ -610,7 +612,7 @@ void DetermineMorePotentialAuraAreas(
     uint16_t sb_total_count = picture_control_set_ptr->sb_total_count;
 
     for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
-        LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
 
         sb_x = sb_params->horizontal_index;
         sb_y = sb_params->vertical_index;
@@ -790,7 +792,7 @@ void DeriveComplexityContrastPicture(
 
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index)
         {
-            LcuParameters     *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams     *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
             EbBool isCentralArea = EB_FALSE;
             isCentralArea = (EbBool)(sb_params->origin_y > 16 * BLOCK_SIZE_64 && sb_params->origin_y < 21 * BLOCK_SIZE_64 && sb_params->origin_x> 12 * BLOCK_SIZE_64 && sb_params->origin_x < 32 * 64);
             if (context_ptr->sb_high_contrast_array[sb_index] > 0 && isCentralArea) {
@@ -833,7 +835,7 @@ void DetectCu32x32CleanSparseLcu(
     int32_t  blockIndex, blockIndexX, blockIndexY, cu32x32Index;
     uint16_t * variancePtr;
     uint8_t * meanPtr;
-    LcuParameters     *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams     *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
 
     if (sb_params->is_complete_sb) {
         variancePtr = picture_control_set_ptr->variance[sb_index];
@@ -919,14 +921,14 @@ void* source_based_operations_kernel(void *input_ptr)
         context_ptr->sb_cmplx_contrast_count = 0;
         context_ptr->sb_high_contrast_count = 0;
         context_ptr->complete_sb_count = 0;
-
+#if !DISABLE_OIS_USE
         context_ptr->count_of_moving_sbs = 0;
         context_ptr->countOfNonMovingLcus = 0;
         context_ptr->y_non_moving_mean = 0;
         context_ptr->y_moving_mean = 0;
         context_ptr->to_be_intra_coded_probability = 0;
         context_ptr->depth1_block_num = 0;
-
+#endif
         // Reset the cu 32x32 array for Clean Sparse flag
         EB_MEMSET(picture_control_set_ptr->cu32x32_clean_sparse_coeff_map_array, 0, picture_control_set_ptr->cu32x32_clean_sparse_coeff_map_array_size);
 
@@ -935,7 +937,7 @@ void* source_based_operations_kernel(void *input_ptr)
 
         /***********************************************LCU-based operations************************************************************/
         for (sb_index = 0; sb_index < sb_total_count; ++sb_index) {
-            LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
             picture_control_set_ptr->sb_cmplx_contrast_array[sb_index] = 0;
             context_ptr->sb_high_contrast_array[sb_index] = 0;
             picture_control_set_ptr->sb_high_contrast_array_dialated[sb_index] = 0;
@@ -976,20 +978,22 @@ void* source_based_operations_kernel(void *input_ptr)
                     sb_index);
             }
 
-
+#if !DISABLE_OIS_USE
             // Luma Contrast detection
             LumaContrastDetectorLcu(
                 context_ptr,
                 sequence_control_set_ptr,
                 picture_control_set_ptr,
                 sb_index);
-
+#endif
+#if !OPT_LOSSLESS_0
             // AC energy computation
             CalculateAcEnergy(
                 sequence_control_set_ptr,
                 picture_control_set_ptr,
                 sb_index);
-
+#endif
+#if !DISABLE_OIS_USE
             // Failing Motion Detection
             picture_control_set_ptr->failing_motion_sb_flag[sb_index] = EB_FALSE;
 
@@ -1011,7 +1015,7 @@ void* source_based_operations_kernel(void *input_ptr)
                         sb_index);
                 }
             }
-
+#endif
             // Uncovered area detection II
 
             // Temporal high contrast classifier
@@ -1037,10 +1041,11 @@ void* source_based_operations_kernel(void *input_ptr)
         }
 
         /*********************************************Picture-based operations**********************************************************/
+#if !DISABLE_OIS_USE
         LumaContrastDetectorPicture(
             context_ptr,
             picture_control_set_ptr);
-
+#endif
         if (picture_control_set_ptr->slice_type == I_SLICE) {
             DetectCu32x32CleanSparsePicture(
                 picture_control_set_ptr);

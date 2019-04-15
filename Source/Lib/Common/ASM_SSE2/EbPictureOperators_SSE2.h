@@ -6,6 +6,7 @@
 #ifndef EbPictureOperators_SSE2_h
 #define EbPictureOperators_SSE2_h
 
+#include <emmintrin.h>
 #include "EbDefinitions.h"
 
 #ifdef __cplusplus
@@ -166,6 +167,60 @@ extern "C" {
         uint32_t  width,
         uint32_t  height);
 
+    static INLINE int32_t Hadd32_SSE2_INTRIN(const __m128i src) {
+        const __m128i dst0 = _mm_add_epi32(src, _mm_srli_si128(src, 8));
+        const __m128i dst1 = _mm_add_epi32(dst0, _mm_srli_si128(dst0, 4));
+
+        return _mm_cvtsi128_si32(dst1);
+    }
+
+    uint64_t SpatialFullDistortionKernel4xN_SSE2_INTRIN(
+        uint8_t   *input,
+        uint32_t   input_stride,
+        uint8_t   *recon,
+        uint32_t   recon_stride,
+        uint32_t   area_width,
+        uint32_t   area_height);
+
+    uint64_t SpatialFullDistortionKernel8xN_SSE2_INTRIN(
+        uint8_t   *input,
+        uint32_t   input_stride,
+        uint8_t   *recon,
+        uint32_t   recon_stride,
+        uint32_t   area_width,
+        uint32_t   area_height);
+
+    uint64_t SpatialFullDistortionKernel16xN_SSE2_INTRIN(
+        uint8_t   *input,
+        uint32_t   input_stride,
+        uint8_t   *recon,
+        uint32_t   recon_stride,
+        uint32_t   area_width,
+        uint32_t   area_height);
+
+    uint64_t SpatialFullDistortionKernel32xN_SSE2_INTRIN(
+        uint8_t   *input,
+        uint32_t   input_stride,
+        uint8_t   *recon,
+        uint32_t   recon_stride,
+        uint32_t   area_width,
+        uint32_t   area_height);
+
+    uint64_t SpatialFullDistortionKernel64xN_SSE2_INTRIN(
+        uint8_t   *input,
+        uint32_t   input_stride,
+        uint8_t   *recon,
+        uint32_t   recon_stride,
+        uint32_t   area_width,
+        uint32_t   area_height);
+
+    uint64_t SpatialFullDistortionKernel128xN_SSE2_INTRIN(
+        uint8_t   *input,
+        uint32_t   input_stride,
+        uint8_t   *recon,
+        uint32_t   recon_stride,
+        uint32_t   area_width,
+        uint32_t   area_height);
 #ifdef __cplusplus
 }
 #endif

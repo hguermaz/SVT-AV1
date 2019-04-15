@@ -13811,7 +13811,9 @@ extern "C" {
         NeighborArrayUnit                  *md_luma_recon_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit                  *md_cb_recon_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit                  *md_cr_recon_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
+#if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
         NeighborArrayUnit                  *md_skip_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
+#endif
         NeighborArrayUnit                  *md_luma_dc_sign_level_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit                  *md_cb_dc_sign_level_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit                  *md_cr_dc_sign_level_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
@@ -13841,11 +13843,11 @@ extern "C" {
         NeighborArrayUnit                  *ep_luma_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_cb_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_cr_recon_neighbor_array16bit;
-
+#if !OPT_LOSSLESS_0
         // AMVP & MV Merge Neighbor Arrays
         NeighborArrayUnit                  *amvp_mv_merge_mv_neighbor_array;
         NeighborArrayUnit                  *amvp_mv_merge_mode_type_neighbor_array;
-
+#endif
         // Entropy Coding Neighbor Arrays
         NeighborArrayUnit                  *mode_type_neighbor_array;
         NeighborArrayUnit                  *partition_context_neighbor_array;
@@ -13878,23 +13880,30 @@ extern "C" {
 
         EbEncMode                             enc_mode;
         EbBool                                intra_md_open_loop_flag;
+#if !DISABLE_OIS_USE
         uint8_t                               high_intra_slection;
+#endif
         EB_FRAME_CARACTERICTICS               scene_caracteristic_id;
         EbBool                                limit_intra;
         int32_t                               cdef_preset[4];
         WienerInfo                            wiener_info[MAX_MB_PLANE];
         SgrprojInfo                           sgrproj_info[MAX_MB_PLANE];
         SpeedFeatures sf;
-        search_site_config ss_cfg;//CHKN this might be a seq based
-        hash_table hash_table;
+        SearchSiteConfig ss_cfg;//CHKN this might be a seq based
+        HashTable hash_table;
         CRC_CALCULATOR crc_calculator1;
         CRC_CALCULATOR crc_calculator2;
 
+#if CABAC_UP
+        FRAME_CONTEXT * ec_ctx_array;
+        struct MdRateEstimationContext* rate_est_array;
+        uint8_t  update_cdf;
+#endif
     } PictureControlSet;
 
     // To optimize based on the max input size
     // To study speed-memory trade-offs
-    typedef struct LcuParameters 
+    typedef struct SbParams 
     {
         uint8_t   horizontal_index;
         uint8_t   vertical_index;
@@ -13907,7 +13916,7 @@ extern "C" {
         EbBool    block_is_inside_md_scan[BLOCK_MAX_COUNT_SB_128];
         uint8_t   potential_logo_sb;
         uint8_t   is_edge_sb;
-    } LcuParameters;
+    } SbParams;
 
 
     typedef struct SbGeom 
@@ -14058,15 +14067,19 @@ extern "C" {
         EbBool                               *sb_homogeneous_area_array;        // used by EncDecProcess()
         EdgeLcuResults                     *edge_results_ptr;                // used by EncDecProcess()
         uint8_t                              *sharp_edge_sb_flag;
+#if !DISABLE_OIS_USE
         uint8_t                              *failing_motion_sb_flag;        // used by EncDecProcess()  and ModeDecisionConfigurationProcess // USED for L2 to replace the uncovered detectors for L6 and L7
         EbBool                               *uncovered_area_sb_flag;            // used by EncDecProcess()
+#endif
         EbBool                                logo_pic_flag;                    // used by EncDecProcess()
         uint64_t                            **var_of_var32x32_based_sb_array;    // used by ModeDecisionConfigurationProcess()- the variance of 8x8 block variances for each 32x32 block
         uint8_t                              *sb_cmplx_contrast_array;            // used by EncDecProcess()
         uint8_t                              *sb_high_contrast_array_dialated;
         uint64_t                            **sb_y_src_energy_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
         uint64_t                            **sb_y_src_mean_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
+#if !DISABLE_OIS_USE
         uint8_t                               intra_coded_block_probability;    // used by EncDecProcess()
+#endif
         EbBool                                low_motion_content_flag;            // used by EncDecProcess()
         uint32_t                              zz_cost_average;                    // used by ModeDecisionConfigurationProcess()
         uint16_t                              non_moving_index_average;            // used by ModeDecisionConfigurationProcess()
@@ -14287,7 +14300,7 @@ extern "C" {
         int16_t                               tiltMvx;
         int16_t                               tiltMvy;
         EbWarpedMotionParams                  global_motion[TOTAL_REFS_PER_FRAME];
-        PictureControlSet                  *childPcs;
+        PictureControlSet                    *childPcs;
         Macroblock                           *av1x;
         int32_t                               film_grain_params_present; //todo (AN): Do we need this flag at picture level?
         aom_film_grain_t                      film_grain_params;
@@ -14366,7 +14379,7 @@ extern "C" {
         //    double m_rate_array[32];
         //    int32_t rate_size;
         //    int32_t rate_index;
-        //    hash_table *previous_hash_table;
+        //    HashTable *previous_hash_table;
         //    int32_t previous_index;
         //    int32_t cur_poc;  // DebugInfo
         //
@@ -14510,7 +14523,7 @@ extern "C" {
         //
         //    int32_t frame_flags;
         //
-        //    search_site_config ss_cfg;
+        //    SearchSiteConfig ss_cfg;
         //
         //    int32_t multi_arf_allowed;
         //

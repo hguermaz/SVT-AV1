@@ -492,7 +492,7 @@ void StationaryEdgeCountLcu(
     uint32_t               sb_index;
     for (sb_index = 0; sb_index < totalLcuCount; sb_index++) {
 
-        LcuParameters sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
         SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
         if (sb_params.potential_logo_sb &&sb_params.is_complete_sb && sb_stat_ptr->check1_for_logo_stationary_edge_over_time_flag && sb_stat_ptr->check2_for_logo_stationary_edge_over_time_flag) {
 
@@ -536,7 +536,7 @@ void StationaryEdgeOverUpdateOverTimeLcuPart1(
 
     for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; sb_index++) {
 
-        LcuParameters sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
         SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
 
         if (sb_params.potential_logo_sb &&sb_params.is_complete_sb) {
@@ -593,7 +593,7 @@ void StationaryEdgeOverUpdateOverTimeLcuPart2(
 
     for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; sb_index++) {
 
-        LcuParameters sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
         SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
 
         if (sb_params.potential_logo_sb &&sb_params.is_complete_sb) {
@@ -639,7 +639,7 @@ void StationaryEdgeOverUpdateOverTimeLcu(
 
     for (sb_index = 0; sb_index < totalLcuCount; sb_index++) {
 
-        LcuParameters sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
 
         SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
         sb_stat_ptr->stationary_edge_over_time_flag = EB_FALSE;
@@ -683,7 +683,7 @@ void StationaryEdgeOverUpdateOverTimeLcu(
 
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
 
-            LcuParameters                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
             SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
 
             sb_x = sb_params.horizontal_index;
@@ -744,7 +744,7 @@ void StationaryEdgeOverUpdateOverTimeLcu(
 
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
 
-            LcuParameters                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
             SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
 
             sb_x = sb_params.horizontal_index;
@@ -774,7 +774,7 @@ void StationaryEdgeOverUpdateOverTimeLcu(
 
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
 
-            LcuParameters                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
             SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
 
             sb_x = sb_params.horizontal_index;
@@ -816,7 +816,7 @@ void StationaryEdgeOverUpdateOverTimeLcu(
 
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
 
-            LcuParameters                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
             SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
 
             sb_x = sb_params.horizontal_index;
@@ -846,7 +846,7 @@ void StationaryEdgeOverUpdateOverTimeLcu(
 
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
 
-            LcuParameters                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams                sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
             SbStat *sb_stat_ptr = &picture_control_set_ptr->sb_stat_array[sb_index];
 
             sb_x = sb_params.horizontal_index;
@@ -1368,7 +1368,7 @@ void QpmGatherStatisticsSW(
 
 
     uint8_t                   cu_depth;
-    LcuParameters sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
 
     EbBool  use16x16Stat = EB_FALSE;
     if (use16x16Stat == EB_FALSE)
@@ -1595,7 +1595,7 @@ void DeriveBlockinessPresentFlag(
 
     for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
 
-        LcuParameters         *lcuParamPtr = &sequence_control_set_ptr->sb_params_array[sb_index];
+        SbParams         *lcuParamPtr = &sequence_control_set_ptr->sb_params_array[sb_index];
         picture_control_set_ptr->complex_sb_array[sb_index] = SB_COMPLEXITY_STATUS_INVALID;
 
         // Spatially complex SB within a spatially complex area

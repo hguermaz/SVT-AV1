@@ -1404,7 +1404,7 @@ static void search_wiener(const RestorationTileLimits *limits,
     {
         if (rsc->plane == AOM_PLANE_Y) {
 
-            av1_compute_stats_highbd(WIENER_WIN, rsc->dgd_buffer, rsc->src_buffer,
+            av1_compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
 
                 limits->h_start, limits->h_end, limits->v_start,
                 limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
@@ -1413,7 +1413,7 @@ static void search_wiener(const RestorationTileLimits *limits,
         }
         else {
 
-            av1_compute_stats_highbd(WIENER_WIN_CHROMA, rsc->dgd_buffer, rsc->src_buffer,
+            av1_compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
 
                 limits->h_start, limits->h_end, limits->v_start,
                 limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
@@ -1773,7 +1773,7 @@ static void search_wiener_seg(const RestorationTileLimits *limits,
     {
         if (rsc->plane == AOM_PLANE_Y) {
 
-            av1_compute_stats_highbd(WIENER_WIN, rsc->dgd_buffer, rsc->src_buffer,
+            av1_compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
 
                 limits->h_start, limits->h_end, limits->v_start,
                 limits->v_end, rsc->dgd_stride, rsc->src_stride, M,
@@ -1782,7 +1782,7 @@ static void search_wiener_seg(const RestorationTileLimits *limits,
         }
         else {
 
-            av1_compute_stats_highbd(WIENER_WIN_CHROMA, rsc->dgd_buffer, rsc->src_buffer,
+            av1_compute_stats_highbd(wiener_win, rsc->dgd_buffer, rsc->src_buffer,
 
                 limits->h_start, limits->h_end, limits->v_start,
                 limits->v_end, rsc->dgd_stride, rsc->src_stride, M,

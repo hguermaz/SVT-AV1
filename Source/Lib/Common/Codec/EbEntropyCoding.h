@@ -74,6 +74,10 @@ extern "C" {
         EB_SLICE               slice_type);
 
     extern EbErrorType av1_tu_estimate_coeff_bits(
+#if CABAC_UP
+        uint8_t        allow_update_cdf,
+        FRAME_CONTEXT *ec_ctx,
+#endif
         PictureControlSet                    *picture_control_set_ptr,
         struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
         CodingUnit                           *cu_ptr,

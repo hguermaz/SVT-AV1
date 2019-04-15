@@ -275,7 +275,7 @@ EbErrorType MdcRefinement(
 
     return return_error;
 }
-
+#if !OPT_LOSSLESS_0
 /*******************************************
 Derive the contouring class
 If (AC energy < 32 * 32) then apply aggressive action (Class 1),
@@ -293,7 +293,7 @@ uint8_t derive_contouring_class(
 
     if (parent_pcs_ptr->is_sb_homogeneous_over_time[sb_index]) {
         if (leaf_index > 0) {
-            LcuParameters            *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+            SbParams            *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
             if (sb_params->is_edge_sb) {
 
                 if (parent_pcs_ptr->sb_y_src_energy_cu_array[sb_index][(leaf_index - 1) / 21 + 1] < ANTI_CONTOURING_TH_1) {
@@ -321,7 +321,7 @@ uint8_t derive_contouring_class(
     }
     return(contouringClass);
 }
-
+#endif
 
 void RefinementPredictionLoop(
     SequenceControlSet                   *sequence_control_set_ptr,
@@ -332,7 +332,7 @@ void RefinementPredictionLoop(
 {
 
     MdcpLocalCodingUnit    *local_cu_array         = context_ptr->local_cu_array;
-    LcuParameters               *sb_params            = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams               *sb_params            = &sequence_control_set_ptr->sb_params_array[sb_index];
     uint32_t                  cu_index             = 0;
     sb_ptr->pred64 = EB_FALSE;
     while (cu_index < CU_MAX_COUNT)
@@ -387,7 +387,7 @@ void RefinementPredictionLoop(
     } // End while 1 CU Loop
 }
 
-
+#if !DISABLE_OIS_USE
 void PrePredictionRefinement(
     SequenceControlSet                   *sequence_control_set_ptr,
     PictureControlSet                    *picture_control_set_ptr,
@@ -397,7 +397,7 @@ void PrePredictionRefinement(
     uint32_t                                 *endDepth
 )
 {
-    LcuParameters    *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams    *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
 
     EB_SLICE        slice_type = picture_control_set_ptr->slice_type;
 
@@ -407,11 +407,6 @@ void PrePredictionRefinement(
     uint8_t           stationary_edge_over_time_flag = sb_stat_ptr->stationary_edge_over_time_flag;
 
     uint8_t           aura_status_iii = sb_ptr->aura_status_iii;
-
-
-
-
-
 
     if (picture_control_set_ptr->parent_pcs_ptr->high_dark_low_light_area_density_flag && picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index > 0 && picture_control_set_ptr->parent_pcs_ptr->sharp_edge_sb_flag[sb_index] && !picture_control_set_ptr->parent_pcs_ptr->similar_colocated_sb_array_ii[sb_index]) {
         *startDepth = DEPTH_16;
@@ -446,6 +441,7 @@ void PrePredictionRefinement(
         *startDepth = DEPTH_16;
     }
 }
+#endif
 
 
 void ForwardCuToModeDecision(
@@ -461,7 +457,7 @@ void ForwardCuToModeDecision(
     uint32_t                  cuClass = DO_NOT_ADD_CU_CONTINUE_SPLIT;
     EbBool                 split_flag = EB_TRUE;
     MdcLcuData           *resultsPtr = &picture_control_set_ptr->mdc_sb_array[sb_index];
-    LcuParameters            *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams            *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
     MdcpLocalCodingUnit  *local_cu_array = context_ptr->local_cu_array;
     EB_SLICE                slice_type = picture_control_set_ptr->slice_type;
 
@@ -780,7 +776,7 @@ void PredictionPartitionLoop(
     MdcpLocalCodingUnit *local_cu_array = context_ptr->local_cu_array;
     MdcpLocalCodingUnit   *cu_ptr;
 
-    LcuParameters *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+    SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
     uint32_t      cuIndexInRaterScan;
     uint32_t      cu_index = 0;
     uint32_t      start_index = 0;

@@ -214,10 +214,8 @@ EbErrorType eb_sequence_control_set_ctor(
     sequence_control_set_ptr->monochrome = 0;
     sequence_control_set_ptr->film_grain_params_present = 0;
     sequence_control_set_ptr->film_grain_random_seed = 7391;
-#if BASE_LAYER_REF
     sequence_control_set_ptr->extra_frames_to_ref_islice = 0;
     sequence_control_set_ptr->max_frame_window_to_ref_islice = 0;
-#endif
 
 #if ADP_STATS_PER_LAYER
     uint8_t temporal_layer_index;
@@ -343,10 +341,8 @@ EbErrorType copy_sequence_control_set(
     dst->rest_segment_column_count = src->rest_segment_column_count;
     dst->rest_segment_row_count = src->rest_segment_row_count;
 
-#if BASE_LAYER_REF
     dst->extra_frames_to_ref_islice = src->extra_frames_to_ref_islice;
     dst->max_frame_window_to_ref_islice = src->max_frame_window_to_ref_islice;
-#endif
     return EB_ErrorNone;
 }
 
@@ -403,7 +399,7 @@ extern EbErrorType sb_params_ctor(
 
     EbErrorType return_error = EB_ErrorNone;
 
-    EB_MALLOC(LcuParameters*, sequence_control_set_ptr->sb_params_array, sizeof(LcuParameters) * ((MAX_PICTURE_WIDTH_SIZE + sequence_control_set_ptr->sb_sz - 1) / sequence_control_set_ptr->sb_sz) * ((MAX_PICTURE_HEIGHT_SIZE + sequence_control_set_ptr->sb_sz - 1) / sequence_control_set_ptr->sb_sz), EB_N_PTR);
+    EB_MALLOC(SbParams*, sequence_control_set_ptr->sb_params_array, sizeof(SbParams) * ((MAX_PICTURE_WIDTH_SIZE + sequence_control_set_ptr->sb_sz - 1) / sequence_control_set_ptr->sb_sz) * ((MAX_PICTURE_HEIGHT_SIZE + sequence_control_set_ptr->sb_sz - 1) / sequence_control_set_ptr->sb_sz), EB_N_PTR);
     return return_error;
 }
 
@@ -416,7 +412,7 @@ extern EbErrorType sb_params_init(
     uint16_t    md_scan_block_index;
     uint8_t   pictureLcuWidth = (uint8_t)((sequence_control_set_ptr->luma_width + sequence_control_set_ptr->sb_sz - 1) / sequence_control_set_ptr->sb_sz);
     uint8_t    pictureLcuHeight = (uint8_t)((sequence_control_set_ptr->luma_height + sequence_control_set_ptr->sb_sz - 1) / sequence_control_set_ptr->sb_sz);
-    EB_MALLOC(LcuParameters*, sequence_control_set_ptr->sb_params_array, sizeof(LcuParameters) * pictureLcuWidth * pictureLcuHeight, EB_N_PTR);
+    EB_MALLOC(SbParams*, sequence_control_set_ptr->sb_params_array, sizeof(SbParams) * pictureLcuWidth * pictureLcuHeight, EB_N_PTR);
 
     for (sb_index = 0; sb_index < pictureLcuWidth * pictureLcuHeight; ++sb_index) {
         sequence_control_set_ptr->sb_params_array[sb_index].horizontal_index = (uint8_t)(sb_index % pictureLcuWidth);

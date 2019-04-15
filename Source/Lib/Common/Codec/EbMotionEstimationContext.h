@@ -414,6 +414,11 @@ extern "C" {
         EbBool                        fractional_search64x64;
 
 
+#if M9_SUBPEL_SELECTION
+        uint8_t                       fractional_search_model;
+#endif
+        uint8_t                       hme_search_method;
+        uint8_t                       me_search_method;
         // ME
 #if QUICK_ME_CLEANUP
         uint16_t                      search_area_width;
@@ -589,6 +594,13 @@ extern "C" {
 
     } SsMeContext;
 
+    typedef uint64_t(*EB_ME_DISTORTION_FUNC)(
+        uint8_t                     *src,
+        uint32_t                     src_stride,
+        uint8_t                     *ref,
+        uint32_t                     ref_stride,
+        uint32_t                     width,
+        uint32_t                     height);
     extern EbErrorType me_context_ctor(
         MeContext     **object_dbl_ptr);
 

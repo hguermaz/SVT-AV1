@@ -166,7 +166,7 @@ extern "C" {
         uint32_t                                total_process_init_count;
         
         uint16_t                                film_grain_random_seed;
-        LcuParameters                             *sb_params_array;
+        SbParams                               *sb_params_array;
         uint8_t                                 picture_width_in_sb;
         uint8_t                                 picture_height_in_sb;
         uint16_t                                sb_total_count;
