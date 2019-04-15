@@ -254,7 +254,7 @@ extern "C" {
 
 #define M6_HME                                      0
 #define M9_adopted_HME                              0
-#define M9_adopted_HME_level                        1
+#define M9_adopted_HME_level                        0
 #define M1_HME_Search_Method                        0
 #define M1_ME_Search_Method                         0
 

@@ -899,9 +899,9 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->allow_intrabc = 0;
 #if ICOPY_L1
 
-        picture_control_set_ptr->ibc_mode = 0;
+        picture_control_set_ptr->ibc_mode = 1;
 #elif ICOPY_L2 
-        picture_control_set_ptr->ibc_mode = 0;
+        picture_control_set_ptr->ibc_mode = 2;
 #endif
 #if ENABLE_ICOPY_WIKI
         picture_control_set_ptr->allow_screen_content_tools = 1;
