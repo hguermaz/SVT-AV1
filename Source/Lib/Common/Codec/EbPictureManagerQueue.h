@@ -27,10 +27,10 @@ extern "C" {
         uint32_t         reference_entry_index;
         ReferenceList   *list0_ptr;
         ReferenceList   *list1_ptr;
-        uint32_t                          useCount;
-        EbBool                         memoryMgmtLoopDone;
-        EbBool                         rateControlLoopDone;
-        EbBool                         encodingHasBegun;
+        uint32_t                          use_count;
+        EbBool                         memory_mgmt_loop_done;
+        EbBool                         rate_control_loop_done;
+        EbBool                         encoding_has_begun;
     } InputQueueEntry;
 
     /************************************************
@@ -49,7 +49,7 @@ extern "C" {
         DependentList    list0;
         DependentList    list1;
         EbBool           is_used_as_reference_flag;
-        uint64_t                          rcGroupIndex;
+        uint64_t                          rc_group_index;
         EB_SLICE         slice_type;
         uint8_t          temporal_layer_index;
         uint64_t         last_islice_picture_number;         
@@ -66,7 +66,7 @@ extern "C" {
     {
         uint64_t         picture_number;
         EbObjectWrapper *input_object_ptr;
-        EbBool                         isPassed;
+        EbBool                         is_passed;
         EbBool           release_enabled;
         uint64_t         group_id;
         uint64_t         gop_first_poc;
@@ -80,10 +80,10 @@ extern "C" {
     typedef struct RcFeedbackQueueEntry 
     {
         uint64_t  picture_number;
-        EbObjectWrapper              *feedbackObjectPtr;
+        EbObjectWrapper              *feedback_object_ptr;
 
-        EbBool                         isAvailable;
-        EbBool                         isUpdated;
+        EbBool                         is_available;
+        EbBool                         is_updated;
         EbBool    release_enabled;
         uint64_t  group_id;
         uint64_t  gop_first_poc;

@@ -146,7 +146,7 @@ extern "C" {
         uint32_t  area_width,
         uint32_t  area_height);
 
-    uint64_t SpatialFullDistortionKernel4xN_AVX2_INTRIN(
+    uint64_t spatial_full_distortion_kernel4x_n_avx2_intrin(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
@@ -154,7 +154,7 @@ extern "C" {
         uint32_t   area_width,
         uint32_t   area_height);
 
-    uint64_t SpatialFullDistortionKernel8xN_AVX2_INTRIN(
+    uint64_t spatial_full_distortion_kernel8x_n_avx2_intrin(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
@@ -162,7 +162,7 @@ extern "C" {
         uint32_t   area_width,
         uint32_t   area_height);
 
-    uint64_t SpatialFullDistortionKernel16xN_AVX2_INTRIN(
+    uint64_t spatial_full_distortion_kernel16x_n_avx2_intrin(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
@@ -170,7 +170,7 @@ extern "C" {
         uint32_t   area_width,
         uint32_t   area_height);
 
-    uint64_t SpatialFullDistortionKernel32xN_AVX2_INTRIN(
+    uint64_t spatial_full_distortion_kernel32x_n_avx2_intrin(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
@@ -178,7 +178,7 @@ extern "C" {
         uint32_t   area_width,
         uint32_t   area_height);
 
-    uint64_t SpatialFullDistortionKernel64xN_AVX2_INTRIN(
+    uint64_t spatial_full_distortion_kernel64x_n_avx2_intrin(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
@@ -186,7 +186,7 @@ extern "C" {
         uint32_t   area_width,
         uint32_t   area_height);
 
-    uint64_t SpatialFullDistortionKernel128xN_AVX2_INTRIN(
+    uint64_t spatial_full_distortion_kernel128x_n_avx2_intrin(
         uint8_t   *input,
         uint32_t   input_stride,
         uint8_t   *recon,
