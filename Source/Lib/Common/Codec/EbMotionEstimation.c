@@ -8023,7 +8023,7 @@ EbErrorType MotionEstimateLcu(
     EbBool                    enableQuarterPel = EB_FALSE;
     EbBool                 oneQuadrantHME =  EB_FALSE;
 
-#if !M9_FRAC_ME_SEARCH_64x64
+#if !M9_FRAC_ME_SEARCH_64x64 && !M9_FRAC_ME_SEARCH_64x64_OFF
     context_ptr->fractional_search64x64 = EB_TRUE;
 #endif
 

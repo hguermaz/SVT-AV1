@@ -967,7 +967,10 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->cdef_filter_mode = 0;
         }
 #else
-#if M8_CDEF_filter
+#if M9_CDEF_OFF
+        picture_control_set_ptr->cdef_filter_mode = 0;
+
+#elif M8_CDEF_filter
         picture_control_set_ptr->cdef_filter_mode = 1;
 #elif M6_CDEF_filter
         picture_control_set_ptr->cdef_filter_mode = 2;
@@ -2405,6 +2408,14 @@ void* picture_decision_kernel(void *input_ptr)
                                 picture_control_set_ptr);
 
                             // Set the default settings of  subpel
+#if M9_SUBPEL_OFF_N_BASE
+                                    picture_control_set_ptr->use_subpel_flag = (picture_control_set_ptr->temporal_layer_index == 0) ?
+                                    1 :
+                                    0;
+
+#elif M9_SUBPEL_OFF
+                            picture_control_set_ptr->use_subpel_flag = 0;
+#else
 #if M9_SUBPEL
                             //if (picture_control_set_ptr->sc_content_detected)
                             //    picture_control_set_ptr->use_subpel_flag = 1;
@@ -2419,6 +2430,7 @@ void* picture_decision_kernel(void *input_ptr)
                             }
 #else
                             picture_control_set_ptr->use_subpel_flag = 1;
+#endif
 #endif
 
                             picture_control_set_ptr->use_src_ref = EB_FALSE;

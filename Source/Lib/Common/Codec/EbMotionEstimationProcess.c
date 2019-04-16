@@ -217,7 +217,9 @@ EbErrorType signal_derivation_me_kernel_oq(
         context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH ; 
     else 
 #endif
-#if M7_Subpel_fractional_Search_Method
+#if M9_FRAC_ME_SEARCH_METHOD_OFF
+            context_ptr->me_context_ptr->fractionalSearchMethod = SUB_SAD_SEARCH;
+#elif M7_Subpel_fractional_Search_Method
         context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH;
 #else
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
@@ -232,8 +234,9 @@ EbErrorType signal_derivation_me_kernel_oq(
             context_ptr->me_context_ptr->fractionalSearchMethod = FULL_SAD_SEARCH;
 #endif
 #endif
-
-#if M9_FRAC_ME_SEARCH_64x64
+#if M9_FRAC_ME_SEARCH_64x64_OFF
+            context_ptr->me_context_ptr->fractional_search64x64 = EB_FALSE;
+#elif M9_FRAC_ME_SEARCH_64x64
     //if (picture_control_set_ptr->sc_content_detected)
     //    context_ptr->fractional_search64x64 = EB_TRUE;
     //else 
