@@ -191,11 +191,19 @@ extern "C" {
 
 #define M6_TX_search_Skip_TH                        1 
 
-//##################### Features #####################
+//##################### Features start #####################
 #if 0
 
 #else
 
+#define M9_FRAC_ME_SEARCH_METHOD_OFF                0  
+#define M9_FRAC_ME_SEARCH_64x64_OFF                 0 
+#define M9_SUBPEL_OFF                               0 
+#define M9_SUBPEL_OFF_N_BASE                        0
+#define M9_CDEF_OFF                                 0 
+#define M9_SG_OFF                                   0 
+#define M9_DLF_OFF                                  0
+#define M9_TX_search_OFF                            0
 
 #define ME_WIKI_M3                                  0
 #define ME_WIKI_M7                                  0
@@ -351,11 +359,7 @@ extern "C" {
 #define M1_Spatial_SSE                              0 // not in excel
 #define M1_WARPED_MV                                0 // not in excel
 
-#define M9_FRAC_ME_SEARCH_METHOD_OFF                0  
-#define M9_FRAC_ME_SEARCH_64x64_OFF                 0 
-#define M9_SUBPEL_OFF                               0 
-#define M9_SUBPEL_OFF_N_BASE                        0
-#define M9_CDEF_OFF                                 0 
+
 
 #endif
 #endif

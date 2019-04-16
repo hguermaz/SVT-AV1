@@ -920,7 +920,9 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
 
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag && picture_control_set_ptr->allow_intrabc == 0) {
-#if M5_DLF
+#if M9_DLF_OFF
+        picture_control_set_ptr->loop_filter_mode = 0;
+#elif M5_DLF
         picture_control_set_ptr->loop_filter_mode = 1;
 #elif M4_DLF
         picture_control_set_ptr->loop_filter_mode = 2;
@@ -1003,7 +1005,10 @@ EbErrorType signal_derivation_multi_processes_oq(
         cm->sg_filter_mode = 1;
 	else
 #endif
-#if M6_SG_filter
+#if M9_SG_OFF
+        
+        cm->sg_filter_mode = 0;
+#elif M6_SG_filter
         cm->sg_filter_mode = 1;
 #elif M5_SG_filter
         cm->sg_filter_mode = 2;
@@ -1063,8 +1068,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
 	else
 #endif
-
-#if M6_TX_search
+#if M9_TX_search_OFF
+        picture_control_set_ptr->tx_search_level = 0;
+#elif M6_TX_search
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
 #elif M5_TX_search
         if (picture_control_set_ptr->temporal_layer_index == 0)
