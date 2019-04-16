@@ -100,7 +100,11 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
 #define LOW_SB_SCORE               6000
 #define MAX_LUMINOSITY_BOOST         10
 #if M9_ADP
+#if NEW_I7_PRESETS
+int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,55,55,55,55,5,5,5,5,5,5,5 };
+#else
 int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,40,30,20,10,5,0,-10,-20,-20,-20,-20 };
+#endif
 #else
 uint32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,40,40,40,40,40,25,25,10,10,10,10,10 };
 #endif
@@ -1944,8 +1948,12 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
 
     context_ptr->adp_level = picture_control_set_ptr->parent_pcs_ptr->enc_mode;
 
-#if CABAC_UP  
+#if CABAC_UP
+#if NEW_I7_PRESETS
+    picture_control_set_ptr->update_cdf = (picture_control_set_ptr->parent_pcs_ptr->enc_mode <= ENC_M5) ? 1 : 0;
+#else
     picture_control_set_ptr->update_cdf = picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M0 ? 1 : 0;
+#endif
 #endif
     return return_error;
 }

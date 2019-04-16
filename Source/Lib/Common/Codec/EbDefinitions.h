@@ -34,24 +34,27 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
+// New i7 presets
+#define NEW_I7_PRESETS                    0
+
 /************************* Omar to remove disable_ang_uv *************************/
-#define CDEF_AVX_OPT				      1
+#define CDEF_AVX_OPT                      1
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
 #define HARD_CODE_SC_SETTING              0
 #define MR_MODE                           0
 #define SHUT_FILTERING                    0 // CDEF RESTORATION DLF
-                                          
-#define M8_SKIP_BLK                       1  
-#define M8_OIS                            1  
+
+#define M8_SKIP_BLK                       1
+#define M8_OIS                            1
 #define QUICK_ME_CLEANUP                  1
 #define SCENE_CONTENT_SETTINGS            1
-                                          
+
 // M9 settings toward 4K 60 fps           
 #define M9_SETTINGS                       1
-                                          
-#if M9_SETTINGS                           
-// Adopted                                
+
+#if M9_SETTINGS
+// Adopted
 #define M9_FULL_LOOP_ESCAPE               1 // Enhanced full loop escape
 #define M9_HME                            1 // VP9 4K HME, HME (L0 only 48x32)
 #define M9_ME                             1 // VP9 4K ME, ME (16x9)
@@ -60,7 +63,7 @@ extern "C" {
 #define M9_ADP                            1
 #define M9_INTRA                          1
 #define M10_INTRA                         0
-#define DISABLE_OIS_USE                   1 
+#define DISABLE_OIS_USE                   1
 #define M9_INTER_SRC_SRC_FAST_LOOP        1
 
 #define OPT_LOSSLESS_0                    1
@@ -85,7 +88,7 @@ extern "C" {
 #define NSQ_ME_OPT                        0 // NSQ ME Restructuring
 #define BYPASS_USELESS_TX_SEARCH          0
 // Testing MACROS
-#define M9_NEAR_INJECTION                 0 
+#define M9_NEAR_INJECTION                 0
 // Under testing
 #define M9_FRAC_ME_SEARCH_METHOD          0 // VP9 4K fractional search method; SUB_SAD_SEARCH vs. FULL_SAD_SEARCH 
 #define M9_FRAC_ME_SEARCH_64x64           0 // VP9 4K 64x64 search; OFF vs. ON
@@ -116,11 +119,11 @@ extern "C" {
 
 #define OPT_QUANT_COEFF                                 1
 #if OPT_QUANT_COEFF
-#define DEBUG_TRELLIS                                   0     
+#define DEBUG_TRELLIS                                   0
 #define TRELLIS_SKIP                                    0
 #define TRELLIS_MD                                      1
-#define TRELLIS_INTRA                                   0     
-#define TRELLIS_CHROMA                                  0  
+#define TRELLIS_INTRA                                   0
+#define TRELLIS_CHROMA                                  0
 #define ENHANCED_TRELLIS                                0   // TBD
 #endif
 
@@ -148,7 +151,7 @@ extern "C" {
 #endif
 
 #define ADP_STATS_PER_LAYER                             0
-#define NFL_TX_TH                                      12 // To be tuned
+#define NFL_TX_TH                                       12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
 #define MAX_FRAMES_TO_REF_I                             64
 #define NSQ_TAB_SIZE                                    6
@@ -3414,6 +3417,269 @@ static const uint32_t MD_SCAN_TO_OIS_32x32_SCAN[CU_MAX_COUNT] =
 /******************************************************************************
                             ME/HME settings
 *******************************************************************************/
+#if NEW_I7_PRESETS
+//     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12    
+static const uint8_t enable_hme_level0_flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1 },      // INPUT_SIZE_576p_RANGE_OR_LOWER
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1 },      // INPUT_SIZE_720P_RANGE/INPUT_SIZE_1080i_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1 },      // INPUT_SIZE_1080p_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1 },      // INPUT_SIZE_4K_RANGE
+};
+
+static const uint16_t hme_level0_total_search_area_width[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {  48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48,   48 },
+#if M9_HME
+        { 112,  112,  112,  112,  112,   48,   48,   48,   48,   48,   48,   48,   48 },
+        { 128,  128,  128,  128,  128,   48,   48,   48,   48,   48,   48,   48,   48 },
+        { 128,  128,  128,  128,  128,   96,   96,   96,   96,   96,   96,   96,   96 },
+#else
+        { 112,  112,  112,  112,  112,  112,   64,   64,   64,   64,   64,   64,   64 },
+        { 128,  128,  128,  128,  128,  128,   96,   96,   96,   96,   96,   96,   96 },
+        { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 }
+#endif
+     } , {
+        { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 },
+        { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 },
+        { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 },
+        { 128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128,  128 }
+    }
+};
+
+static const uint16_t hme_level0_search_area_in_width_array_left[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {  24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24 },
+#if M9_HME
+        {  56,   56,   56,   56,   56,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  64,   64,   64,   64,   64,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 }
+#else
+        {  56,   56,   56,   56,   56,   56,   32,   32,   32,   32,   32,   32,   32 },
+        {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
+#endif
+    } , {
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
+    }
+};
+static const uint16_t hme_level0_search_area_in_width_array_right[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {  24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24,   24 },
+#if M9_HME
+        {  56,   56,   56,   56,   56,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  64,   64,   64,   64,   64,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48,   48 }
+#else
+        {  56,   56,   56,   56,   56,   56,   32,   32,   32,   32,   32,   32,   32 },
+        {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
+#endif
+    } , {
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 },
+        {  64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64,   64 }
+    }
+};
+static const uint16_t hme_level0_total_search_area_height[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+#if M9_HME
+        {  40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  64,   64,   64,   64,   64,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  80,   80,   80,   80,   80,   24,   24,   24,   24,   24,   24,   24,   24 },
+        {  80,   80,   80,   80,   80,   24,   24,   24,   24,   24,   24,   24,   24 }
+#else
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
+        {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,   48,   48 },
+        {  80,   80,   80,   80,   80,   80,   48,   48,   48,   48,   48,   48,   48 },
+        {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 }
+#endif
+    } , {
+        {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 },
+        {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 },
+        {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 },
+        {  80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80,   80 }
+    }
+};
+static const uint16_t hme_level0_search_area_in_height_array_top[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+#if M9_HME
+        {  20,   20,   20,   20,   20,   12,   12,   12,   12,   12,   12,   12,   12 },
+        {  32,   32,   32,   32,   32,   12,   12,   12,   12,   12,   12,   12,   12 },
+        {  40,   40,   40,   40,   40,   12,   12,   12,   12,   12,   12,   12,   12 },
+        {  40,   40,   40,   40,   40,   12,   12,   12,   12,   12,   12,   12,   12 }
+#else
+        {  20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20 },
+        {  32,   32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24 },
+        {  40,   40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
+#endif
+    } , {
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
+    }
+};
+static const uint16_t hme_level0_search_area_in_height_array_bottom[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+#if M9_HME
+        {  20,   20,   20,   20,   20,   12,   12,   12,   12,   12,   12,   12,   12 },
+        {  32,   32,   32,   32,   32,   12,   12,   12,   12,   12,   12,   12,   12 },
+        {  40,   40,   40,   40,   40,   12,   12,   12,   12,   12,   12,   12,   12 },
+        {  40,   40,   40,   40,   40,   12,   12,   12,   12,   12,   12,   12,   12 }
+#else
+        {  20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20 },
+        {  32,   32,   32,   32,   32,   32,   24,   24,   24,   24,   24,   24,   24 },
+        {  40,   40,   40,   40,   40,   40,   24,   24,   24,   24,   24,   24,   24 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
+#endif
+    }, {
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 },
+        {  40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40,   40 }
+    }
+};
+
+// HME LEVEL 1
+//      M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
+static const uint8_t enable_hme_level1_flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+#if M9_HME
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 },      // INPUT_SIZE_576p_RANGE_OR_LOWER
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 },      // INPUT_SIZE_720P_RANGE/INPUT_SIZE_1080i_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 },      // INPUT_SIZE_1080p_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 }       // INPUT_SIZE_4K_RANGE
+#else
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 },      // INPUT_SIZE_576p_RANGE_OR_LOWER
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 },      // INPUT_SIZE_720P_RANGE/INPUT_SIZE_1080i_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 },      // INPUT_SIZE_1080p_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 }       // INPUT_SIZE_4K_RANGE
+#endif
+};
+static const uint16_t hme_level1_search_area_in_width_array_left[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    } , {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    }
+};
+static const uint16_t hme_level1_search_area_in_width_array_right[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    } , {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    }
+};
+static const uint16_t hme_level1_search_area_in_height_array_top[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    } , {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    }
+};
+static const uint16_t hme_level1_search_area_in_height_array_bottom[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    } , {
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 },
+        {  16,   16,   16,   16,   16,    8,    8,    8,    8,    8,    8,    8,     8 }
+    }
+};
+// HME LEVEL 2
+//     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
+static const uint8_t enable_hme_level2_flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+#if M9_HME
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 },      // INPUT_SIZE_576p_RANGE_OR_LOWER
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 },      // INPUT_SIZE_720P_RANGE/INPUT_SIZE_1080i_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 },      // INPUT_SIZE_1080p_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    0,    0,     0,    0 }       // INPUT_SIZE_4K_RANGE
+#else
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 },      // INPUT_SIZE_576p_RANGE_OR_LOWER
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 },      // INPUT_SIZE_720P_RANGE/INPUT_SIZE_1080i_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 },      // INPUT_SIZE_1080p_RANGE
+    {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,     1,    1 }       // INPUT_SIZE_4K_RANGE
+#endif
+};
+static const uint16_t hme_level2_search_area_in_width_array_left[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    } , {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    }
+};
+static const uint16_t hme_level2_search_area_in_width_array_right[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    } , {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    }
+};
+static const uint16_t hme_level2_search_area_in_height_array_top[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    } , {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    }
+};
+static const uint16_t hme_level2_search_area_in_height_array_bottom[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
+    {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    } , {
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 },
+        {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
+    }
+};
+#else
 //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12    
 static const uint8_t enable_hme_level0_flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {   1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1,    1 },      // INPUT_SIZE_576p_RANGE_OR_LOWER
@@ -3675,14 +3941,22 @@ static const uint16_t hme_level2_search_area_in_height_array_bottom[SC_MAX_LEVEL
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
     }
 };
+#endif
 
 static const uint16_t search_area_width[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
 #if M9_ME
+#if NEW_I7_PRESETS
+        {  64,   64,   64,   64,   64,   64,   64,   64,   48,   16,   16,    16,   16 },
+        { 112,  112,   64,   64,   64,   64,   64,   64,   48,   16,   16,    16,   16 },
+        { 128,  128,   64,   64,   64,   64,   64,   64,   48,   16,   16,    16,   16 },
+        { 128,  128,   64,   64,   64,   64,   64,   64,   48,   16,   16,    16,   16 }
+#else
         {  64,   64,   64,   64,   64,   64,   48,   48,   48,   16,   16,    16,   16 },
         { 112,   64,   64,   64,   64,   64,   48,   48,   48,   16,   16,    16,   16 },
         { 128,   64,   64,   64,   64,   64,   48,   48,   48,   16,   16,    16,   16 },
         { 128,   64,   64,   64,   64,   64,   48,   48,   48,   16,   16,    16,   16 }
+#endif
 #else
         {  64,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
         { 112,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 },
@@ -3699,10 +3973,17 @@ static const uint16_t search_area_width[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPP
 static const uint16_t search_area_height[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
 #if M9_ME
+#if NEW_I7_PRESETS
+        {  64,   64,   64,   64,   32,   32,   32,   32,   16,    9,    9,     9,    9 },
+        { 112,  112,   64,   64,   32,   32,   32,   32,   16,    9,    9,     9,    9 },
+        { 128,  128,   64,   64,   32,   32,   32,   32,   16,    9,    9,     9,    9 },
+        { 128,  128,   64,   64,   32,   32,   32,   32,   16,    9,    9,     9,    9 }
+#else
         {  64,   64,   64,   32,   32,   32,   48,   48,   16,    9,    9,     9,    9 },
         { 112,   64,   64,   32,   32,   32,   48,   48,   16,    9,    9,     9,    9 },
         { 128,   64,   64,   32,   32,   32,   48,   48,   16,    9,    9,     9,    9 },
         { 128,   64,   64,   32,   32,   32,   48,   48,   16,    9,    9,     9,    9 }
+#endif
 #else
         {  64,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },
         { 112,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 },

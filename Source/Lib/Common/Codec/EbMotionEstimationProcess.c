@@ -216,12 +216,21 @@ EbErrorType signal_derivation_me_kernel_oq(
     // 1: selective based on Full-Search SAD & MV.
     // 2: off
     if (picture_control_set_ptr->use_subpel_flag == 1) {
+#if NEW_I7_PRESETS
+        if (picture_control_set_ptr->enc_mode <= ENC_M6) {
+            context_ptr->me_context_ptr->fractional_search_model = 0;
+        }
+        else {
+            context_ptr->me_context_ptr->fractional_search_model = 1;
+        }
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M8) {
             context_ptr->me_context_ptr->fractional_search_model = 0;
         }
         else {
             context_ptr->me_context_ptr->fractional_search_model = 1;
         }
+#endif
     }
     else {
         context_ptr->me_context_ptr->fractional_search_model = 2;
@@ -230,7 +239,10 @@ EbErrorType signal_derivation_me_kernel_oq(
 
 
 #if USE_SAD_HME
-    // ME Search Method
+    // HME Search Method
+#if NEW_I7_PRESETS
+    context_ptr->me_context_ptr->hme_search_method = FULL_SAD_SEARCH;
+#else
 #if MOD_M0
     context_ptr->me_context_ptr->hme_search_method = SUB_SAD_SEARCH;
 #else
@@ -238,17 +250,24 @@ EbErrorType signal_derivation_me_kernel_oq(
         FULL_SAD_SEARCH :
         SUB_SAD_SEARCH;
 #endif
+#endif
 #else
     context_ptr->me_context_ptr->hme_search_method = SUB_SAD_SEARCH;
 #endif
 #if USE_SAD_ME
-    // HME Search Method
+    // ME Search Method
+#if NEW_I7_PRESETS
+    context_ptr->me_context_ptr->me_search_method = (picture_control_set_ptr->enc_mode <= ENC_M1) ?
+        FULL_SAD_SEARCH :
+        SUB_SAD_SEARCH;
+#else
 #if MOD_M0
     context_ptr->me_context_ptr->me_search_method = SUB_SAD_SEARCH;
 #else
     context_ptr->me_context_ptr->me_search_method = (picture_control_set_ptr->enc_mode == ENC_M0) ?
         FULL_SAD_SEARCH :
         SUB_SAD_SEARCH;
+#endif
 #endif
 #else
     context_ptr->me_context_ptr->me_search_method = SUB_SAD_SEARCH  ;

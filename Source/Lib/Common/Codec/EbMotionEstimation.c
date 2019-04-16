@@ -206,7 +206,7 @@ static EbSadCalculation32x32and64x64Type SadCalculation_32x32_64x64_funcPtrArray
 };
 
 #if NSQ_ME_OPT
-static EbExtAllSadCalculation8x816x16Type Ext_ext_all_sad_calculation_8x8_16x16_funcPtrArray[ASM_TYPE_TOTAL] = {
+static EB_EXT_ALL_SAD_CALCULATION_8x8_16x16_TYPE Ext_ext_all_sad_calculation_8x8_16x16_funcPtrArray[ASM_TYPE_TOTAL] = {
     // NON_AVX2
     ext_all_sad_calculation_8x8_16x16_c,
     // AVX2
