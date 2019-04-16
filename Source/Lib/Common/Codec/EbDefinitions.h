@@ -189,8 +189,13 @@ extern "C" {
 
 #define M2_SB_block_size                            1
 
+#define M6_TX_search_Skip_TH                        1 
 
 //##################### Features #####################
+#if 0
+
+#else
+
 
 #define ME_WIKI_M3                                  0
 #define ME_WIKI_M7                                  0
@@ -209,14 +214,27 @@ extern "C" {
 //##################### PARTITION #####################
 #define M1_NSQ_search                               0
 #define M2_NSQ_search                               0
-#define M3_Partitioning_Method                      0 // coupled with M3_NSQ_search and M2_SB_block_size
-#define M3_NSQ_search                               0 // coupled with M3_Partitioning_Method and M2_SB_block_size
-#define M4_Partitioning_Method                      0
-#define M4_NSQ_search                               0
-#define M5_Partitioning_Method                      0
-#define M5_NSQ_search                               0
-#define M6_Partitioning_Method                      0
 
+#define M3_Partitioning_Method                      0 // coupled with M3_NSQ_search and M2_SB_block_size
+#if M3_Partitioning_Method
+#define M3_NSQ_search                               1 // coupled with M3_Partitioning_Method and M2_SB_block_size
+#endif
+#define M4_Partitioning_Method                      0
+#if M4_Partitioning_Method
+#define M4_NSQ_search                               1
+#endif
+#define M5_Partitioning_Method                      0
+#if M5_Partitioning_Method
+#define M5_NSQ_search                               1
+#endif
+
+#define M6_Partitioning_Method                      0
+#if M6_Partitioning_Method
+
+#define M5_NSQ_search                               1
+
+#endif
+#if M6_Partitioning_Method
 #define M2_ADP_level                                0 // no difference in 1080p and below
 #define M3_ADP_level                                0 // no difference in 1080p and below
 #define M4_ADP_level                                0
@@ -225,7 +243,7 @@ extern "C" {
 #define M7_ADP_level                                0
 #define M8_ADP_level                                0
 #define M9_adopted_ADP_level                        0
-
+#endif
 
 
 //##################### INTERPOLATION #####################
@@ -286,7 +304,6 @@ extern "C" {
 
 #define M3_TX_search_Skip_TH                        0
 #define M5_TX_search_Skip_TH                        0
-#define M6_TX_search_Skip_TH                        0
 
 #define M3_TX_search_Reduced_Set                    0
 #define M5_TX_search_Reduced_Set                    0
@@ -334,6 +351,7 @@ extern "C" {
 #define M1_Spatial_SSE                              0 // not in excel
 #define M1_WARPED_MV                                0 // not in excel
 
+#endif
 #endif
 
 //##################### Features END #####################
@@ -3939,10 +3957,10 @@ static const uint16_t SearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPOR
         { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 }
 #endif
     } , {
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        { 128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { 128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 };
 static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
@@ -3959,10 +3977,10 @@ static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPO
         { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 }
 #endif
     } , {
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        {128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {128,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 
     //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
