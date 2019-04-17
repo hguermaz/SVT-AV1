@@ -223,6 +223,11 @@ extern "C" {
 #define M6_CDEF_filter                              0
 #define M8_CDEF_filter                              0
 
+// TO BE TESTED 2
+#define M5_TX_search_Reduced_Set                    0
+#define M4_NFL                                      0
+#define M6_NFL                                      0
+#define M8_NFL                                      0
 
 #else
 
@@ -341,11 +346,11 @@ extern "C" {
 #define M5_TX_search                                0
 #define M6_TX_search                                0
 
-#define M3_TX_search_Skip_TH                        0
-#define M5_TX_search_Skip_TH                        0
+//#define M3_TX_search_Skip_TH                        0
+//#define M5_TX_search_Skip_TH                        0
 
-#define M3_TX_search_Reduced_Set                    0
-#define M5_TX_search_Reduced_Set                    0
+//#define M3_TX_search_Reduced_Set                    0
+//#define M5_TX_search_Reduced_Set                    0
 
 
 #define M6_Disable_TX_search_based_on_NFL           0
