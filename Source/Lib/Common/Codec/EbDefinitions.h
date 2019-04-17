@@ -201,7 +201,7 @@ extern "C" {
 #define M9_adopted_HME_level           1
 #define M9_adopted_CU_8x8              1
 #define M6_Interpolation_search        1
-// loss
+
 #define M7_Wiener_filter              1 // 0.3
 #define M9_DLF_OFF                    1 // 0.5
 #define M9_adopted_FULL_LOOP_ESCAPE   1 //
@@ -214,8 +214,10 @@ extern "C" {
 #define M6_Warped_Motion_Injection                  1
 #define M8_Global_MV_Injection                      1
 #define M1_Fast_Loop_Method                         1 
-// -6.2
-
+// -6.2 / 0.664
+// loss
+#define M8_NFL                                      1 // 0.7%
+#define M9_CDEF_OFF                                 1 // 0.9%
 
 // TO BE TESTED
 #define M7_Intra                                    0
@@ -228,10 +230,6 @@ extern "C" {
 #define M6_CDEF_filter                              0
 #define M8_CDEF_filter                              0
 
-// TO BE TESTED 2
-#define M4_NFL                                      0
-#define M6_NFL                                      0
-#define M8_NFL                                      0
 
 #else
 
@@ -304,8 +302,8 @@ extern "C" {
 
 
 
-#define M1_Uni_Bi_Pred                              0
-#define M4_Uni_Bi_Pred                              0
+//#define M1_Uni_Bi_Pred                              0
+//#define M4_Uni_Bi_Pred                              0
 
 
 //##################### ME #####################
@@ -325,11 +323,11 @@ extern "C" {
 #define M1_ME_Search_Method                         0
 
 //##################### NFL #####################
-#define M1_NFL                                      0
-#define M2_NFL                                      0
-#define M4_NFL                                      0
-#define M6_NFL                                      0
-#define M8_NFL                                      0
+//#define M1_NFL                                      0
+//#define M2_NFL                                      0
+//#define M4_NFL                                      0
+//#define M6_NFL                                      0
+//#define M8_NFL                                      0
 
 //##################### FILTER #####################
 //#define M4_DLF                                      0
@@ -374,7 +372,7 @@ extern "C" {
 #define M8_Intra                                    0
 
 #define M6_Fast_Loop_Search_Method                  0
-#define M6_Warped_Motion_Injection                  0
+//#define M6_Warped_Motion_Injection                  0
 
 //#define M7_Subpel_fractional_Search_Method          0
 #define M7_enable_restoration                       0 // not in excel
@@ -383,7 +381,7 @@ extern "C" {
 //#define M8_Full_loop_escape                         0
 //#define M9_adopted_FULL_LOOP_ESCAPE                 0
 
-#define M8_Global_MV_Injection                      0
+//#define M8_Global_MV_Injection                      0
 
 
 //#define M9_adopted_SUBPEL_SELECTION                 0
@@ -393,9 +391,9 @@ extern "C" {
 
 
 
-#define M1_RED_CU                                   0 // not in excel
+//#define M1_RED_CU                                   0 // not in excel
 #define M1_CABAC_UP                                 0 // not in excel
-#define M1_Fast_Loop_Method                         0 // not in excel
+//#define M1_Fast_Loop_Method                         0 // not in excel
 #define M1_Spatial_SSE                              0 // not in excel
 #define M1_WARPED_MV                                0 // not in excel
 
