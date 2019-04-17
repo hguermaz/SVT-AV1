@@ -218,14 +218,14 @@ extern "C" {
 // loss
 #define M8_NFL                                      1 // 0.7%
 #define M9_CDEF_OFF                                 1 // 0.9%
-#define M6_Fast_Loop_Search_Method                  1 // 
+#define M6_Fast_Loop_Search_Method                  1 //  0.3%
 
 // TO BE TESTED
 #define M7_Intra                                    0
 #define M8_Intra                                    0
 #define M1_CABAC_UP                                 0 
 #define M1_Spatial_SSE                              0 
-#define OMK_ADP_1                                   1
+#define OMK_ADP_2                                   1 //  
 
 
 #else
