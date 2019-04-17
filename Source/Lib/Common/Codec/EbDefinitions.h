@@ -218,17 +218,14 @@ extern "C" {
 // loss
 #define M8_NFL                                      1 // 0.7%
 #define M9_CDEF_OFF                                 1 // 0.9%
+#define M6_Fast_Loop_Search_Method                  1 // 
 
 // TO BE TESTED
 #define M7_Intra                                    0
 #define M8_Intra                                    0
-#define M6_Fast_Loop_Search_Method                  0
-#define M7_enable_restoration                       0 
-#define M9_adopted_INTER_SRC_SRC_FAST_LOOP          0
 #define M1_CABAC_UP                                 0 
 #define M1_Spatial_SSE                              0 
-#define M6_CDEF_filter                              0
-#define M8_CDEF_filter                              0
+#define OMK_ADP_1                                   1
 
 
 #else
@@ -238,7 +235,7 @@ extern "C" {
 //#define M9_FRAC_ME_SEARCH_64x64_OFF                 0 
 //#define M9_SUBPEL_OFF                               0 
 //#define M9_SUBPEL_OFF_N_BASE                        0
-#define M9_CDEF_OFF                                 0 
+//#define M9_CDEF_OFF                                 0 
 //#define M9_SG_OFF                                   0 
 //#define M9_DLF_OFF                                  0
 #define M9_TX_search_OFF                            0
@@ -337,8 +334,8 @@ extern "C" {
 //#define M5_SG_filter                                0
 //#define M6_SG_filter                                0
 
-#define M6_CDEF_filter                              0
-#define M8_CDEF_filter                              0
+//#define M6_CDEF_filter                              0
+//#define M8_CDEF_filter                              0
 
 //#define M6_Wiener_filter                            0
 //#define M7_Wiener_filter                            0
@@ -371,7 +368,7 @@ extern "C" {
 #define M7_Intra                                    0
 #define M8_Intra                                    0
 
-#define M6_Fast_Loop_Search_Method                  0
+//#define M6_Fast_Loop_Search_Method                  0
 //#define M6_Warped_Motion_Injection                  0
 
 //#define M7_Subpel_fractional_Search_Method          0
@@ -395,7 +392,7 @@ extern "C" {
 #define M1_CABAC_UP                                 0 // not in excel
 //#define M1_Fast_Loop_Method                         0 // not in excel
 #define M1_Spatial_SSE                              0 // not in excel
-#define M1_WARPED_MV                                0 // not in excel
+//#define M1_WARPED_MV                                0 // not in excel
 
 
 
