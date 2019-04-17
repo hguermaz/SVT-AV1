@@ -198,7 +198,6 @@ extern "C" {
 #define M9_FRAC_ME_SEARCH_METHOD_OFF   1
 #define M9_SG_OFF                      1
 #define M9_SUBPEL_OFF                  1
-#define M9_SUBPEL_OFF_N_BASE           1
 #define M9_adopted_HME_level           1
 #define M9_adopted_CU_8x8              1
 #define M6_Interpolation_search        1
@@ -210,13 +209,13 @@ extern "C" {
 #else
 
 #define WIKI_TX_SEARCH                              0
-#define M9_FRAC_ME_SEARCH_METHOD_OFF                0  
-#define M9_FRAC_ME_SEARCH_64x64_OFF                 0 
-#define M9_SUBPEL_OFF                               0 
-#define M9_SUBPEL_OFF_N_BASE                        0
+//#define M9_FRAC_ME_SEARCH_METHOD_OFF                0  
+//#define M9_FRAC_ME_SEARCH_64x64_OFF                 0 
+//#define M9_SUBPEL_OFF                               0 
+//#define M9_SUBPEL_OFF_N_BASE                        0
 #define M9_CDEF_OFF                                 0 
-#define M9_SG_OFF                                   0 
-#define M9_DLF_OFF                                  0
+//#define M9_SG_OFF                                   0 
+//#define M9_DLF_OFF                                  0
 #define M9_TX_search_OFF                            0
 
 #define ME_WIKI_M3                                  0
@@ -269,12 +268,12 @@ extern "C" {
 
 
 //##################### INTERPOLATION #####################
-#define M1_Interpolation_search                     0
-#define M3_Interpolation_search                     0
-#define M6_Interpolation_search                     0
-
-#define M1_Interpolation_search_blk_Size            0
-#define M3_Interpolation_search_blk_Size            0
+//#define M1_Interpolation_search                     0
+//#define M3_Interpolation_search                     0
+//#define M6_Interpolation_search                     0
+//
+//#define M1_Interpolation_search_blk_Size            0
+//#define M3_Interpolation_search_blk_Size            0
 
 
 
@@ -294,7 +293,7 @@ extern "C" {
 
 #define M6_HME                                      0
 #define M9_adopted_HME                              0
-#define M9_adopted_HME_level                        0
+//#define M9_adopted_HME_level                        0
 #define M1_HME_Search_Method                        0
 #define M1_ME_Search_Method                         0
 
@@ -306,18 +305,18 @@ extern "C" {
 #define M8_NFL                                      0
 
 //##################### FILTER #####################
-#define M4_DLF                                      0
-#define M5_DLF                                      0
+//#define M4_DLF                                      0
+//#define M5_DLF                                      0
 
-#define M4_SG_filter                                0
-#define M5_SG_filter                                0
-#define M6_SG_filter                                0
+//#define M4_SG_filter                                0
+//#define M5_SG_filter                                0
+//#define M6_SG_filter                                0
 
 #define M6_CDEF_filter                              0
 #define M8_CDEF_filter                              0
 
-#define M6_Wiener_filter                            0
-#define M7_Wiener_filter                            0
+//#define M6_Wiener_filter                            0
+//#define M7_Wiener_filter                            0
 
 //##################### TX SEARCH #####################
 #define M4_TX_search                                0
@@ -350,18 +349,18 @@ extern "C" {
 #define M6_Fast_Loop_Search_Method                  0
 #define M6_Warped_Motion_Injection                  0
 
-#define M7_Subpel_fractional_Search_Method          0
+//#define M7_Subpel_fractional_Search_Method          0
 #define M7_enable_restoration                       0 // not in excel
 
 
-#define M8_Full_loop_escape                         0
-#define M9_adopted_FULL_LOOP_ESCAPE                 0
+//#define M8_Full_loop_escape                         0
+//#define M9_adopted_FULL_LOOP_ESCAPE                 0
 
 #define M8_Global_MV_Injection                      0
 
 
-#define M9_adopted_SUBPEL_SELECTION                 0
-#define M9_adopted_CU_8x8                           0
+//#define M9_adopted_SUBPEL_SELECTION                 0
+//#define M9_adopted_CU_8x8                           0
 
 #define M9_adopted_INTER_SRC_SRC_FAST_LOOP          0
 
