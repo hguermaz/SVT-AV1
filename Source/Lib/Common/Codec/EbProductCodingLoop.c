@@ -2350,6 +2350,108 @@ uint8_t get_skip_tx_search_flag(
     return tx_search_skip_fag;
 }
 
+static INLINE PredictionMode get_uv_mode(UvPredictionMode mode) {
+    assert(mode < UV_INTRA_MODES);
+    static const PredictionMode uv2y[] = {
+        DC_PRED,        // UV_DC_PRED
+        V_PRED,         // UV_V_PRED
+        H_PRED,         // UV_H_PRED
+        D45_PRED,       // UV_D45_PRED
+        D135_PRED,      // UV_D135_PRED
+        D113_PRED,      // UV_D113_PRED
+        D157_PRED,      // UV_D157_PRED
+        D203_PRED,      // UV_D203_PRED
+        D67_PRED,       // UV_D67_PRED
+        SMOOTH_PRED,    // UV_SMOOTH_PRED
+        SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
+        SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED
+        PAETH_PRED,     // UV_PAETH_PRED
+        DC_PRED,        // UV_CFL_PRED
+        INTRA_INVALID,  // UV_INTRA_MODES
+        INTRA_INVALID,  // UV_MODE_INVALID
+    };
+    return uv2y[mode];
+}
+
+static TxType intra_mode_to_tx_type(const MbModeInfo *mbmi,
+    PlaneType plane_type) {
+    static const TxType _intra_mode_to_tx_type[INTRA_MODES] = {
+        DCT_DCT,    // DC
+        ADST_DCT,   // V
+        DCT_ADST,   // H
+        DCT_DCT,    // D45
+        ADST_ADST,  // D135
+        ADST_DCT,   // D117
+        DCT_ADST,   // D153
+        DCT_ADST,   // D207
+        ADST_DCT,   // D63
+        ADST_ADST,  // SMOOTH
+        ADST_DCT,   // SMOOTH_V
+        DCT_ADST,   // SMOOTH_H
+        ADST_ADST,  // PAETH
+    };
+    const PredictionMode mode =
+        (plane_type == PLANE_TYPE_Y) ? mbmi->mode : get_uv_mode(mbmi->uv_mode);
+    assert(mode < INTRA_MODES);
+    return _intra_mode_to_tx_type[mode];
+}
+
+static INLINE TxType av1_get_tx_type(
+    BlockSize  sb_type,
+    int32_t   is_inter,
+    PredictionMode pred_mode,
+    UvPredictionMode pred_mode_uv,
+    PlaneType plane_type,
+    const MacroBlockD *xd, int32_t blk_row,
+    int32_t blk_col, TxSize tx_size,
+    int32_t reduced_tx_set)
+{
+    UNUSED(sb_type);
+    UNUSED(*xd);
+    UNUSED(blk_row);
+    UNUSED(blk_col);
+
+    // block_size  sb_type = BLOCK_8X8;
+
+    MbModeInfo  mbmi;
+    mbmi.mode = pred_mode;
+    mbmi.uv_mode = pred_mode_uv;
+
+
+    // const MbModeInfo *const mbmi = xd->mi[0];
+    // const struct MacroblockdPlane *const pd = &xd->plane[plane_type];
+    const TxSetType tx_set_type =
+        /*av1_*/get_ext_tx_set_type(tx_size, is_inter, reduced_tx_set);
+
+    TxType tx_type = DCT_DCT;
+    if ( /*xd->lossless[mbmi->segment_id] ||*/ txsize_sqr_up_map[tx_size] > TX_32X32) {
+        tx_type = DCT_DCT;
+    }
+    else {
+        if (plane_type == PLANE_TYPE_Y) {
+            //const int32_t txk_type_idx =
+            //    av1_get_txk_type_index(/*mbmi->*/sb_type, blk_row, blk_col);
+            //tx_type = mbmi->txk_type[txk_type_idx];
+        }
+        else if (is_inter /*is_inter_block(mbmi)*/) {
+            // scale back to y plane's coordinate
+            //blk_row <<= pd->subsampling_y;
+            //blk_col <<= pd->subsampling_x;
+            //const int32_t txk_type_idx =
+            //    av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
+            //tx_type = mbmi->txk_type[txk_type_idx];
+        }
+        else {
+            // In intra mode, uv planes don't share the same prediction mode as y
+            // plane, so the tx_type should not be shared
+            tx_type = intra_mode_to_tx_type(&mbmi, PLANE_TYPE_UV);
+        }
+    }
+    ASSERT(tx_type < TX_TYPES);
+    if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
+    return tx_type;
+}
+
 #if SEARCH_UV_MODE
 void check_best_indepedant_cfl(
     PictureControlSet           *picture_control_set_ptr,
@@ -3698,106 +3800,6 @@ uint8_t check_skip_sub_blks(
 
 #if SEARCH_UV_MODE
 // Hsan (chroma search) : av1_get_tx_type() to define as extern
-static INLINE PredictionMode get_uv_mode(UvPredictionMode mode) {
-    assert(mode < UV_INTRA_MODES);
-    static const PredictionMode uv2y[] = {
-        DC_PRED,        // UV_DC_PRED
-        V_PRED,         // UV_V_PRED
-        H_PRED,         // UV_H_PRED
-        D45_PRED,       // UV_D45_PRED
-        D135_PRED,      // UV_D135_PRED
-        D113_PRED,      // UV_D113_PRED
-        D157_PRED,      // UV_D157_PRED
-        D203_PRED,      // UV_D203_PRED
-        D67_PRED,       // UV_D67_PRED
-        SMOOTH_PRED,    // UV_SMOOTH_PRED
-        SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
-        SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED
-        PAETH_PRED,     // UV_PAETH_PRED
-        DC_PRED,        // UV_CFL_PRED
-        INTRA_INVALID,  // UV_INTRA_MODES
-        INTRA_INVALID,  // UV_MODE_INVALID
-    };
-    return uv2y[mode];
-}
-static TxType intra_mode_to_tx_type(const MbModeInfo *mbmi,
-    PlaneType plane_type) {
-    static const TxType _intra_mode_to_tx_type[INTRA_MODES] = {
-        DCT_DCT,    // DC
-        ADST_DCT,   // V
-        DCT_ADST,   // H
-        DCT_DCT,    // D45
-        ADST_ADST,  // D135
-        ADST_DCT,   // D117
-        DCT_ADST,   // D153
-        DCT_ADST,   // D207
-        ADST_DCT,   // D63
-        ADST_ADST,  // SMOOTH
-        ADST_DCT,   // SMOOTH_V
-        DCT_ADST,   // SMOOTH_H
-        ADST_ADST,  // PAETH
-    };
-    const PredictionMode mode =
-        (plane_type == PLANE_TYPE_Y) ? mbmi->mode : get_uv_mode(mbmi->uv_mode);
-    assert(mode < INTRA_MODES);
-    return _intra_mode_to_tx_type[mode];
-}
-static INLINE TxType av1_get_tx_type(
-    BlockSize  sb_type,
-    int32_t   is_inter,
-    PredictionMode pred_mode,
-    UvPredictionMode pred_mode_uv,
-    PlaneType plane_type,
-    const MacroBlockD *xd, int32_t blk_row,
-    int32_t blk_col, TxSize tx_size,
-    int32_t reduced_tx_set)
-{
-    UNUSED(sb_type);
-    UNUSED(*xd);
-    UNUSED(blk_row);
-    UNUSED(blk_col);
-
-    // block_size  sb_type = BLOCK_8X8;
-
-    MbModeInfo  mbmi;
-    mbmi.mode = pred_mode;
-    mbmi.uv_mode = pred_mode_uv;
-
-
-    // const MbModeInfo *const mbmi = xd->mi[0];
-    // const struct MacroblockdPlane *const pd = &xd->plane[plane_type];
-    const TxSetType tx_set_type =
-        /*av1_*/get_ext_tx_set_type(tx_size, is_inter, reduced_tx_set);
-
-    TxType tx_type = DCT_DCT;
-    if ( /*xd->lossless[mbmi->segment_id] ||*/ txsize_sqr_up_map[tx_size] > TX_32X32) {
-        tx_type = DCT_DCT;
-    }
-    else {
-        if (plane_type == PLANE_TYPE_Y) {
-            //const int32_t txk_type_idx =
-            //    av1_get_txk_type_index(/*mbmi->*/sb_type, blk_row, blk_col);
-            //tx_type = mbmi->txk_type[txk_type_idx];
-        }
-        else if (is_inter /*is_inter_block(mbmi)*/) {
-            // scale back to y plane's coordinate
-            //blk_row <<= pd->subsampling_y;
-            //blk_col <<= pd->subsampling_x;
-            //const int32_t txk_type_idx =
-            //    av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
-            //tx_type = mbmi->txk_type[txk_type_idx];
-        }
-        else {
-            // In intra mode, uv planes don't share the same prediction mode as y
-            // plane, so the tx_type should not be shared
-            tx_type = intra_mode_to_tx_type(&mbmi, PLANE_TYPE_UV);
-        }
-    }
-    ASSERT(tx_type < TX_TYPES);
-    if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
-    return tx_type;
-}
-
 void search_best_independent_uv_mode(
     SequenceControlSet    *sequence_control_set_ptr,
     PictureControlSet     *picture_control_set_ptr,
@@ -3814,7 +3816,6 @@ void search_best_independent_uv_mode(
     EbBool use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
 
     UvPredictionMode uv_mode;
-    UvPredictionMode best_uv_mode = UV_DC_PRED;
 
     int coeff_rate[UV_PAETH_PRED + 1][(MAX_ANGLE_DELTA << 1) + 1];
     int distortion[UV_PAETH_PRED + 1][(MAX_ANGLE_DELTA << 1) + 1];

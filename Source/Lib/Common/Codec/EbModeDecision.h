@@ -272,14 +272,14 @@ extern "C" {
         uint8_t                        *sorted_candidate_index_array,
         uint64_t                       *ref_fast_cost);
     typedef EbErrorType(*EB_INTRA_4x4_FAST_LUMA_COST_FUNC)(
-        struct ModeDecisionContext_s           *context_ptr,
+        struct ModeDecisionContext           *context_ptr,
         uint32_t                                pu_index,
-        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
         uint64_t                                luma_distortion,
         uint64_t                                lambda);
 
     typedef EbErrorType(*EB_INTRA_4x4_FULL_LUMA_COST_FUNC)(
-        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
         uint64_t                               *y_distortion,
         uint64_t                                lambda,
         uint64_t                               *y_coeff_bits,
@@ -287,7 +287,7 @@ extern "C" {
 
     typedef EbErrorType(*EB_FULL_NXN_COST_FUNC)(
         PictureControlSet                    *picture_control_set_ptr,
-        struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
+        ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
         uint32_t                                qp,
         uint64_t                               *y_distortion,
         uint64_t                               *cb_distortion,

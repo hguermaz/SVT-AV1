@@ -4376,8 +4376,7 @@ void get_eight_horizontal_search_point_results_8x8_16x16_pu_sse41_intrin(
 {
 
     int16_t x_mv, y_mv;
-    const uint8_t *pRef, *pSrc;
-    __m128i s0, s1, s2, s3, s4, s5;
+    __m128i s0, s1, s3;
     __m128i sad[4];
     uint32_t temSum;
 

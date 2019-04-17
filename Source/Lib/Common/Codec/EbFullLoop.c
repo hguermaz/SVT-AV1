@@ -490,6 +490,41 @@ void av1_quantize_b_facade_II(
 
 #if OPT_QUANT_COEFF
 // Hsan: code clean up; from static to extern as now used @ more than 1 file 
+
+static const int16_t k_eob_group_start[12] = { 0, 1, 2, 3, 5, 9, 17, 33, 65, 129, 257, 513 };
+
+static const int8_t eob_to_pos_small[33] = {
+    0, 1, 2,                                        // 0-2
+    3, 3,                                           // 3-4
+    4, 4, 4, 4,                                     // 5-8
+    5, 5, 5, 5, 5, 5, 5, 5,                         // 9-16
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6  // 17-32
+};
+
+static const int8_t eob_to_pos_large[17] = {
+    6,                               // place holder
+    7,                               // 33-64
+    8, 8,                            // 65-128
+    9, 9, 9, 9,                      // 129-256
+    10, 10, 10, 10, 10, 10, 10, 10,  // 257-512
+    11                               // 513-
+};
+
+static INLINE int32_t get_eob_pos_token(const int32_t eob, int32_t *const extra) {
+    int32_t t;
+
+    if (eob < 33) {
+        t = eob_to_pos_small[eob];
+    }
+    else {
+        const int32_t e = AOMMIN((eob - 1) >> 5, 16);
+        t = eob_to_pos_large[e];
+    }
+
+    *extra = eob - k_eob_group_start[t];
+
+    return t;
+}
 static INLINE int32_t get_txb_bwl(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
     return tx_size_wide_log2[tx_size];
@@ -531,40 +566,6 @@ static int32_t get_eob_cost(int32_t eob, const LvMapEobCost *txb_eob_costs,
     return eob_cost;
 }
 
-static const int16_t k_eob_group_start[12] = { 0, 1, 2, 3, 5, 9, 17, 33, 65, 129, 257, 513 };
-
-static const int8_t eob_to_pos_small[33] = {
-    0, 1, 2,                                        // 0-2
-    3, 3,                                           // 3-4
-    4, 4, 4, 4,                                     // 5-8
-    5, 5, 5, 5, 5, 5, 5, 5,                         // 9-16
-    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6  // 17-32
-};
-
-static const int8_t eob_to_pos_large[17] = {
-    6,                               // place holder
-    7,                               // 33-64
-    8, 8,                            // 65-128
-    9, 9, 9, 9,                      // 129-256
-    10, 10, 10, 10, 10, 10, 10, 10,  // 257-512
-    11                               // 513-
-};
-
-static INLINE int32_t get_eob_pos_token(const int32_t eob, int32_t *const extra) {
-    int32_t t;
-
-    if (eob < 33) {
-        t = eob_to_pos_small[eob];
-    }
-    else {
-        const int32_t e = AOMMIN((eob - 1) >> 5, 16);
-        t = eob_to_pos_large[e];
-    }
-
-    *extra = eob - k_eob_group_start[t];
-
-    return t;
-}
 static const uint8_t clip_max3[256] = {
   0, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
   3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -1090,6 +1091,14 @@ static AOM_FORCE_INLINE int get_br_ctx_eob(const int c,  // raster order
         return 7;
     return 14;
 }
+static INLINE int32_t get_golomb_cost(int32_t abs_qc) {
+    if (abs_qc >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+        const int32_t r = abs_qc - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
+        const int32_t length = get_msb(r) + 1;
+        return av1_cost_literal(2 * length - 1);
+    }
+    return 0;
+}
 static INLINE int get_br_cost(TranLow level, const int *coeff_lps) {
     const int base_range = AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
     return coeff_lps[base_range] + get_golomb_cost(level);
@@ -1125,15 +1134,6 @@ static INLINE int get_coeff_cost_general(int is_last, int ci, TranLow abs_qc,
     }
     return cost;
 }
-static INLINE int32_t get_golomb_cost(int32_t abs_qc) {
-    if (abs_qc >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-        const int32_t r = abs_qc - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
-        const int32_t length = get_msb(r) + 1;
-        return av1_cost_literal(2 * length - 1);
-    }
-    return 0;
-}
-
 static INLINE int64_t get_coeff_dist(TranLow tcoeff, TranLow dqcoeff,
     int shift) {
     const int64_t diff = (tcoeff - dqcoeff) * (1 << shift);
@@ -1206,6 +1206,28 @@ static AOM_FORCE_INLINE int get_two_coeff_cost_simple(
 
     return cost;
 }
+static INLINE int get_coeff_cost_eob(int ci, TranLow abs_qc, int sign,
+    int coeff_ctx, int dc_sign_ctx,
+    const LvMapCoeffCost *txb_costs,
+    int bwl, TxClass tx_class) {
+    int cost = 0;
+    cost += txb_costs->base_eob_cost[coeff_ctx][AOMMIN(abs_qc, 3) - 1];
+    if (abs_qc != 0) {
+        if (ci == 0) {
+            cost += txb_costs->dc_sign_cost[dc_sign_ctx][sign];
+        }
+        else {
+            cost += av1_cost_literal(1);
+        }
+        if (abs_qc > NUM_BASE_LEVELS) {
+            int br_ctx;
+            br_ctx = get_br_ctx_eob(ci, bwl, tx_class);
+            cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
+        }
+    }
+    return cost;
+}
+
 static AOM_FORCE_INLINE void update_coeff_eob(
     int *accu_rate, int64_t *accu_dist, uint16_t *eob, int *nz_num, int *nz_ci,
     int si, TxSize tx_size, TxClass tx_class, int bwl, int height,
@@ -1454,28 +1476,6 @@ static AOM_FORCE_INLINE void update_coeff_simple(
         }
     }
 }
-static INLINE int get_coeff_cost_eob(int ci, TranLow abs_qc, int sign,
-    int coeff_ctx, int dc_sign_ctx,
-    const LvMapCoeffCost *txb_costs,
-    int bwl, TxClass tx_class) {
-    int cost = 0;
-    cost += txb_costs->base_eob_cost[coeff_ctx][AOMMIN(abs_qc, 3) - 1];
-    if (abs_qc != 0) {
-        if (ci == 0) {
-            cost += txb_costs->dc_sign_cost[dc_sign_ctx][sign];
-        }
-        else {
-            cost += av1_cost_literal(1);
-        }
-        if (abs_qc > NUM_BASE_LEVELS) {
-            int br_ctx;
-            br_ctx = get_br_ctx_eob(ci, bwl, tx_class);
-            cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
-        }
-    }
-    return cost;
-}
-
 static INLINE void update_skip(int *accu_rate, int64_t accu_dist, uint16_t *eob,
     int nz_num, int *nz_ci, int64_t rdmult,
     int skip_cost, int non_skip_cost,
@@ -1559,6 +1559,10 @@ void av1_optimize_b(
     int                     plane)
 
 {
+    (void)stride;
+    (void)n_coeffs;
+    (void)sc;
+    (void)qparam;
 #if DEBUG_TRELLIS
     tx_type = DCT_DCT;
     const ScanOrder *const scan_order = &av1_scan_orders[tx_size][tx_type];
@@ -2027,12 +2031,13 @@ void av1_quantize_inv_quantize(
         uint64_t cost_non_opt;
         uint64_t cost_opt;
         
+#if TRELLIS_SKIP
         uint64_t coeff_rate_skip_non_opt;
         uint64_t coeff_rate_skip_opt;
 
         uint64_t cost_skip_non_opt;
         uint64_t cost_skip_opt;
-
+#endif
         // Use the 1st spot of the candidate buffer to hold cfl settings to use same kernel as MD for coef cost estimation
         if (is_encode_pass) 
         {
@@ -2058,6 +2063,7 @@ void av1_quantize_inv_quantize(
             dc_sign_context,    
             picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
+#if TRELLIS_SKIP
         coeff_rate_skip_non_opt = av1_cost_skip_txb(
             0,//picture_control_set_ptr->update_cdf,
             0,//picture_control_set_ptr->ec_ctx_array[sb_index],
@@ -2065,7 +2071,7 @@ void av1_quantize_inv_quantize(
             txsize,
             (component_type == COMPONENT_LUMA) ? 0 : 1,
             txb_skip_context);
-
+#endif
         full_distortion_kernel32_bits_func_ptr_array[asm_type](
             coeff,
             get_txb_wide(txsize),
@@ -2079,8 +2085,8 @@ void av1_quantize_inv_quantize(
         distortion_non_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_PREDICTION], shift);
 
         cost_non_opt = RDCOST(md_context->full_lambda, coeff_rate_non_opt, distortion_non_opt[DIST_CALC_RESIDUAL]);
-        cost_skip_non_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_non_opt, distortion_non_opt[DIST_CALC_PREDICTION]);
 #if TRELLIS_SKIP // To test
+        cost_skip_non_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_non_opt, distortion_non_opt[DIST_CALC_PREDICTION]);
         if (cost_skip_non_opt < cost_non_opt)
             *eob = 0;
 #endif
@@ -2119,6 +2125,7 @@ void av1_quantize_inv_quantize(
                     dc_sign_context,   
                     picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
+#if TRELLIS_SKIP
                 coeff_rate_skip_opt = av1_cost_skip_txb(
                     0,//picture_control_set_ptr->update_cdf,
                     0,//picture_control_set_ptr->ec_ctx_array[sb_index],
@@ -2126,7 +2133,7 @@ void av1_quantize_inv_quantize(
                     txsize,
                     (component_type == COMPONENT_LUMA) ? 0 : 1,
                     txb_skip_context);
-
+#endif
                 full_distortion_kernel32_bits_func_ptr_array[asm_type](
                     coeff,
                     get_txb_wide(txsize),
@@ -2141,8 +2148,8 @@ void av1_quantize_inv_quantize(
                 distortion_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_PREDICTION], shift);
 
                 cost_opt = RDCOST(md_context->full_lambda, coeff_rate_opt, distortion_opt[0]);
-                cost_skip_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_opt, distortion_opt[1]);
 #if TRELLIS_SKIP // To test
+                cost_skip_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_opt, distortion_opt[1]);
                 if (cost_skip_opt < cost_opt)
                     *eob = 0;
 #endif
@@ -2708,6 +2715,7 @@ void encode_pass_tx_search(
     (void)dZoffset;
     (void)use_delta_qp;
     (void)cb_qp;
+    (void)candidate_plane;
     UNUSED(count_non_zero_coeffs);
     UNUSED(component_mask);
 
@@ -2923,6 +2931,7 @@ void encode_pass_tx_search_hbd(
     (void)dZoffset;
     (void)use_delta_qp;
     (void)cb_qp;
+    (void)candidate_plane;
     UNUSED(component_mask);
     UNUSED(count_non_zero_coeffs);
 
@@ -3651,7 +3660,6 @@ EbBool merge_1D_inter_block(
     int parent_diriction = parent_cu_ptr->prediction_unit_array[0].inter_pred_direction_index;
     int parent_mv_l0 = parent_cu_ptr->prediction_unit_array[0].mv[REF_LIST_0].mv_union;
     int parent_mv_l1 = parent_cu_ptr->prediction_unit_array[0].mv[REF_LIST_1].mv_union;
-    int parent_eob = parent_cu_ptr->block_has_coeff;
     int child_0_diriction = child_cu_ptr->prediction_unit_array[0].inter_pred_direction_index;
     int child_0_mv_l0 = child_cu_ptr->prediction_unit_array[0].mv[REF_LIST_0].mv_union;
     int child_0_mv_l1 = child_cu_ptr->prediction_unit_array[0].mv[REF_LIST_1].mv_union;

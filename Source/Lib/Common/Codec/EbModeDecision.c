@@ -2107,7 +2107,6 @@ void  inject_intra_candidates_ois(
     uint8_t                     intra_candidate_counter;
     uint8_t                     intra_mode;
     uint32_t                    can_total_cnt = 0;
-    EbBool                      use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
     ModeDecisionCandidate    *candidate_array = context_ptr->fast_candidate_array;
 #if CFL_FIX
     EbBool                      disable_cfl_flag = (MAX(context_ptr->blk_geom->bheight, context_ptr->blk_geom->bwidth) > 32) ? EB_TRUE : EB_FALSE;

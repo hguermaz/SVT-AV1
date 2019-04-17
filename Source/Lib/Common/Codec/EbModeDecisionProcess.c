@@ -23,6 +23,8 @@ EbErrorType mode_decision_context_ctor(
     uint32_t candidateIndex;
     EbErrorType return_error = EB_ErrorNone;
 
+    (void)color_format;
+
     ModeDecisionContext *context_ptr;
     EB_MALLOC(ModeDecisionContext*, context_ptr, sizeof(ModeDecisionContext), EB_N_PTR);
     *context_dbl_ptr = context_ptr;

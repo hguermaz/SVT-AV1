@@ -2966,8 +2966,8 @@ EbErrorType warped_motion_prediction_md(
     EbAsm                                   asm_type)
 {
     EbErrorType  return_error = EB_ErrorNone;
-    InterPredictionContext *context_ptr = (InterPredictionContext*)(md_context_ptr->inter_prediction_context);
     uint8_t is_compound = (mv_unit->pred_direction == BI_PRED) ? 1 : 0;
+    (void)asm_type;
     assert(!is_compound);
 
     int32_t src_stride;

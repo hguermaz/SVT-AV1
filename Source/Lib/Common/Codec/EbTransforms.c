@@ -4930,6 +4930,7 @@ EbErrorType av1_estimate_transform(
     EB_TRANS_COEFF_SHAPE  trans_coeff_shape)
 
 {
+    (void)trans_coeff_shape;
     EbErrorType return_error = EB_ErrorNone;
 
     (void)asm_type;
