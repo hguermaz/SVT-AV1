@@ -206,6 +206,24 @@ extern "C" {
 #define M9_DLF_OFF                    1 // 0.5
 #define M9_adopted_FULL_LOOP_ESCAPE   1 //
 
+
+// TO BE TESTED
+#define M4_Uni_Bi_Pred                              0
+#define M7_Intra                                    0
+#define M8_Intra                                    0
+#define M6_Fast_Loop_Search_Method                  0
+#define M6_Warped_Motion_Injection                  0
+#define M7_enable_restoration                       0 
+#define M8_Global_MV_Injection                      0
+#define M9_adopted_INTER_SRC_SRC_FAST_LOOP          0
+#define M1_RED_CU                                   0 
+#define M1_CABAC_UP                                 0 
+#define M1_Fast_Loop_Method                         0 
+#define M1_Spatial_SSE                              0 
+#define M6_CDEF_filter                              0
+#define M8_CDEF_filter                              0
+
+
 #else
 
 #define WIKI_TX_SEARCH                              0
