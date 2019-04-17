@@ -192,7 +192,8 @@ extern "C" {
 #define M6_TX_search_Skip_TH                        1 
 
 //##################### Features start #####################
-#if 0
+#if 1
+//gain
 #define M9_FRAC_ME_SEARCH_64x64_OFF    1
 #define M9_FRAC_ME_SEARCH_METHOD_OFF   1
 #define M9_SG_OFF                      1
@@ -200,9 +201,15 @@ extern "C" {
 #define M9_SUBPEL_OFF_N_BASE           1
 #define M9_adopted_HME_level           1
 #define M9_adopted_CU_8x8              1
+#define M6_Interpolation_search        1
+// loss
+#define M7_Wiener_filter              1 // 0.3
+#define M9_DLF_OFF                    1 // 0.5
+#define M9_adopted_FULL_LOOP_ESCAPE   1 //
 
 #else
 
+#define WIKI_TX_SEARCH                              0
 #define M9_FRAC_ME_SEARCH_METHOD_OFF                0  
 #define M9_FRAC_ME_SEARCH_64x64_OFF                 0 
 #define M9_SUBPEL_OFF                               0 

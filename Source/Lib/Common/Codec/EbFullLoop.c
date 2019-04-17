@@ -1032,7 +1032,11 @@ void ProductFullLoopTxSearch(
     uint64_t                       y_full_cost = MAX_CU_COST;
     uint32_t                       yCountNonZeroCoeffsTemp;
     TxType                         txk_start = DCT_DCT;
+#if WIKI_TX_SEARCH
+    TxType                         txk_end = DCT_DCT+1;
+#else
     TxType                         txk_end = TX_TYPES;
+#endif
     TxType                         tx_type;
     int32_t                        txb_itr = 0;
     TxSize                         txSize = context_ptr->blk_geom->txsize[txb_itr];
@@ -1045,6 +1049,9 @@ void ProductFullLoopTxSearch(
     TxType uv_tx_type = DCT_DCT;
 
     for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
+#if WIKI_TX_SEARCH
+        tx_type_index = (tx_type_index  == 1) ? IDTX : tx_type_index;
+#endif
         tx_type = (TxType)tx_type_index;
         allowed_tx_mask[tx_type] = 1;
         if (plane == 0) {
@@ -1065,6 +1072,9 @@ void ProductFullLoopTxSearch(
     }
     TxType best_tx_type = DCT_DCT;
     for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
+#if WIKI_TX_SEARCH
+        tx_type_index = (tx_type_index  == 1) ? IDTX : tx_type_index;
+#endif
         tx_type = (TxType)tx_type_index;
         if (!allowed_tx_mask[tx_type]) continue;
         if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set)
