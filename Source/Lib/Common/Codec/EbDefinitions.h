@@ -220,13 +220,24 @@ extern "C" {
 #define M9_CDEF_OFF                                 1 // 0.9%
 #define M6_Fast_Loop_Search_Method                  1 //  0.3%
 
+#define OMK_ADP_2                                   1 // 0.2
+#define OMK_ADP_3                                   1 // 0.7
 // TO BE TESTED
-#define M7_Intra                                    0
+#define ME_WIKI_M3                                  0
+#define ME_WIKI_M7                                  0
+#define ME_WIKI_M8                                  0
 #define M8_Intra                                    0
 #define M1_CABAC_UP                                 0 
 #define M1_Spatial_SSE                              0 
-#define OMK_ADP_2                                   1 //  
-
+#define ICOPY_L1                                    0
+#define ICOPY_L2                                    0
+#define ME_WIKI_M3                                  0
+#define ME_WIKI_M7                                  0
+#define ME_WIKI_M8                                  0
+#define M6_Intra                                    0
+#define M6_Disable_TX_search_based_on_NFL           0
+#define M5_TX_search                                0
+#define M5_Chroma                                   0
 
 #else
 
@@ -315,7 +326,7 @@ extern "C" {
 
 #define M6_HME                                      0
 #define M9_adopted_HME                              0
-//#define M9_adopted_HME_level                        0
+//#define M9_adopted_HME_level                      0
 #define M1_HME_Search_Method                        0
 #define M1_ME_Search_Method                         0
 

@@ -661,7 +661,15 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else {
 #endif
-#if OMK_ADP_2
+#if OMK_ADP_3        
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+        else if (picture_control_set_ptr->is_used_as_reference_flag)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+        else
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+
+#elif OMK_ADP_2
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
         else
@@ -742,7 +750,14 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
     else
 #endif
-#if M5_NSQ_search
+#if OMK_ADP_3
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL6;
+        else if (picture_control_set_ptr->is_used_as_reference_flag)
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL4;
+        else
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
+#elif M5_NSQ_search
         picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
 #elif M4_NSQ_search
         if (picture_control_set_ptr->slice_type == I_SLICE)
