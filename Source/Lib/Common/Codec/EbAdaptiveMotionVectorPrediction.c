@@ -1545,10 +1545,16 @@ int select_samples(
     i = 0;
     j = l - 1;
     for (k = 0; k < l - ret; k++) {
-        while (pts_mvd[i] != -1)
+        while (pts_mvd[i] != -1) {
             i++;
-        while (pts_mvd[j] == -1)
+        }
+        if (j < 0)
+            break;
+        while (pts_mvd[j] == -1) {
             j--;
+            if (j < 0)
+                break;
+        }
         if (i > j)
             break;
 

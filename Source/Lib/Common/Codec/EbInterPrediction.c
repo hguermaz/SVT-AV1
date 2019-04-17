@@ -982,6 +982,7 @@ static void convolve_2d_for_intrabc(const uint8_t *src, int src_stride,
         subpel_x_q4 ? &av1_intrabc_filter_params : NULL;
     const InterpFilterParams *filter_params_y =
         subpel_y_q4 ? &av1_intrabc_filter_params : NULL;
+    assert(filter_params_y != NULL);
     if (subpel_x_q4 != 0 && subpel_y_q4 != 0) {
         av1_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h,
             (InterpFilterParams *)filter_params_x, (InterpFilterParams *)filter_params_y, 0, 0, conv_params);
@@ -1005,6 +1006,7 @@ static void highbd_convolve_2d_for_intrabc(const uint16_t *src, int src_stride,
         subpel_x_q4 ? &av1_intrabc_filter_params : NULL;
     const InterpFilterParams *filter_params_y =
         subpel_y_q4 ? &av1_intrabc_filter_params : NULL;
+    assert(filter_params_y != NULL);
     if (subpel_x_q4 != 0 && subpel_y_q4 != 0) {
         av1_highbd_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h,
             filter_params_x, filter_params_y, 0, 0,
@@ -4355,12 +4357,16 @@ EbErrorType inter_pu_prediction_av1(
     EbPictureBufferDesc  *ref_pic_list1 = NULL;
     ModeDecisionCandidate *const candidate_ptr = candidate_buffer_ptr->candidate_ptr;
 
+    Mv mv_0;
+    Mv mv_1;
+    mv_0.x = candidate_buffer_ptr->candidate_ptr->motion_vector_xl0;
+    mv_0.y = candidate_buffer_ptr->candidate_ptr->motion_vector_yl0;
+    mv_1.x = candidate_buffer_ptr->candidate_ptr->motion_vector_xl1;
+    mv_1.y = candidate_buffer_ptr->candidate_ptr->motion_vector_yl1;
     MvUnit mv_unit;
     mv_unit.pred_direction = candidate_buffer_ptr->candidate_ptr->prediction_direction[md_context_ptr->pu_itr];
-    mv_unit.mv[0].x = candidate_buffer_ptr->candidate_ptr->motion_vector_xl0;
-    mv_unit.mv[0].y = candidate_buffer_ptr->candidate_ptr->motion_vector_yl0;
-    mv_unit.mv[1].x = candidate_buffer_ptr->candidate_ptr->motion_vector_xl1;
-    mv_unit.mv[1].y = candidate_buffer_ptr->candidate_ptr->motion_vector_yl1;
+    mv_unit.mv[0] = mv_0;
+    mv_unit.mv[1] = mv_1;
 
     SequenceControlSet* sequence_control_set_ptr = ((SequenceControlSet*)(picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr));
     EbBool  is16bit = (EbBool)(sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);

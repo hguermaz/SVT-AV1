@@ -1194,9 +1194,11 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
         candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
 
+        Mv mv_0;
+        mv_0.x = candidateArray[canIdx].motion_vector_xl0;
+        mv_0.y = candidateArray[canIdx].motion_vector_yl0;
         MvUnit mv_unit;
-        mv_unit.mv[0].x = candidateArray[canIdx].motion_vector_xl0;
-        mv_unit.mv[0].y = candidateArray[canIdx].motion_vector_yl0;
+        mv_unit.mv[0] = mv_0;
         candidateArray[canIdx].local_warp_valid = warped_motion_parameters(
             picture_control_set_ptr,
             context_ptr->cu_ptr,
@@ -1252,9 +1254,11 @@ void inject_warped_motion_candidates(
             candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
             candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
 
+            Mv mv_0;
+            mv_0.x = candidateArray[canIdx].motion_vector_xl0;
+            mv_0.y = candidateArray[canIdx].motion_vector_yl0;
             MvUnit mv_unit;
-            mv_unit.mv[0].x = candidateArray[canIdx].motion_vector_xl0;
-            mv_unit.mv[0].y = candidateArray[canIdx].motion_vector_yl0;
+            mv_unit.mv[0] = mv_0;
             candidateArray[canIdx].local_warp_valid = warped_motion_parameters(
                 picture_control_set_ptr,
                 context_ptr->cu_ptr,
@@ -1328,9 +1332,11 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].motion_vector_pred_x[REF_LIST_0] = bestPredmv[0].as_mv.col;
         candidateArray[canIdx].motion_vector_pred_y[REF_LIST_0] = bestPredmv[0].as_mv.row;
 
+        Mv mv_0;
+        mv_0.x = candidateArray[canIdx].motion_vector_xl0;
+        mv_0.y = candidateArray[canIdx].motion_vector_yl0;
         MvUnit mv_unit;
-        mv_unit.mv[0].x = candidateArray[canIdx].motion_vector_xl0;
-        mv_unit.mv[0].y = candidateArray[canIdx].motion_vector_yl0;
+        mv_unit.mv[0] = mv_0;
         candidateArray[canIdx].local_warp_valid = warped_motion_parameters(
             picture_control_set_ptr,
             context_ptr->cu_ptr,
@@ -2120,6 +2126,7 @@ void  inject_intra_candidates_ois(
                 
 
         intra_mode = ois_blk_ptr[can_total_cnt].intra_mode;
+        assert(intra_mode < INTRA_MODES);
         if (av1_is_directional_mode((PredictionMode)intra_mode)) {
 
             int32_t angle_delta = ois_blk_ptr[can_total_cnt].angle_delta ;
@@ -2308,6 +2315,7 @@ void  intra_bc_search(
     x->nmv_vec_cost = context_ptr->md_rate_estimation_ptr->nmv_vec_cost;
     x->mv_cost_stack = context_ptr->md_rate_estimation_ptr->nmvcoststack;
     BlockSize bsize = context_ptr->blk_geom->bsize;
+    assert(bsize < BlockSizeS_ALL);
     const Av1Common *const cm = pcs->parent_pcs_ptr->av1_cm;
     MvReferenceFrame ref_frame = INTRA_FRAME;
     generate_av1_mvp_table(

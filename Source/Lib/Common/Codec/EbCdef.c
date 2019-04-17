@@ -1414,6 +1414,9 @@ void finish_cdef_search(
     int32_t start_gi;
     int32_t end_gi;
 
+    assert(sb_index != NULL);
+    assert(selected_strength != NULL);
+
     gi_step = get_cdef_gi_step(pPcs->cdef_filter_mode);
 
     mid_gi = pPcs->cdf_ref_frame_strenght;
@@ -1467,7 +1470,6 @@ void finish_cdef_search(
                      memcpy(mse[0][sb_count], picture_control_set_ptr->mse_seg[0][fbr*nhfb + fbc], TOTAL_STRENGTHS * sizeof(uint64_t));
                 if (pli == 2)
                      memcpy(mse[1][sb_count], picture_control_set_ptr->mse_seg[1][fbr*nhfb + fbc], TOTAL_STRENGTHS * sizeof(uint64_t));
-
                 sb_index[sb_count] = MI_SIZE_64X64 * fbr * picture_control_set_ptr->mi_stride + MI_SIZE_64X64 * fbc;
             }
             sb_count++;

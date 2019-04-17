@@ -1600,7 +1600,6 @@ void perform_fast_loop(
     uint64_t highestCost;
     uint64_t bestFirstFastCostSearchCandidateCost = MAX_CU_COST;
     int32_t  bestFirstFastCostSearchCandidateIndex = INVALID_FAST_CANDIDATE_INDEX;
-
     // 1st fast loop: src-to-src
     fastLoopCandidateIndex = fast_candidate_end_index;
     while (fastLoopCandidateIndex >= fast_candidate_start_index)
@@ -1680,6 +1679,7 @@ void perform_fast_loop(
 
             }
             else {
+                assert((context_ptr->blk_geom->bwidth >> 3) < 17);
                 candidateBuffer->candidate_ptr->luma_fast_distortion = lumaFastDistortion = (nxm_sad_kernel_sub_sampled_func_ptr_array[asm_type][context_ptr->blk_geom->bwidth >> 3](
                     input_picture_ptr->buffer_y + inputOriginIndex,
                     input_picture_ptr->stride_y,
@@ -1710,6 +1710,7 @@ void perform_fast_loop(
                         context_ptr->blk_geom->bheight_uv);
                 }
                 else {
+                    assert((context_ptr->blk_geom->bwidth_uv >> 3) < 17);
                     chromaFastDistortion = nxm_sad_kernel_sub_sampled_func_ptr_array[asm_type][context_ptr->blk_geom->bwidth_uv >> 3](
                         input_picture_ptr->buffer_cb + inputCbOriginIndex,
                         input_picture_ptr->stride_cb,

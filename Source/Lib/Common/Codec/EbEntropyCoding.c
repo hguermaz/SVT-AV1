@@ -4783,7 +4783,7 @@ static void write_palette_mode_info(
     //assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
    // const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
     const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
-
+    assert(bsize_ctx >= 0);
     if (intra_luma_mode == DC_PRED) {
         const int n = 0;// pmi->palette_size[0];
         const int palette_y_mode_ctx = 0;// av1_get_palette_mode_ctx(xd);
@@ -4889,6 +4889,8 @@ EbErrorType write_modes_b(
     BlockSize bsize = blk_geom->bsize;
     EbBool                   skipCoeff = EB_FALSE;
     skipCoeff = cu_ptr->block_has_coeff ? 0 : 1;
+
+    assert(bsize < BlockSizeS_ALL);
 
     if (picture_control_set_ptr->slice_type == I_SLICE) {
         //const int32_t skip = write_skip(cm, xd, mbmi->segment_id, mi, w);
