@@ -214,32 +214,33 @@ extern "C" {
 #define M6_Warped_Motion_Injection                  1
 #define M8_Global_MV_Injection                      1
 #define M1_Fast_Loop_Method                         1 
-// -6.2 / 0.664
+// -6.2% / 0.664
 // loss
 #define M8_NFL                                      1 // 0.7%
 #define M9_CDEF_OFF                                 1 // 0.9%
 #define M6_Fast_Loop_Search_Method                  1 //  0.3%
 #define OMK_ADP_2                                   1 // 0.2
 #define OMK_ADP_3                                   1 // 0.7
-// new M2 -4.2  0.8
+// new M2 -4.2%  0.8
 
 #define OMK_ME_1                                    1 // 0.7
-// new M3 7.8   1.6
+// new M3 7.8%   1.6
 
 
 #define OMK_ME_2                                    1  
 #define OMK_ADP_4                                   1  
 #define ICOPY_L1                                    1
 #define M6_Intra                                    1
+// new M4 15.8%   3.66
 
+#define M1_ME_Search_Method                         1 // *
+#define OMK_ME_3                                    1  
+#define OMK_ADP_9                                   1 
+// new M5 40.0%   7.625
 
 // TO BE TESTED
 
-#define OMK_ADP_5                                   0 
-#define OMK_ADP_6                                   0 
-#define OMK_ADP_7                                   0 
-#define OMK_ADP_8                                   0 
-#define OMK_ADP_9                                   0 
+
 #define OMK_ADP_10                                  0 // *
 
 #define M8_Intra                                    0 // *
@@ -261,15 +262,19 @@ extern "C" {
 #define M6_TX_search                                0
 #define M9_TX_search_OFF                            0 // *
 #define M1_HME_Search_Method                        0 // *
-#define M1_ME_Search_Method                         0 // *
 #define M6_HME                                      0 // *
 #define M9_adopted_HME                              0 // *
-#define M9_adopted_HME_level                        0 // *
+
+#define M7_enable_restoration                       0 // not in excel
 
 #define M4_TX_search                                0
 #define OMK_M4_TX_search                            0
 
 #else
+#define OMK_ADP_5                                   0 
+#define OMK_ADP_6                                   0 
+#define OMK_ADP_7                                   0 
+#define OMK_ADP_8                                   0 
 #define OMK_TX                                      0
 #define WIKI_TX_SEARCH                              0
 //#define M9_FRAC_ME_SEARCH_METHOD_OFF                0  
@@ -4027,7 +4032,10 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
     }
 };
-#if OMK_ME_2
+#if OMK_ME_3
+#define ME_W 208
+#define ME_H 168
+#elif OMK_ME_2
 #define ME_W 288
 #define ME_H 248
 #elif OMK_ME_1
