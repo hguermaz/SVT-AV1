@@ -238,6 +238,10 @@ extern "C" {
 #define OMK_ADP_9                                   1 
 // new M5 40.0%   7.625
 
+#define OMK_ME_4                                    0
+
+
+
 // TO BE TESTED
 
 
@@ -4032,7 +4036,10 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
     }
 };
-#if OMK_ME_3
+#if OMK_ME_4
+#define ME_W 168
+#define ME_H 128
+#elif OMK_ME_3
 #define ME_W 208
 #define ME_H 168
 #elif OMK_ME_2
