@@ -22,8 +22,10 @@
 #include "EbModeDecision.h"
 #include "EbCodingUnit.h"
 #include "EbModeDecisionProcess.h"
+#include "EbDefinitions.h"
+#include "EbPictureControlSet.h"
+#include "EbEncDecProcess.h"
 #include "aom_dsp_rtcd.h"
-#include "EbTransforms.h"
 
 void *aom_memset16(void *dest, int32_t val, size_t length);
 

@@ -3,7 +3,6 @@
 * SPDX - License - Identifier: BSD - 2 - Clause - Patent
 */
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "EbMcp.h"

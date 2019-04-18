@@ -20,7 +20,7 @@
 
 #include "EbPictureOperators.h"
 #include "EbPackUnPack.h"
-#include <immintrin.h>
+#include <malloc.h>
 
 #define VARIANCE_PRECISION      16
 #define MEAN_PRECISION      (VARIANCE_PRECISION >> 1)

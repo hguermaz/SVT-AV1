@@ -19,8 +19,7 @@
 #include "EbDefinitions.h"
 #include "EbCdefProcess.h"
 #include "EbEncDecResults.h"
-#include "EbEncDecTasks.h"
-#include "EbPictureDemuxResults.h"
+#include "EbThreads.h"
 #include "EbReferenceObject.h"
 
 #include "EbCdef.h"

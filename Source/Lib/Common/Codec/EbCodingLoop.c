@@ -26,7 +26,7 @@
 #include "EbEncDecProcess.h"
 #include "EbSvtAv1ErrorCodes.h"
 #include "EbTransforms.h"
-#include "EbModeDecisionConfiguration.h"
+#include "EbModeDecisionConfigurationProcess.h"
 #include "EbIntraPrediction.h"
 #include "aom_dsp_rtcd.h"
 #include "EbCodingLoop.h"

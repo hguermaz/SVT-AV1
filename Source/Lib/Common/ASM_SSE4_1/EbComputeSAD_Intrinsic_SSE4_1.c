@@ -8,7 +8,6 @@
 #include "EbComputeSAD_SSE4_1.h"
 #include "EbDefinitions.h"
 #include "smmintrin.h"
-#include "EbUtility.h"
 
 #define UPDATE_BEST(s, k, offset) \
   temSum = _mm_extract_epi32(s, k); \

@@ -18,10 +18,10 @@
 
 #include "EbEncDecTasks.h"
 #include "EbEncDecResults.h"
-#include "EbPictureDemuxResults.h"
+#include "EbDefinitions.h"
 #include "EbCodingLoop.h"
 #include "EbSvtAv1ErrorCodes.h"
-#include "EbDeblockingFilter.h"
+#include "EbUtility.h"
 #include "grainSynthesis.h"
 
 void av1_cdef_search(

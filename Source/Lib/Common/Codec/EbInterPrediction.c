@@ -20,12 +20,11 @@
 #include "EbReferenceObject.h"
 
 #include "EbInterPrediction.h"
-#include "EbMcp.h"
-#include "EbAvcStyleMcp.h"
+#include "EbSvtAv1.h"
+#include "EbDefinitions.h"
 #include "EbAdaptiveMotionVectorPrediction.h"
 
 #include "EbModeDecisionProcess.h"
-#include "EbSvtAv1ErrorCodes.h"
 #include <smmintrin.h> /* SSE4.1 */
 
 

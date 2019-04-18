@@ -19,7 +19,6 @@
 
 #include "EbIntraPrediction.h"
 #include "EbLambdaRateTables.h"
-#include <math.h>
 #include "EbPictureOperators.h"
 #define OIS_TH_COUNT    4
 
