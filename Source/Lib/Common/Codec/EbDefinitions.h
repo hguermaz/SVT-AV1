@@ -157,7 +157,8 @@ extern "C" {
 #define NSQ_TAB_SIZE                                    6
 
 #define AOM_INTERP_EXTEND 4
-
+#define TX_SIZE_SEARCH_LEVELS                           1
+ 
 struct Buf2D 
 {
     uint8_t *buf;
@@ -604,6 +605,9 @@ typedef enum ATTRIBUTE_PACKED {
     BLOCK_LARGEST = (BlockSizeS - 1)
 } BlockSize;
 
+#if TX_SIZE_SEARCH_LEVELS
+typedef BlockSize block_size;
+#endif
 typedef enum ATTRIBUTE_PACKED {
     PARTITION_NONE,
     PARTITION_HORZ,

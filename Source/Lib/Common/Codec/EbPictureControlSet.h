@@ -13860,7 +13860,9 @@ extern "C" {
         NeighborArrayUnit                  *inter_pred_dir_neighbor_array;
         NeighborArrayUnit                  *ref_frame_type_neighbor_array;
         NeighborArrayUnit32                *interpolation_type_neighbor_array;
-
+#if TX_SIZE_SEARCH_LEVELS
+        NeighborArrayUnit                  *txfm_context_array;
+#endif
         ModeInfo                            **mi_grid_base; //2 SB Rows of mi Data are enough
         ModeInfo                             *mip;
 

@@ -273,7 +273,9 @@ on a larger type, you can speed up the decoder by using it here.*/
     /********************************************************************************************************************************/
     // bitwriter.h
     typedef struct DaalaWriter AomWriter;
-
+#if TX_SIZE_SEARCH_LEVELS
+    typedef struct DaalaWriter aom_writer;
+#endif
     typedef struct TokenStats 
     {
         int32_t cost;
