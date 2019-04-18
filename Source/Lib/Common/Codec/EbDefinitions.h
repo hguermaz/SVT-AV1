@@ -154,6 +154,7 @@ extern "C" {
 #define M5_TX_search                                0
 
 #define OMK_ME_6                                    0
+#define OMK_ME_8                                    0
 
 
 #define M6_Disable_TX_search_based_on_NFL           0
@@ -3926,7 +3927,10 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
     }
 };
-#if OMK_ME_6
+#if OMK_ME_8
+#define ME_W 48
+#define ME_H 16
+#elif OMK_ME_6
 #define ME_W 96
 #define ME_H 80
 #elif OMK_ME_5
