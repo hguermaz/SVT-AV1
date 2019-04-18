@@ -244,6 +244,8 @@ extern "C" {
 #define M5_TX_search                                0
 #define M5_Chroma                                   0
 #define OMK_TX                                      0
+#define M4_TX_search                                0
+#define OMK_M4_TX_search                            0
 
 #else
 

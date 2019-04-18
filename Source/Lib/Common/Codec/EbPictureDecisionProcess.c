@@ -1185,11 +1185,15 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     // Set tx search reduced set falg (0: full tx set; 1: reduced tx set)
 #if M5_TX_search_Reduced_Set
+#if OMK_M4_TX_search
+        picture_control_set_ptr->tx_search_reduced_set = 1;
+#else
     if (picture_control_set_ptr->tx_search_level == TX_SEARCH_ENC_DEC)
         picture_control_set_ptr->tx_search_reduced_set = 0;
     else {
         picture_control_set_ptr->tx_search_reduced_set = 1;
     }
+#endif
 #elif M3_TX_search_Reduced_Set
     if (picture_control_set_ptr->tx_search_level == TX_SEARCH_ENC_DEC)
         picture_control_set_ptr->tx_search_reduced_set = 0;
