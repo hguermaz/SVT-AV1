@@ -1121,7 +1121,7 @@ EbErrorType av1_inter_prediction(
         int32_t build_for_obmc = 0;
 
         const BlockSize bsize = blk_geom->bsize;//mi->sb_type;
-        ASSERT(bsize < BlockSizeS_ALL);
+        assert(bsize < BlockSizeS_ALL);
         const int32_t ss_x = 1;// pd->subsampling_x;
         const int32_t ss_y = 1;//pd->subsampling_y;
         sub8x8_inter = (block_size_wide[bsize] < 8 && ss_x) ||
@@ -1162,7 +1162,7 @@ EbErrorType av1_inter_prediction(
             const int32_t b4_w = block_size_wide[bsize] >> ss_x;
             const int32_t b4_h = block_size_high[bsize] >> ss_y;
             const BlockSize plane_bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
-            ASSERT(plane_bsize < BlockSizeS_ALL);
+            assert(plane_bsize < BlockSizeS_ALL);
             const int32_t b8_w = block_size_wide[plane_bsize] >> ss_x;
             const int32_t b8_h = block_size_high[plane_bsize] >> ss_y;
 
@@ -1194,7 +1194,7 @@ EbErrorType av1_inter_prediction(
                     conv_params.use_jnt_comp_avg = 0;
 
                     EbPictureBufferDesc                  *ref_pic = this_mbmi->ref_frame[0] == LAST_FRAME ? ref_pic_list0 : ref_pic_list1;
-                    ASSERT(ref_pic != NULL);
+                    assert(ref_pic != NULL);
                     src_ptr = ref_pic->buffer_cb + (ref_pic->origin_x + ((pu_origin_x >> 3) << 3)) / 2 + (ref_pic->origin_y + ((pu_origin_y >> 3) << 3)) / 2 * ref_pic->stride_cb;
                     dst_ptr = prediction_ptr->buffer_cb + (prediction_ptr->origin_x + ((dst_origin_x >> 3) << 3)) / 2 + (prediction_ptr->origin_y + ((dst_origin_y >> 3) << 3)) / 2 * prediction_ptr->stride_cb;
                     src_stride = ref_pic->stride_cb;
@@ -1377,7 +1377,7 @@ EbErrorType av1_inter_prediction(
         //List0-Y
         mv.col = mv_unit->mv[REF_LIST_1].x;
         mv.row = mv_unit->mv[REF_LIST_1].y;
-        ASSERT(ref_pic_list1 != NULL);
+        assert(ref_pic_list1 != NULL);
         src_ptr = ref_pic_list1->buffer_y + ref_pic_list1->origin_x + pu_origin_x + (ref_pic_list1->origin_y + pu_origin_y) * ref_pic_list1->stride_y;
         dst_ptr = prediction_ptr->buffer_y + prediction_ptr->origin_x + dst_origin_x + (prediction_ptr->origin_y + dst_origin_y) * prediction_ptr->stride_y;
         src_stride = ref_pic_list1->stride_y;
@@ -1605,7 +1605,7 @@ EbErrorType AV1InterPrediction10BitMD(
         int32_t build_for_obmc = 0;
 
         const BlockSize bsize = blk_geom->bsize;//mi->sb_type;
-        ASSERT(bsize < BlockSizeS_ALL);
+        assert(bsize < BlockSizeS_ALL);
         const int32_t ss_x = 1;// pd->subsampling_x;
         const int32_t ss_y = 1;//pd->subsampling_y;
         sub8x8_inter = (block_size_wide[bsize] < 8 && ss_x) ||
@@ -1645,7 +1645,7 @@ EbErrorType AV1InterPrediction10BitMD(
             const int32_t b4_w = block_size_wide[bsize] >> ss_x;
             const int32_t b4_h = block_size_high[bsize] >> ss_y;
             const BlockSize plane_bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
-            ASSERT(plane_bsize < BlockSizeS_ALL);
+            assert(plane_bsize < BlockSizeS_ALL);
             const int32_t b8_w = block_size_wide[plane_bsize] >> ss_x;
             const int32_t b8_h = block_size_high[plane_bsize] >> ss_y;
 
@@ -1676,7 +1676,7 @@ EbErrorType AV1InterPrediction10BitMD(
                     conv_params.use_jnt_comp_avg = 0;
 
                     EbPictureBufferDesc                  *ref_pic = this_mbmi->ref_frame[0] == LAST_FRAME ? ref_pic_list0 : ref_pic_list1;
-                    ASSERT(ref_pic != NULL);
+                    assert(ref_pic != NULL);
 #if UNPACK_REF_POST_EP  
                     src_ptr = ref_pic->buffer_cb + (ref_pic->origin_x + ((pu_origin_x >> 3) << 3)) / 2 + (ref_pic->origin_y + ((pu_origin_y >> 3) << 3)) / 2 * ref_pic->stride_cb;
 #else
@@ -1994,7 +1994,7 @@ EbErrorType AV1InterPrediction10BitMD(
         //List1-Y
         mv.col = mv_unit->mv[REF_LIST_1].x;
         mv.row = mv_unit->mv[REF_LIST_1].y;
-        ASSERT(ref_pic_list1 != NULL);
+        assert(ref_pic_list1 != NULL);
 #if UNPACK_REF_POST_EP  
         src_ptr = ref_pic_list1->buffer_y + ref_pic_list1->origin_x + pu_origin_x + (ref_pic_list1->origin_y + pu_origin_y) * ref_pic_list1->stride_y;
 #else
@@ -2248,7 +2248,7 @@ EbErrorType av1_inter_prediction_hbd(
         int32_t build_for_obmc = 0;
 
         const BlockSize bsize = blk_geom->bsize;//mi->sb_type;
-        ASSERT(bsize < BlockSizeS_ALL);
+        assert(bsize < BlockSizeS_ALL);
         const int32_t ss_x = 1;// pd->subsampling_x;
         const int32_t ss_y = 1;//pd->subsampling_y;
         sub8x8_inter = (block_size_wide[bsize] < 8 && ss_x) ||
@@ -2288,7 +2288,7 @@ EbErrorType av1_inter_prediction_hbd(
             const int32_t b4_w = block_size_wide[bsize] >> ss_x;
             const int32_t b4_h = block_size_high[bsize] >> ss_y;
             const BlockSize plane_bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
-            ASSERT(plane_bsize < BlockSizeS_ALL);
+            assert(plane_bsize < BlockSizeS_ALL);
             const int32_t b8_w = block_size_wide[plane_bsize] >> ss_x;
             const int32_t b8_h = block_size_high[plane_bsize] >> ss_y;
 
@@ -3291,8 +3291,8 @@ int32_t av1_get_switchable_rate(
             );
 
             const InterpFilter filter = av1_extract_interp_filter(/*mbmi*/candidate_buffer_ptr->candidate_ptr->interp_filters, dir);
-            ASSERT(ctx < SWITCHABLE_FILTER_CONTEXTS);
-            ASSERT(filter < SWITCHABLE_FILTERS);
+            assert(ctx < SWITCHABLE_FILTER_CONTEXTS);
+            assert(filter < SWITCHABLE_FILTERS);
             inter_filter_cost +=  /*x->switchable_interp_costs*/md_context_ptr->md_rate_estimation_ptr->switchable_interp_fac_bitss[ctx][filter];
         }
         return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;

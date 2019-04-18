@@ -271,14 +271,17 @@ static INLINE void av1TxbInitLevels(
 
 static INLINE int32_t get_txb_wide(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_wide[tx_size];
 }
 static INLINE int32_t get_txb_high(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_high[tx_size];
 }
 static INLINE int32_t get_txb_bwl(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_wide_log2[tx_size];
 }
 
@@ -457,6 +460,7 @@ void Av1WriteTxType(
     const int32_t isInter = cu_ptr->av1xd->use_intrabc || (cu_ptr->prediction_mode_flag == INTER_MODE);
 
     const TxSize squareTxSize = txsize_sqr_map[txSize];
+    //assert(squareTxSize < EXT_TX_SIZES);
 
     if (get_ext_tx_types(txSize, isInter, pcs_ptr->reduced_tx_set_used) > 1 &&
         (pcs_ptr->base_qindex > 0)) {
@@ -523,6 +527,8 @@ int32_t  Av1WriteCoeffsTxb1D(
     uint8_t levelsBuf[TX_PAD_2D];
     uint8_t *const levels = SetLevels(levelsBuf, width);
     DECLARE_ALIGNED(16, int8_t, coeffContexts[MAX_TX_SQUARE]);
+
+    assert(txs_ctx < TX_SIZES);
 
     aom_write_symbol(ec_writer, eob == 0,
 
@@ -969,6 +975,7 @@ static void EncodePartitionAv1(
 
     assert(mi_size_wide_log2[bsize] == mi_size_high_log2[bsize]);
     assert(bsl >= 0);
+    assert(p < CDF_SIZE(EXT_PARTITION_TYPES));
 
     contextIndex = (left * 2 + above) + bsl * PARTITION_PLOFFSET;
 
@@ -1401,7 +1408,7 @@ static int16_t Av1ModeContextAnalyzer(
     const int16_t newmv_ctx = mode_context[ref_frame] & NEWMV_CTX_MASK;
     const int16_t refmv_ctx =
         (mode_context[ref_frame] >> REFMV_OFFSET) & REFMV_CTX_MASK;
-    ASSERT((refmv_ctx >> 1) < 3);
+    assert((refmv_ctx >> 1) < 3);
     const int16_t comp_ctx = compound_mode_ctx_map[refmv_ctx >> 1][AOMMIN(
         newmv_ctx, COMP_NEWMV_CTXS - 1)];
     return comp_ctx;
@@ -1631,7 +1638,7 @@ static void WriteInterMode(
     (void)cu_origin_x;
     (void)cu_origin_y;
     int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
-    ASSERT(newmv_ctx<NEWMV_MODE_CONTEXTS);
+    assert(newmv_ctx<NEWMV_MODE_CONTEXTS);
     aom_write_symbol(ec_writer, mode != NEWMV, frameContext->newmv_cdf[newmv_ctx], 2);
 
     if (mode != NEWMV) {
@@ -1641,7 +1648,7 @@ static void WriteInterMode(
 
         if (mode != GLOBALMV) {
             int16_t refmv_ctx = (mode_ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
-            ASSERT(refmv_ctx<REFMV_MODE_CONTEXTS);            
+            assert(refmv_ctx<REFMV_MODE_CONTEXTS);            
             aom_write_symbol(ec_writer, mode != NEARESTMV, frameContext->refmv_cdf[refmv_ctx], 2);
         }
     }
@@ -1960,7 +1967,8 @@ void write_mb_interp_filter(
                 dir
             );
             InterpFilter filter = av1_extract_interp_filter(cu_ptr->interp_filters, dir);
-            ASSERT(ctx < SWITCHABLE_FILTER_CONTEXTS);
+            assert(ctx < SWITCHABLE_FILTER_CONTEXTS);
+            assert(filter < CDF_SIZE(SWITCHABLE_FILTERS));
             aom_write_symbol(ec_writer, filter, /*ec_ctx*/entropy_coder_ptr->fc->switchable_interp_cdf[ctx],
                 SWITCHABLE_FILTERS);
 
@@ -3047,6 +3055,7 @@ void av1_calculate_tile_rows(PictureParentControlSet * pcs_ptr)
      tile->tile_row = row;
      tile->mi_row_start = mi_row_start;
      tile->mi_row_end = AOMMIN(mi_row_end, cm->mi_rows);
+     tile->tg_horz_boundary = 0;
      assert(tile->mi_row_end > tile->mi_row_start);
  }
 
@@ -4348,7 +4357,7 @@ EbErrorType encode_td_av1(
 {
     EbErrorType              return_error = EB_ErrorNone;
     //OutputBitstreamUnit   *output_bitstream_ptr = (OutputBitstreamUnit*)bitstream_ptr->output_bitstream_ptr;
-    ASSERT(output_bitstream_ptr != NULL);
+    assert(output_bitstream_ptr != NULL);
 
     uint8_t                 *data = output_bitstream_ptr;
 
@@ -4547,7 +4556,7 @@ static void loop_restoration_write_sb_coeffs(PictureControlSet     *piCSetPtr, F
     SgrprojInfo *sgrproj_info = piCSetPtr->sgrproj_info + plane;
     RestorationType unit_rtype = rui->restoration_type;
 
-
+    assert(unit_rtype < CDF_SIZE(RESTORE_SWITCHABLE_TYPES));
 
     if (frame_rtype == RESTORE_SWITCHABLE) {
         aom_write_symbol(w, unit_rtype, /*xd->tile_ctx->*/frameContext->switchable_restore_cdf,
@@ -5358,7 +5367,7 @@ EB_EXTERN EbErrorType write_sb(
         blk_geom = get_blk_geom_mds(cu_index); // AMIR to be replaced with /*cu_ptr->mds_idx*/
 
         bsize = blk_geom->bsize;
-        ASSERT(bsize < BlockSizeS_ALL);
+        assert(bsize < BlockSizeS_ALL);
         cu_origin_x = context_ptr->sb_origin_x + blk_geom->origin_x;
         cu_origin_y = context_ptr->sb_origin_y + blk_geom->origin_y;
         if (checkCuOutOfBound) {

@@ -527,14 +527,17 @@ static INLINE int32_t get_eob_pos_token(const int32_t eob, int32_t *const extra)
 }
 static INLINE int32_t get_txb_bwl(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_wide_log2[tx_size];
 }
 static INLINE int32_t get_txb_wide(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_wide[tx_size];
 }
 static INLINE int32_t get_txb_high(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_high[tx_size];
 }
 static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int32_t width) {
@@ -1506,6 +1509,7 @@ static INLINE int32_t av1_cost_skip_txb(
     int16_t                                   txb_skip_ctx)
 {
     const TxSize txs_ctx = (TxSize)((txsize_sqr_map[transform_size] + txsize_sqr_up_map[transform_size] + 1) >> 1);
+    assert(txs_ctx < TX_SIZES);
     const LvMapCoeffCost *const coeff_costs = &candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][plane_type];
 
 #if CABAC_UP   
@@ -1661,6 +1665,7 @@ void av1_optimize_b(
     const int width = get_txb_wide(tx_size);
     const int height = get_txb_high(tx_size);
     assert(width == (1 << bwl));
+    assert(txs_ctx < TX_SIZES);
 #if 0   
     const int is_inter = is_inter_block(mbmi);
 #endif
@@ -2504,9 +2509,9 @@ void product_full_loop_tx_search(
     TxType                         tx_type;
     int32_t                        txb_itr = 0;
     TxSize                         txSize = context_ptr->blk_geom->txsize[txb_itr];
+    assert(txSize < TX_SIZES_ALL);
     const TxSetType                tx_set_type =
         get_ext_tx_set_type(txSize, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-
 
     int32_t allowed_tx_mask[TX_TYPES] = { 0 };  // 1: allow; 0: skip.
     int32_t allowed_tx_num = 0;
@@ -2735,6 +2740,7 @@ void encode_pass_tx_search(
     TxType                 txk_end = TX_TYPES;
     TxType                 tx_type;
     TxSize                 txSize = context_ptr->blk_geom->txsize[context_ptr->txb_itr];
+    assert(txSize < TX_SIZES_ALL);
     const TxSetType        tx_set_type =
         get_ext_tx_set_type(txSize, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
@@ -2953,6 +2959,7 @@ void encode_pass_tx_search_hbd(
     TxType                      txk_end = TX_TYPES;
     TxType                      tx_type;
     TxSize                      txSize = context_ptr->blk_geom->txsize[context_ptr->txb_itr];
+    assert(txSize < TX_SIZES_ALL);
     const TxSetType             tx_set_type =
         get_ext_tx_set_type(txSize, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 

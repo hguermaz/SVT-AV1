@@ -512,7 +512,7 @@ void av1_cdef_frame(
     const int32_t nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
     //av1_setup_dst_planes(xd->plane, cm->seq_params.sb_size, frame, 0, 0, 0, num_planes);
     row_cdef = (uint8_t *)aom_malloc(sizeof(*row_cdef) * (nhfb + 2) * 2);
-    ASSERT(row_cdef != NULL);
+    assert(row_cdef != NULL);
     memset(row_cdef, 1, sizeof(*row_cdef) * (nhfb + 2) * 2);
     prev_row_cdef = row_cdef + 1;
     curr_row_cdef = prev_row_cdef + nhfb + 2;
@@ -838,7 +838,7 @@ void av1_cdef_frame16bit(
     const int32_t nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
     //av1_setup_dst_planes(xd->plane, cm->seq_params.sb_size, frame, 0, 0, 0, num_planes);
     row_cdef = (uint8_t *)aom_malloc(sizeof(*row_cdef) * (nhfb + 2) * 2);
-    ASSERT(row_cdef);
+    assert(row_cdef);
     memset(row_cdef, 1, sizeof(*row_cdef) * (nhfb + 2) * 2);
     prev_row_cdef = row_cdef + 1;
     curr_row_cdef = prev_row_cdef + nhfb + 2;
@@ -1631,8 +1631,8 @@ void av1_cdef_search(
     int32_t *sb_index = (int32_t *)aom_malloc(nvfb * nhfb * sizeof(*sb_index));       //CHKN add cast
     int32_t *selected_strength = (int32_t *)aom_malloc(nvfb * nhfb * sizeof(*sb_index));
 
-    ASSERT(sb_index != NULL);
-    ASSERT(selected_strength != NULL);
+    assert(sb_index != NULL);
+    assert(selected_strength != NULL);
 
     uint64_t(*mse[2])[TOTAL_STRENGTHS];
     int32_t pri_damping = 3 + (picture_control_set_ptr->parent_pcs_ptr->base_qindex /*cm->base_qindex*/ >> 6);
@@ -1988,8 +1988,8 @@ void av1_cdef_search16bit(
     int32_t *sb_index = (int32_t *)aom_malloc(nvfb * nhfb * sizeof(*sb_index));       //CHKN add cast
     int32_t *selected_strength = (int32_t *)aom_malloc(nvfb * nhfb * sizeof(*sb_index));
 
-    ASSERT(sb_index);
-    ASSERT(selected_strength);
+    assert(sb_index);
+    assert(selected_strength);
 
     uint64_t(*mse[2])[TOTAL_STRENGTHS];
 

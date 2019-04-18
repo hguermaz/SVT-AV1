@@ -157,7 +157,7 @@ void av1_estimate_syntax_rate___partial(
             memset(FacBits_v, 0, CFL_ALPHABET_SIZE * sizeof(*FacBits_v));
         }
         else {
-            ASSERT((CFL_CONTEXT_V(joint_sign) < CFL_ALPHA_CONTEXTS) && (CFL_CONTEXT_V(joint_sign) >= 0));
+            assert((CFL_CONTEXT_V(joint_sign) < CFL_ALPHA_CONTEXTS) && (CFL_CONTEXT_V(joint_sign) >= 0));
             const aom_cdf_prob *cdf_v = fc->cfl_alpha_cdf[CFL_CONTEXT_V(joint_sign)];
             av1_get_syntax_rate_from_cdf(FacBits_v, cdf_v, NULL);
         }
@@ -378,9 +378,11 @@ void av1_estimate_syntax_rate(
             memset(FacBits_v, 0, CFL_ALPHABET_SIZE * sizeof(*FacBits_v));
         }
         else {
-            ASSERT((CFL_CONTEXT_V(joint_sign) < CFL_ALPHA_CONTEXTS) && (CFL_CONTEXT_V(joint_sign) >= 0));
-            const AomCdfProb *cdf_v = fc->cfl_alpha_cdf[CFL_CONTEXT_V(joint_sign)];
-            av1_get_syntax_rate_from_cdf(FacBits_v, cdf_v, NULL);
+            int32_t cdf_index = CFL_CONTEXT_V(joint_sign);
+            if ((cdf_index < CFL_ALPHA_CONTEXTS) && (cdf_index >= 0)) {
+                const AomCdfProb *cdf_v = fc->cfl_alpha_cdf[cdf_index];
+                av1_get_syntax_rate_from_cdf(FacBits_v, cdf_v, NULL);
+            }
         }
         for (int32_t u = 0; u < CFL_ALPHABET_SIZE; u++)
             FacBits_u[u] += sign_FacBits[joint_sign];

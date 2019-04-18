@@ -4306,7 +4306,7 @@ static INLINE void set_fwd_txfm_non_scale_range(Txfm2DFlipCfg *cfg) {
     const int32_t txh_idx = get_txh_idx(cfg->tx_size);
     av1_zero(cfg->stage_range_col);
     av1_zero(cfg->stage_range_row);
-    ASSERT(cfg->txfm_type_col < TXFM_TYPES);
+    assert(cfg->txfm_type_col < TXFM_TYPES);
     if (cfg->txfm_type_col != TXFM_TYPE_INVALID) {
         int32_t stage_num_col = cfg->stage_num_col;
         const int8_t *range_mult2_col =
@@ -4317,7 +4317,7 @@ static INLINE void set_fwd_txfm_non_scale_range(Txfm2DFlipCfg *cfg) {
 
     if (cfg->txfm_type_row != TXFM_TYPE_INVALID) {
         int32_t stage_num_row = cfg->stage_num_row;
-        ASSERT(cfg->txfm_type_row < TXFM_TYPES);
+        assert(cfg->txfm_type_row < TXFM_TYPES);
         const int8_t *range_mult2_row =
             fwd_txfm_range_mult2_list[cfg->txfm_type_row];
         for (int32_t i = 0; i < stage_num_row; ++i)

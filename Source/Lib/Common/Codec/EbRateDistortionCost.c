@@ -106,16 +106,19 @@ static INLINE int32_t get_golomb_cost(int32_t abs_qc) {
 
 static INLINE int32_t get_txb_bwl(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_wide_log2[tx_size];
 }
 
 static INLINE int32_t get_txb_wide(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_wide[tx_size];
 }
 
 static INLINE int32_t get_txb_high(TxSize tx_size) {
     tx_size = av1_get_adjusted_tx_size(tx_size);
+    assert(tx_size < TX_SIZES_ALL);
     return tx_size_high[tx_size];
 }
 static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int32_t width) {
@@ -168,7 +171,7 @@ int32_t Av1TransformTypeRateEstimation(
 
     uint8_t filterIntraMode = 0; // NM- hardcoded to zero for the moment until we support different intra filtering modes.
     const TxSize square_tx_size = txsize_sqr_map[transform_size];
-
+    //assert(square_tx_size < EXT_TX_SIZES);
     //const MbModeInfo *mbmi = &xd->mi[0]->mbmi;
     //const int32_t is_inter = is_inter_block(mbmi);
 
@@ -201,7 +204,7 @@ int32_t Av1TransformTypeRateEstimation(
                     intra_dir = fimode_to_intradir[filterIntraMode];
                 else
                     intra_dir = candidate_buffer_ptr->candidate_ptr->pred_mode;
-                ASSERT(intra_dir < INTRA_MODES);
+                assert(intra_dir < INTRA_MODES);
 #if CABAC_UP
                 const TxSetType tx_set_type =
                     get_ext_tx_set_type(transform_size, is_inter, reduced_tx_set_used);
@@ -267,7 +270,7 @@ void av1_update_eob_context(int eob, TX_SIZE tx_size, TxClass tx_class,
     int eob_extra;
     const int eob_pt = get_eob_pos_token(eob, &eob_extra);
     TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
-
+    assert(txs_ctx < TX_SIZES);
     const int eob_multi_size = txsize_log2_minus4[tx_size];
     const int eob_multi_ctx = (tx_class == TX_CLASS_2D) ? 0 : 1;
 
@@ -529,6 +532,7 @@ static INLINE int32_t av1_cost_skip_txb(
     int16_t                                   txb_skip_ctx)
 {
     const TxSize txs_ctx = (TxSize)((txsize_sqr_map[transform_size] + txsize_sqr_up_map[transform_size] + 1) >> 1);
+    assert(txs_ctx < TX_SIZES);
     const LvMapCoeffCost *const coeff_costs = &candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][plane_type];
 #if CABAC_UP   
     if (allow_update_cdf) {
@@ -571,6 +575,7 @@ uint64_t av1_cost_coeffs_txb(
     uint8_t levels_buf[TX_PAD_2D];
     uint8_t *const levels = set_levels(levels_buf, width);
     DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
+    assert(txs_ctx < TX_SIZES);
     const LvMapCoeffCost *const coeff_costs = &candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][plane_type];
 
     const int32_t eob_multi_size = txsize_log2_minus4[transform_size];
@@ -704,7 +709,7 @@ uint64_t av1_cost_coeffs_txb(
         const int32_t coeff_ctx = coeff_contexts[pos];
 
         if (c == eob - 1) {
-            ASSERT((AOMMIN(level, 3) - 1) >= 0);
+            assert((AOMMIN(level, 3) - 1) >= 0);
             cost += coeff_costs->base_eob_cost[coeff_ctx][AOMMIN(level, 3) - 1];
         }
         else {
@@ -857,8 +862,8 @@ uint64_t av1_intra_fast_cost(
 #else
     if (candidate_ptr->is_directional_mode_flag && candidate_ptr->use_angle_delta) {
 #endif
-        ASSERT((intra_mode - V_PRED) < 8);
-        ASSERT((intra_mode - V_PRED) >= 0);
+        assert((intra_mode - V_PRED) < 8);
+        assert((intra_mode - V_PRED) >= 0);
         intraLumaAngModeBitsNum = candidate_ptr->md_rate_estimation_ptr->angle_delta_fac_bits[intra_mode - V_PRED][MAX_ANGLE_DELTA + candidate_ptr->angle_delta[PLANE_TYPE_Y]];
     }
 
@@ -1192,7 +1197,7 @@ static INLINE int16_t Av1ModeContextAnalyzer(
     const int16_t newmv_ctx = mode_context[ref_frame] & NEWMV_CTX_MASK;
     const int16_t refmv_ctx =
         (mode_context[ref_frame] >> REFMV_OFFSET) & REFMV_CTX_MASK;
-    ASSERT((refmv_ctx >> 1) < 3);
+    assert((refmv_ctx >> 1) < 3);
     const int16_t comp_ctx = compound_mode_ctx_map_2[refmv_ctx >> 1][AOMMIN(
         newmv_ctx, COMP_NEWMV_CTXS - 1)];
     return comp_ctx;
@@ -2351,6 +2356,7 @@ EbErrorType av1_tu_calc_cost(
         // Esimate Cbf's Bits
 
         const TxSize txs_ctx = (TxSize)((txsize_sqr_map[txsize] + txsize_sqr_up_map[txsize] + 1) >> 1);
+        assert(txs_ctx < TX_SIZES);
         const LvMapCoeffCost *const coeff_costs = &candidate_ptr->md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][0];
 
         y_zero_coeff_luma_flag_bits_num = coeff_costs->txb_skip_cost[txb_skip_ctx][1];
@@ -2440,6 +2446,7 @@ EbErrorType av1_tu_calc_cost_luma(
     // Esimate Cbf's Bits
 
     const TxSize txs_ctx = (TxSize)((txsize_sqr_map[tx_size] + txsize_sqr_up_map[tx_size] + 1) >> 1);
+    assert(txs_ctx < TX_SIZES);
     const LvMapCoeffCost *const coeff_costs = &candidate_ptr->md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][0];
 
     yZeroCbfLumaFlagBitsNum = coeff_costs->txb_skip_cost[txb_skip_ctx][1];
@@ -2567,7 +2574,7 @@ EbErrorType av1_split_flag_rate(
     uint32_t cu_depth = blk_geom->depth;
     UNUSED(cu_depth);
     BlockSize bsize = blk_geom->bsize;
-    ASSERT(bsize<BlockSizeS_ALL);
+    assert(bsize<BlockSizeS_ALL);
     const int32_t is_partition_point = blk_geom->bsize >= BLOCK_8X8;
 
 
@@ -2686,6 +2693,7 @@ EbErrorType av1_encode_tu_calc_cost(
         TxSize    txSize = context_ptr->blk_geom->txsize[context_ptr->txb_itr];
 
         const TxSize txs_ctx = (TxSize)((txsize_sqr_map[txSize] + txsize_sqr_up_map[txSize] + 1) >> 1);
+        assert(txs_ctx < TX_SIZES);
         const LvMapCoeffCost *const coeff_costs = &md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][0];
 
         yZeroCbfLumaFlagBitsNum = coeff_costs->txb_skip_cost[txb_skip_ctx][1];
