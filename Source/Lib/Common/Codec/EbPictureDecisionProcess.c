@@ -1136,10 +1136,23 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
 	else
 #endif
+
 #if M9_TX_search_OFF
         picture_control_set_ptr->tx_search_level = 0;
 #elif M6_TX_search
         picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+#elif OMK_TX_search_V2
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
+        else
+            picture_control_set_ptr->tx_search_level = 0;
+#elif OMK_TX_search
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
+        else if (picture_control_set_ptr->is_used_as_reference_flag)
+            picture_control_set_ptr->tx_search_level = TX_SEARCH_ENC_DEC;
+        else
+            picture_control_set_ptr->tx_search_level = 0;
 #elif M5_TX_search
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;

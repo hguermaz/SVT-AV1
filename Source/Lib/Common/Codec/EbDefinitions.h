@@ -242,21 +242,22 @@ extern "C" {
 #define OMK_ME_4                                    1
 #define OMK_ADP_10                                  1 // *
 
-// new M6 40.0%   15.2
+// new M6 62.0%   15.2
 
-#define OMK_ME_5                                    0
-
-
+#define OMK_ME_5                                    1
+#define M8_Intra                                    1 // *
+#define ICOPY_L2                                    1 // *
+#define M1_CABAC_UP                                 1 
+#define M1_Spatial_SSE                              1 // *
+#define M5_TX_search                                1
+#define M7_enable_restoration                       1 // not in excel
+#define M4_TX_search                                1
+#define OMK_M4_TX_search                            1
+#define M1_HME_Search_Method                        1 // *
 
 // TO BE TESTED
 
 
-#define M8_Intra                                    0 // *
-
-#define ICOPY_L2                                    0 // *
-
-#define M1_CABAC_UP                                 0 
-#define M1_Spatial_SSE                              0 // *
 
 
 #define DISABLE_ICOPY_WIKI                          0
@@ -266,17 +267,13 @@ extern "C" {
 #define M5_Chroma_OFF                               0
 #endif
 #define M6_Disable_TX_search_based_on_NFL           0
-#define M5_TX_search                                0
 #define M6_TX_search                                0
+#define OMK_TX_search                               0
+#define OMK_TX_search_V2                            0
 #define M9_TX_search_OFF                            0 // *
-#define M1_HME_Search_Method                        0 // *
 #define M6_HME                                      0 // *
 #define M9_adopted_HME                              0 // *
 
-#define M7_enable_restoration                       0 // not in excel
-
-#define M4_TX_search                                0
-#define OMK_M4_TX_search                            0
 
 #else
 #define OMK_ADP_5                                   0 
