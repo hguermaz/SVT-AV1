@@ -221,16 +221,15 @@ extern "C" {
 #define M6_Fast_Loop_Search_Method                  1 //  0.3%
 #define OMK_ADP_2                                   1 // 0.2
 #define OMK_ADP_3                                   1 // 0.7
-// new M4 -3.4 0.8fps
-// gain
-#define OMK_TX                                      1
+// new M4 -4.2  0.8
+
+#define OMK_ME_1                                    1 // 0.7
 // new M4 -4.2  
 
 
 
 
 // TO BE TESTED
-#define OMK_ME_1                                    0 // 0.7
 #define OMK_ADP_2                                   0 // 0.2
 #define OMK_ADP_3                                   0 // 0.7
 #define OMK_ADP_4                                   0 // 0.7
@@ -250,6 +249,7 @@ extern "C" {
 #define M6_Disable_TX_search_based_on_NFL           0
 #define M5_TX_search                                0
 #define M5_Chroma                                   0
+#define OMK_TX                                      0
 
 #else
 
@@ -4012,7 +4012,7 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
 };
 
 #if OMK_ME_1
-#define ME_W 288
+#define ME_W 448
 #define ME_H 288
 #else
 #define ME_W 640
