@@ -2691,6 +2691,7 @@ EbErrorType av1_encode_tu_calc_cost(
         //  PSNR = (LUMA_WEIGHT * PSNRy + PSNRu + PSNRv) / (2+LUMA_WEIGHT)
         yZeroCbfDistortion = LUMA_WEIGHT * (yZeroCbfDistortion << AV1_COST_PRECISION);
         TxSize    txSize = context_ptr->blk_geom->txsize[context_ptr->txb_itr];
+        assert(txSize < TX_SIZES_ALL);
 
         const TxSize txs_ctx = (TxSize)((txsize_sqr_map[txSize] + txsize_sqr_up_map[txSize] + 1) >> 1);
         assert(txs_ctx < TX_SIZES);

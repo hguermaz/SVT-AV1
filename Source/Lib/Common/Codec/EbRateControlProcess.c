@@ -1210,9 +1210,9 @@ void frame_level_rc_input_picture_vbr(
             //  tileSadMe is normalized based on the area because of the LCUs at the tile boundries
             picture_control_set_ptr->parent_pcs_ptr->sad_me = MAX((picture_control_set_ptr->parent_pcs_ptr->sad_me*rate_control_layer_ptr->area_in_pixel / (area_in_sbs << 12)), 1);
             picture_control_set_ptr->parent_pcs_ptr->sad_me <<= RC_PRECISION;
-
-            rate_control_layer_ptr->total_mad = MAX((picture_control_set_ptr->parent_pcs_ptr->sad_me / rate_control_layer_ptr->area_in_pixel), 1);
-
+            if (rate_control_layer_ptr->area_in_pixel > 0) {
+                rate_control_layer_ptr->total_mad = MAX((picture_control_set_ptr->parent_pcs_ptr->sad_me / rate_control_layer_ptr->area_in_pixel), 1);
+            }
             if (!rate_control_layer_ptr->feedback_arrived) {
                 rate_control_layer_ptr->previous_frame_distortion_me = picture_control_set_ptr->parent_pcs_ptr->sad_me;
             }
@@ -2687,9 +2687,9 @@ void frame_level_rc_input_picture_cvbr(
             //  tileSadMe is normalized based on the area because of the LCUs at the tile boundries
             picture_control_set_ptr->parent_pcs_ptr->sad_me = MAX((picture_control_set_ptr->parent_pcs_ptr->sad_me*rate_control_layer_ptr->area_in_pixel / (area_in_sbs << 12)), 1);
             picture_control_set_ptr->parent_pcs_ptr->sad_me <<= RC_PRECISION;
-
-            rate_control_layer_ptr->total_mad = MAX((picture_control_set_ptr->parent_pcs_ptr->sad_me / rate_control_layer_ptr->area_in_pixel), 1);
-
+            if (rate_control_layer_ptr->area_in_pixel > 0) {
+                rate_control_layer_ptr->total_mad = MAX((picture_control_set_ptr->parent_pcs_ptr->sad_me / rate_control_layer_ptr->area_in_pixel), 1);
+            }
             if (!rate_control_layer_ptr->feedback_arrived) {
                 rate_control_layer_ptr->previous_frame_distortion_me = picture_control_set_ptr->parent_pcs_ptr->sad_me;
             }

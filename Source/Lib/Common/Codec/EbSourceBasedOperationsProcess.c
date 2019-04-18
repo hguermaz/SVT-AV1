@@ -105,7 +105,9 @@ void InitBeaQpmInfo(
         }
     }
 
-    zz_cost_average = zzSum / complete_sb_count;
+    if (complete_sb_count > 0) {
+        zz_cost_average = zzSum / complete_sb_count;
+    }
     picture_control_set_ptr->low_motion_content_flag = zz_cost_average == 0 ? EB_TRUE : EB_FALSE;
     picture_control_set_ptr->zz_cost_average = zz_cost_average;
 
@@ -153,9 +155,11 @@ void DerivePictureActivityStatistics(
         }
 
     }
-    picture_control_set_ptr->non_moving_index_average = (uint16_t)(nonMovingIndexSum / complete_sb_count);
-  
-    picture_control_set_ptr->kf_zeromotion_pct = (non_moving_sb_count * 100) / complete_sb_count;
+
+    if (complete_sb_count > 0) {
+        picture_control_set_ptr->non_moving_index_average = (uint16_t)(nonMovingIndexSum / complete_sb_count);
+        picture_control_set_ptr->kf_zeromotion_pct = (non_moving_sb_count * 100) / complete_sb_count;
+    }
 
     InitBeaQpmInfo(
         picture_control_set_ptr,
@@ -781,14 +785,14 @@ void DeriveComplexityContrastPicture(
     uint32_t    sb_index;
 
     //look only for isolated shapes.
-    if ((context_ptr->sb_cmplx_contrast_count * 100) / context_ptr->complete_sb_count > 10) {
+    if ((context_ptr->complete_sb_count > 0) && ((context_ptr->sb_cmplx_contrast_count * 100) / context_ptr->complete_sb_count > 10)) {
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index) {
             picture_control_set_ptr->sb_cmplx_contrast_array[sb_index] = 0;
         }
     }
 
     //look only for isolated shapes.
-    if ((context_ptr->sb_high_contrast_count * 100) / context_ptr->complete_sb_count <= 10) {
+    if ((context_ptr->complete_sb_count > 0) && ((context_ptr->sb_high_contrast_count * 100) / context_ptr->complete_sb_count <= 10)) {
 
         for (sb_index = 0; sb_index < picture_control_set_ptr->sb_total_count; ++sb_index)
         {
