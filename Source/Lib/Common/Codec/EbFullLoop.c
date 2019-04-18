@@ -1191,7 +1191,7 @@ static AOM_FORCE_INLINE int get_two_coeff_cost_simple(
     // this simple version assumes the coeff's scan_idx is not DC (scan_idx != 0)
     // and not the last (scan_idx != eob - 1)
     assert(ci > 0);
-    assert(abs_qc + 4 < 4);
+    //assert(abs_qc + 4 < 4);
     int cost = txb_costs->base_cost[coeff_ctx][AOMMIN(abs_qc, 3)];
     int diff = 0;
     if (abs_qc <= 3) diff = txb_costs->base_cost[coeff_ctx][abs_qc + 4];
