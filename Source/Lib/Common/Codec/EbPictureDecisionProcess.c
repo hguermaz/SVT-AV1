@@ -662,8 +662,8 @@ EbErrorType signal_derivation_multi_processes_oq(
     else {
 #endif
 #if OMK_ADP_5
-        if (picture_control_set_ptr->is_used_as_reference_flag)
-            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
         else
             picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
 #elif OMK_ADP_3        
@@ -755,7 +755,12 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
     else
 #endif
-#if OMK_ADP_4
+#if OMK_ADP_5
+        if (picture_control_set_ptr->temporal_layer_index == 0)
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL6;
+        else
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
+#elif OMK_ADP_4
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL6;
         else if (picture_control_set_ptr->is_used_as_reference_flag)
