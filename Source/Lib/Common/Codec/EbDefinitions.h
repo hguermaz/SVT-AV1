@@ -227,19 +227,20 @@ extern "C" {
 // new M3 7.8   1.6
 
 
+#define OMK_ME_2                                    1  
+#define OMK_ADP_4                                   1  
+#define ICOPY_L1                                    1
+#define M6_Intra                                    1
 
 
 // TO BE TESTED
 
-#define OMK_ADP_4                                   0 // 0.7
 #define OMK_ADP_5                                   0 // 0.7
 
 #define M8_Intra                                    0
 #define M1_CABAC_UP                                 0 
 #define M1_Spatial_SSE                              0 
-#define ICOPY_L1                                    0
 #define ICOPY_L2                                    0
-#define M6_Intra                                    0
 #define M6_Disable_TX_search_based_on_NFL           0
 #define M5_TX_search                                0
 #define M5_Chroma                                   0
@@ -4006,8 +4007,10 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
         {   8,    8,    8,    8,    8,    4,    4,    4,    4,    4,    4,     4,    4 }
     }
 };
-
-#if OMK_ME_1
+#if OMK_ME_2
+#define ME_W 288
+#define ME_H 248
+#elif OMK_ME_1
 #define ME_W 448
 #define ME_H 288
 #else
