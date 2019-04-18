@@ -223,6 +223,11 @@ extern "C" {
 #define OMK_ADP_2                                   1 // 0.2
 #define OMK_ADP_3                                   1 // 0.7
 #define OMK_ADP_4                                   1 // 0.7
+
+
+#define OMK_ME_1                                   1 // 0.7
+
+
 // TO BE TESTED
 #define ME_WIKI_M3                                  0
 #define ME_WIKI_M7                                  0
@@ -4000,6 +4005,13 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
     }
 };
 
+#if OMK_ME_1
+#define ME_W 640
+#define ME_H 544
+#else
+#define ME_W 640
+#define ME_H 640
+#endif
 static const uint16_t SearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
     {
 #if M9_ME
@@ -4014,10 +4026,10 @@ static const uint16_t SearchAreaWidth[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPOR
         { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 }
 #endif
     } , {
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        { ME_W,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { ME_W,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { ME_W,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        { ME_W,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 };
 static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
@@ -4034,10 +4046,10 @@ static const uint16_t SearchAreaHeight[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPO
         { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 }
 #endif
     } , {
-        {640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        {640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        {640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        {640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        {ME_H,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {ME_H,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {ME_H,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {ME_H,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 
     //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
