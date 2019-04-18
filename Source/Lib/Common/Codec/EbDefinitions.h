@@ -147,7 +147,7 @@ extern "C" {
 #define MAX_FRAMES_TO_REF_I                             64
 #define NSQ_TAB_SIZE                                    6
 #define AOM_INTERP_EXTEND                               4
-
+#define TX_SIZE_SEARCH_LEVELS                           1
 struct buf_2d {
     uint8_t *buf;
     uint8_t *buf0;
