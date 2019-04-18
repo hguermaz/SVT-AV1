@@ -117,38 +117,45 @@ extern "C" {
 #define OMK_ME_4                                    1
 #define OMK_ADP_10                                  1 // *
 
-// new M6 62.0%   15.2
+// new M6 64.0%   15.2
 
 #endif
 #if WIKI_M7
 #define OMK_ME_5                                    1
-#define ICOPY_L2                                    1 // *
+#define DISABLE_ICOPY_WIKI                          1
 
+    
+// new M7 112.0%   
 
-// TO BE TESTED
 #endif
 #if WIKI_M8
+#define M8_Intra                                    1 // *
+#define M1_CABAC_UP                                 1 
+#define M1_Spatial_SSE                              1 // *
+#define M7_enable_restoration                       1 // not in excel
+#define M4_TX_search                                1
+#define OMK_M4_TX_search                            1
+#define M1_HME_Search_Method                        1 // *
+#define M5_Chroma                                   1 // *
 
 #endif
 
-#define M8_Intra                                    0 // *
-#define ICOPY_L2                                    0 // *
-#define M1_CABAC_UP                                 0 
-#define M1_Spatial_SSE                              0 // *
-#define M5_TX_search                                0
-#define M7_enable_restoration                       0 // not in excel
-#define M4_TX_search                                0
-#define OMK_M4_TX_search                            0
-#define M1_HME_Search_Method                        0 // *
+// new M6 157.0%   
 
-#define OMK_ME_6                                    0
+// TO BE TESTED
 
-#define DISABLE_ICOPY_WIKI                          0
 
-#define M5_Chroma                                   0 // *
+
 #if DISABLE_ICOPY_WIKI
 #define M5_Chroma_OFF                               0
 #endif
+
+#define ICOPY_L2                                    0 // *
+#define M5_TX_search                                0
+
+#define OMK_ME_6                                    0
+
+
 #define M6_Disable_TX_search_based_on_NFL           0
 #define M6_TX_search                                0
 #define OMK_TX_search                               0
