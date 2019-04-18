@@ -222,14 +222,19 @@ extern "C" {
 #define OMK_ADP_2                                   1 // 0.2
 #define OMK_ADP_3                                   1 // 0.7
 // new M4 -3.4 0.8fps
+// gain
+#define OMK_TX                                      1
+// new M4 -4.2  
+
+
 
 
 // TO BE TESTED
+#define OMK_ME_1                                    0 // 0.7
 #define OMK_ADP_2                                   0 // 0.2
 #define OMK_ADP_3                                   0 // 0.7
 #define OMK_ADP_4                                   0 // 0.7
 #define OMK_ADP_5                                   0 // 0.7
-#define OMK_ME_1                                    0 // 0.7
 #define ME_WIKI_M3                                  0
 #define ME_WIKI_M7                                  0
 #define ME_WIKI_M8                                  0
@@ -4007,8 +4012,8 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
 };
 
 #if OMK_ME_1
-#define ME_W 640
-#define ME_H 544
+#define ME_W 288
+#define ME_H 288
 #else
 #define ME_W 640
 #define ME_H 640

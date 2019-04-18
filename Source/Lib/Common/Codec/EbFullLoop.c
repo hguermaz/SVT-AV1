@@ -1278,7 +1278,11 @@ void encode_pass_tx_search(
         tx_type = (TxType)tx_type_index;
 
         if(picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set)
+#if OMK_TX
+            if (!allowed_tx_set_b[txSize][tx_type]) continue;
+#else
             if (!allowed_tx_set_a[txSize][tx_type]) continue;
+#endif
 
         const int32_t eset = get_ext_tx_set(txSize, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
         // eset == 0 should correspond to a set with only DCT_DCT and there
