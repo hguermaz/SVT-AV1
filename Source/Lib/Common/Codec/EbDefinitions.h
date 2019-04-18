@@ -163,8 +163,7 @@ extern "C" {
 #define M9_TX_search_OFF                            0 // *
 #define M6_HME                                      0 // *
 #define M9_adopted_HME                              0 // *
-
-
+#define WIKI_TX_SEARCH                              0
 #else
 #define OMK_ADP_5                                   0 
 #define OMK_ADP_6                                   0 
