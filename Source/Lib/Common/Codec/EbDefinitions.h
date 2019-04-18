@@ -222,6 +222,7 @@ extern "C" {
 
 #define OMK_ADP_2                                   1 // 0.2
 #define OMK_ADP_3                                   1 // 0.7
+#define OMK_ADP_4                                   1 // 0.7
 // TO BE TESTED
 #define ME_WIKI_M3                                  0
 #define ME_WIKI_M7                                  0
