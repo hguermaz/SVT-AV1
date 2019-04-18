@@ -97,8 +97,11 @@ EbErrorType signal_derivation_pre_analysis_oq(
     // Derive HME Flag
     if (sequence_control_set_ptr->static_config.use_default_me_hme) {
         uint8_t  hme_me_level = picture_control_set_ptr->enc_mode;
+#if OMK_HME
+        
+        hme_me_level = 0;
 
-#if M9_adopted_HME_level
+#elif M9_adopted_HME_level
         hme_me_level = 9;
 #endif
 
