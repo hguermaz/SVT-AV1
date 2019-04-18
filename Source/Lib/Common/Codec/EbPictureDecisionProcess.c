@@ -661,7 +661,31 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else {
 #endif
-#if OMK_ADP_5
+#if OMK_ADP_10
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+#elif OMK_ADP_9        
+        if (picture_control_set_ptr->slice_type == I_SLICE)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+        else
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+#elif OMK_ADP_8        
+        if (picture_control_set_ptr->slice_type == I_SLICE)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+        else
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+#elif OMK_ADP_7
+        if (picture_control_set_ptr->slice_type == I_SLICE)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+        else if (picture_control_set_ptr->is_used_as_reference_flag)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+        else
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_NON4_DEPTH_MODE;
+#elif OMK_ADP_6
+        if (picture_control_set_ptr->slice_type == I_SLICE)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+        else
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
+#elif OMK_ADP_5
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
         else
@@ -755,7 +779,14 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
     else
 #endif
-#if OMK_ADP_5
+#if OMK_ADP_9 || OMK_ADP_10
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
+#elif OMK_ADP_6 || OMK_ADP_7 || OMK_ADP_8
+        if (picture_control_set_ptr->slice_type == I_SLICE)
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL1;
+        else
+            picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_OFF;
+#elif OMK_ADP_5
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL6;
         else

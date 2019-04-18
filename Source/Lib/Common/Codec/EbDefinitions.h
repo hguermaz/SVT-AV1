@@ -235,21 +235,42 @@ extern "C" {
 
 // TO BE TESTED
 
-#define OMK_ADP_5                                   0 // 0.7
+#define OMK_ADP_5                                   0 
+#define OMK_ADP_6                                   0 
+#define OMK_ADP_7                                   0 
+#define OMK_ADP_8                                   0 
+#define OMK_ADP_9                                   0 
+#define OMK_ADP_10                                  0 // *
 
-#define M8_Intra                                    0
+#define M8_Intra                                    0 // *
+
+
 #define M1_CABAC_UP                                 0 
-#define M1_Spatial_SSE                              0 
-#define ICOPY_L2                                    0
+#define M1_Spatial_SSE                              0 // *
+
+
+#define ICOPY_L2                                    0 // *
+#define DISABLE_ICOPY_WIKI                          0
+
+#define M5_Chroma                                   0 // *
+#if DISABLE_ICOPY_WIKI
+#define M5_Chroma_OFF                               0
+#endif
 #define M6_Disable_TX_search_based_on_NFL           0
 #define M5_TX_search                                0
-#define M5_Chroma                                   0
-#define OMK_TX                                      0
+#define M6_TX_search                                0
+#define M9_TX_search_OFF                            0 // *
+#define M1_HME_Search_Method                        0 // *
+#define M1_ME_Search_Method                         0 // *
+#define M6_HME                                      0 // *
+#define M9_adopted_HME                              0 // *
+#define M9_adopted_HME_level                        0 // *
+
 #define M4_TX_search                                0
 #define OMK_M4_TX_search                            0
 
 #else
-
+#define OMK_TX                                      0
 #define WIKI_TX_SEARCH                              0
 //#define M9_FRAC_ME_SEARCH_METHOD_OFF                0  
 //#define M9_FRAC_ME_SEARCH_64x64_OFF                 0 
@@ -258,7 +279,6 @@ extern "C" {
 //#define M9_CDEF_OFF                                 0 
 //#define M9_SG_OFF                                   0 
 //#define M9_DLF_OFF                                  0
-#define M9_TX_search_OFF                            0
 
 #define ME_WIKI_M3                                  0
 #define ME_WIKI_M7                                  0
