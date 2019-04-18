@@ -1078,7 +1078,11 @@ void ProductFullLoopTxSearch(
         tx_type = (TxType)tx_type_index;
         if (!allowed_tx_mask[tx_type]) continue;
         if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set)
+#if OMK_TX
+            if (!allowed_tx_set_b[txSize][tx_type]) continue;
+#else
             if (!allowed_tx_set_a[txSize][tx_type]) continue;
+#endif
 
         context_ptr->three_quad_energy = 0;
         uint32_t txb_itr = 0;
