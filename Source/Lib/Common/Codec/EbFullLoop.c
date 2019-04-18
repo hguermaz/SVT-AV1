@@ -1033,7 +1033,7 @@ void ProductFullLoopTxSearch(
     uint32_t                       yCountNonZeroCoeffsTemp;
     TxType                         txk_start = DCT_DCT;
 #if WIKI_TX_SEARCH
-    TxType                         txk_end = DCT_DCT+1;
+    TxType                         txk_end = DCT_DCT+2;
 #else
     TxType                         txk_end = TX_TYPES;
 #endif
@@ -1272,7 +1272,7 @@ void encode_pass_tx_search(
     TxType                 txk_start = DCT_DCT;
 
 #if WIKI_TX_SEARCH
-    TxType                  txk_end = DCT_DCT+1;
+    TxType                  txk_end = DCT_DCT+2;
 #else
     TxType                 txk_end = TX_TYPES;
 #endif
