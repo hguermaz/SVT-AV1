@@ -661,7 +661,12 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else {
 #endif
-#if OMK_ADP_3        
+#if OMK_ADP_5
+        if (picture_control_set_ptr->is_used_as_reference_flag)
+            picture_control_set_ptr->pic_depth_mode = PIC_ALL_C_DEPTH_MODE;
+        else
+            picture_control_set_ptr->pic_depth_mode = PIC_SQ_DEPTH_MODE;
+#elif OMK_ADP_3        
         if (picture_control_set_ptr->temporal_layer_index == 0)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
         else if (picture_control_set_ptr->is_used_as_reference_flag)

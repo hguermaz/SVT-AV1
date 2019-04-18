@@ -219,16 +219,17 @@ extern "C" {
 #define M8_NFL                                      1 // 0.7%
 #define M9_CDEF_OFF                                 1 // 0.9%
 #define M6_Fast_Loop_Search_Method                  1 //  0.3%
-
 #define OMK_ADP_2                                   1 // 0.2
 #define OMK_ADP_3                                   1 // 0.7
-#define OMK_ADP_4                                   1 // 0.7
-
-
-#define OMK_ME_1                                   1 // 0.7
+// new M4 -3.4 0.8fps
 
 
 // TO BE TESTED
+#define OMK_ADP_2                                   0 // 0.2
+#define OMK_ADP_3                                   0 // 0.7
+#define OMK_ADP_4                                   0 // 0.7
+#define OMK_ADP_5                                   0 // 0.7
+#define OMK_ME_1                                    0 // 0.7
 #define ME_WIKI_M3                                  0
 #define ME_WIKI_M7                                  0
 #define ME_WIKI_M8                                  0
