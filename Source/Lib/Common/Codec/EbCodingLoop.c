@@ -2080,16 +2080,20 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
         // INTER MODE
         else {
 
-
+#if MRP_CONNECTION
+			distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[cuIndexInRaterScan][0].distortion;
+#else
             distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexInRaterScan].distortion_direction[0].distortion;
-
+#endif
 
 
             if (use16x16Stat) {
                 uint32_t cuIndexRScan = md_scan_to_raster_scan[ParentBlockIndex[cu_index]];
-
+#if MRP_CONNECTION
+				distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[cuIndexRScan][0].distortion;
+#else
                 distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexRScan].distortion_direction[0].distortion;
-
+#endif
             }
             distortion = (uint32_t)CLIP3(picture_control_set_ptr->parent_pcs_ptr->inter_complexity_min[usedDepth], picture_control_set_ptr->parent_pcs_ptr->inter_complexity_max[usedDepth], distortion);
             complexityDistance = ((int32_t)distortion - (int32_t)picture_control_set_ptr->parent_pcs_ptr->inter_complexity_avg[usedDepth]);
@@ -2532,9 +2536,13 @@ EB_EXTERN void AV1EncodePass(
         if (!((sb_stat_ptr->stationary_edge_over_time_flag) || (picture_control_set_ptr->parent_pcs_ptr->logo_pic_flag)))
         {
             if (picture_control_set_ptr->slice_type == B_SLICE) {
-
+#if MRP_MD
+				EbReferenceObject  *refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
+				EbReferenceObject  *refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][0]->object_ptr;
+#else
                 EbReferenceObject  *refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
                 EbReferenceObject  *refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr;
+#endif
                 uint32_t const TH = (sequence_control_set_ptr->static_config.frame_rate >> 16) < 50 ? 25 : 30;
 
                 if ((refObjL0->tmp_layer_idx == 2 && refObjL0->intra_coded_area > TH) || (refObjL1->tmp_layer_idx == 2 && refObjL1->intra_coded_area > TH))
@@ -3113,11 +3121,29 @@ EB_EXTERN void AV1EncodePass(
                 else if (cu_ptr->prediction_mode_flag == INTER_MODE) {
 
                     context_ptr->is_inter = 1;
-
+#if MRP_MD
+					int8_t ref_idx_l0 = (&cu_ptr->prediction_unit_array[0])->ref_frame_index_l0;
+					int8_t ref_idx_l1 = (&cu_ptr->prediction_unit_array[0])->ref_frame_index_l1;
+#if MRP_MD_UNI_DIR_BIPRED
+					MvReferenceFrame rf[2];
+					av1_set_ref_frame(rf, (&cu_ptr->prediction_unit_array[0])->ref_frame_type);
+					uint8_t list_idx0, list_idx1;
+					list_idx0 = get_list_idx(rf[0]);
+					if (rf[1] == NONE_FRAME)
+						list_idx1 = get_list_idx(rf[0]);
+					else
+						list_idx1 = get_list_idx(rf[1]);
+					EbReferenceObject* refObj0 = ref_idx_l0 >= 0 ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx0][ref_idx_l0]->object_ptr : (EbReferenceObject*)EB_NULL;
+					EbReferenceObject* refObj1 = ref_idx_l1 >= 0 ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx1][ref_idx_l1]->object_ptr : (EbReferenceObject*)EB_NULL;
+#else
+					EbReferenceObject_t* refObj0 = ref_idx_l0 >= 0 ? (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx_l0]->object_ptr : (EbReferenceObject_t*)EB_NULL;
+					EbReferenceObject_t* refObj1 = ref_idx_l1 >= 0 ? (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][ref_idx_l1]->object_ptr : (EbReferenceObject_t*)EB_NULL;
+#endif
+#else
                     EbReferenceObject* refObj0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
                     EbReferenceObject* refObj1 = picture_control_set_ptr->slice_type == B_SLICE ?
                         (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr : 0;
-
+#endif
                     uint16_t  txb_origin_x;
                     uint16_t  txb_origin_y;
                     EbBool isCuSkip = EB_FALSE;
@@ -3269,8 +3295,13 @@ EB_EXTERN void AV1EncodePass(
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,
                                     blk_geom->bheight,
+#if MRP_MD
+									cu_ptr->prediction_unit_array->ref_frame_index_l0 >= 0 ? refObj0->reference_picture : (EbPictureBufferDesc*)EB_NULL,
+									cu_ptr->prediction_unit_array->ref_frame_index_l1 >= 0 ? refObj1->reference_picture : (EbPictureBufferDesc*)EB_NULL,
+#else
                                     refObj0->reference_picture,
                                     picture_control_set_ptr->slice_type == B_SLICE ? refObj1->reference_picture : 0,
+#endif
                                     recon_buffer,
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,

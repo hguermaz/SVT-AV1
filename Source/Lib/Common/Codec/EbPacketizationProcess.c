@@ -18,6 +18,9 @@
 #include "EbModeDecisionProcess.h"
 #endif
 
+
+#define DETAILED_FRAME_OUTPUT 0
+
 static EbBool IsPassthroughData(EbLinkedListNode* dataNode)
 {
     return dataNode->passthrough;
@@ -375,9 +378,18 @@ void* packetization_kernel(void *input_ptr)
         memcpy(&queueEntryPtr->av1_ref_signal, &picture_control_set_ptr->parent_pcs_ptr->av1_ref_signal, sizeof(Av1RpsNode));
 
         queueEntryPtr->slice_type = picture_control_set_ptr->slice_type;
+#if DETAILED_FRAME_OUTPUT
+#if NEW_RPS
+		queueEntryPtr->ref_poc_list0 = picture_control_set_ptr->parent_pcs_ptr->ref_pic_poc_array[REF_LIST_0][0];
+		queueEntryPtr->ref_poc_list1 = picture_control_set_ptr->parent_pcs_ptr->ref_pic_poc_array[REF_LIST_1][0];
+#else
         queueEntryPtr->ref_poc_list0 = picture_control_set_ptr->parent_pcs_ptr->ref_pic_poc_array[REF_LIST_0];
         queueEntryPtr->ref_poc_list1 = picture_control_set_ptr->parent_pcs_ptr->ref_pic_poc_array[REF_LIST_1];
-
+#endif
+#if REF_ORDER		
+		memcpy(queueEntryPtr->ref_poc_array, picture_control_set_ptr->parent_pcs_ptr->av1RefSignal.ref_poc_array, 7 * sizeof(uint64_t));
+#endif
+#endif
         queueEntryPtr->show_frame = picture_control_set_ptr->parent_pcs_ptr->show_frame;
         queueEntryPtr->has_show_existing = picture_control_set_ptr->parent_pcs_ptr->has_show_existing;
         queueEntryPtr->show_existing_loc = picture_control_set_ptr->parent_pcs_ptr->show_existing_loc;
@@ -517,6 +529,18 @@ void* packetization_kernel(void *input_ptr)
                             SVT_LOG("L1 MISMATCH POC:%i\n", (int32_t)queueEntryPtr->poc);
                             exit(0);
                         }
+
+
+#if REF_ORDER
+						for (int rr = 0; rr < 7; rr++)
+						{
+							uint8_t dpb_spot = queueEntryPtr->av1RefSignal.refDpbIndex[rr];
+
+							if (queueEntryPtr->ref_poc_array[rr] != context_ptr->dpbDispOrder[dpb_spot])
+								printf("REF_POC MISMATCH POC:%i  ref:%i\n", (int32_t)queueEntryPtr->poc, rr);
+						}
+#endif
+
                     }
                     else
                     {

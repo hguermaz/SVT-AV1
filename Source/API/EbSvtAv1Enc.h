@@ -407,6 +407,9 @@ typedef struct EbSvtAv1EncConfiguration
 
     uint32_t                 ten_bit_format;
 
+#if 1//MRP_ME
+	uint8_t                 reference_count;
+#endif
 } EbSvtAv1EncConfiguration;
 
 

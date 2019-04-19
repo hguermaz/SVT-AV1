@@ -266,6 +266,9 @@ extern "C" {
         MbModeInfo *left_mbmi;
         MbModeInfo *chroma_above_mbmi;
         MbModeInfo *chroma_left_mbmi;
+#if EC_UPDATE
+		FRAME_CONTEXT *tile_ctx;
+#endif
     } MacroBlockD;
 
     typedef struct Macroblock 

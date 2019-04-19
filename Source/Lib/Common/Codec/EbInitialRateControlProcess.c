@@ -36,6 +36,22 @@ void GetMv(
 
     uint32_t             meCandidateIndex;
 
+#if MRP_ME
+	const MeLcuResults *me_results = picture_control_set_ptr->me_results[sb_index];
+	uint8_t total_me_cnt = me_results->total_me_candidate_index[0];
+	const MeCandidate *me_block_candidates = me_results->me_candidate[0];
+	const MeCandidate *me_block_results = me_results->me_candidate[0];
+	for (meCandidateIndex = 0; meCandidateIndex < total_me_cnt; meCandidateIndex++) {
+
+		if (me_block_results->direction == UNI_PRED_LIST_0) {
+
+			*xCurrentMv = me_block_results->x_mv_l0;
+			*yCurrentMv = me_block_results->y_mv_l0;
+
+			break;
+		}
+	}
+#else
     MeCuResults * cuResults = &picture_control_set_ptr->me_results[sb_index][0];
 
 
@@ -51,7 +67,7 @@ void GetMv(
         }
     }
 
-
+#endif
 }
 
 void GetMeDist(
@@ -59,9 +75,11 @@ void GetMeDist(
     uint32_t                         sb_index,
     uint32_t                      *distortion)
 {
-
+#if MRP_CONNECTION
+	*distortion = (uint32_t)picture_control_set_ptr->me_results[sb_index]->me_candidate[0][0].distortion;
+#else
     *distortion = (uint32_t)(picture_control_set_ptr->me_results[sb_index][0].distortion_direction[0].distortion);
-
+#endif
 }
 
 EbBool CheckMvForPanHighAmp(
@@ -428,11 +446,17 @@ EbErrorType initial_rate_control_context_ctor(
 ** release them when appropriate
 ************************************************/
 void ReleasePaReferenceObjects(
+#if MRP_ME
+	SequenceControlSet              *sequence_control_set_ptr,
+#endif
     PictureParentControlSet         *picture_control_set_ptr)
 {
     // PA Reference Pictures
     uint32_t                             numOfListToSearch;
     uint32_t                             listIndex;
+#if MRP_ME
+	uint32_t                             ref_pic_index;
+#endif
     if (picture_control_set_ptr->slice_type != I_SLICE) {
 
         numOfListToSearch = (picture_control_set_ptr->slice_type == P_SLICE) ? REF_LIST_0 : REF_LIST_1;
@@ -441,11 +465,27 @@ void ReleasePaReferenceObjects(
         for (listIndex = REF_LIST_0; listIndex <= numOfListToSearch; ++listIndex) {
 
             // Release PA Reference Pictures
+#if MRP_ME
+			uint8_t num_of_ref_pic_to_search = (picture_control_set_ptr->slice_type == P_SLICE) ?
+				MIN(picture_control_set_ptr->ref_list0_count, sequence_control_set_ptr->static_config.reference_count) :
+				(listIndex == REF_LIST_0) ?
+				MIN(picture_control_set_ptr->ref_list0_count, sequence_control_set_ptr->static_config.reference_count) :
+				MIN(picture_control_set_ptr->ref_list1_count, sequence_control_set_ptr->static_config.reference_count);
+
+			for (ref_pic_index = 0; ref_pic_index < num_of_ref_pic_to_search; ++ref_pic_index) {
+				if (picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex][ref_pic_index] != EB_NULL) {
+
+					eb_release_object(((EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex][ref_pic_index]->object_ptr)->p_pcs_ptr->p_pcs_wrapper_ptr);
+					eb_release_object(picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex][ref_pic_index]);
+				}
+			}
+#else
             if (picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex] != EB_NULL) {
 
                 eb_release_object(((EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex]->object_ptr)->p_pcs_ptr->p_pcs_wrapper_ptr);
                 eb_release_object(picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex]);
             }
+#endif
         }
     }
 
@@ -1324,8 +1364,11 @@ void DeriveSimilarCollocatedFlag(
             uint16_t                  refVar, curVar;
 
             EbPaReferenceObject    *refObjL0;
-
+#if MRP_ME
+			refObjL0 = (EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[REF_LIST_0][0]->object_ptr;
+#else
             refObjL0 = (EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[REF_LIST_0]->object_ptr;
+#endif
             refMean = refObjL0->y_mean[sb_index];
 
             refVar = refObjL0->variance[sb_index];
@@ -1388,9 +1431,11 @@ void QpmGatherStatisticsSW(
             oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
 
 
-
+#if MRP_CONNECTION
+			    meSad = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
+#else
                 meSad = picture_control_set_ptr->me_results[sb_index][rasterScanCuIndex].distortion_direction[0].distortion;
-
+#endif
 
                 //Keep track of the min,max and sum.
                 picture_control_set_ptr->intra_complexity_min[cu_depth] = oisSad < picture_control_set_ptr->intra_complexity_min[cu_depth] ? oisSad : picture_control_set_ptr->intra_complexity_min[cu_depth];
@@ -1421,9 +1466,11 @@ void QpmGatherStatisticsSW(
             OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
             OisCandidate *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
             oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
-
+#if MRP_CONNECTION
+			meSad = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
+#else
             meSad = picture_control_set_ptr->me_results[sb_index][rasterScanCuIndex].distortion_direction[0].distortion;
-
+#endif
             //Keep track of the min,max and sum.
             picture_control_set_ptr->intra_complexity_min[cu_depth] = oisSad < picture_control_set_ptr->intra_complexity_min[cu_depth] ? oisSad : picture_control_set_ptr->intra_complexity_min[cu_depth];
             picture_control_set_ptr->intra_complexity_max[cu_depth] = oisSad > picture_control_set_ptr->intra_complexity_max[cu_depth] ? oisSad : picture_control_set_ptr->intra_complexity_max[cu_depth];
@@ -1446,9 +1493,11 @@ void QpmGatherStatisticsSW(
             OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
             OisCandidate *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
             oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
-
+#if MRP_CONNECTION
+			meSad = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
+#else
             meSad = picture_control_set_ptr->me_results[sb_index][rasterScanCuIndex].distortion_direction[0].distortion;
-
+#endif
 
             //Keep track of the min,max and sum.
             picture_control_set_ptr->intra_complexity_min[cu_depth] = oisSad < picture_control_set_ptr->intra_complexity_min[cu_depth] ? oisSad : picture_control_set_ptr->intra_complexity_min[cu_depth];
@@ -1470,9 +1519,11 @@ void QpmGatherStatisticsSW(
             OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
             OisCandidate *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
             oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
-
+#if MRP_CONNECTION
+		meSad = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
+#else
         meSad = picture_control_set_ptr->me_results[sb_index][RASTER_SCAN_CU_INDEX_64x64].distortion_direction[0].distortion;
-
+#endif
 
         //Keep track of the min,max and sum.
         picture_control_set_ptr->intra_complexity_min[cu_depth] = oisSad < picture_control_set_ptr->intra_complexity_min[cu_depth] ? oisSad : picture_control_set_ptr->intra_complexity_min[cu_depth];
@@ -1699,6 +1750,9 @@ void* initial_rate_control_kernel(void *input_ptr)
 
             // Release Pa Ref pictures when not needed
             ReleasePaReferenceObjects(
+#if MRP_ME
+				sequence_control_set_ptr,
+#endif
                 picture_control_set_ptr);
 
             //****************************************************

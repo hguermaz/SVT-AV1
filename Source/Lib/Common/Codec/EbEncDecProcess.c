@@ -1176,6 +1176,7 @@ void CopyStatisticsToRefObject(
     EbReferenceObject  * refObjL0, *refObjL1;
     ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->penalize_skipflag = EB_FALSE;
     if (picture_control_set_ptr->slice_type == B_SLICE) {
+		//MRP_MD
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
         refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr;
 
@@ -1848,7 +1849,12 @@ void* enc_dec_kernel(void *input_ptr)
                         int16_t mv_l1_x;
                         int16_t mv_l1_y;
                         uint32_t me_sb_addr;
-
+#if MRP_ME
+						mv_l0_x = 0;
+						mv_l0_y = 0;
+						mv_l1_x = 0;
+						mv_l1_y = 0;
+#else
                         if (sequence_control_set_ptr->sb_size == BLOCK_128X128) {
 
                             uint32_t me_sb_size = sequence_control_set_ptr->sb_sz;
@@ -1882,6 +1888,7 @@ void* enc_dec_kernel(void *input_ptr)
                             mv_l1_x = mePuResult->x_mv_l1 >> 2;
                             mv_l1_y = mePuResult->y_mv_l1 >> 2;
                         }
+#endif
 
 
                         context_ptr->ss_mecontext->search_area_width = 64;

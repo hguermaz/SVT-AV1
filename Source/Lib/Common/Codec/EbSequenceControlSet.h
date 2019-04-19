@@ -230,9 +230,10 @@ extern "C" {
         int32_t                                 display_model_info_present_flag;
         int32_t                                 film_grain_denoise_strength;
         int32_t                                 film_grain_params_present;  // To turn on/off film grain (on a sequence basis)
-
+#if BASE_LAYER_REF
         int32_t                                 extra_frames_to_ref_islice;
         int32_t                                 max_frame_window_to_ref_islice;
+#endif
 
 
 #if ADP_STATS_PER_LAYER
