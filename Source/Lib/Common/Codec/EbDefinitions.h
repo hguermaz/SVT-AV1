@@ -45,6 +45,7 @@ extern "C" {
 #define WIKI_M6                                     1
 #define WIKI_M7                                     1
 #define WIKI_M8                                     1
+#define WIKI_M9                                     1
 
 //##################### WIKI DEFAULT #####################
 #define TURN_OFF_WIKI                               1
@@ -141,6 +142,15 @@ extern "C" {
 #endif
 
 // new M6 157.0%   
+#if WIKI_M9
+
+#define OMK_ME_8                                    1
+#define OMK_HME                                     1 // -----THIS
+#define WIKI_TX_SEARCH                              1 // -----THIS
+
+#endif
+
+
 
 // TO BE TESTED
 
@@ -154,8 +164,7 @@ extern "C" {
 #define M5_TX_search                                0
 
 #define OMK_ME_6                                    0
-#define OMK_ME_8                                    0
-#define OMK_HME                                     0
+
 
 
 #define M6_Disable_TX_search_based_on_NFL           0
@@ -165,7 +174,6 @@ extern "C" {
 #define M9_TX_search_OFF                            0 // *
 #define M6_HME                                      0 // *
 #define M9_adopted_HME                              0 // *
-#define WIKI_TX_SEARCH                              0
 #else
 #define OMK_ADP_5                                   0 
 #define OMK_ADP_6                                   0 
@@ -3811,8 +3819,8 @@ static const uint8_t EnableHmeLevel1Flag[INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] 
 };
 
 #if OMK_HME 
-#define HME_L1_W    64
-#define HME_L1_H    64
+#define HME_L1_W    32
+#define HME_L1_H    32
 #else
 #define HME_L1_W    16
 #define HME_L1_H    16
@@ -3944,8 +3952,8 @@ static const uint16_t HmeLevel2SearchAreaInHeightArrayBottom[SC_MAX_LEVEL][INPUT
     }
 };
 #if OMK_ME_8
-#define ME_W 48
-#define ME_H 16
+#define ME_W 64
+#define ME_H 48
 #elif OMK_ME_6
 #define ME_W 96
 #define ME_H 80
