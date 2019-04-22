@@ -186,6 +186,7 @@ void av1_convolve_y_sr_c(const uint8_t *src, int32_t src_stride, uint8_t *dst,
     const int32_t subpel_x_q4, const int32_t subpel_y_q4,
     ConvolveParams *conv_params)
 {
+    assert(filter_params_y != NULL);
     const int32_t fo_vert = filter_params_y->taps / 2 - 1;
     (void)filter_params_x;
     (void)subpel_x_q4;
@@ -543,6 +544,7 @@ void av1_highbd_convolve_y_sr_c(const uint16_t *src, int32_t src_stride,
     const InterpFilterParams *filter_params_y,
     const int32_t subpel_x_q4, const int32_t subpel_y_q4,
     ConvolveParams *conv_params, int32_t bd) {
+    assert(filter_params_y != NULL);
     const int32_t fo_vert = filter_params_y->taps / 2 - 1;
     (void)filter_params_x;
     (void)subpel_x_q4;
@@ -981,7 +983,6 @@ static void convolve_2d_for_intrabc(const uint8_t *src, int src_stride,
         subpel_x_q4 ? &av1_intrabc_filter_params : NULL;
     const InterpFilterParams *filter_params_y =
         subpel_y_q4 ? &av1_intrabc_filter_params : NULL;
-    //assert(filter_params_y != NULL);
     if (subpel_x_q4 != 0 && subpel_y_q4 != 0) {
         av1_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h,
             (InterpFilterParams *)filter_params_x, (InterpFilterParams *)filter_params_y, 0, 0, conv_params);
@@ -1005,7 +1006,6 @@ static void highbd_convolve_2d_for_intrabc(const uint16_t *src, int src_stride,
         subpel_x_q4 ? &av1_intrabc_filter_params : NULL;
     const InterpFilterParams *filter_params_y =
         subpel_y_q4 ? &av1_intrabc_filter_params : NULL;
-    //assert(filter_params_y != NULL);
     if (subpel_x_q4 != 0 && subpel_y_q4 != 0) {
         av1_highbd_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h,
             filter_params_x, filter_params_y, 0, 0,
