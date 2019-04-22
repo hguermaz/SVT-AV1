@@ -1343,9 +1343,10 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 #endif
     // Set Chroma Mode
     // Level                Settings
-    // CHROMA_MODE_0  0     Chroma @ MD
-    // CHROMA_MODE_1  1     Chroma blind @ MD + CFL @ EP
-    // CHROMA_MODE_2  2     Chroma blind @ MD + no CFL @ EP
+    // CHROMA_MODE_0  0     Full chroma search @ MD
+    // CHROMA_MODE_1  1     Fast chroma search @ MD
+    // CHROMA_MODE_2  2     Chroma blind @ MD + CFL @ EP
+    // CHROMA_MODE_3  3     Chroma blind @ MD + no CFL @ EP
 #if SEARCH_UV_MODE
 #if SEARCH_UV_BASE
     if (picture_control_set_ptr->enc_mode == ENC_M0 && picture_control_set_ptr->temporal_layer_index == 0)
