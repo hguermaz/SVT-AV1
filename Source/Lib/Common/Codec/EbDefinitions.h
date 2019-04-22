@@ -157,7 +157,12 @@ extern "C" {
 #define NSQ_TAB_SIZE                                    6
 
 #define AOM_INTERP_EXTEND 4
-#define TX_SIZE_SEARCH_LEVELS                           1
+#define TX_SIZE_SEARCH_LEVELS                           0
+#if TX_SIZE_SEARCH_LEVELS
+#define TX_SIZE_UPDATE_GEOM                             1
+#define TXS_ENC                                         1
+#define TXS_MD                                          1
+#endif
  
 struct Buf2D 
 {

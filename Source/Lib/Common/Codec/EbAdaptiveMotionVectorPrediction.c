@@ -1378,9 +1378,16 @@ void update_av1_mi_map(
                 }
                 else {
                     int32_t txb_itr;
+#if TX_SIZE_UPDATE_GEOM
+                    for (txb_itr = 0; txb_itr < blk_geom->txb_count[cu_ptr->tx_depth]; txb_itr++) {
+                        miPtr[miX + miY * mi_stride].mbmi.tx_size = blk_geom->txsize[cu_ptr->tx_depth][txb_itr]; // Nader - TO_DO
+                    }
+#else
                     for (txb_itr = 0; txb_itr < blk_geom->txb_count; txb_itr++) {
+
                         miPtr[miX + miY * mi_stride].mbmi.tx_size = blk_geom->txsize[txb_itr]; // Nader - TO_DO
                     }
+#endif
                     miPtr[miX + miY * mi_stride].mbmi.sb_type = blk_geom->bsize;
 
 
@@ -1453,9 +1460,16 @@ void update_mi_map(
                 else {
 
                     int32_t txb_itr;
+#if TX_SIZE_UPDATE_GEOM
+                    for (txb_itr = 0; txb_itr < blk_geom->txb_count[cu_ptr->tx_depth]; txb_itr++) {
+                        miPtr[miX + miY * mi_stride].mbmi.tx_size = blk_geom->txsize[cu_ptr->tx_depth][txb_itr]; // Nader - TO_DO
+#else
                     for (txb_itr = 0; txb_itr < blk_geom->txb_count; txb_itr++) {
+
                         miPtr[miX + miY * mi_stride].mbmi.tx_size = blk_geom->txsize[txb_itr]; // Nader - TO_DO
+#endif
                     }
+
 
                     miPtr[miX + miY * mi_stride].mbmi.sb_type = blk_geom->bsize;
                 }

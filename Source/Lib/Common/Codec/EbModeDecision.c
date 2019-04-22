@@ -2120,7 +2120,11 @@ void  inject_intra_candidates_ois(
     OisCandidate     *ois_blk_ptr = ois_sb_results_ptr->ois_candidate_array[ep_to_pa_block_index[context_ptr->blk_geom->blkidx_mds]];
     uint8_t              total_intra_luma_mode = ois_sb_results_ptr-> total_ois_intra_candidate[ep_to_pa_block_index[context_ptr->blk_geom->blkidx_mds]];
     
-
+#if TXS_MD
+    uint8_t tx_depth = context_ptr->tx_depth;
+    if (tx_depth != 0)
+        printf("Error KKKKKK = %d\n ", tx_depth);
+#endif
     for (intra_candidate_counter = 0; intra_candidate_counter < total_intra_luma_mode; ++intra_candidate_counter) {
                 
 
@@ -2161,7 +2165,11 @@ void  inject_intra_candidates_ois(
                     0,
                     0,
                     0,
+#if TXS_MD
+                    context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
                     context_ptr->blk_geom->txsize_uv[0],
+#endif
                     picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
             candidate_array[can_total_cnt].ref_frame_type = INTRA_FRAME;
             candidate_array[can_total_cnt].pred_mode = (PredictionMode)intra_mode;
@@ -2202,7 +2210,11 @@ void  inject_intra_candidates_ois(
                     0,
                     0,
                     0,
+#if TXS_MD
+                    context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
                     context_ptr->blk_geom->txsize_uv[0],
+#endif
                     picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
             candidate_array[can_total_cnt].ref_frame_type = INTRA_FRAME;
             candidate_array[can_total_cnt].pred_mode = (PredictionMode)intra_mode;
@@ -2642,6 +2654,9 @@ void  inject_intra_candidates(
 #if !M9_INTRA
     angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
 #endif
+#if TXS_MD
+    uint8_t tx_depth = context_ptr->tx_depth = 0;
+#endif
     for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate <= intra_mode_end ; ++openLoopIntraCandidate) {
 
         if (av1_is_directional_mode((PredictionMode)openLoopIntraCandidate)) {
@@ -2714,7 +2729,11 @@ void  inject_intra_candidates(
                                 0,
                                 0,
                                 0,
+#if TXS_MD
+                                context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
                                 context_ptr->blk_geom->txsize_uv[0],
+#endif
                                 picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
                         candidateArray[canTotalCnt].ref_frame_type = INTRA_FRAME;
                         candidateArray[canTotalCnt].pred_mode = (PredictionMode)openLoopIntraCandidate;
@@ -2781,7 +2800,11 @@ void  inject_intra_candidates(
                     0,
                     0,
                     0,
+#if TXS_MD
+                    context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
                     context_ptr->blk_geom->txsize_uv[0],
+#endif
                     picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
             candidateArray[canTotalCnt].ref_frame_type = INTRA_FRAME;
             candidateArray[canTotalCnt].pred_mode = (PredictionMode)openLoopIntraCandidate;
@@ -2979,6 +3002,12 @@ uint8_t product_full_mode_decision(
     context_ptr->md_local_cu_unit[cu_ptr->mds_idx].chroma_distortion_inter_depth = (uint32_t)buffer_ptr_array[lowestCostIndex]->candidate_ptr->chroma_distortion_inter_depth;
 
     cu_ptr->prediction_mode_flag = candidate_ptr->type;
+#if TX_SIZE_UPDATE_GEOM
+    cu_ptr->tx_depth = candidate_ptr->tx_depth;
+
+    if (cu_ptr->tx_depth != 0)
+        printf("Error LLLLLLLL = %d\n ", cu_ptr->tx_depth);
+#endif
     cu_ptr->skip_flag = candidate_ptr->skip_flag; // note, the skip flag is re-checked in the ENCDEC process
     cu_ptr->block_has_coeff = ((candidate_ptr->block_has_coeff) > 0) ? EB_TRUE : EB_FALSE;
     cu_ptr->quantized_dc[0] = buffer_ptr_array[lowestCostIndex]->candidate_ptr->quantized_dc[0];
@@ -3081,7 +3110,15 @@ uint8_t product_full_mode_decision(
     uint32_t  cu_size_log2 = context_ptr->cu_size_log2;
 
     {
+#if TX_SIZE_UPDATE_GEOM
+        cu_ptr->tx_depth = candidate_ptr->tx_depth;
+
+        if (cu_ptr->tx_depth != 0)
+            printf("Error LLLLLLLL = %d\n ", cu_ptr->tx_depth);
+        tuTotalCount = context_ptr->blk_geom->txb_count[candidate_ptr->tx_depth];
+#else
         tuTotalCount = context_ptr->blk_geom->txb_count;
+#endif
         tu_index = 0;
         txb_itr = 0;
     }

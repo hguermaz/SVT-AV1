@@ -126,6 +126,9 @@ extern "C" {
         uint16_t                               num_proj_ref;
         EbBool                                 local_warp_valid;
         EbWarpedMotionParams                   wm_params;
+#if TX_SIZE_UPDATE_GEOM
+        uint8_t                                tx_depth;
+#endif
     } ModeDecisionCandidate;
 
 

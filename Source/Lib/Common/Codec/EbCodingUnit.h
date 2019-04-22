@@ -397,6 +397,9 @@ extern "C" {
         uint8_t                    *neigh_left_recon[3];  //only for MD
         uint8_t                    *neigh_top_recon[3];
         uint32_t                    best_d1_blk;
+#if TX_SIZE_UPDATE_GEOM
+        uint8_t                     tx_depth;
+#endif
     } CodingUnit;
 
         typedef struct OisCandidate 

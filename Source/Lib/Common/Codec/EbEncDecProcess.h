@@ -133,7 +133,10 @@ extern "C" {
         EbBool                                 evaluate_cfl_ep; // 0: CFL is evaluated @ mode decision, 1: CFL is evaluated @ encode pass
 #if  BLK_SKIP_DECISION
         uint8_t                                md_skip_blk;
-#endif    
+#endif  
+#if TXS_ENC
+        uint8_t                                tx_depth;
+#endif
     } EncDecContext;
 
     /**************************************
