@@ -2740,11 +2740,17 @@ void  inject_intra_candidates(
                     UV_CFL_PRED;
             }
             else {
-                candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
-                    context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA] :
-                    (context_ptr->chroma_level <= CHROMA_MODE_1) ?
-                    UV_CFL_PRED :
-                    UV_DC_PRED;
+                // Hsan/Omar: why the restriction below ? (i.e. disable_ang_uv)
+            	const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+
+            	candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ? 
+                	intra_luma_to_chroma[openLoopIntraCandidate] : 
+                	(context_ptr->chroma_level <= CHROMA_MODE_1) ?
+                    	UV_CFL_PRED :
+                    	UV_DC_PRED;
+
+            	candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
+                	UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
             }
 #else
             const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
