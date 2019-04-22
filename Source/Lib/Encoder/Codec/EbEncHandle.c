@@ -1039,6 +1039,7 @@ EB_API EbErrorType eb_init_encoder(EbComponentType *svt_enc_component)
         inputData.top_padding = encHandlePtr->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->top_padding;
         inputData.bot_padding = encHandlePtr->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->bot_padding;
         inputData.bit_depth = encHandlePtr->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->encoder_bit_depth;
+        inputData.color_format = color_format;
         inputData.sb_sz = encHandlePtr->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->sb_sz;
         inputData.sb_size_pix = scs_init.sb_size;
         inputData.max_depth = encHandlePtr->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->max_sb_depth;
