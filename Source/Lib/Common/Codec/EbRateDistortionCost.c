@@ -169,13 +169,14 @@ int32_t Av1TransformTypeRateEstimation(
 {
 
 
-    uint8_t filterIntraMode = 0; // NM- hardcoded to zero for the moment until we support different intra filtering modes.
-    const TxSize square_tx_size = txsize_sqr_map[transform_size];
-    //assert(square_tx_size < EXT_TX_SIZES);
+    uint8_t filterIntraMode = 0; // AMIR to check// NM- hardcoded to zero for the moment until we support different intra filtering modes.
+
     //const MbModeInfo *mbmi = &xd->mi[0]->mbmi;
     //const int32_t is_inter = is_inter_block(mbmi);
 
     if (get_ext_tx_types(transform_size, is_inter, reduced_tx_set_used) > 1  /*&&    !xd->lossless[xd->mi[0]->mbmi.segment_id]  WE ARE NOT LOSSLESS*/) {
+        const TxSize square_tx_size = txsize_sqr_map[transform_size];
+        assert(square_tx_size < EXT_TX_SIZES);
 
         const int32_t ext_tx_set = get_ext_tx_set(transform_size, is_inter, reduced_tx_set_used);
         if (is_inter) {

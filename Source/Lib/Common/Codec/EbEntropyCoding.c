@@ -459,11 +459,12 @@ void Av1WriteTxType(
 
     const int32_t isInter = cu_ptr->av1xd->use_intrabc || (cu_ptr->prediction_mode_flag == INTER_MODE);
 
-    const TxSize squareTxSize = txsize_sqr_map[txSize];
-    //assert(squareTxSize < EXT_TX_SIZES);
-
     if (get_ext_tx_types(txSize, isInter, pcs_ptr->reduced_tx_set_used) > 1 &&
         (pcs_ptr->base_qindex > 0)) {
+
+        const TxSize squareTxSize = txsize_sqr_map[txSize];
+        assert(squareTxSize <= EXT_TX_SIZES);
+
         const TxSetType txSetType =
             get_ext_tx_set_type(txSize, isInter, pcs_ptr->reduced_tx_set_used);
         const int32_t eset = get_ext_tx_set(txSize, isInter, pcs_ptr->reduced_tx_set_used);
