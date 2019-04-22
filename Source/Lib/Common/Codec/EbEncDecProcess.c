@@ -1283,26 +1283,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 5                  6
     // 6                  4  
     // 7                  3 
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) {
-        
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->nfl_level = 2;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M3)
-            context_ptr->nfl_level = 4;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M7)
-            context_ptr->nfl_level = 5;
-        else
-            if (picture_control_set_ptr->parent_pcs_ptr->slice_type == I_SLICE)
-                context_ptr->nfl_level  = 5;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
-                context_ptr->nfl_level  = 6;
-            else
-                context_ptr->nfl_level  = 7;
-
-    }
-    else {
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M1)
         if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
@@ -1361,9 +1341,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         else
             context_ptr->nfl_level  = 7;
 #endif
-#if SCENE_CONTENT_SETTINGS
-    }
-#endif
     // Set Chroma Mode
     // Level                Settings
     // CHROMA_MODE_0  0     Chroma @ MD
@@ -1402,15 +1379,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 
     // Set the search method when decoupled fast loop is used 
     // Hsan: FULL_SAD_SEARCH not supported
-#if SCENE_CONTENT_SETTINGS
-
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected){
-	    if (picture_control_set_ptr->enc_mode <= ENC_M0)
-	        context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
-	    else
-	        context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
-	}else
-#endif
 #if NEW_I7_PRESETS
         if (picture_control_set_ptr->enc_mode <= ENC_M4)
             context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
@@ -1478,15 +1446,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // Level                Settings
     // 0                    OFF
     // 1                    On
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) 
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->warped_motion_injection = 1;
-        else
-            context_ptr->warped_motion_injection = 0;
-    else
-
-#endif
 #if NEW_I7_PRESETS
     context_ptr->warped_motion_injection = 1;
 #else
@@ -1501,15 +1460,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    OFF
     // 1                    ON FULL
     // 2                    Reduced set
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->unipred3x3_injection = 1;
-        else
-            context_ptr->unipred3x3_injection = 0;
-    else
-
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M1)
         context_ptr->unipred3x3_injection = 1;
@@ -1532,15 +1482,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    OFF
     // 1                    ON FULL
     // 2                    Reduced set
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->bipred3x3_injection = 1;
-        else
-            context_ptr->bipred3x3_injection = 0;
-    else
-
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M1)
         context_ptr->bipred3x3_injection = 1;
@@ -1562,11 +1503,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    ON for 8x8 and above
     // 1                    ON for 16x16 and above
     // 2                    ON for 32x32 and above
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
-        context_ptr->interpolation_filter_search_blk_size = 0;
-    else
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
         context_ptr->interpolation_filter_search_blk_size = 0;

@@ -181,11 +181,7 @@ EbErrorType signal_derivation_me_kernel_oq(
         set_me_hme_params_from_config(
             sequence_control_set_ptr,
             context_ptr->me_context_ptr);
- #if SCENE_CONTENT_SETTINGS   
-    if (picture_control_set_ptr->sc_content_detected)
-        context_ptr->me_context_ptr->fractional_search_method = FULL_SAD_SEARCH ; 
-    else 
-#endif
+
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
         context_ptr->me_context_ptr->fractional_search_method = SSD_SEARCH ; 
 #if M9_FRAC_ME_SEARCH_METHOD

@@ -34,9 +34,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define WIKI_SETTINGS          0
 
-
+#if WIKI_SETTINGS
+#define MRP_SUPPORT            0// MRP Main Flag
+#else
 #define MRP_SUPPORT            1// MRP Main Flag
+#endif
 
 
 // New i7 presets
@@ -91,7 +95,11 @@ extern "C" {
 #define RC_FEEDBACK                       1 // Feedback from previous base layer is received before starting the next base layer frame
 #endif
 #define RED_CU                            1 // Bypass redundant CU
+#if WIKI_SETTINGS
+#define NSQ_ME_OPT                        1 // NSQ ME Restructuring
+#else
 #define NSQ_ME_OPT                        0 // NSQ ME Restructuring
+#endif
 #define BYPASS_USELESS_TX_SEARCH          0
 // Testing MACROS
 #define M9_NEAR_INJECTION                 0
@@ -4056,10 +4064,10 @@ static const uint16_t search_area_width[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPP
         { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 }
 #endif
     } , {
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 };
 static const uint16_t search_area_height[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
@@ -4083,10 +4091,10 @@ static const uint16_t search_area_height[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUP
         { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 }
 #endif
     } , {
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 
     //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12
