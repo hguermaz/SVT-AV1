@@ -1603,7 +1603,11 @@ void set_all_ref_frame_type(PictureParentControlSet  *parent_pcs_ptr, MvReferenc
 	}
 
 #if NO_UNI
+#if MRP_FIX_CLOSE_GOP
+    if (parent_pcs_ptr->mrp_mode == 0 && parent_pcs_ptr->slice_type == B_SLICE)
+#else
 	if (parent_pcs_ptr->mrp_mode == 0)
+#endif
 	{
 #endif
 
@@ -2750,8 +2754,13 @@ void  Av1GenerateRpsInfo(
 		if (picture_control_set_ptr->pred_struct_ptr->pred_type == EB_PRED_LOW_DELAY_P)
 		{
 			//P frames.
+#if MRP_FIX_CLOSE_GOP
+            av1Rps->ref_dpb_index[4] = av1Rps->ref_dpb_index[5] = av1Rps->ref_dpb_index[6] = av1Rps->ref_dpb_index[0];
+            av1Rps->ref_poc_array[4] = av1Rps->ref_poc_array[5] = av1Rps->ref_poc_array[6] = av1Rps->ref_poc_array[0];
+#else
 			av1Rps->ref_dpb_index[1] = av1Rps->ref_dpb_index[2] = av1Rps->ref_dpb_index[3] = av1Rps->ref_dpb_index[0];
 			av1Rps->ref_dpb_index[4] = av1Rps->ref_dpb_index[5] = av1Rps->ref_dpb_index[6] = av1Rps->ref_dpb_index[0];
+#endif
 			picture_control_set_ptr->show_frame = EB_TRUE;
 			picture_control_set_ptr->has_show_existing = EB_FALSE;
 		}
@@ -2986,8 +2995,13 @@ void  Av1GenerateRpsInfo(
     if (picture_control_set_ptr->pred_struct_ptr->pred_type == EB_PRED_LOW_DELAY_P)
     {
         //P frames.
+#if MRP_FIX_CLOSE_GOP
+        av1Rps->ref_dpb_index[4] = av1Rps->ref_dpb_index[5] = av1Rps->ref_dpb_index[6] = av1Rps->ref_dpb_index[0];
+        av1Rps->ref_poc_array[4] = av1Rps->ref_poc_array[5] = av1Rps->ref_poc_array[6] = av1Rps->ref_poc_array[0];
+#else
         av1Rps->ref_dpb_index[1] = av1Rps->ref_dpb_index[2] = av1Rps->ref_dpb_index[3] = av1Rps->ref_dpb_index[0];
         av1Rps->ref_dpb_index[4] = av1Rps->ref_dpb_index[5] = av1Rps->ref_dpb_index[6] = av1Rps->ref_dpb_index[0];
+#endif
         picture_control_set_ptr->show_frame = EB_TRUE;
         picture_control_set_ptr->has_show_existing = EB_FALSE;
     }
