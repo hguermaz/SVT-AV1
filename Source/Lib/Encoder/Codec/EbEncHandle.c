@@ -2628,7 +2628,10 @@ static EbErrorType VerifySettings(
         SVT_LOG("Error Instance %u: Log2Tile rows/cols must be [0 - 6] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;
     }
-
+    if ((config->tile_rows > 0 || config->tile_columns > 0) && config->reference_count > 1) {        
+        SVT_LOG("Error Instance %u: Log2Tile rows/cols must be 0 when reference_count > 1 \n", channelNumber + 1);
+        return_error = EB_ErrorBadParameter;
+    }
     if (config->scene_change_detection > 1) {
         SVT_LOG("Error Instance %u: The scene change detection must be [0 - 1] \n", channelNumber + 1);
         return_error = EB_ErrorBadParameter;

@@ -4125,8 +4125,8 @@ extern void av1_predict_intra_block(
 
     int32_t mirow = bl_org_y_pict >> 2;
     int32_t micol = bl_org_x_pict >> 2;
-    xd->up_available = (mirow > 0);
-    xd->left_available = (micol > 0);
+    xd->up_available   = (mirow > tile->mi_row_start);
+    xd->left_available = (micol > tile->mi_col_start);
     const int32_t bw = mi_size_wide[bsize];
     const int32_t bh = mi_size_high[bsize];
 
@@ -4134,10 +4134,10 @@ extern void av1_predict_intra_block(
     xd->mb_to_bottom_edge = ((cm->mi_rows - bh - mirow) * MI_SIZE) * 8;
     xd->mb_to_left_edge = -((micol * MI_SIZE) * 8);
     xd->mb_to_right_edge = ((cm->mi_cols - bw - micol) * MI_SIZE) * 8;
-    xd->tile.mi_col_start = 0;
-    xd->tile.mi_col_end = cm->mi_cols;
-    xd->tile.mi_row_start = 0;
-    xd->tile.mi_row_end = cm->mi_rows;
+    xd->tile.mi_col_start = tile->mi_col_start;
+    xd->tile.mi_col_end = tile->mi_col_end;
+    xd->tile.mi_row_start = tile->mi_row_start;
+    xd->tile.mi_row_end = tile->mi_row_end;
     xd->n8_h = bh;
     xd->n8_w = bw;
     xd->is_sec_rect = 0;

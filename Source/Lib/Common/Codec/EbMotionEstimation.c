@@ -3017,17 +3017,27 @@ void ext_eight_sad_calculation_32x32_64x64_c(
 static void open_loop_me_get_eight_search_point_results_block(
     MeContext             *context_ptr,                  // input parameter, ME context Ptr, used to get SB Ptr
     uint32_t                listIndex,                     // input parameter, reference list index
+#if MRP_ME
+    uint32_t                   ref_pic_index,
+#endif
     uint32_t                searchRegionIndex,             // input parameter, search area origin, used to point to reference samples
     int32_t                 xSearchIndex,                  // input parameter, search region position in the horizontal direction, used to derive xMV
     int32_t                 ySearchIndex,                  // input parameter, search region position in the vertical direction, used to derive yMV
     EbAsm                   asm_type)
 {
     // uint32_t reflumaStride = refPicPtr->stride_y; // NADER
+    // uint8_t  *refPtr = refPicPtr->buffer_y; // NADER
+#if MRP_ME
+    uint32_t reflumaStride = context_ptr->interpolated_full_stride[listIndex][ref_pic_index];
+    uint8_t  *refPtr = context_ptr->integer_buffer_ptr[listIndex][ref_pic_index]  + ((ME_FILTER_TAP >> 1) * context_ptr->interpolated_full_stride[listIndex][ref_pic_index])+ (ME_FILTER_TAP >> 1) + searchRegionIndex;
+#else
     uint32_t reflumaStride = context_ptr->interpolated_full_stride[listIndex][0];
     // uint8_t  *refPtr = refPicPtr->buffer_y; // NADER
     uint8_t  *refPtr = context_ptr->integer_buffer_ptr[listIndex][0] +
         ((ME_FILTER_TAP >> 1) * context_ptr->interpolated_full_stride[listIndex][0]) +
         (ME_FILTER_TAP >> 1) + searchRegionIndex;
+#endif
+
     uint32_t currMV1 = (((uint16_t)ySearchIndex) << 18);
     uint16_t currMV2 = (((uint16_t)xSearchIndex << 2));
     uint32_t currMV = currMV1 | currMV2;
@@ -3664,7 +3674,12 @@ static void open_loop_me_fullpel_search_sblock(
             open_loop_me_get_eight_search_point_results_block(
                 context_ptr,
                 listIndex,
+#if MRP_ME
+                ref_pic_index,
+                xSearchIndex + ySearchIndex * context_ptr->interpolated_full_stride[listIndex][ref_pic_index],
+#else
                 xSearchIndex + ySearchIndex * context_ptr->interpolated_full_stride[listIndex][0],
+#endif
                 (int32_t)xSearchIndex + x_search_area_origin,
                 (int32_t)ySearchIndex + y_search_area_origin,
                 asm_type);
