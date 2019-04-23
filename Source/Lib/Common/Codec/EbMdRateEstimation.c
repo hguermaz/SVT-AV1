@@ -590,9 +590,9 @@ void av1_estimate_mv_rate(
 
     av1_build_nmv_cost_table(
         md_rate_estimation_array->nmv_vec_cost,//out
-        /*picture_control_set_ptr->parent_pcs_ptr->allow_high_precision_mv */0 ? nmvcost_hp : nmvcost, //out
+        picture_control_set_ptr->parent_pcs_ptr->allow_high_precision_mv ? nmvcost_hp : nmvcost, //out
         nmv_ctx,
-        MV_SUBPEL_LOW_PRECISION);
+        picture_control_set_ptr->parent_pcs_ptr->allow_high_precision_mv);
 
 
     md_rate_estimation_array->nmvcoststack[0] = &md_rate_estimation_array->nmv_costs[0][MV_MAX];
@@ -655,7 +655,16 @@ void av1_estimate_coefficients_rate(
             for (ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
                 av1_get_syntax_rate_from_cdf(pcost->base_cost[ctx],
                     fc->coeff_base_cdf[tx_size][plane][ctx], NULL);
-
+            for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx) {
+                pcost->base_cost[ctx][4] = 0;
+                pcost->base_cost[ctx][5] = pcost->base_cost[ctx][1] +
+                    av1_cost_literal(1) -
+                    pcost->base_cost[ctx][0];
+                pcost->base_cost[ctx][6] =
+                    pcost->base_cost[ctx][2] - pcost->base_cost[ctx][1];
+                pcost->base_cost[ctx][7] =
+                    pcost->base_cost[ctx][3] - pcost->base_cost[ctx][2];
+            }
             for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
                 av1_get_syntax_rate_from_cdf(pcost->eob_extra_cost[ctx],
                     fc->eob_extra_cdf[tx_size][plane][ctx], NULL);
@@ -684,6 +693,14 @@ void av1_estimate_coefficients_rate(
                 // for (i = 0; i <= COEFF_BASE_RANGE; i++)
                 //  printf("%5d ", pcost->lps_cost[ctx][i]);
                 // printf("\n");
+            }
+            for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+                pcost->lps_cost[ctx][0 + COEFF_BASE_RANGE + 1] =
+                    pcost->lps_cost[ctx][0];
+                for (int i = 1; i <= COEFF_BASE_RANGE; ++i) {
+                    pcost->lps_cost[ctx][i + COEFF_BASE_RANGE + 1] =
+                        pcost->lps_cost[ctx][i] - pcost->lps_cost[ctx][i - 1];
+                }
             }
         }
     }
