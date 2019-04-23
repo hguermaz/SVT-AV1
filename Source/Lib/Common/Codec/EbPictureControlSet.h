@@ -14118,9 +14118,9 @@ extern "C" {
         uint64_t                            **var_of_var32x32_based_sb_array;    // used by ModeDecisionConfigurationProcess()- the variance of 8x8 block variances for each 32x32 block
         uint8_t                              *sb_cmplx_contrast_array;            // used by EncDecProcess()
         uint8_t                              *sb_high_contrast_array_dialated;
-#endif
         uint64_t                            **sb_y_src_energy_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
         uint64_t                            **sb_y_src_mean_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
+#endif
 #if !DISABLE_OIS_USE
         uint8_t                               intra_coded_block_probability;    // used by EncDecProcess()
 #endif

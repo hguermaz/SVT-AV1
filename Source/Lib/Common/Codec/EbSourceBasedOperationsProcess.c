@@ -287,6 +287,7 @@ void DetectUncoveredLcu(
 
 
 #endif
+#if !MEMORY_FOOTPRINT_OPT
 /******************************************************
 * Calculates AC Energy
 ******************************************************/
@@ -352,6 +353,7 @@ void CalculateAcEnergy(
         picture_control_set_ptr->sb_y_src_mean_cu_array[sb_index][4] = 100000000;
     }
 }
+#endif
 #if !DISABLE_OIS_USE
 
 void LumaContrastDetectorLcu(
