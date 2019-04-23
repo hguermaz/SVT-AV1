@@ -99,9 +99,15 @@ EbErrorType signal_derivation_pre_analysis_oq(
         uint8_t  hme_me_level = picture_control_set_ptr->enc_mode;
 
         picture_control_set_ptr->enable_hme_flag = EB_TRUE;
+#if SCENE_CONTENT_SETTINGS
+        picture_control_set_ptr->enable_hme_level0_flag = enable_hme_level0_flag[picture_control_set_ptr->sc_content_detected][input_resolution][hme_me_level];
+        picture_control_set_ptr->enable_hme_level1_flag = enable_hme_level1_flag[picture_control_set_ptr->sc_content_detected][input_resolution][hme_me_level];
+        picture_control_set_ptr->enable_hme_level2_flag = enable_hme_level2_flag[picture_control_set_ptr->sc_content_detected][input_resolution][hme_me_level];
+#else
         picture_control_set_ptr->enable_hme_level0_flag = enable_hme_level0_flag[input_resolution][hme_me_level];
         picture_control_set_ptr->enable_hme_level1_flag = enable_hme_level1_flag[input_resolution][hme_me_level];
         picture_control_set_ptr->enable_hme_level2_flag = enable_hme_level2_flag[input_resolution][hme_me_level];
+#endif
     }
     else {
         picture_control_set_ptr->enable_hme_flag = sequence_control_set_ptr->static_config.enable_hme_flag;
@@ -110,6 +116,13 @@ EbErrorType signal_derivation_pre_analysis_oq(
         picture_control_set_ptr->enable_hme_level2_flag = sequence_control_set_ptr->static_config.enable_hme_level2_flag;
     }
 #if NEW_PRESETS
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->sc_content_detected)
+        if (picture_control_set_ptr->enc_mode >= ENC_M6)
+            sequence_control_set_ptr->enable_restoration = 0;
+    else
+
+#endif
     if (picture_control_set_ptr->enc_mode >= ENC_M8)
         sequence_control_set_ptr->enable_restoration = 0;
 #else

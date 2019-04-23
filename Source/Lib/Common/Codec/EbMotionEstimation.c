@@ -8208,7 +8208,7 @@ EbErrorType motion_estimate_lcu(
     EbBool                    enableQuarterPel = EB_FALSE;
     EbBool                 oneQuadrantHME =  EB_FALSE;
 
-#if !M9_FRAC_ME_SEARCH_64x64
+#if !M9_FRAC_ME_SEARCH_64x64 && !SCENE_CONTENT_SETTINGS
     context_ptr->fractional_search64x64 = EB_TRUE;
 #endif
     oneQuadrantHME = sequence_control_set_ptr->input_resolution < INPUT_SIZE_4K_RANGE ? 0 : oneQuadrantHME;

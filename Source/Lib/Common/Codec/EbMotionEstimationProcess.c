@@ -181,7 +181,14 @@ EbErrorType signal_derivation_me_kernel_oq(
         set_me_hme_params_from_config(
             sequence_control_set_ptr,
             context_ptr->me_context_ptr);
-
+#if SCENE_CONTENT_SETTINGS
+        if (picture_control_set_ptr->sc_content_detected)
+            if (picture_control_set_ptr->enc_mode <= ENC_M1)
+                context_ptr->me_context_ptr->fractional_search_method = SSD_SEARCH ; 
+            else
+                context_ptr->me_context_ptr->fractional_search_method = SUB_SAD_SEARCH;
+        else
+#endif
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
         context_ptr->me_context_ptr->fractional_search_method = SSD_SEARCH ; 
 #if M9_FRAC_ME_SEARCH_METHOD
@@ -193,7 +200,16 @@ EbErrorType signal_derivation_me_kernel_oq(
         else
         context_ptr->me_context_ptr->fractional_search_method = FULL_SAD_SEARCH;
 #endif
+#if SCENE_CONTENT_SETTINGS
+        if (picture_control_set_ptr->sc_content_detected)
+            if (picture_control_set_ptr->enc_mode <= ENC_M1)
+                context_ptr->me_context_ptr->fractional_search64x64 = EB_TRUE;
+            else
+                context_ptr->me_context_ptr->fractional_search64x64 = EB_FALSE;
+        else
+            context_ptr->me_context_ptr->fractional_search64x64 = EB_TRUE;
 
+#endif
 #if M9_FRAC_ME_SEARCH_64x64
     //if (picture_control_set_ptr->sc_content_detected)
     //    context_ptr->fractional_search64x64 = EB_TRUE;
@@ -237,6 +253,14 @@ EbErrorType signal_derivation_me_kernel_oq(
 #if USE_SAD_HME
     // HME Search Method
 #if NEW_PRESETS
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->sc_content_detected)
+        if (picture_control_set_ptr->enc_mode <= ENC_M6)
+            context_ptr->me_context_ptr->hme_search_method = FULL_SAD_SEARCH;
+        else
+            context_ptr->me_context_ptr->hme_search_method = SUB_SAD_SEARCH;
+    else
+#endif
     context_ptr->me_context_ptr->hme_search_method = FULL_SAD_SEARCH;
 #else
 #if MOD_M0
@@ -253,6 +277,14 @@ EbErrorType signal_derivation_me_kernel_oq(
 #if USE_SAD_ME
     // ME Search Method
 #if NEW_PRESETS
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->sc_content_detected)
+        if (picture_control_set_ptr->enc_mode <= ENC_M3)
+            context_ptr->me_context_ptr->me_search_method = FULL_SAD_SEARCH;
+        else
+            context_ptr->me_context_ptr->me_search_method = SUB_SAD_SEARCH;
+    else
+#endif
     context_ptr->me_context_ptr->me_search_method = (picture_control_set_ptr->enc_mode <= ENC_M1) ?
         FULL_SAD_SEARCH :
         SUB_SAD_SEARCH;
