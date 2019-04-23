@@ -1199,7 +1199,7 @@ void CopyStatisticsToRefObject(
     ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->sg_frame_ep = cm->sg_frame_ep;
 }
 
-
+#if !MEMORY_FOOTPRINT_OPT  
 EbErrorType QpmDeriveWeightsMinAndMax(
     PictureControlSet                    *picture_control_set_ptr,
     EncDecContext                        *context_ptr)
@@ -1261,6 +1261,7 @@ EbErrorType QpmDeriveWeightsMinAndMax(
 
     return return_error;
 }
+#endif
 /******************************************************
 * Derive EncDec Settings for OQ
 Input   : encoder mode and tune
@@ -1800,12 +1801,13 @@ void* enc_dec_kernel(void *input_ptr)
             if (picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr != NULL) {
                 ((EbReferenceObject  *)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->average_intensity = picture_control_set_ptr->parent_pcs_ptr->average_intensity[0];
             }
-
+#if !MEMORY_FOOTPRINT_OPT
             if (sequence_control_set_ptr->static_config.improve_sharpness) {
                 QpmDeriveWeightsMinAndMax(
                     picture_control_set_ptr,
                     context_ptr);
             }
+#endif
             for (y_lcu_index = yLcuStartIndex, lcuSegmentIndex = lcuStartIndex; lcuSegmentIndex < lcuStartIndex + lcuSegmentCount; ++y_lcu_index) {
                 for (x_lcu_index = xLcuStartIndex; x_lcu_index < picture_width_in_sb && (x_lcu_index + y_lcu_index < segmentBandSize) && lcuSegmentIndex < lcuStartIndex + lcuSegmentCount; ++x_lcu_index, ++lcuSegmentIndex) {
 

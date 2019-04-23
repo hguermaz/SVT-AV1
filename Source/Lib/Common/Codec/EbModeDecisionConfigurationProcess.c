@@ -2233,7 +2233,9 @@ void* mode_decision_configuration_kernel(void *input_ptr)
 
         picture_control_set_ptr->parent_pcs_ptr->average_qp = 0;
         picture_control_set_ptr->intra_coded_area           = 0;
+#if !MEMORY_FOOTPRINT_OPT
         picture_control_set_ptr->scene_caracteristic_id     = EB_FRAME_CARAC_0;
+
         EbPicnoiseClass picNoiseClassTH                     = PIC_NOISE_CLASS_1;
 
         picture_control_set_ptr->scene_caracteristic_id = (
@@ -2259,7 +2261,7 @@ void* mode_decision_configuration_kernel(void *input_ptr)
             (picture_control_set_ptr->parent_pcs_ptr->pic_homogenous_over_time_sb_percentage < 70) &&
             (picture_control_set_ptr->parent_pcs_ptr->zz_cost_average > 15) &&
             (picture_control_set_ptr->parent_pcs_ptr->pic_noise_class >= picNoiseClassTH));
-
+#endif
         // Compute picture and slice level chroma QP offsets
         SetSliceAndPictureChromaQpOffsets( // HT done
             picture_control_set_ptr);

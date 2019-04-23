@@ -497,7 +497,7 @@ void GrassSkinPicture(
     PictureParentControlSet            *picture_control_set_ptr) {
     picture_control_set_ptr->grass_percentage_in_picture = (uint8_t)(context_ptr->picture_num_grass_sb * 100 / picture_control_set_ptr->sb_total_count);
 }
-
+#if !MEMORY_FOOTPRINT_OPT
 /******************************************************
 * Detect and mark SB and 32x32 CUs which belong to an isolated non-homogeneous region surrounding a homogenous and flat region
 ******************************************************/
@@ -573,6 +573,7 @@ void DetermineIsolatedNonHomogeneousRegionInPicture(
     return;
 }
 
+#endif
 
 void SetDefaultDeltaQpRange(
     SourceBasedOperationsContext    *context_ptr,
@@ -1078,12 +1079,12 @@ void* source_based_operations_kernel(void *input_ptr)
         DeriveHighDarkAreaDensityFlag(
             sequence_control_set_ptr,
             picture_control_set_ptr);
-
+#if !MEMORY_FOOTPRINT_OPT
         // Detect and mark SB and 32x32 CUs which belong to an isolated non-homogeneous region surrounding a homogenous and flat region.
         DetermineIsolatedNonHomogeneousRegionInPicture(
             sequence_control_set_ptr,
             picture_control_set_ptr);
-
+#endif
         // Detect aura areas in lighter background when subject is moving similar to background
         DetermineMorePotentialAuraAreas(
             sequence_control_set_ptr,

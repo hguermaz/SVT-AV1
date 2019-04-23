@@ -334,13 +334,17 @@ void RefinementPredictionLoop(
     MdcpLocalCodingUnit    *local_cu_array         = context_ptr->local_cu_array;
     SbParams               *sb_params            = &sequence_control_set_ptr->sb_params_array[sb_index];
     uint32_t                  cu_index             = 0;
+#if !MEMORY_FOOTPRINT_OPT
     sb_ptr->pred64 = EB_FALSE;
+#endif
     while (cu_index < CU_MAX_COUNT)
     {
         if (sb_params->raster_scan_cu_validity[md_scan_to_raster_scan[cu_index]] && (local_cu_array[cu_index].early_split_flag == EB_FALSE))
         {
             local_cu_array[cu_index].selected_cu = EB_TRUE;
+#if !MEMORY_FOOTPRINT_OPT
             sb_ptr->pred64 = (cu_index == 0) ? EB_TRUE : sb_ptr->pred64;
+#endif
             uint32_t depth = get_coded_unit_stats(cu_index)->depth;
             uint8_t refinementLevel;   
             {

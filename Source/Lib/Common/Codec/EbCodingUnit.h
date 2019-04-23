@@ -318,17 +318,23 @@ extern "C" {
         unsigned                    prediction_mode_flag    : 2;
         unsigned                    block_has_coeff         : 1;
         unsigned                    split_flag_context      : 2;
+
 #if !ADD_DELTA_QP_SUPPORT
         unsigned                    qp                      : 6;
+#if !MEMORY_FOOTPRINT_OPT  
         unsigned                    ref_qp                  : 6;
+#endif
         signed                      delta_qp                : 8; // can be signed 8bits
+#if !MEMORY_FOOTPRINT_OPT  
         signed                      org_delta_qp            : 8;
+#endif
 #else
         uint16_t                    qp;
         uint16_t                    ref_qp;
         int16_t                     delta_qp; // can be signed 8bits
         int16_t                     org_delta_qp;
 #endif
+
         // Coded Tree
         struct {
             unsigned                leaf_index           : 8;
@@ -406,8 +412,11 @@ extern "C" {
     typedef struct LargestCodingUnit 
     {
         struct PictureControlSet     *picture_control_set_ptr;
+   
         CodingUnit                   *final_cu_arr;
+#if !MEMORY_FOOTPRINT_OPT            
         uint32_t                        tot_final_cu;
+#endif
         PartitionType                  *cu_partition_array;
 
         // Coding Units
@@ -418,7 +427,9 @@ extern "C" {
         unsigned                        picture_left_edge_flag  : 1;
         unsigned                        picture_top_edge_flag   : 1;
         unsigned                        picture_right_edge_flag : 1;
+#if !MEMORY_FOOTPRINT_OPT
         unsigned                        pred64                  : 2;
+#endif
         unsigned                        index                   : 12;
         unsigned                        origin_x                : 12;
         unsigned                        origin_y                : 12;
@@ -427,8 +438,10 @@ extern "C" {
         int16_t                         delta_qp;
         int16_t                         org_delta_qp;
 #endif
+#if !MEMORY_FOOTPRINT_OPT
         //Bits only used for quantized coeffs
         uint32_t                        quantized_coeffs_bits;
+ #endif      
         uint32_t                        total_bits;
 
         // Quantized Coefficients

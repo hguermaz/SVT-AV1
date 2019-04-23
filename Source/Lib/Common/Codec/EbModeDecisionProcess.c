@@ -197,7 +197,7 @@ void reset_mode_decision_neighbor_arrays(PictureControlSet *picture_control_set_
     return;
 }
 
-
+#if !MEMORY_FOOTPRINT_OPT
 void ResetMdRefinmentNeighborArrays(PictureControlSet *picture_control_set_ptr)
 {
     neighbor_array_unit_reset(picture_control_set_ptr->md_refinement_intra_luma_mode_neighbor_array);
@@ -206,7 +206,7 @@ void ResetMdRefinmentNeighborArrays(PictureControlSet *picture_control_set_ptr)
 
     return;
 }
-
+#endif
 
 extern void lambda_assign_low_delay(
     uint32_t                    *fast_lambda,
@@ -419,12 +419,13 @@ void reset_mode_decision(
     // Reset Neighbor Arrays at start of new Segment / Picture
     if (segment_index == 0) {
         reset_mode_decision_neighbor_arrays(picture_control_set_ptr);
+#if !MEMORY_FOOTPRINT_OPT        
         ResetMdRefinmentNeighborArrays(picture_control_set_ptr);
-
         for (lcuRowIndex = 0; lcuRowIndex < ((sequence_control_set_ptr->luma_height + BLOCK_SIZE_64 - 1) / BLOCK_SIZE_64); lcuRowIndex++) {
             picture_control_set_ptr->enc_prev_coded_qp[lcuRowIndex] = (uint8_t)picture_control_set_ptr->picture_qp;
             picture_control_set_ptr->enc_prev_quant_group_coded_qp[lcuRowIndex] = (uint8_t)picture_control_set_ptr->picture_qp;
         }
+#endif
     }
 
 #if ENABLE_WARPED_MV

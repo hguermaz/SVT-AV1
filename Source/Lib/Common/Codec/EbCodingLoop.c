@@ -1663,7 +1663,7 @@ EB_AV1_GENERATE_RECON_FUNC_PTR   Av1EncodeGenerateReconFunctionPtr[2] =
     Av1EncodeGenerateRecon,
     Av1EncodeGenerateRecon16bit
 };
-
+#if !MEMORY_FOOTPRINT_OPT
 /*******************************************
 * Encode Pass - Assign Delta Qp
 *******************************************/
@@ -1767,9 +1767,9 @@ static void EncodePassUpdateQp(
     context_ptr->cu_ptr->qp = qp;
     return;
 }
+#endif
 
-
-
+#if !MEMORY_FOOTPRINT_OPT
 EbErrorType QpmDeriveBeaAndSkipQpmFlagLcu(
     SequenceControlSet                   *sequence_control_set_ptr,
     PictureControlSet                    *picture_control_set_ptr,
@@ -1835,6 +1835,7 @@ EbErrorType QpmDeriveBeaAndSkipQpmFlagLcu(
 
     return return_error;
 }
+#endif
 #if ADD_DELTA_QP_SUPPORT
 /*****************************************************************************
 * NM - Note: Clean up
@@ -2010,6 +2011,7 @@ EbErrorType Av1QpModulationLcu(
 }
 
 #endif
+#if !MEMORY_FOOTPRINT_OPT  
 EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
     SequenceControlSet                   *sequence_control_set_ptr,
     PictureControlSet                    *picture_control_set_ptr,
@@ -2196,7 +2198,7 @@ EbErrorType EncQpmDeriveDeltaQPForEachLeafLcu(
 
     return return_error;
 }
-
+#endif
 void Store16bitInputSrc(
     EncDecContext         *context_ptr,
     PictureControlSet     *picture_control_set_ptr,
@@ -2347,7 +2349,7 @@ EB_EXTERN void AV1EncodePass(
     EntropyCoder  *coeff_est_entropy_coder_ptr = picture_control_set_ptr->coeff_est_entropy_coder_ptr;
 
     uint32_t           dZoffset = 0;
-
+#if !MEMORY_FOOTPRINT_OPT
     if (!sb_stat_ptr->stationary_edge_over_time_flag && sequence_control_set_ptr->static_config.improve_sharpness && picture_control_set_ptr->parent_pcs_ptr->pic_noise_class < PIC_NOISE_CLASS_3_1) {
 
         int16_t cuDeltaQp = (int16_t)(sb_ptr->qp - picture_control_set_ptr->parent_pcs_ptr->average_qp);
@@ -2390,6 +2392,10 @@ EB_EXTERN void AV1EncodePass(
             }
         }
     }
+#endif
+#if MEMORY_FOOTPRINT_OPT
+    context_ptr->skip_qpm_flag = EB_TRUE;
+#else
     if (sequence_control_set_ptr->static_config.improve_sharpness) {
 
         QpmDeriveBeaAndSkipQpmFlagLcu(
@@ -2402,7 +2408,7 @@ EB_EXTERN void AV1EncodePass(
     else {
         context_ptr->skip_qpm_flag = EB_TRUE;
     }
-
+#endif
 
     encode_context_ptr = ((SequenceControlSet*)(picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr))->encode_context_ptr;
 
@@ -2655,7 +2661,6 @@ EB_EXTERN void AV1EncodePass(
                 // Evaluate cfl @ EP if applicable, and not done @ MD 
                 context_ptr->evaluate_cfl_ep = (disable_cfl_flag == EB_FALSE && context_ptr->md_context->chroma_level == CHROMA_MODE_2);
 
-
 #if ADD_DELTA_QP_SUPPORT
                 if (context_ptr->skip_qpm_flag == EB_FALSE && sequence_control_set_ptr->static_config.improve_sharpness) {
                     cu_ptr->qp = sb_ptr->qp;
@@ -2673,8 +2678,11 @@ EB_EXTERN void AV1EncodePass(
 #else
                 cu_ptr->qp = (sequence_control_set_ptr->static_config.improve_sharpness) ? context_ptr->qpm_qp : picture_control_set_ptr->picture_qp;
                 sb_ptr->qp = (sequence_control_set_ptr->static_config.improve_sharpness) ? context_ptr->qpm_qp : picture_control_set_ptr->picture_qp;
+#if !MEMORY_FOOTPRINT_OPT  
                 cu_ptr->org_delta_qp = cu_ptr->delta_qp;
 #endif
+#endif
+#if !MEMORY_FOOTPRINT_OPT  
 #if !ADD_DELTA_QP_SUPPORT
                 //CHKN remove usage of depth
                 if (!context_ptr->skip_qpm_flag && (sequence_control_set_ptr->static_config.improve_sharpness) && (0xFF <= picture_control_set_ptr->dif_cu_delta_qp_depth)) {
@@ -2693,7 +2701,7 @@ EB_EXTERN void AV1EncodePass(
                 }
 
 #endif
-
+#endif
                 if (cu_ptr->prediction_mode_flag == INTRA_MODE) {
                     context_ptr->is_inter = cu_ptr->av1xd->use_intrabc;
                     context_ptr->tot_intra_coded_area += blk_geom->bwidth* blk_geom->bheight;
@@ -3767,7 +3775,7 @@ EB_EXTERN void AV1EncodePass(
                         availableCoeff = (cu_ptr->transform_unit_array[0].y_has_coeff) ? EB_TRUE : EB_FALSE;
                     }
 
-
+#if !MEMORY_FOOTPRINT_OPT
                     // Assign the LCU-level QP
                     //NM - To be revisited
                     EncodePassUpdateQp(
@@ -3780,6 +3788,7 @@ EB_EXTERN void AV1EncodePass(
                         &(picture_control_set_ptr->enc_prev_coded_qp[oneSegment ? 0 : lcuRowIndex]),
                         &(picture_control_set_ptr->enc_prev_quant_group_coded_qp[oneSegment ? 0 : lcuRowIndex]),
                         sb_qp);
+#endif
 
                 }
 
@@ -3815,8 +3824,9 @@ EB_EXTERN void AV1EncodePass(
 
 
     } // CU Loop
-
+#if !MEMORY_FOOTPRINT_OPT
     sb_ptr->tot_final_cu = final_cu_itr;
+#endif
 #if AV1_LF
     // First Pass Deblocking
     if (dlfEnableFlag && picture_control_set_ptr->parent_pcs_ptr->loop_filter_mode == 1) {

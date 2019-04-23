@@ -13796,23 +13796,27 @@ extern "C" {
         uint8_t                               sb_max_depth;
         uint16_t                              sb_total_count;
         LargestCodingUnit                 **sb_ptr_array;
+#if !MEMORY_FOOTPRINT_OPT
         LargestCodingUnit                 **sb_ptr_array_copy;
-
+#endif
         // DLF
         uint8_t                              *qp_array;
+#if !MEMORY_FOOTPRINT_OPT
         uint8_t                              *entropy_qp_array;
+#endif
         uint16_t                              qp_array_stride;
         uint32_t                              qp_array_size;
+#if !MEMORY_FOOTPRINT_OPT
         uint8_t                              *cbf_map_array;
-
+#endif
         // QP Assignment
         uint8_t                               prev_coded_qp;
         uint8_t                               prev_quant_group_coded_qp;
-
+#if !MEMORY_FOOTPRINT_OPT
         // Enc/DecQP Assignment
         uint8_t                               enc_prev_coded_qp[50];
         uint8_t                               enc_prev_quant_group_coded_qp[50];
-
+#endif
         // EncDec Entropy Coder (for rate estimation)
         EntropyCoder                       *coeff_est_entropy_coder_ptr;
 
@@ -13839,12 +13843,12 @@ extern "C" {
         NeighborArrayUnit32                *md_interpolation_type_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
 
         NeighborArrayUnit                  *mdleaf_partition_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
-
+#if !MEMORY_FOOTPRINT_OPT
         // Mode Decision Refinement Neighbor Arrays
         NeighborArrayUnit                  *md_refinement_intra_luma_mode_neighbor_array;
         NeighborArrayUnit                  *md_refinement_mode_type_neighbor_array;
         NeighborArrayUnit                  *md_refinement_luma_recon_neighbor_array;
-
+#endif
         // Encode Pass Neighbor Arrays
         NeighborArrayUnit                  *ep_intra_luma_mode_neighbor_array;
         NeighborArrayUnit                  *ep_intra_chroma_mode_neighbor_array;
@@ -13877,6 +13881,7 @@ extern "C" {
         NeighborArrayUnit32                *interpolation_type_neighbor_array;
 
         ModeInfo                            **mi_grid_base; //2 SB Rows of mi Data are enough
+
         ModeInfo                             *mip;
 
         int32_t                               mi_stride;
@@ -13889,8 +13894,10 @@ extern "C" {
         int8_t                                slice_cr_qp_offset;
         int8_t                                cb_qp_offset;
         int8_t                                cr_qp_offset;
+#if !MEMORY_FOOTPRINT_OPT
         int8_t                               *cu32x32_quant_coeff_num_map_array; //32x32 cu array for the number of quantized coeffs
         uint16_t                              cu32x32_quant_coeff_num_map_array_stride;
+#endif
         EbBool                                adjust_min_qp_flag;
 
         EbEncMode                             enc_mode;
@@ -13898,7 +13905,9 @@ extern "C" {
 #if !DISABLE_OIS_USE
         uint8_t                               high_intra_slection;
 #endif
+#if !MEMORY_FOOTPRINT_OPT
         EB_FRAME_CARACTERICTICS               scene_caracteristic_id;
+#endif
         EbBool                                limit_intra;
         int32_t                               cdef_preset[4];
         WienerInfo                            wiener_info[MAX_MB_PLANE];
@@ -14090,10 +14099,12 @@ extern "C" {
         EbBool                               *similar_colocated_sb_array;
         EbBool                               *similar_colocated_sb_array_ii; // ON for all layers
         uint8_t                              *sb_flat_noise_array;
+#if !MEMORY_FOOTPRINT_OPT        
         uint64_t                             *sb_variance_of_variance_over_time;
         EbBool                               *is_sb_homogeneous_over_time;
         uint8_t                               pic_homogenous_over_time_sb_percentage;
         EbBool                               *sb_homogeneous_area_array;        // used by EncDecProcess()
+#endif
         EdgeLcuResults                     *edge_results_ptr;                // used by EncDecProcess()
         uint8_t                              *sharp_edge_sb_flag;
 #if !DISABLE_OIS_USE
@@ -14101,7 +14112,9 @@ extern "C" {
         EbBool                               *uncovered_area_sb_flag;            // used by EncDecProcess()
 #endif
         EbBool                                logo_pic_flag;                    // used by EncDecProcess()
+#if !MEMORY_FOOTPRINT_OPT
         uint64_t                            **var_of_var32x32_based_sb_array;    // used by ModeDecisionConfigurationProcess()- the variance of 8x8 block variances for each 32x32 block
+#endif
         uint8_t                              *sb_cmplx_contrast_array;            // used by EncDecProcess()
         uint8_t                              *sb_high_contrast_array_dialated;
         uint64_t                            **sb_y_src_energy_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
@@ -14112,7 +14125,9 @@ extern "C" {
         EbBool                                low_motion_content_flag;            // used by EncDecProcess()
         uint32_t                              zz_cost_average;                    // used by ModeDecisionConfigurationProcess()
         uint16_t                              non_moving_index_average;            // used by ModeDecisionConfigurationProcess()
+#if !MEMORY_FOOTPRINT_OPT
         EbBool                               *sb_isolated_non_homogeneous_area_array;            // used by ModeDecisionConfigurationProcess()
+#endif
         uint8_t                              *cu32x32_clean_sparse_coeff_map_array; //32x32 cu array for clean sparse coeff
         uint16_t                              cu32x32_clean_sparse_coeff_map_array_size;
         uint16_t                              cu32x32_clean_sparse_coeff_map_array_stride;
