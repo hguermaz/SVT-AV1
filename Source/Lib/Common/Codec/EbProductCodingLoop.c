@@ -4640,7 +4640,7 @@ EB_EXTERN EbErrorType mode_decision_sb(
 
         check_redundant_block(blk_geom, context_ptr, &redundant_blk_avail, &redundant_blk_mds);
        
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (redundant_blk_avail && picture_control_set_ptr->enc_mode <= ENC_M5)
 #else
         if (redundant_blk_avail && picture_control_set_ptr->enc_mode == ENC_M0)

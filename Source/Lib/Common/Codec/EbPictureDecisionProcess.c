@@ -915,7 +915,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     uint8_t sc_content_detected = picture_control_set_ptr->sc_content_detected;
 
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (picture_control_set_ptr->enc_mode <= ENC_M2)
             picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
         else if (picture_control_set_ptr->enc_mode <= ENC_M3)
@@ -967,7 +967,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // NSQ_SEARCH_LEVEL6                              Allow only NSQ Inter-NEAREST/NEAR/GLOBAL if parent SQ has no coeff + reordering nsq_table number and testing only 6 NSQ SHAPE
     // NSQ_SEARCH_FULL                                Allow NSQ Intra-FULL and Inter-FULL
 
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (MR_MODE)
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_FULL;
         else if (picture_control_set_ptr->enc_mode <= ENC_M1)
@@ -1057,7 +1057,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 3                                              Chroma blind interpolation search at fast loop
     // 4                                              Interpolation search at fast loop
 
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (MR_MODE)
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
         else if (picture_control_set_ptr->enc_mode <= ENC_M1)
@@ -1118,7 +1118,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
 
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag && picture_control_set_ptr->allow_intrabc == 0) {
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (picture_control_set_ptr->enc_mode <= ENC_M5)
             picture_control_set_ptr->loop_filter_mode = 3;
         else
@@ -1146,7 +1146,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     SequenceControlSet                    *sequence_control_set_ptr;
     sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (picture_control_set_ptr->enc_mode <= ENC_M7)
             picture_control_set_ptr->cdef_filter_mode = 4;
         else
@@ -1184,7 +1184,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 4                                            16 step refinement
 
     Av1Common* cm = picture_control_set_ptr->av1_cm;
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
         cm->sg_filter_mode = 4;
     else if (picture_control_set_ptr->enc_mode <= ENC_M6)
@@ -1208,7 +1208,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                            3-Tap luma/ 3-Tap chroma
     // 2                                            5-Tap luma/ 5-Tap chroma
     // 3                                            7-Tap luma/ 5-Tap chroma
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
         cm->wn_filter_mode = 3;
     else if (picture_control_set_ptr->enc_mode <= ENC_M7)
@@ -1229,7 +1229,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 1                                              Tx search at encdec
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
         picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
     else
@@ -1262,7 +1262,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
 
     // Set tx search skip weights (MAX_MODE_COST: no skipping; 0: always skipping)
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
     if (picture_control_set_ptr->tx_search_level == TX_SEARCH_ENC_DEC)
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
     else if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M1)
@@ -1293,7 +1293,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
 
     // Set tx search reduced set falg (0: full tx set; 1: reduced tx set)
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
     if (picture_control_set_ptr->tx_search_level == TX_SEARCH_ENC_DEC)
         picture_control_set_ptr->tx_search_reduced_set = 0;
     else if (picture_control_set_ptr->enc_mode <= ENC_M1)
@@ -1320,7 +1320,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
     
     // Set skip tx search based on NFL falg (0: Skip OFF ; 1: skip ON)
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
     picture_control_set_ptr->skip_tx_search = 0;
 #else
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
@@ -1339,7 +1339,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
 #if M9_INTRA
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
             picture_control_set_ptr->intra_pred_mode = 0;
         else
@@ -1354,7 +1354,7 @@ EbErrorType signal_derivation_multi_processes_oq(
          picture_control_set_ptr->intra_pred_mode = 0;
 #endif
     else {
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
         if (picture_control_set_ptr->enc_mode  <= ENC_M1) 
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->intra_pred_mode = 1;

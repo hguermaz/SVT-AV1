@@ -428,7 +428,7 @@ void reset_mode_decision(
     }
 
 #if ENABLE_WARPED_MV
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
     EbBool enable_wm = (picture_control_set_ptr->parent_pcs_ptr->enc_mode <= ENC_M5) || MR_MODE ? EB_TRUE : EB_FALSE;
 #else
     EbBool enable_wm = (picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M0) || MR_MODE ? EB_TRUE : EB_FALSE;
