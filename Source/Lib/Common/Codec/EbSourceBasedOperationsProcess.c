@@ -74,9 +74,9 @@ EbErrorType source_based_operations_context_ctor(
     *context_dbl_ptr = context_ptr;
     context_ptr->initial_rate_control_results_input_fifo_ptr = initialRateControlResultsInputFifoPtr;
     context_ptr->picture_demux_results_output_fifo_ptr = picture_demux_results_output_fifo_ptr;
-
+#if !MEMORY_FOOTPRINT_OPT
     EB_MALLOC(uint8_t*, context_ptr->sb_high_contrast_array, sizeof(uint8_t) * sb_total_count, EB_N_PTR);
-
+#endif
     return EB_ErrorNone;
 }
 
@@ -784,7 +784,7 @@ void SpatialHighContrastClassifier(
         }
     }
 }
-
+#if !MEMORY_FOOTPRINT_OPT
 void DeriveComplexityContrastPicture(
     SourceBasedOperationsContext    *context_ptr,
     SequenceControlSet         *sequence_control_set_ptr,
@@ -903,7 +903,7 @@ void DetectCu32x32CleanSparsePicture(
 
     return;
 }
-
+#endif
 /************************************************
  * Source Based Operations Kernel
  ************************************************/
@@ -942,23 +942,26 @@ void* source_based_operations_kernel(void *input_ptr)
         context_ptr->to_be_intra_coded_probability = 0;
         context_ptr->depth1_block_num = 0;
 #endif
+#if !MEMORY_FOOTPRINT_OPT
         // Reset the cu 32x32 array for Clean Sparse flag
         EB_MEMSET(picture_control_set_ptr->cu32x32_clean_sparse_coeff_map_array, 0, picture_control_set_ptr->cu32x32_clean_sparse_coeff_map_array_size);
-
+#endif
         uint32_t sb_total_count = picture_control_set_ptr->sb_total_count;
         uint32_t sb_index;
 
         /***********************************************LCU-based operations************************************************************/
         for (sb_index = 0; sb_index < sb_total_count; ++sb_index) {
             SbParams *sb_params = &sequence_control_set_ptr->sb_params_array[sb_index];
+#if !MEMORY_FOOTPRINT_OPT
             picture_control_set_ptr->sb_cmplx_contrast_array[sb_index] = 0;
             context_ptr->sb_high_contrast_array[sb_index] = 0;
             picture_control_set_ptr->sb_high_contrast_array_dialated[sb_index] = 0;
+#endif
             EbBool is_complete_sb = sb_params->is_complete_sb;
             uint8_t  *y_mean_ptr = picture_control_set_ptr->y_mean[sb_index];
 
             _mm_prefetch((const char*)y_mean_ptr, _MM_HINT_T0);
-
+#if !MEMORY_FOOTPRINT_OPT
             // 32x32 spare coefficient detection
             if (picture_control_set_ptr->slice_type == I_SLICE) {
                 DetectCu32x32CleanSparseLcu(
@@ -966,6 +969,7 @@ void* source_based_operations_kernel(void *input_ptr)
                     picture_control_set_ptr,
                     sb_index);
             }
+#endif
             uint8_t  *cr_mean_ptr = picture_control_set_ptr->crMean[sb_index];
             uint8_t  *cb_mean_ptr = picture_control_set_ptr->cbMean[sb_index];
 
@@ -1037,7 +1041,7 @@ void* source_based_operations_kernel(void *input_ptr)
                     context_ptr,
                     picture_control_set_ptr,
                     sb_index);
-
+#if !MEMORY_FOOTPRINT_OPT
                 if (context_ptr->high_contrast_num > 0 && context_ptr->high_dist == EB_TRUE) {
                     picture_control_set_ptr->sb_cmplx_contrast_array[sb_index] = 4;
                     context_ptr->sb_cmplx_contrast_count++;
@@ -1047,7 +1051,7 @@ void* source_based_operations_kernel(void *input_ptr)
                     context_ptr->sb_high_contrast_array[sb_index] = 4;
                     context_ptr->sb_high_contrast_count++;
                 }
-
+#endif
                 context_ptr->complete_sb_count++;
             }
 
@@ -1059,6 +1063,7 @@ void* source_based_operations_kernel(void *input_ptr)
             context_ptr,
             picture_control_set_ptr);
 #endif
+#if !MEMORY_FOOTPRINT_OPT        
         if (picture_control_set_ptr->slice_type == I_SLICE) {
             DetectCu32x32CleanSparsePicture(
                 picture_control_set_ptr);
@@ -1068,7 +1073,7 @@ void* source_based_operations_kernel(void *input_ptr)
             context_ptr,
             sequence_control_set_ptr,
             picture_control_set_ptr);
-
+#endif
         // Delta QP range adjustments
         SetDefaultDeltaQpRange(
             context_ptr,

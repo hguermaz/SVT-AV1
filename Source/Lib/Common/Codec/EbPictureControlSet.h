@@ -14096,8 +14096,10 @@ extern "C" {
         uint8_t                               fade_in_to_black;
         EbBool                                is_pan;
         EbBool                                is_tilt;
+#if !MEMORY_FOOTPRINT_OPT 
         EbBool                               *similar_colocated_sb_array;
         EbBool                               *similar_colocated_sb_array_ii; // ON for all layers
+#endif
         uint8_t                              *sb_flat_noise_array;
 #if !MEMORY_FOOTPRINT_OPT        
         uint64_t                             *sb_variance_of_variance_over_time;
@@ -14114,9 +14116,9 @@ extern "C" {
         EbBool                                logo_pic_flag;                    // used by EncDecProcess()
 #if !MEMORY_FOOTPRINT_OPT
         uint64_t                            **var_of_var32x32_based_sb_array;    // used by ModeDecisionConfigurationProcess()- the variance of 8x8 block variances for each 32x32 block
-#endif
         uint8_t                              *sb_cmplx_contrast_array;            // used by EncDecProcess()
         uint8_t                              *sb_high_contrast_array_dialated;
+#endif
         uint64_t                            **sb_y_src_energy_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
         uint64_t                            **sb_y_src_mean_cu_array;            // used by ModeDecisionConfigurationProcess()     0- 64x64, 1-4 32x32
 #if !DISABLE_OIS_USE
@@ -14127,10 +14129,10 @@ extern "C" {
         uint16_t                              non_moving_index_average;            // used by ModeDecisionConfigurationProcess()
 #if !MEMORY_FOOTPRINT_OPT
         EbBool                               *sb_isolated_non_homogeneous_area_array;            // used by ModeDecisionConfigurationProcess()
-#endif
         uint8_t                              *cu32x32_clean_sparse_coeff_map_array; //32x32 cu array for clean sparse coeff
         uint16_t                              cu32x32_clean_sparse_coeff_map_array_size;
         uint16_t                              cu32x32_clean_sparse_coeff_map_array_stride;
+#endif
         uint8_t                               grass_percentage_in_picture;
         uint8_t                               percentage_of_edgein_light_background;
         EbBool                                dark_back_groundlight_fore_ground;

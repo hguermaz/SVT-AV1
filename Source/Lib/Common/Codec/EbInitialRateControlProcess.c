@@ -1340,7 +1340,7 @@ void UpdateHistogramQueueEntry(
     return;
 
 }
-
+#if !MEMORY_FOOTPRINT_OPT 
 /******************************************************
 * Derive Similar Collocated Flag
 ******************************************************/
@@ -1391,7 +1391,7 @@ void DeriveSimilarCollocatedFlag(
 
     return;
 }
-
+#endif
 EbAuraStatus AuraDetection64x64Gold(
     PictureControlSet           *picture_control_set_ptr,
     uint8_t                          picture_qp,
@@ -1743,11 +1743,11 @@ void* initial_rate_control_kernel(void *input_ptr)
             //reset intraCodedEstimationLcu
             MeBasedGlobalMotionDetection(
                 picture_control_set_ptr);
-
+#if !MEMORY_FOOTPRINT_OPT 
             // Derive Similar Collocated Flag
             DeriveSimilarCollocatedFlag(
                 picture_control_set_ptr);
-
+#endif
             // Release Pa Ref pictures when not needed
             ReleasePaReferenceObjects(
 #if MRP_ME

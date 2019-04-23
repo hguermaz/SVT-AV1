@@ -1301,7 +1301,7 @@ void SetMdSettings(
     picture_control_set_ptr->limit_intra = EB_FALSE;
     picture_control_set_ptr->intra_md_open_loop_flag = EB_FALSE;
 }
-
+#if !MEMORY_FOOTPRINT_OPT
 /******************************************************
 * Detect complex/non-flat/moving SB in a non-complex area (used to refine MDC depth control in Gold)
 ******************************************************/
@@ -1351,6 +1351,7 @@ void DetectComplexNonFlatMovingLcu(
         }
     }
 }
+#endif
 
 EbAuraStatus AuraDetection64x64Gold(
     PictureControlSet           *picture_control_set_ptr,
