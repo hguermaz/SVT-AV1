@@ -1602,7 +1602,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else        
         context_ptr->interpolation_filter_search_blk_size = 2;
 #endif
-    
 
 #if PF_N2_SUPPORT
     // Set PF MD
@@ -1617,7 +1616,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
             context_ptr->spatial_sse_full_loop = EB_TRUE;
         else
-            context_ptr->spatial_sse_full_loop = EB_FALSE;  
+            context_ptr->spatial_sse_full_loop = EB_FALSE;
     else
 #endif
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
@@ -1636,7 +1635,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 #endif
 #endif
 
-
 #if M9_INTER_SRC_SRC_FAST_LOOP
     // Derive Spatial SSE Flag
     if (picture_control_set_ptr->enc_mode <= ENC_M8)
@@ -1650,8 +1648,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     if (context_ptr->chroma_level <= CHROMA_MODE_1)
         context_ptr->blk_skip_decision = EB_TRUE;
     else
-        context_ptr->blk_skip_decision = EB_TRUE;
-
+        context_ptr->blk_skip_decision = EB_FALSE;
 #else
         context_ptr->blk_skip_decision = EB_TRUE;
 #endif
@@ -1664,6 +1661,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->trellis_quant_coeff_optimization = EB_FALSE;
 #endif
+
 #if NEW_PRESETS
     // Derive redundant block
 #if SCENE_CONTENT_SETTINGS
@@ -1679,15 +1677,17 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->redundant_blk = EB_FALSE;
 #endif
+
     return return_error;
 }
+
 void move_cu_data(
     CodingUnit *src_cu,
     CodingUnit *dst_cu);
 
 #if CABAC_UP
 void av1_estimate_syntax_rate___partial(
-    MdRateEstimationContext      *md_rate_estimation_array,
+    MdRateEstimationContext        *md_rate_estimation_array,
     EbBool                          is_i_slice,
     FRAME_CONTEXT                  *fc);
 #endif
@@ -1709,7 +1709,7 @@ void* enc_dec_kernel(void *input_ptr)
     EbObjectWrapper                       *encDecResultsWrapperPtr;
     EncDecResults                         *encDecResultsPtr;
     // SB Loop variables
-    LargestCodingUnit                     *sb_ptr;
+    LargestCodingUnit                       *sb_ptr;
     uint16_t                                 sb_index;
     uint8_t                                  sb_sz;
     uint8_t                                  lcuSizeLog2;
@@ -1722,7 +1722,7 @@ void* enc_dec_kernel(void *input_ptr)
     uint32_t                                 lcuRowIndexStart;
     uint32_t                                 lcuRowIndexCount;
     uint32_t                                 picture_width_in_sb;
-    MdcLcuData                            *mdcPtr;
+    MdcLcuData                              *mdcPtr;
 
     // Variables
     EbBool                                   is16bit;
@@ -1738,7 +1738,7 @@ void* enc_dec_kernel(void *input_ptr)
     uint32_t                                 segmentRowIndex;
     uint32_t                                 segmentBandIndex;
     uint32_t                                 segmentBandSize;
-    EncDecSegments                        *segments_ptr;
+    EncDecSegments                          *segments_ptr;
     for (;;) {
 
         // Get Mode Decision Results
@@ -1903,10 +1903,10 @@ void* enc_dec_kernel(void *input_ptr)
                         int16_t mv_l1_y;
                         uint32_t me_sb_addr;
 #if MRP_ME
-						mv_l0_x = 0;
-						mv_l0_y = 0;
-						mv_l1_x = 0;
-						mv_l1_y = 0;
+                        mv_l0_x = 0;
+                        mv_l0_y = 0;
+                        mv_l1_x = 0;
+                        mv_l1_y = 0;
 #else
                         if (sequence_control_set_ptr->sb_size == BLOCK_128X128) {
 
