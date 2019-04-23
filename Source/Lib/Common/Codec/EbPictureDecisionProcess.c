@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#include <limits.h>
 #include "EbDefinitions.h"
 #include "EbUtility.h"
 #include "EbPictureControlSet.h"
@@ -1365,11 +1365,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
     else if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M1)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
-    else if (!MR_MODE)
+    else if (!MR_MODE){
         if (picture_control_set_ptr->is_used_as_reference_flag)
             picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
         else
             picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
+	}
 #else
 #if SCENE_CONTENT_SETTINGS
     if (sc_content_detected)
@@ -1379,11 +1380,12 @@ EbErrorType signal_derivation_multi_processes_oq(
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
     else if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M2)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
-    else if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M4)
+    else if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M4){
         if (picture_control_set_ptr->is_used_as_reference_flag)
             picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH025;
         else
             picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
+	}
     else if (!MR_MODE && picture_control_set_ptr->enc_mode <= ENC_M5)
         picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
     else

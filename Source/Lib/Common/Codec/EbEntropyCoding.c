@@ -36,6 +36,15 @@ int32_t av1_loop_restoration_corners_in_sb(Av1Common *cm, int32_t plane,
     int32_t mi_row, int32_t mi_col, BlockSize bsize,
     int32_t *rcol0, int32_t *rcol1, int32_t *rrow0,
     int32_t *rrow1, int32_t *tile_tl_idx);
+	
+static INLINE int has_second_ref(const MbModeInfo *mbmi) {
+	return mbmi->ref_frame[1] > INTRA_FRAME;
+}
+
+static INLINE int has_uni_comp_refs(const MbModeInfo *mbmi) {
+	return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
+		(mbmi->ref_frame[1] >= BWDREF_FRAME)));
+}
 
 #define CHAR_BIT      8         /* number of bits in a char */
 #if ADD_DELTA_QP_SUPPORT
@@ -2292,14 +2301,7 @@ int av1_get_pred_context_uni_comp_ref_p2(const MacroBlockD *xd) {
 }
 
 
-static INLINE int has_second_ref(const MbModeInfo *mbmi) {
-	return mbmi->ref_frame[1] > INTRA_FRAME;
-}
 
-static INLINE int has_uni_comp_refs(const MbModeInfo *mbmi) {
-	return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
-		(mbmi->ref_frame[1] >= BWDREF_FRAME)));
-}
 
 int av1_get_reference_mode_context_new(const MacroBlockD *xd) {
 	int ctx;

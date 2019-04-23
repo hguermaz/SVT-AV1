@@ -117,9 +117,10 @@ EbErrorType signal_derivation_pre_analysis_oq(
     }
 #if NEW_PRESETS
 #if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->sc_content_detected)
+    if (picture_control_set_ptr->sc_content_detected){
         if (picture_control_set_ptr->enc_mode >= ENC_M6)
             sequence_control_set_ptr->enable_restoration = 0;
+	}
     else
 
 #endif
