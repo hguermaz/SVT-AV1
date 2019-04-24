@@ -2831,9 +2831,6 @@ void AV1PerformFullLoop(
         }
 
  #if SEARCH_UV_MODE
-        // Initialize uv_search_path     
-        context_ptr->uv_search_path = EB_FALSE;
-
         // Check independant chroma vs. cfl
         if (context_ptr->blk_geom->has_uv && context_ptr->chroma_level == CHROMA_MODE_0) {
             if (candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
@@ -4168,6 +4165,8 @@ void md_encode_block(
 
 
 #if SEARCH_UV_MODE
+        // Initialize uv_search_path     
+        context_ptr->uv_search_path = EB_FALSE;
         // Search the best independent intra chroma mode
         if (context_ptr->chroma_level == CHROMA_MODE_0) {
             if (context_ptr->blk_geom->sq_size < 128) {
