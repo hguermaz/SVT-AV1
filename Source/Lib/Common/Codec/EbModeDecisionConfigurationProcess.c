@@ -101,7 +101,7 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
 #define MAX_LUMINOSITY_BOOST         10
 #if M9_ADP
 #if NEW_PRESETS
-int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,55,55,55,55,5,5,5,5,5,5,5 };
+int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,55,55,55,55,5,5,0,0,0,0,0 };
 #else
 int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,40,30,20,10,5,0,-10,-20,-20,-20,-20 };
 #endif
