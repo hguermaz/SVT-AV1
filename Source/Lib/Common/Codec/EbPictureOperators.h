@@ -10,6 +10,7 @@
 #include "EbPictureOperators_SSE2.h"
 #include "EbPictureOperators_SSE4_1.h"
 #include "EbPictureOperators_AVX2.h"
+#include "EbPictureOperators_AVX512.h"
 #include "EbHmCode.h"
 #include "EbDefinitions.h"
 #include "EbPictureBufferDesc.h"
@@ -431,6 +432,23 @@ extern "C" {
             // 128xN
             spatial_full_distortion_kernel128x_n_sse2_intrin
         },
+#ifndef NON_AVX512_SUPPORT
+        // ASM_AVX512
+        {
+            // 4xN
+            spatial_full_distortion_kernel4x_n_avx2_intrin,
+            // 8xN
+            spatial_full_distortion_kernel8x_n_avx2_intrin,
+            // 16xN
+            spatial_full_distortion_kernel16x_n_avx2_intrin,
+            // 32xN
+            spatial_full_distortion_kernel32x_n_avx512_intrin,
+            // 64xN
+            spatial_full_distortion_kernel64x_n_avx512_intrin,
+            // 128xN
+            spatial_full_distortion_kernel128x_n_avx512_intrin
+        },
+#else
         // ASM_AVX2
         {
             // 4x4
@@ -446,6 +464,7 @@ extern "C" {
             // 128xN
             spatial_full_distortion_kernel128x_n_avx2_intrin
         },
+#endif
     };
 
 

@@ -35,6 +35,9 @@
 extern "C" {
 #endif
 
+// Internal Marcos
+//#define NON_AVX512_SUPPORT
+
 #define MRP_SUPPORT            1// MRP Main Flag
 
 // New  presets

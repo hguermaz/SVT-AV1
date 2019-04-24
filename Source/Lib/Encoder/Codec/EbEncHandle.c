@@ -244,11 +244,57 @@ static int32_t CanUseIntelCore4thGenFeatures()
         the_4th_gen_features_available = Check4thGenIntelCoreFeatures();
     return the_4th_gen_features_available;
 }
+
+static int CheckXcr0Zmm()
+{
+    uint32_t xcr0;
+    uint32_t zmm_ymm_xmm = (7 << 5) | (1 << 2) | (1 << 1);
+#if defined(_MSC_VER)
+    xcr0 = (uint32_t)_xgetbv(0);  /* min VS2010 SP1 compiler is required */
+#else
+    __asm__("xgetbv" : "=a" (xcr0) : "c" (0) : "%edx");
+#endif
+    return ((xcr0 & zmm_ymm_xmm) == zmm_ymm_xmm); /* check if xmm, ymm and zmm state are enabled in XCR0 */
+}
+
+static int32_t CanUseIntelAVX512()
+{
+    int abcd[4];
+
+    /*  CPUID.(EAX=07H, ECX=0):EBX[bit 16]==1 AVX512F
+        CPUID.(EAX=07H, ECX=0):EBX[bit 17] AVX512DQ
+        CPUID.(EAX=07H, ECX=0):EBX[bit 28] AVX512CD
+        CPUID.(EAX=07H, ECX=0):EBX[bit 30] AVX512BW
+        CPUID.(EAX=07H, ECX=0):EBX[bit 31] AVX512VL */
+
+    int avx512_ebx_mask =
+        (1 << 16)  // AVX-512F
+        | (1 << 17)  // AVX-512DQ
+        | (1 << 28)  // AVX-512CD
+        | (1 << 30)  // AVX-512BW
+        | (1 << 31); // AVX-512VL
+
+    // ensure OS supports ZMM registers (and YMM, and XMM)
+    if (!CheckXcr0Zmm())
+        return 0;
+
+    if (!Check4thGenIntelCoreFeatures())
+        return 0;
+
+    RunCpuid(7, 0, abcd);
+    if ((abcd[1] & avx512_ebx_mask) != avx512_ebx_mask)
+        return 0;
+
+    return 1;
+}
+
 EbAsm GetCpuAsmType()
 {
     EbAsm asm_type = ASM_NON_AVX2;
 
-    if (CanUseIntelCore4thGenFeatures() == 1)
+    if (CanUseIntelAVX512() == 1)
+        asm_type = ASM_AVX2; // ASM_AVX512
+    else if (CanUseIntelCore4thGenFeatures() == 1)
         asm_type = ASM_AVX2;
     else
         // Need to change to support lower CPU Technologies

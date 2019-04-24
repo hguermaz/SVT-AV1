@@ -2828,14 +2828,6 @@ void ResidualKernel_avx2(
         }
     }
 }
-static INLINE int32_t Hadd32_AVX2_INTRIN(const __m256i src) {
-    const __m128i src_L = _mm256_extracti128_si256(src, 0);
-    const __m128i src_H = _mm256_extracti128_si256(src, 1);
-    const __m128i sum = _mm_add_epi32(src_L, src_H);
-
-    return Hadd32_SSE2_INTRIN(sum);
-}
-
 static INLINE void Distortion_AVX2_INTRIN(const __m256i input,
     const __m256i recon, __m256i *const sum) {
     const __m256i in = _mm256_unpacklo_epi8(input, _mm256_setzero_si256());

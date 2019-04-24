@@ -12,6 +12,7 @@ include_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSE2/)
 include_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSSE3/)
 include_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSE4_1/)
 include_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_AVX2/)
+include_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_AVX512/)
 include_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Encoder/Codec/)
 
 
@@ -20,6 +21,7 @@ link_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/C_DEFAULT/)
 link_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSSE3/)
 link_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSE4_1/)
 link_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_AVX2/)
+link_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_AVX512/)
 link_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Common/Codec/)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Bin/${CMAKE_BUILD_TYPE}/)
@@ -47,6 +49,7 @@ target_link_libraries(SvtAv1Enc
     COMMON_ASM_SSSE3
     COMMON_ASM_SSE4_1
     COMMON_ASM_AVX2
+    COMMON_ASM_AVX512
     m)
 else()
 target_link_libraries(SvtAv1Enc
@@ -55,7 +58,8 @@ target_link_libraries(SvtAv1Enc
     COMMON_ASM_SSE2
     COMMON_ASM_SSSE3
     COMMON_ASM_SSE4_1
-    COMMON_ASM_AVX2)
+    COMMON_ASM_AVX2
+    COMMON_ASM_AVX512)
 endif()
 
 if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
