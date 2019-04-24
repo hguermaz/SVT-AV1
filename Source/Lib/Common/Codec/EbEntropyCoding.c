@@ -933,6 +933,7 @@ static void partition_gather_horz_alike(AomCdfProb *out,
     if (bsize != BLOCK_128X128) out[0] -= cdf_element_prob(in, PARTITION_HORZ_4);
     out[0] = AOM_ICDF(out[0]);
     out[1] = AOM_ICDF(CDF_PROB_TOP);
+    out[2] = 0;
 }
 static void partition_gather_vert_alike(AomCdfProb *out,
     const AomCdfProb *const in,
@@ -946,6 +947,7 @@ static void partition_gather_vert_alike(AomCdfProb *out,
     if (bsize != BLOCK_128X128) out[0] -= cdf_element_prob(in, PARTITION_VERT_4);
     out[0] = AOM_ICDF(out[0]);
     out[1] = AOM_ICDF(CDF_PROB_TOP);
+    out[2] = 0;
 }
 static void EncodePartitionAv1(
     SequenceControlSet    *sequence_control_set_ptr,
