@@ -230,12 +230,14 @@ extern "C" {
 #define RPS_4L                    1 //RPS for 4L case
 #define FIX_ORDER_HINT            1 //fix order hint usage.
 #define M8_CDEF_DEBUG             0 //Keep OFF Debug flag ofr M8
-#define MRP_M0_ONLY               1 // Enable MRP for Base only for M1-M9
+#define MRP_M0_ONLY               0 // Enable MRP for Base only for M1-M9
 #define NO_CFG_FILE               1 //allocate ME results for 209 PUs
 #define NO_UNI                    1
 #define MRP_MEM_OPT               1
 #define MRP_FLAG                  1
 #define MRP_FIX_CLOSE_GOP         1
+
+#define MRP_M1                    1 // replaces MRP_M0_ONLY
 #endif
 
 
