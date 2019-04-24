@@ -214,9 +214,10 @@ EbErrorType eb_sequence_control_set_ctor(
     sequence_control_set_ptr->monochrome = 0;
     sequence_control_set_ptr->film_grain_params_present = 0;
     sequence_control_set_ptr->film_grain_random_seed = 7391;
+#if BASE_LAYER_REF
     sequence_control_set_ptr->extra_frames_to_ref_islice = 0;
     sequence_control_set_ptr->max_frame_window_to_ref_islice = 0;
-
+#endif
 #if ADP_STATS_PER_LAYER
     uint8_t temporal_layer_index;
     for (temporal_layer_index = 0; temporal_layer_index < 5; temporal_layer_index++) {
@@ -340,9 +341,10 @@ EbErrorType copy_sequence_control_set(
 
     dst->rest_segment_column_count = src->rest_segment_column_count;
     dst->rest_segment_row_count = src->rest_segment_row_count;
-
+#if BASE_LAYER_REF
     dst->extra_frames_to_ref_islice = src->extra_frames_to_ref_islice;
     dst->max_frame_window_to_ref_islice = src->max_frame_window_to_ref_islice;
+#endif
     return EB_ErrorNone;
 }
 

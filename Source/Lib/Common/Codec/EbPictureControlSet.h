@@ -13471,7 +13471,14 @@ extern "C" {
                 32, 32, 32, 32 },
     },
     };
-
+#if SETUP_SKIP
+	typedef struct {
+		int skip_mode_allowed;
+		int skip_mode_flag;
+		int ref_frame_idx_0;
+		int ref_frame_idx_1;
+	} SkipModeInfo;
+#endif
     struct Buf2d 
     {
         uint8_t *buf;
@@ -13722,10 +13729,18 @@ extern "C" {
         Bitstream                          *bitstream_ptr;
 
         // Reference Lists
+#if MRP_MD
+		// Reference Lists
+		EbObjectWrapper                    *ref_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+		//EB_S64                                refPicPocArray[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+
+		uint8_t                               ref_pic_qp_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+		EB_SLICE                              ref_slice_type_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+#else
         EbObjectWrapper                    *ref_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST];
         uint8_t                               ref_pic_qp_array[MAX_NUM_OF_REF_PIC_LIST];
         EB_SLICE                              ref_slice_type_array[MAX_NUM_OF_REF_PIC_LIST];
-
+#endif
         // GOP
         uint64_t                              picture_number;
         uint8_t                               temporal_layer_index;
@@ -13970,7 +13985,11 @@ extern "C" {
         EbPictureBufferDesc                *chroma_downsampled_picture_ptr; //if 422/444 input, down sample to 420 for MD
         PredictionStructure                *pred_struct_ptr;          // need to check
         struct SequenceControlSet          *sequence_control_set_ptr;
+#if MRP_ME
+		struct PictureParentControlSet     *ref_pa_pcs_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+#else
         struct PictureParentControlSet     *ref_pa_pcs_array[MAX_NUM_OF_REF_PIC_LIST];
+#endif
         EbObjectWrapper                    *p_pcs_wrapper_ptr;
         EbObjectWrapper                    *previous_picture_control_set_wrapper_ptr;
         EbObjectWrapper                    *output_stream_wrapper_ptr;
@@ -13992,7 +14011,9 @@ extern "C" {
         EbBool                                eos_coming;
         uint8_t                               picture_qp;
         uint64_t                              picture_number;
+#if BASE_LAYER_REF
         uint64_t                              last_islice_picture_number;
+#endif
         EbPicnoiseClass                       pic_noise_class;
         EB_SLICE                              slice_type;
         uint8_t                               pred_struct_index;
@@ -14003,7 +14024,10 @@ extern "C" {
         EbBool                                is_used_as_reference_flag;
         uint8_t                               ref_list0_count;
         uint8_t                               ref_list1_count;
-
+#if MRP_MVP
+		MvReferenceFrame                      ref_frame_type_arr[MODE_CTX_REF_FRAMES];
+		uint8_t                               tot_ref_frame_types;
+#endif
         // Rate Control
         uint64_t                              pred_bits_ref_qp[MAX_REF_QP_NUM];
         uint64_t                              target_bits_best_pred_qp;
@@ -14039,8 +14063,13 @@ extern "C" {
         uint32_t                              cb_sse;
 
         // Pre Analysis
+#if MRP_ME
+		EbObjectWrapper                   *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+		uint64_t                              ref_pic_poc_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+#else
         EbObjectWrapper                    *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST];
         uint64_t                              ref_pic_poc_array[MAX_NUM_OF_REF_PIC_LIST];
+#endif
         uint16_t                            **variance;
         uint8_t                             **y_mean;
         uint8_t                             **cbMean;
@@ -14125,7 +14154,12 @@ extern "C" {
 
         // Motion Estimation Results
         uint8_t                               max_number_of_pus_per_sb;
+#if MRP_ME
+		uint8_t                               max_number_of_candidates_per_block;
+		MeLcuResults                       **me_results;
+#else
         MeCuResults                       **me_results;
+#endif
         uint32_t                             *rc_me_distortion;
 
         // Motion Estimation Distortion and OIS Historgram
@@ -14322,6 +14356,12 @@ extern "C" {
         uint8_t                               nsq_max_shapes_md; // max number of shapes to be tested in MD
         uint8_t                              sc_content_detected;
         uint8_t                              ibc_mode;
+#if SETUP_SKIP
+		SkipModeInfo                         skip_mode_info;
+#endif
+#if NO_UNI
+		uint8_t                              mrp_mode;
+#endif
     } PictureParentControlSet;
 
 
@@ -14591,7 +14631,12 @@ extern "C" {
         EbPtr *object_dbl_ptr,
         EbPtr  object_init_data_ptr);
 
-
+#if MRP_ME
+	extern EbErrorType me_sb_results_ctor(
+		MeLcuResults     **objectDblPtr,
+		uint32_t           maxNumberOfPusPerLcu,
+		uint32_t           maxNumberOfMeCandidatesPerPU);
+#endif
 #ifdef __cplusplus
 }
 #endif

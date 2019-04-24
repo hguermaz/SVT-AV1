@@ -1176,6 +1176,7 @@ void CopyStatisticsToRefObject(
     EbReferenceObject  * refObjL0, *refObjL1;
     ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->penalize_skipflag = EB_FALSE;
     if (picture_control_set_ptr->slice_type == B_SLICE) {
+		//MRP_MD
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
         refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr;
 
@@ -1282,26 +1283,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 5                  6
     // 6                  4  
     // 7                  3 
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) {
-        
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->nfl_level = 2;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M3)
-            context_ptr->nfl_level = 4;
-        else if (picture_control_set_ptr->enc_mode <= ENC_M7)
-            context_ptr->nfl_level = 5;
-        else
-            if (picture_control_set_ptr->parent_pcs_ptr->slice_type == I_SLICE)
-                context_ptr->nfl_level  = 5;
-            else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
-                context_ptr->nfl_level  = 6;
-            else
-                context_ptr->nfl_level  = 7;
-
-    }
-    else {
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M1)
         if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
@@ -1360,14 +1341,12 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         else
             context_ptr->nfl_level  = 7;
 #endif
-#if SCENE_CONTENT_SETTINGS
-    }
-#endif
     // Set Chroma Mode
     // Level                Settings
-    // CHROMA_MODE_0  0     Chroma @ MD
-    // CHROMA_MODE_1  1     Chroma blind @ MD + CFL @ EP
-    // CHROMA_MODE_2  2     Chroma blind @ MD + no CFL @ EP
+    // CHROMA_MODE_0  0     Full chroma search @ MD
+    // CHROMA_MODE_1  1     Fast chroma search @ MD
+    // CHROMA_MODE_2  2     Chroma blind @ MD + CFL @ EP
+    // CHROMA_MODE_3  3     Chroma blind @ MD + no CFL @ EP
 #if SEARCH_UV_MODE
 #if SEARCH_UV_BASE
     if (picture_control_set_ptr->enc_mode == ENC_M0 && picture_control_set_ptr->temporal_layer_index == 0)
@@ -1401,15 +1380,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 
     // Set the search method when decoupled fast loop is used 
     // Hsan: FULL_SAD_SEARCH not supported
-#if SCENE_CONTENT_SETTINGS
-
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected){
-	    if (picture_control_set_ptr->enc_mode <= ENC_M0)
-	        context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
-	    else
-	        context_ptr->decoupled_fast_loop_search_method = FULL_SAD_SEARCH;
-	}else
-#endif
 #if NEW_I7_PRESETS
         if (picture_control_set_ptr->enc_mode <= ENC_M4)
             context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
@@ -1477,15 +1447,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // Level                Settings
     // 0                    OFF
     // 1                    On
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected) 
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->warped_motion_injection = 1;
-        else
-            context_ptr->warped_motion_injection = 0;
-    else
-
-#endif
 #if NEW_I7_PRESETS
     context_ptr->warped_motion_injection = 1;
 #else
@@ -1500,15 +1461,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    OFF
     // 1                    ON FULL
     // 2                    Reduced set
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->unipred3x3_injection = 1;
-        else
-            context_ptr->unipred3x3_injection = 0;
-    else
-
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M1)
         context_ptr->unipred3x3_injection = 1;
@@ -1531,15 +1483,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    OFF
     // 1                    ON FULL
     // 2                    Reduced set
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
-        if (picture_control_set_ptr->enc_mode == ENC_M0)
-            context_ptr->bipred3x3_injection = 1;
-        else
-            context_ptr->bipred3x3_injection = 0;
-    else
-
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M1)
         context_ptr->bipred3x3_injection = 1;
@@ -1561,11 +1504,6 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    ON for 8x8 and above
     // 1                    ON for 16x16 and above
     // 2                    ON for 32x32 and above
-#if SCENE_CONTENT_SETTINGS
-    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
-        context_ptr->interpolation_filter_search_blk_size = 0;
-    else
-#endif
 #if NEW_I7_PRESETS
     if (picture_control_set_ptr->enc_mode <= ENC_M4)
         context_ptr->interpolation_filter_search_blk_size = 0;
@@ -1848,7 +1786,12 @@ void* enc_dec_kernel(void *input_ptr)
                         int16_t mv_l1_x;
                         int16_t mv_l1_y;
                         uint32_t me_sb_addr;
-
+#if MRP_ME
+						mv_l0_x = 0;
+						mv_l0_y = 0;
+						mv_l1_x = 0;
+						mv_l1_y = 0;
+#else
                         if (sequence_control_set_ptr->sb_size == BLOCK_128X128) {
 
                             uint32_t me_sb_size = sequence_control_set_ptr->sb_sz;
@@ -1882,6 +1825,7 @@ void* enc_dec_kernel(void *input_ptr)
                             mv_l1_x = mePuResult->x_mv_l1 >> 2;
                             mv_l1_y = mePuResult->y_mv_l1 >> 2;
                         }
+#endif
 
 
                         context_ptr->ss_mecontext->search_area_width = 64;

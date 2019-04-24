@@ -768,6 +768,9 @@ uint64_t av1_intra_fast_cost(
     const BlockGeom         *blk_geom,
     uint32_t                 miRow,
     uint32_t                 miCol,
+#if MRP_COST_EST
+	uint8_t                 md_pass,
+#endif
     uint32_t                 left_neighbor_mode,
     uint32_t                 top_neighbor_mode)
 
@@ -778,7 +781,9 @@ uint64_t av1_intra_fast_cost(
     UNUSED(miCol);
     UNUSED(left_neighbor_mode);
     UNUSED(top_neighbor_mode);
-
+#if MRP_COST_EST
+	UNUSED(md_pass);
+#endif
    
     if (av1_allow_intrabc(picture_control_set_ptr->parent_pcs_ptr->av1_cm) && candidate_ptr->use_intrabc) {
 
@@ -972,6 +977,17 @@ static INLINE int32_t have_newmv_in_inter_mode(PredictionMode mode) {
 extern void av1_set_ref_frame(MvReferenceFrame *rf,
     int8_t ref_frame_type);
 
+#if MRP_COST_EST
+static INLINE int has_second_ref(const MbModeInfo *mbmi) {
+	return mbmi->ref_frame[1] > INTRA_FRAME;
+}
+
+static INLINE int has_uni_comp_refs(const MbModeInfo *mbmi) {
+	return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
+		(mbmi->ref_frame[1] >= BWDREF_FRAME)));
+}
+#endif
+
 // This function encodes the reference frame
 uint64_t EstimateRefFramesNumBits(
     PictureControlSet                    *picture_control_set_ptr,
@@ -980,10 +996,183 @@ uint64_t EstimateRefFramesNumBits(
     uint32_t                                 bwidth,
     uint32_t                                 bheight,
     uint8_t                                  ref_frame_type,
+#if MRP_COST_EST
+	uint8_t                                   md_pass,
+#endif
     EbBool                                is_compound)
 {
 
+
     uint64_t refRateBits = 0;
+
+#if MRP_COST_EST
+
+	if (md_pass == 1) {
+		uint64_t refRateA = 0;
+		uint64_t refRateB = 0;
+		uint64_t refRateC = 0;
+		uint64_t refRateD = 0;
+		uint64_t refRateE = 0;
+		uint64_t refRateF = 0;
+		uint64_t refRateG = 0;
+		uint64_t refRateH = 0;
+		uint64_t refRateI = 0;
+		uint64_t refRateJ = 0;
+		uint64_t refRateK = 0;
+		uint64_t refRateL = 0;
+		uint64_t refRateM = 0;
+		uint64_t refRateN = 0;
+		uint64_t refRateO = 0;
+		uint64_t refRateP = 0;
+		// const MbModeInfo *const mbmi = &cu_ptr->av1xd->mi[0]->mbmi;
+		MbModeInfo *const mbmi = &cu_ptr->av1xd->mi[0]->mbmi;
+		MvReferenceFrame refType[2];
+		av1_set_ref_frame(refType, ref_frame_type);
+		mbmi->ref_frame[0] = refType[0];
+		mbmi->ref_frame[1] = refType[1];
+		//const int is_compound = has_second_ref(mbmi);
+		{
+			// does the feature use compound prediction or not
+			// (if not specified at the frame/segment level)
+			if (picture_control_set_ptr->parent_pcs_ptr->reference_mode == REFERENCE_MODE_SELECT) {
+				if (MIN(bwidth, bheight) >= 8) {
+					//aom_write_symbol(w, is_compound, av1_get_reference_mode_cdf(cu_ptr->av1xd), 2);
+					int32_t context = av1_get_reference_mode_context_new(cu_ptr->av1xd);
+					refRateA = candidate_ptr->md_rate_estimation_ptr->comp_inter_fac_bits[context][is_compound];
+				}
+			}
+			else {
+				assert((!is_compound) ==
+					(picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE));
+			}
+
+			if (is_compound) {
+				const CompReferenceType comp_ref_type = has_uni_comp_refs(mbmi)
+					? UNIDIR_COMP_REFERENCE
+					: BIDIR_COMP_REFERENCE;
+
+
+				const int pred_context = av1_get_comp_reference_type_context_new(cu_ptr->av1xd);
+				refRateB = candidate_ptr->md_rate_estimation_ptr->comp_ref_type_fac_bits[pred_context][comp_ref_type];
+				/*aom_write_symbol(w, comp_ref_type, av1_get_comp_reference_type_cdf(cu_ptr->av1xd),
+					2);*/
+
+				if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
+					//printf("ERROR[AN]: UNIDIR_COMP_REFERENCE not supported\n");
+					const int bit = mbmi->ref_frame[0] == BWDREF_FRAME;
+
+					const int pred_context = av1_get_pred_context_uni_comp_ref_p(cu_ptr->av1xd);
+					refRateC = candidate_ptr->md_rate_estimation_ptr->uni_comp_ref_fac_bits[pred_context][0][bit];
+					//cu_ptr->av1xd->tile_ctx->uni_comp_ref_cdf[pred_context][0];
+					//WRITE_REF_BIT(bit, uni_comp_ref_p);
+
+					if (!bit) {
+						assert(mbmi->ref_frame[0] == LAST_FRAME);
+						const int bit1 = mbmi->ref_frame[1] == LAST3_FRAME ||
+							mbmi->ref_frame[1] == GOLDEN_FRAME;
+						const int pred_context = av1_get_pred_context_uni_comp_ref_p1(cu_ptr->av1xd);
+						refRateD = candidate_ptr->md_rate_estimation_ptr->uni_comp_ref_fac_bits[pred_context][1][bit1];
+						//refRateD = cu_ptr->av1xd->tile_ctx->uni_comp_ref_cdf[pred_context][1];
+						//WRITE_REF_BIT(bit1, uni_comp_ref_p1);
+						if (bit1) {
+							const int bit2 = mbmi->ref_frame[1] == GOLDEN_FRAME;
+							const int pred_context = av1_get_pred_context_uni_comp_ref_p2(cu_ptr->av1xd);
+							refRateE = candidate_ptr->md_rate_estimation_ptr->uni_comp_ref_fac_bits[pred_context][2][bit2];
+
+							// refRateE = cu_ptr->av1xd->tile_ctx->uni_comp_ref_cdf[pred_context][2];
+							 //WRITE_REF_BIT(bit2, uni_comp_ref_p2);
+						}
+					}
+					//else {
+					//    assert(mbmi->ref_frame[1] == ALTREF_FRAME);
+					//}
+					refRateBits = refRateA + refRateB + refRateC + refRateD + refRateE + refRateF + refRateG + refRateH + refRateI + refRateJ + refRateK + refRateL + refRateM;
+					return refRateBits;
+					//return;
+				}
+
+				assert(comp_ref_type == BIDIR_COMP_REFERENCE);
+
+				const int bit = (mbmi->ref_frame[0] == GOLDEN_FRAME ||
+					mbmi->ref_frame[0] == LAST3_FRAME);
+				const int pred_ctx = av1_get_pred_context_comp_ref_p(cu_ptr->av1xd);
+				refRateF = candidate_ptr->md_rate_estimation_ptr->comp_ref_fac_bits[pred_ctx][0][bit];
+				//refRateF = cu_ptr->av1xd->tile_ctx->comp_ref_cdf[pred_ctx][0];
+				//WRITE_REF_BIT(bit, comp_ref_p);
+
+				if (!bit) {
+					const int bit1 = mbmi->ref_frame[0] == LAST2_FRAME;
+					const int pred_context = av1_get_pred_context_comp_ref_p1(cu_ptr->av1xd);
+					refRateG = candidate_ptr->md_rate_estimation_ptr->comp_ref_fac_bits[pred_context][1][bit1];
+					//refRateG = cu_ptr->av1xd->tile_ctx->comp_ref_cdf[pred_context][1];
+					//WRITE_REF_BIT(bit1, comp_ref_p1);
+				}
+				else {
+					const int bit2 = mbmi->ref_frame[0] == GOLDEN_FRAME;
+					const int pred_context = av1_get_pred_context_comp_ref_p2(cu_ptr->av1xd);
+					refRateH = candidate_ptr->md_rate_estimation_ptr->comp_ref_fac_bits[pred_context][2][bit2];
+					//refRateH = cu_ptr->av1xd->tile_ctx->comp_ref_cdf[pred_context][2];
+					//WRITE_REF_BIT(bit2, comp_ref_p2);
+				}
+
+				const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
+				const int pred_ctx_2 = av1_get_pred_context_comp_bwdref_p(cu_ptr->av1xd);
+				refRateI = candidate_ptr->md_rate_estimation_ptr->comp_bwd_ref_fac_bits[pred_ctx_2][0][bit_bwd];
+				//refRateI = cu_ptr->av1xd->tile_ctx->comp_bwdref_cdf[pred_ctx_2][0];
+				//WRITE_REF_BIT(bit_bwd, comp_bwdref_p);
+
+				if (!bit_bwd) {
+					const int pred_context = av1_get_pred_context_comp_bwdref_p1(cu_ptr->av1xd);
+					refRateJ = candidate_ptr->md_rate_estimation_ptr->comp_bwd_ref_fac_bits[pred_context][1][refType[1] == ALTREF2_FRAME];
+					//refRateJ = cu_ptr->av1xd->tile_ctx->comp_bwdref_cdf[pred_context][1];
+					//WRITE_REF_BIT(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
+				}
+			}
+			else {
+				const int bit0 = (mbmi->ref_frame[0] <= ALTREF_FRAME &&
+					mbmi->ref_frame[0] >= BWDREF_FRAME);
+				refRateK = candidate_ptr->md_rate_estimation_ptr->single_ref_fac_bits[av1_get_pred_context_single_ref_p1(cu_ptr->av1xd)][0][bit0];
+				//refRateK = cu_ptr->av1xd->tile_ctx->single_ref_cdf[av1_get_pred_context_single_ref_p1(cu_ptr->av1xd)][0];
+				//WRITE_REF_BIT(bit0, single_ref_p1);
+
+				if (bit0) {
+					const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
+					refRateL = candidate_ptr->md_rate_estimation_ptr->single_ref_fac_bits[av1_get_pred_context_single_ref_p2(cu_ptr->av1xd)][1][bit1];
+					//refRateL = cu_ptr->av1xd->tile_ctx->single_ref_cdf[av1_get_pred_context_single_ref_p2(cu_ptr->av1xd)][1];
+					//WRITE_REF_BIT(bit1, single_ref_p2);
+					if (!bit1) {
+						refRateM = candidate_ptr->md_rate_estimation_ptr->single_ref_fac_bits[av1_get_pred_context_single_ref_p6(cu_ptr->av1xd)][5][ref_frame_type == ALTREF2_FRAME];
+						//refRateM = cu_ptr->av1xd->tile_ctx->single_ref_cdf[av1_get_pred_context_single_ref_p6(cu_ptr->av1xd)][5];
+						//WRITE_REF_BIT(mbmi->ref_frame[0] == ALTREF2_FRAME, single_ref_p6);
+					}
+				}
+				else {
+					const int bit2 = (mbmi->ref_frame[0] == LAST3_FRAME ||
+						mbmi->ref_frame[0] == GOLDEN_FRAME);
+					refRateN = candidate_ptr->md_rate_estimation_ptr->single_ref_fac_bits[av1_get_pred_context_single_ref_p3(cu_ptr->av1xd)][2][bit2];
+					//refRateN = cu_ptr->av1xd->tile_ctx->single_ref_cdf[av1_get_pred_context_single_ref_p3(cu_ptr->av1xd)][2];
+					//WRITE_REF_BIT(bit2, single_ref_p3);
+					if (!bit2) {
+						const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
+						refRateO = candidate_ptr->md_rate_estimation_ptr->single_ref_fac_bits[av1_get_pred_context_single_ref_p4(cu_ptr->av1xd)][3][bit3];
+						//refRateO = cu_ptr->av1xd->tile_ctx->single_ref_cdf[av1_get_pred_context_single_ref_p4(cu_ptr->av1xd)][3];
+						//WRITE_REF_BIT(bit3, single_ref_p4);
+					}
+					else {
+						const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
+						refRateP = candidate_ptr->md_rate_estimation_ptr->single_ref_fac_bits[av1_get_pred_context_single_ref_p5(cu_ptr->av1xd)][4][bit4];
+						//refRateP = cu_ptr->av1xd->tile_ctx->single_ref_cdf[av1_get_pred_context_single_ref_p5(cu_ptr->av1xd)][4];
+						//WRITE_REF_BIT(bit4, single_ref_p5);
+					}
+				}
+			}
+		}
+		refRateBits = refRateA + refRateB + refRateC + refRateD + refRateE + refRateF + refRateG + refRateH + refRateI +
+			refRateJ + refRateK + refRateL + refRateM + refRateN + refRateO + refRateP;
+
+	}
+	else {
+#endif
     uint64_t refRateA = 0;
     uint64_t refRateB = 0;
     uint64_t refRateC = 0;
@@ -1178,6 +1367,10 @@ uint64_t EstimateRefFramesNumBits(
     }
 
     refRateBits = refRateA + refRateB + refRateC + refRateD + refRateE + refRateF + refRateG + refRateH + refRateI + refRateJ + refRateK + refRateL + refRateM;
+
+#if MRP_COST_EST
+	}
+#endif
     return refRateBits;
 }
 //extern INLINE int16_t Av1ModeContextAnalyzer(const int16_t *const mode_context, const MvReferenceFrame *const rf);
@@ -1216,6 +1409,9 @@ uint64_t av1_inter_fast_cost(
     const BlockGeom         *blk_geom,
     uint32_t                 miRow,
     uint32_t                 miCol,
+#if MRP_COST_EST
+	uint8_t                 md_pass,
+#endif
     uint32_t                 left_neighbor_mode,
     uint32_t                 top_neighbor_mode)
 
@@ -1266,6 +1462,9 @@ uint64_t av1_inter_fast_cost(
         blk_geom->bwidth,
         blk_geom->bheight,
         candidate_ptr->ref_frame_type,
+#if MRP_COST_EST
+		md_pass,
+#endif
         candidate_ptr->is_compound);
 
 
@@ -2301,13 +2500,18 @@ void coding_loop_context_generation(
         inter_pred_dir_neighbor_array);
 
     //Collect Neighbor ref cout
+#if MRP_COST_EST
+	av1_collect_neighbors_ref_counts_new(cu_ptr->av1xd);
+#else
     av1_collect_neighbors_ref_counts(
+
         cu_ptr,
         cu_origin_x,
         cu_origin_y,
         mode_type_neighbor_array,
         inter_pred_dir_neighbor_array,
         ref_frame_type_neighbor_array);
+#endif
 
     return;
 }

@@ -37,7 +37,11 @@ extern "C" {
        ************************************************/
     typedef struct ReferenceList
     {
+#if MRP_ME
+		int32_t                              *reference_list;
+#else
         int32_t                              reference_list;
+#endif
         uint32_t                              reference_list_count;
 
     } ReferenceList;
@@ -73,8 +77,13 @@ extern "C" {
     {
         uint32_t temporal_layer_index;
         uint32_t decode_order;
+#if MRP_ME
+		int32_t                              ref_list0[REF_LIST_MAX_DEPTH];
+		int32_t                              ref_list1[REF_LIST_MAX_DEPTH];
+#else
         int32_t  ref_list0;
         int32_t  ref_list1;
+#endif
     } PredictionStructureConfigEntry;
 
     /************************************************
@@ -204,11 +213,24 @@ extern "C" {
         EbPred                        pred_structure,
         uint32_t                         number_of_references,
         uint32_t                         levels_of_hierarchy);
-
+#if NEW_RPS
+	enum {
+		LAST = 0,
+		LAST2 = 1,
+		LAST3 = 2,
+		GOLD = 3,
+		BWD = 4,
+		ALT2 = 5,
+		ALT = 6
+	} REF_FRAME_MINUS1;
+#endif
     typedef struct Av1RpsNode 
     {
         uint8_t refresh_frame_mask;
         uint8_t ref_dpb_index[7];//LAST-LAST2-LAST3-GOLDEN-BWD-ALT2-ALT
+#if REF_ORDER
+		uint64_t ref_poc_array[7]; //decoder based ref poc array //LAST-LAST2-LAST3-GOLDEN-BWD-ALT2-ALT
+#endif
     } Av1RpsNode;
 
 

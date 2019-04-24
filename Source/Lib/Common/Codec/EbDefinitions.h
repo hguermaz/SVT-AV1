@@ -34,6 +34,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define WIKI_SETTINGS          0
+
+#if WIKI_SETTINGS
+#define MRP_SUPPORT            0// MRP Main Flag
+#else
+#define MRP_SUPPORT            1// MRP Main Flag
+#endif
+
 
 // New i7 presets
 #define NEW_I7_PRESETS                    0
@@ -64,7 +72,9 @@ extern "C" {
 #define M9_INTRA                          1
 #define M10_INTRA                         0
 #define DISABLE_OIS_USE                   1
+#if !MRP_SUPPORT
 #define M9_INTER_SRC_SRC_FAST_LOOP        1
+#endif
 
 #define OPT_LOSSLESS_0                    1
 
@@ -85,7 +95,11 @@ extern "C" {
 #define RC_FEEDBACK                       1 // Feedback from previous base layer is received before starting the next base layer frame
 #endif
 #define RED_CU                            1 // Bypass redundant CU
+#if WIKI_SETTINGS
+#define NSQ_ME_OPT                        1 // NSQ ME Restructuring
+#else
 #define NSQ_ME_OPT                        0 // NSQ ME Restructuring
+#endif
 #define BYPASS_USELESS_TX_SEARCH          0
 // Testing MACROS
 #define M9_NEAR_INJECTION                 0
@@ -150,14 +164,89 @@ extern "C" {
 #define USE_SAD_HMEL2                                   1
 #endif
 
+
+
+
+
+#if !MRP_SUPPORT
+#define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
+#endif
+
+//NEDED FLAGS  ON
+#if MRP_SUPPORT
+
+#define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH  1
+#define DISABLE_NSQ_FOR_NON_REF 			   1
+#define DISABLE_NSQ							   1
+#define M0_ME_QUARTER_PEL_SEARCH			   1
+#define NSQ_OPTIMASATION					   1
+//#define M8_SKIP_BLK							   1
+#define DISABLE_IN_LOOP_ME					   1
+#define TILES								   1
+#define REMOVED_DUPLICATE_INTER				   1
+#define REMOVED_DUPLICATE_INTER_L1			   1
+#define REMOVED_DUPLICATE_INTER_BIPRED		   1
+#define ICOPY								   1
+#define INTRA_INTER_FAST_LOOP				   1
+#define M0_ME_SEARCH_BASE					   1
+#define SHUT_GLOBAL_MV						   1
+#define IMPROVED_BIPRED_INJECTION			   1
+#define IMPROVED_UNIPRED_INJECTION			   1
+
+//NEEDED FLAGS  OFF
+//M0_HIGH_PRECISION_INTERPOLATION
+//TEST5_DISABLE_NSQ_ME
+//ALIGN_MEM
+//TWO_FAST_LOOP
+//ADD_DELTA_QP_SUPPORT
+#endif
+
+#if MRP_SUPPORT
+#define MRP_PRED_STRUCTURE        1
+#define EC_UPDATE                 1
+#define MRP_ME                    1
+#define MRP_CONNECTION            1 
+#define MD_INJECTION              1 
+#define MRP_MD                    1 
+#define MRP_MD_UNI_DIR_BIPRED     1
+#define NEW_RPS                   1  //RPS supporting MRP
+#define MRP_5L_STRUCT             1  //New 5L prediction structure supporting MRP
+#define MRP_LIST_REF_IDX_TYPE_LT  1  
+#define MRP_MVP                   1 //MVP upgrade to support MRP
+#define MCP_4XN_FIX               1 //Fix for MCP chroma for 4xN modes
+#define CHECK_CAND                1 //increased and added a safety check for number of fast candidates
+#define MRP_COST_EST              1
+#define MRP_BASE                  1 //enable MRP for Base
+#define MRP_REF_MODE              1  
+#define MRP_DUPLICATION_FIX       1
+#define MRP_ENABLE_BI_FOR_BASE    1
+#define SETUP_SKIP                1
+#define INJ_MVP                   1   //new injection of MVP supporting MRP case.
+#define FIX_INIT                  1   //fix ref_poc_array init
+#define NORMAL_ORDER              1   //  order(ALT/ALT2) 
+#define REF_ORDER                 1  //correctly construct decoder based ref order hint array
+//#define FIX_INTRA_UV              1   //mismatch in intra prediction
+#define RPS_4L                    1 //RPS for 4L case
+#define FIX_ORDER_HINT            1 //fix order hint usage.
+#define M8_CDEF_DEBUG             0 //Keep OFF Debug flag ofr M8
+#define MRP_M0_ONLY               1 // Enable MRP for Base only for M1-M9
+#define NO_CFG_FILE               1 //allocate ME results for 209 PUs
+#define NO_UNI                    1
+#define MRP_MEM_OPT               1
+#define MRP_FLAG                  1
+#endif
+
+
 #define ADP_STATS_PER_LAYER                             0
 #define NFL_TX_TH                                       12 // To be tuned
 #define NFL_IT_TH                                       2 // To be tuned
+#if BASE_LAYER_REF
 #define MAX_FRAMES_TO_REF_I                             64
+#endif
 #define NSQ_TAB_SIZE                                    6
 
 #define AOM_INTERP_EXTEND 4
-#define TX_SIZE_SEARCH_LEVELS                           0
+#define TX_SIZE_SEARCH_LEVELS                           1
 #if TX_SIZE_SEARCH_LEVELS
 #define TX_SIZE_UPDATE_GEOM                             1
 #define TXS_ENC                                         1
@@ -1598,7 +1687,11 @@ static INLINE int32_t get_ext_tx_set(TxSize tx_size, int32_t is_inter,
 static INLINE int32_t is_inter_compound_mode(PredictionMode mode) {
     return mode >= NEAREST_NEARESTMV && mode <= NEW_NEWMV;
 }
-
+#if EC_UPDATE
+static INLINE int is_inter_singleref_mode(PredictionMode mode) {
+	return mode >= SINGLE_INTER_MODE_START && mode < SINGLE_INTER_MODE_END;
+}
+#endif
 
 //**********************************************************************************************************************//
 // encoder.h
@@ -2668,9 +2761,16 @@ void(*ErrorHandler)(
                                                 ((MAX_PICTURE_HEIGHT_SIZE + BLOCK_SIZE_64 - 1) / BLOCK_SIZE_64)
 
 //***Prediction Structure***
+#if MRP_ME
+#define REF_LIST_MAX_DEPTH                          4 // NM - To be specified
+#endif
 #define MAX_TEMPORAL_LAYERS                         6
 #define MAX_HIERARCHICAL_LEVEL                      6
+#if MRP_ME
+#define MAX_REF_IDX                                 4
+#else
 #define MAX_REF_IDX                                 1        // Set MAX_REF_IDX as 1 to avoid sending extra refPicIdc for each PU in IPPP flat GOP structure.
+#endif
 #define INVALID_POC                                 (((uint32_t) (~0)) - (((uint32_t) (~0)) >> 1))
 #define MAX_ELAPSED_IDR_COUNT                       1024
 
@@ -3973,10 +4073,10 @@ static const uint16_t search_area_width[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPP
         { 128,   64,   64,   64,   64,   64,   48,   48,   48,   48,   48,    48,   48 }
 #endif
     } , {
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 };
 static const uint16_t search_area_height[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUPPORTED_MODES] = {
@@ -4000,10 +4100,10 @@ static const uint16_t search_area_height[SC_MAX_LEVEL][INPUT_SIZE_COUNT][MAX_SUP
         { 128,   64,   64,   32,   32,   32,   48,   48,   16,   16,   16,    16,   16 }
 #endif
     } , {
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
-        { 640,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 },
+        {1280,  640,  448,  128,  128,  128,  128,   96,   80,   80,   80,    80,   80 }
     }
 
     //     M0    M1    M2    M3    M4    M5    M6    M7    M8    M9    M10    M11    M12

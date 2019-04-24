@@ -292,6 +292,9 @@ extern "C" {
         MbModeInfo *left_mbmi;
         MbModeInfo *chroma_above_mbmi;
         MbModeInfo *chroma_left_mbmi;
+#if EC_UPDATE
+		FRAME_CONTEXT *tile_ctx;
+#endif
 #if TX_SIZE_SEARCH_LEVELS
         TXFM_CONTEXT *above_txfm_context;
         TXFM_CONTEXT *left_txfm_context;

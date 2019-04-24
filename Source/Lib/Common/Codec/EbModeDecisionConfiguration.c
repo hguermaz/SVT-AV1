@@ -808,15 +808,44 @@ void PredictionPartitionLoop(
 
                 if (picture_control_set_ptr->slice_type != I_SLICE) {
 
+#if MD_INJECTION
+					const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index];
+					const MeCandidate *me_block_results = me_results->me_candidate[cuIndexInRaterScan];
+					uint8_t total_me_cnt = me_results->total_me_candidate_index[cuIndexInRaterScan];
+					uint8_t me_index = 0;
+					for (uint8_t me_candidate_index = 0; me_candidate_index < total_me_cnt; me_candidate_index++) {
+						const MeCandidate *me_block_results_ptr = &me_block_results[me_candidate_index];
+						if (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE) {
+							if (me_block_results_ptr->direction == 0) {
+								me_index = me_candidate_index;
+								break;
+							}
+						}
+						else {
+							if (me_block_results_ptr->direction == 2) {
+								me_index = me_candidate_index;
+								break;
+							}
+						}
+					}
+
+					//const MeCandidate_t *me_results = &me_block_results[me_index];
+
+#else
                     MeCuResults * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cuIndexInRaterScan];
+#endif
                     // Initialize the mdc candidate (only av1 rate estimation inputs)
                     // Hsan: mode, direction, .. could be modified toward better early inter depth decision (e.g. NEARESTMV instead of NEWMV)
                     context_ptr->mdc_candidate_ptr->md_rate_estimation_ptr = context_ptr->md_rate_estimation_ptr;
                     context_ptr->mdc_candidate_ptr->type = INTER_MODE;
                     context_ptr->mdc_candidate_ptr->merge_flag = EB_FALSE;
                     context_ptr->mdc_candidate_ptr->prediction_direction[0] = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) ?
-                        UNI_PRED_LIST_0 :
+						UNI_PRED_LIST_0 :
+#if MD_INJECTION
+						me_block_results[me_index].direction;
+#else
                         mePuResult->distortion_direction[0].direction;
+#endif
                     // Hsan: what's the best mode for rate simulation
                     context_ptr->mdc_candidate_ptr->inter_mode = NEARESTMV;
                     context_ptr->mdc_candidate_ptr->pred_mode = NEARESTMV;
@@ -824,10 +853,20 @@ void PredictionPartitionLoop(
                     context_ptr->mdc_candidate_ptr->is_new_mv = 1;
                     context_ptr->mdc_candidate_ptr->is_zero_mv = 0;
                     context_ptr->mdc_candidate_ptr->drl_index = 0;
+#if MD_INJECTION
+					context_ptr->mdc_candidate_ptr->motion_vector_xl0 = me_block_results[me_index].x_mv_l0 << 1;
+					context_ptr->mdc_candidate_ptr->motion_vector_yl0 = me_block_results[me_index].y_mv_l0 << 1;
+#else
                     context_ptr->mdc_candidate_ptr->motion_vector_xl0 = mePuResult->x_mv_l0 << 1;
                     context_ptr->mdc_candidate_ptr->motion_vector_yl0 = mePuResult->y_mv_l0 << 1;
+#endif
+#if MD_INJECTION
+					context_ptr->mdc_candidate_ptr->motion_vector_xl1 = me_block_results[me_index].x_mv_l1 << 1;
+					context_ptr->mdc_candidate_ptr->motion_vector_yl1 = me_block_results[me_index].y_mv_l1 << 1;
+#else
                     context_ptr->mdc_candidate_ptr->motion_vector_xl1 = mePuResult->x_mv_l1 << 1;
                     context_ptr->mdc_candidate_ptr->motion_vector_yl1 = mePuResult->y_mv_l1 << 1;
+#endif
                     context_ptr->mdc_candidate_ptr->ref_mv_index = 0;
                     context_ptr->mdc_candidate_ptr->pred_mv_weight = 0;
                     if (context_ptr->mdc_candidate_ptr->prediction_direction[0] == BI_PRED) {
@@ -860,7 +899,11 @@ void PredictionPartitionLoop(
                         context_ptr->mdc_cu_ptr,
                         context_ptr->mdc_candidate_ptr,
                         context_ptr->qp,
+#if MD_INJECTION
+						me_block_results[me_index].distortion,
+#else
                         mePuResult->distortion_direction[0].distortion,
+#endif
                         (uint64_t) 0,
                         context_ptr->lambda,
                         0,
@@ -869,6 +912,9 @@ void PredictionPartitionLoop(
                         context_ptr->blk_geom,
                         (tbOriginY + context_ptr->blk_geom->origin_y) >> MI_SIZE_LOG2,
                         (tbOriginX + context_ptr->blk_geom->origin_x) >> MI_SIZE_LOG2,
+#if MRP_COST_EST
+						0,
+#endif
                         DC_PRED,        // Hsan: neighbor not generated @ open loop partitioning
                         DC_PRED);       // Hsan: neighbor not generated @ open loop partitioning
 
