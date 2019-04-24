@@ -36,6 +36,15 @@ int32_t av1_loop_restoration_corners_in_sb(Av1Common *cm, int32_t plane,
     int32_t mi_row, int32_t mi_col, BlockSize bsize,
     int32_t *rcol0, int32_t *rcol1, int32_t *rrow0,
     int32_t *rrow1, int32_t *tile_tl_idx);
+	
+static INLINE int has_second_ref(const MbModeInfo *mbmi) {
+	return mbmi->ref_frame[1] > INTRA_FRAME;
+}
+
+static INLINE int has_uni_comp_refs(const MbModeInfo *mbmi) {
+	return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
+		(mbmi->ref_frame[1] >= BWDREF_FRAME)));
+}
 
 #define CHAR_BIT      8         /* number of bits in a char */
 #if ADD_DELTA_QP_SUPPORT
@@ -459,11 +468,12 @@ void Av1WriteTxType(
 
     const int32_t isInter = cu_ptr->av1xd->use_intrabc || (cu_ptr->prediction_mode_flag == INTER_MODE);
 
-    const TxSize squareTxSize = txsize_sqr_map[txSize];
-    //assert(squareTxSize < EXT_TX_SIZES);
-
     if (get_ext_tx_types(txSize, isInter, pcs_ptr->reduced_tx_set_used) > 1 &&
         (pcs_ptr->base_qindex > 0)) {
+
+        const TxSize squareTxSize = txsize_sqr_map[txSize];
+        assert(squareTxSize <= EXT_TX_SIZES);
+
         const TxSetType txSetType =
             get_ext_tx_set_type(txSize, isInter, pcs_ptr->reduced_tx_set_used);
         const int32_t eset = get_ext_tx_set(txSize, isInter, pcs_ptr->reduced_tx_set_used);
@@ -2806,14 +2816,7 @@ int av1_get_pred_context_uni_comp_ref_p2(const MacroBlockD *xd) {
 }
 
 
-static INLINE int has_second_ref(const MbModeInfo *mbmi) {
-	return mbmi->ref_frame[1] > INTRA_FRAME;
-}
 
-static INLINE int has_uni_comp_refs(const MbModeInfo *mbmi) {
-	return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
-		(mbmi->ref_frame[1] >= BWDREF_FRAME)));
-}
 
 int av1_get_reference_mode_context_new(const MacroBlockD *xd) {
 	int ctx;
@@ -6420,8 +6423,9 @@ EB_EXTERN EbErrorType write_sb(
 
     context_ptr->coded_area_sb = 0;
     context_ptr->coded_area_sb_uv = 0;
-
+#if !MEMORY_FOOTPRINT_OPT
     tb_ptr->quantized_coeffs_bits = 0;
+#endif
     EbBool checkCuOutOfBound = EB_FALSE;
 
     SbGeom * sb_geom = &sequence_control_set_ptr->sb_geom[tb_ptr->index];// .block_is_inside_md_scan[blk_index])

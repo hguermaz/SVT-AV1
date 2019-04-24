@@ -175,16 +175,16 @@ static void SetFrameRateNumerator               (const char *value, EbConfig *cf
 static void SetFrameRateDenominator             (const char *value, EbConfig *cfg) { cfg->frame_rate_denominator = strtoul(value, NULL, 0);};
 static void SetEncoderBitDepth                  (const char *value, EbConfig *cfg) {cfg->encoder_bit_depth = strtoul(value, NULL, 0);}
 static void SetEncoderColorFormat               (const char *value, EbConfig *cfg) {cfg->encoder_color_format = strtoul(value, NULL, 0);}
-static void SetcompressedTenBitFormat            (const char *value, EbConfig *cfg) {cfg->compressed_ten_bit_format = strtoul(value, NULL, 0);}
+static void SetcompressedTenBitFormat           (const char *value, EbConfig *cfg) {cfg->compressed_ten_bit_format = strtoul(value, NULL, 0);}
 static void SetBaseLayerSwitchMode              (const char *value, EbConfig *cfg) {cfg->base_layer_switch_mode = (EbBool) strtoul(value, NULL, 0);};
 static void SetencMode                          (const char *value, EbConfig *cfg) {cfg->enc_mode = (uint8_t)strtoul(value, NULL, 0);};
 static void SetCfgIntraPeriod                   (const char *value, EbConfig *cfg) {cfg->intra_period = strtol(value,  NULL, 0);};
 static void SetCfgIntraRefreshType              (const char *value, EbConfig *cfg) {cfg->intra_refresh_type = strtol(value,  NULL, 0);};
-static void SetHierarchicalLevels                (const char *value, EbConfig *cfg) { cfg->hierarchical_levels = strtol(value, NULL, 0); };
-static void SetCfgPredStructure                    (const char *value, EbConfig *cfg) { cfg->pred_structure = strtol(value, NULL, 0); };
+static void SetHierarchicalLevels               (const char *value, EbConfig *cfg) { cfg->hierarchical_levels = strtol(value, NULL, 0); };
+static void SetCfgPredStructure                 (const char *value, EbConfig *cfg) { cfg->pred_structure = strtol(value, NULL, 0); };
 static void SetCfgQp                            (const char *value, EbConfig *cfg) {cfg->qp = strtoul(value, NULL, 0);};
 static void SetCfgUseQpFile                     (const char *value, EbConfig *cfg) {cfg->use_qp_file = (EbBool)strtol(value, NULL, 0); };
-//static void SetCfgFilmGrain(const char *value, EbConfig *cfg) { cfg->film_grain_denoise_strength = strtol(value, NULL, 0); };  //not bool to enable possible algorithm extension in the future
+static void SetCfgFilmGrain                     (const char *value, EbConfig *cfg) { cfg->film_grain_denoise_strength = strtol(value, NULL, 0); };  //not bool to enable possible algorithm extension in the future
 static void SetDisableDlfFlag                   (const char *value, EbConfig *cfg) {cfg->disable_dlf_flag = (EbBool)strtoul(value, NULL, 0);};
 static void SetEnableLocalWarpedMotionFlag      (const char *value, EbConfig *cfg) {cfg->enable_warped_motion = (EbBool)strtoul(value, NULL, 0);};
 static void SetEnableHmeFlag                    (const char *value, EbConfig *cfg) {cfg->enable_hme_flag = (EbBool)strtoul(value, NULL, 0);};
@@ -354,6 +354,7 @@ config_entry_t config_entry[] = {
     { SINGLE_INPUT, TIER_TOKEN, "Tier", SetTier },
     { SINGLE_INPUT, LEVEL_TOKEN, "Level", SetLevel },
     { SINGLE_INPUT, LATENCY_MODE, "LatencyMode", SetLatencyMode },
+    { SINGLE_INPUT, FILM_GRAIN_TOKEN, "FilmGrain", SetCfgFilmGrain },
 
     // Asm Type
     { SINGLE_INPUT, ASM_TYPE_TOKEN, "AsmType", SetAsmType },

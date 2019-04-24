@@ -38,10 +38,10 @@ typedef struct SourceBasedOperationsContext
                 
     // Skin     
     uint8_t     grass_percentage_in_picture;
-
+#if !MEMORY_FOOTPRINT_OPT
     // Variance
     uint8_t    *sb_high_contrast_array;
-
+#endif
     // local zz cost array
     uint32_t    picture_num_grass_sb;
     uint32_t    sb_high_contrast_count;

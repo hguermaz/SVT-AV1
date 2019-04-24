@@ -4500,6 +4500,7 @@ void EdgeDetection(
     }
     return;
 }
+
 /******************************************************
 * Calculate the variance of variance to determine Homogeneous regions. Note: Variance calculation should be on.
 ******************************************************/
@@ -4518,16 +4519,17 @@ void DetermineHomogeneousRegionInPicture(
     uint32_t sb_total_count = picture_control_set_ptr->sb_total_count;
 
     for (sb_index = 0; sb_index < sb_total_count; ++sb_index) {
+#if !MEMORY_FOOTPRINT_OPT
         uint64_t meanSqrVariance32x32Based[4] = { 0 }, meanVariance32x32Based[4] = { 0 };
 
         uint64_t meanSqrVariance64x64Based = 0, meanVariance64x64Based = 0;
         uint64_t varOfVar64x64Based = 0;
-
+#endif
         SbParams sb_params = sequence_control_set_ptr->sb_params_array[sb_index];
-
+#if !MEMORY_FOOTPRINT_OPT
         // Initialize
         picture_control_set_ptr->sb_homogeneous_area_array[sb_index] = EB_TRUE;
-
+#endif
         variancePtr = picture_control_set_ptr->variance[sb_index];
 
         if (sb_params.is_complete_sb) {
@@ -4537,6 +4539,7 @@ void DetermineHomogeneousRegionInPicture(
             varLcuCnt++;
 
             veryLowVarCnt += ((variancePtr[ME_TIER_ZERO_PU_64x64]) < LCU_LOW_VAR_TH) ? 1 : 0;
+#if !MEMORY_FOOTPRINT_OPT
             cu_size = 8;
             cuIndexOffset = ME_TIER_ZERO_PU_8x8_0;
             cuNum = 64 / cu_size;
@@ -4597,8 +4600,9 @@ void DetermineHomogeneousRegionInPicture(
                     picture_control_set_ptr->sb_homogeneous_area_array[sb_index] = EB_FALSE;
                 }
             }
-
+#endif
         }
+#if !MEMORY_FOOTPRINT_OPT
         else {
 
             // Should be re-calculated and scaled properly
@@ -4607,6 +4611,7 @@ void DetermineHomogeneousRegionInPicture(
             picture_control_set_ptr->var_of_var32x32_based_sb_array[sb_index][2] = 0xFFFFFFFFFFFFFFFF;
             picture_control_set_ptr->var_of_var32x32_based_sb_array[sb_index][3] = 0xFFFFFFFFFFFFFFFF;
         }
+#endif
     }
     picture_control_set_ptr->very_low_var_pic_flag = EB_FALSE;
     if ((varLcuCnt > 0) && (((veryLowVarCnt * 100) / varLcuCnt) > PIC_LOW_VAR_PERCENTAGE_TH)) {
@@ -4685,6 +4690,7 @@ void ComputePictureSpatialStatistics(
     }
 
     picture_control_set_ptr->pic_avg_variance = (uint16_t)(picTotVariance / sb_total_count);
+
     // Calculate the variance of variance to determine Homogeneous regions. Note: Variance calculation should be on.
     DetermineHomogeneousRegionInPicture(
         sequence_control_set_ptr,

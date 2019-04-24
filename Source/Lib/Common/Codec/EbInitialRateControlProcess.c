@@ -1126,7 +1126,7 @@ void UpdateMotionFieldUniformityOverTime(
         picture_control_set_ptr->sb_total_count);
     return;
 }
-
+#if !MEMORY_FOOTPRINT_OPT
 /************************************************
 * Update uniform motion field
 ** Update Uniformly moving LCUs using
@@ -1226,7 +1226,7 @@ void ResetHomogeneityStructures(
 
     return;
 }
-
+#endif
 InitialRateControlReorderEntry  * DeterminePictureOffsetInQueue(
     EncodeContext                   *encode_context_ptr,
     PictureParentControlSet         *picture_control_set_ptr,
@@ -1340,7 +1340,7 @@ void UpdateHistogramQueueEntry(
     return;
 
 }
-
+#if !MEMORY_FOOTPRINT_OPT 
 /******************************************************
 * Derive Similar Collocated Flag
 ******************************************************/
@@ -1391,7 +1391,7 @@ void DeriveSimilarCollocatedFlag(
 
     return;
 }
-
+#endif
 EbAuraStatus AuraDetection64x64Gold(
     PictureControlSet           *picture_control_set_ptr,
     uint8_t                          picture_qp,
@@ -1743,11 +1743,11 @@ void* initial_rate_control_kernel(void *input_ptr)
             //reset intraCodedEstimationLcu
             MeBasedGlobalMotionDetection(
                 picture_control_set_ptr);
-
+#if !MEMORY_FOOTPRINT_OPT 
             // Derive Similar Collocated Flag
             DeriveSimilarCollocatedFlag(
                 picture_control_set_ptr);
-
+#endif
             // Release Pa Ref pictures when not needed
             ReleasePaReferenceObjects(
 #if MRP_ME
@@ -2002,7 +2002,7 @@ void* initial_rate_control_kernel(void *input_ptr)
                             sequence_control_set_ptr,
                             picture_control_set_ptr);
                     }
-
+#if !MEMORY_FOOTPRINT_OPT  
                     if (!picture_control_set_ptr->end_of_sequence_flag && sequence_control_set_ptr->static_config.look_ahead_distance != 0) {
                         // Compute and store variance of LCus over time and determine homogenuity temporally
                         UpdateHomogeneityOverTime(
@@ -2014,7 +2014,7 @@ void* initial_rate_control_kernel(void *input_ptr)
                         ResetHomogeneityStructures(
                             picture_control_set_ptr);
                     }
-
+#endif
                     // Derive blockinessPresentFlag
                     DeriveBlockinessPresentFlag(
                         sequence_control_set_ptr,

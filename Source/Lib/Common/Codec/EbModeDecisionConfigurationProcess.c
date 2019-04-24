@@ -100,7 +100,7 @@ static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
 #define LOW_SB_SCORE               6000
 #define MAX_LUMINOSITY_BOOST         10
 #if M9_ADP
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
 int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,55,55,55,55,5,5,5,5,5,5,5 };
 #else
 int32_t budget_per_sb_boost[MAX_SUPPORTED_MODES] = { 55,55,40,30,20,10,5,0,-10,-20,-20,-20,-20 };
@@ -1301,7 +1301,7 @@ void SetMdSettings(
     picture_control_set_ptr->limit_intra = EB_FALSE;
     picture_control_set_ptr->intra_md_open_loop_flag = EB_FALSE;
 }
-
+#if !MEMORY_FOOTPRINT_OPT
 /******************************************************
 * Detect complex/non-flat/moving SB in a non-complex area (used to refine MDC depth control in Gold)
 ******************************************************/
@@ -1351,6 +1351,7 @@ void DetectComplexNonFlatMovingLcu(
         }
     }
 }
+#endif
 
 EbAuraStatus AuraDetection64x64Gold(
     PictureControlSet           *picture_control_set_ptr,
@@ -2015,7 +2016,15 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
     context_ptr->adp_level = picture_control_set_ptr->parent_pcs_ptr->enc_mode;
 
 #if CABAC_UP
-#if NEW_I7_PRESETS
+#if NEW_PRESETS
+#if SCENE_CONTENT_SETTINGS
+    if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
+        if (picture_control_set_ptr->enc_mode <= ENC_M6)
+            picture_control_set_ptr->update_cdf = 1;
+        else
+            picture_control_set_ptr->update_cdf = 0;
+	else
+#endif
     picture_control_set_ptr->update_cdf = (picture_control_set_ptr->parent_pcs_ptr->enc_mode <= ENC_M5) ? 1 : 0;
 #else
     picture_control_set_ptr->update_cdf = picture_control_set_ptr->parent_pcs_ptr->enc_mode == ENC_M0 ? 1 : 0;
@@ -2225,7 +2234,9 @@ void* mode_decision_configuration_kernel(void *input_ptr)
 
         picture_control_set_ptr->parent_pcs_ptr->average_qp = 0;
         picture_control_set_ptr->intra_coded_area           = 0;
+#if !MEMORY_FOOTPRINT_OPT
         picture_control_set_ptr->scene_caracteristic_id     = EB_FRAME_CARAC_0;
+
         EbPicnoiseClass picNoiseClassTH                     = PIC_NOISE_CLASS_1;
 
         picture_control_set_ptr->scene_caracteristic_id = (
@@ -2251,7 +2262,7 @@ void* mode_decision_configuration_kernel(void *input_ptr)
             (picture_control_set_ptr->parent_pcs_ptr->pic_homogenous_over_time_sb_percentage < 70) &&
             (picture_control_set_ptr->parent_pcs_ptr->zz_cost_average > 15) &&
             (picture_control_set_ptr->parent_pcs_ptr->pic_noise_class >= picNoiseClassTH));
-
+#endif
         // Compute picture and slice level chroma QP offsets
         SetSliceAndPictureChromaQpOffsets( // HT done
             picture_control_set_ptr);

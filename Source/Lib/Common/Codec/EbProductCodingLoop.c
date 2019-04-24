@@ -3032,10 +3032,13 @@ void move_cu_data(
     dst_cu->block_has_coeff = src_cu->block_has_coeff;
     dst_cu->split_flag_context = src_cu->split_flag_context;
     dst_cu->qp = src_cu->qp;
+#if !MEMORY_FOOTPRINT_OPT
     dst_cu->ref_qp = src_cu->ref_qp;
+#endif
     dst_cu->delta_qp = src_cu->delta_qp;
+#if !MEMORY_FOOTPRINT_OPT
     dst_cu->org_delta_qp = src_cu->org_delta_qp;
-
+#endif
 
 
 
@@ -3144,10 +3147,13 @@ void move_cu_data_redund(
     dst_cu->block_has_coeff = src_cu->block_has_coeff;
     dst_cu->split_flag_context = src_cu->split_flag_context;
     dst_cu->qp = src_cu->qp;
+#if !MEMORY_FOOTPRINT_OPT
     dst_cu->ref_qp = src_cu->ref_qp;
+#endif
     dst_cu->delta_qp = src_cu->delta_qp;
+#if !MEMORY_FOOTPRINT_OPT
     dst_cu->org_delta_qp = src_cu->org_delta_qp;
-
+#endif
     //CHKN    // Coded Tree
     //CHKN    struct {
     //CHKN        unsigned                   leaf_index : 8;
@@ -4733,8 +4739,8 @@ EB_EXTERN EbErrorType mode_decision_sb(
 
         check_redundant_block(blk_geom, context_ptr, &redundant_blk_avail, &redundant_blk_mds);
        
-#if NEW_I7_PRESETS
-        if (redundant_blk_avail && picture_control_set_ptr->enc_mode <= ENC_M5)
+#if NEW_PRESETS
+        if (redundant_blk_avail && context_ptr->redundant_blk)
 #else
         if (redundant_blk_avail && picture_control_set_ptr->enc_mode == ENC_M0)
 #endif

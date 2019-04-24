@@ -180,7 +180,7 @@ EbErrorType eb_reference_object_ctor(
     else {
 #if UNPACK_REF_POST_EP // constructor
         // Hsan: set split_mode to 0 to as 8BIT input
-        pictureBufferDescInitData16BitPtr.split_mode = EB_FALSE;
+        pictureBufferDescInitDataPtr->split_mode = EB_FALSE;
 #endif
         return_error = eb_picture_buffer_desc_ctor(
             (EbPtr*)&(referenceObject->reference_picture),
