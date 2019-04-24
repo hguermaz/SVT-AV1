@@ -7,6 +7,7 @@
 #include <immintrin.h>
 #include <math.h>
 #include "synonyms.h"
+#include "EbMemory_AVX2.h"
 
 #define REDUCED_PRI_STRENGTHS 8
 #define REDUCED_TOTAL_STRENGTHS (REDUCED_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)

@@ -3937,8 +3937,6 @@ void get_eight_horizontal_search_point_results_32x32_64x64_pu_avx2_intrin(
         p_best_mv64x64[0] = ((uint16_t)y_mv << 16) | ((uint16_t)x_mv);
     }
 
-    // ****CODE PAST HERE IS BUGGY FOR GCC****
-
     // XY
     // X: 32x32 block [0..3]
     // Y: Search position [0..7]
@@ -4010,34 +4008,15 @@ void get_eight_horizontal_search_point_results_32x32_64x64_pu_avx2_intrin(
     // Format: 00 10 20 30  01 11 21 31
 
     // Each 128 bits contains 4 32x32 32bit block results
-#ifdef __GNUC__
-    // SAD
-    s0 = _mm256_extracti128_si256(ss0, 1);
-    s1 = _mm256_extracti128_si256(ss0, 0);
-    // MV
-    s2 = _mm256_extracti128_si256(ss4, 1);
-    s3 = _mm256_extracti128_si256(ss4, 0);
-#else
     // SAD
     s0 = _mm256_extracti128_si256(ss0, 0);
     s1 = _mm256_extracti128_si256(ss0, 1);
     // MV
     s2 = _mm256_extracti128_si256(ss4, 0);
     s3 = _mm256_extracti128_si256(ss4, 1);
-#endif
-
-    //// Should be fine
-    //printf("sad0 %d, %d, %d, %d\n", _mm_extract_epi32(s0, 0), _mm_extract_epi32(s0, 1), _mm_extract_epi32(s0, 2), _mm_extract_epi32(s0, 3)); // DEBUG
-    //printf("sad1 %d, %d, %d, %d\n", _mm_extract_epi32(s1, 0), _mm_extract_epi32(s1, 1), _mm_extract_epi32(s1, 2), _mm_extract_epi32(s1, 3)); // DEBUG
-    //printf("mv0 %d, %d, %d, %d\n", _mm_extract_epi32(s2, 0), _mm_extract_epi32(s2, 1), _mm_extract_epi32(s2, 2), _mm_extract_epi32(s2, 3)); // DEBUG
-    //printf("mv1 %d, %d, %d, %d\n", _mm_extract_epi32(s3, 0), _mm_extract_epi32(s3, 1), _mm_extract_epi32(s3, 2), _mm_extract_epi32(s3, 3)); // DEBUG
-
 
     // Choose the best MV out of the two, use s4 to hold results of min
     s4 = _mm_cmpgt_epi32(s0, s1);
-
-    // DIFFERENT BETWEEN VS AND GCC
-    // printf("%d, %d, %d, %d\n", _mm_extract_epi32(s4, 0), _mm_extract_epi32(s4, 1), _mm_extract_epi32(s4, 2), _mm_extract_epi32(s4, 3)); // DEBUG
 
     //s4 = _mm_or_si128(_mm_cmpgt_epi32(s0, s1), _mm_cmpeq_epi32(s0, s1));
     s0 = _mm_min_epi32(s0, s1);

@@ -2356,6 +2356,16 @@ uint8_t get_skip_tx_search_flag(
     return tx_search_skip_fag;
 }
 
+static INLINE TxType av1_get_tx_type(
+    block_size  sb_type,
+    int32_t   is_inter,
+    PredictionMode pred_mode,
+    UV_PredictionMode pred_mode_uv,
+    PLANE_TYPE plane_type,
+    const MacroBlockD *xd, int32_t blk_row,
+    int32_t blk_col, TxSize tx_size,
+    int32_t reduced_tx_set);
+
 #if SEARCH_UV_MODE
 void check_best_indepedant_cfl(
     PictureControlSet_t           *picture_control_set_ptr,

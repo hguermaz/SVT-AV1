@@ -513,6 +513,7 @@ static INLINE PLANE_TYPE get_plane_type(int plane) {
     return (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
 }
 static const int16_t k_eob_offset_bits[12] = { 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+static INLINE int32_t get_eob_pos_token(const int32_t eob, int32_t *const extra);
 static int32_t get_eob_cost(int32_t eob, const LV_MAP_EOB_COST *txb_eob_costs,
     const LV_MAP_COEFF_COST *txb_costs, TxType tx_type) {
     int32_t eob_extra;
@@ -1090,6 +1091,7 @@ static AOM_FORCE_INLINE int get_br_ctx_eob(const int c,  // raster order
         return 7;
     return 14;
 }
+static INLINE int32_t get_golomb_cost(int32_t abs_qc);
 static INLINE int get_br_cost(tran_low_t level, const int *coeff_lps) {
     const int base_range = AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
     return coeff_lps[base_range] + get_golomb_cost(level);
@@ -1205,6 +1207,10 @@ static AOM_FORCE_INLINE int get_two_coeff_cost_simple(
 
     return cost;
 }
+static INLINE int get_coeff_cost_eob(int ci, tran_low_t abs_qc, int sign,
+    int coeff_ctx, int dc_sign_ctx,
+    const LV_MAP_COEFF_COST *txb_costs,
+    int bwl, TX_CLASS tx_class);
 static AOM_FORCE_INLINE void update_coeff_eob(
     int *accu_rate, int64_t *accu_dist, uint16_t *eob, int *nz_num, int *nz_ci,
     int si, TxSize tx_size, TX_CLASS tx_class, int bwl, int height,
