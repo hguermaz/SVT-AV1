@@ -239,6 +239,7 @@ extern "C" {
 
 #define MRP_M1                    1 // replaces MRP_M0_ONLY
 #define FIXED_MRP_10BIT           1
+#define FIX_WARP_TILE             1 //fix Warped motion in presnece of Tiles
 #endif
 
 
