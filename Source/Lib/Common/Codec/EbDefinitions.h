@@ -42,7 +42,6 @@ extern "C" {
 #define MRP_SUPPORT            1// MRP Main Flag
 #endif
 
-
 // New  presets
 #define NEW_PRESETS                       1
 #define NEW_BUFF_CFG                      1
