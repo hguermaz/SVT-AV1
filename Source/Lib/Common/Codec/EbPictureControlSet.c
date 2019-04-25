@@ -99,7 +99,7 @@ EbErrorType me_sb_results_ctor(
 #endif
 
     //objectPtr->lcuDistortion = 0;
-
+    return EB_ErrorNone;
 }
 #endif
 EbErrorType picture_control_set_ctor(
