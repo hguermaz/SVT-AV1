@@ -673,7 +673,6 @@ static void Av1EncodeLoop(
 #endif
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
 
-
         if (count_non_zero_coeffs[0] == 0) {
             // INTER. Chroma follows Luma in transform type
             if (cu_ptr->prediction_mode_flag == INTER_MODE) {
@@ -685,11 +684,7 @@ static void Av1EncodeLoop(
             }
         }
 
-
         if (cu_ptr->prediction_mode_flag == INTRA_MODE && (context_ptr->evaluate_cfl_ep || cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED)) {
-
-
-
             EbPictureBufferDesc *reconSamples = predSamples;
             uint32_t reconLumaOffset = (reconSamples->origin_y + origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + origin_x);
 
@@ -1184,80 +1179,86 @@ static void Av1EncodeLoop16bit(
 
         }
 
-        if (component_mask == PICTURE_BUFFER_DESC_FULL_MASK || component_mask == PICTURE_BUFFER_DESC_CHROMA_MASK) {
 
-            if (cu_ptr->prediction_mode_flag == INTRA_MODE && cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED) {
-                EbPictureBufferDesc *reconSamples = predSamples16bit;
-                uint32_t reconLumaOffset = (reconSamples->origin_y + origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + origin_x);
-                if (txb_ptr->y_has_coeff == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
-                    uint16_t     *predBuffer = ((uint16_t*)predSamples16bit->buffer_y) + predLumaOffset;
-                    av1_inv_transform_recon(
-                        ((int32_t*)inverse_quant_buffer->buffer_y) + coeff1dOffset,
-                        CONVERT_TO_BYTEPTR(predBuffer),
-                        predSamples->stride_y,
-                        context_ptr->blk_geom->txsize[context_ptr->txb_itr],
-                        BIT_INCREMENT_10BIT,
-                        txb_ptr->transform_type[PLANE_TYPE_Y],
-                        PLANE_TYPE_Y,
-                        eob[0]);
-                }
-
-                // Down sample Luma
-                cfl_luma_subsampling_420_hbd_c(
-                    ((uint16_t*)reconSamples->buffer_y) + reconLumaOffset,
-                    reconSamples->stride_y,
-                    context_ptr->md_context->pred_buf_q3,
-                    context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
-
-                int32_t round_offset = ((context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr])*(context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr])) / 2;
-
-
-                subtract_average(
-                    context_ptr->md_context->pred_buf_q3,
-                    context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
-                    round_offset,
-                    LOG2F(context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr]) + LOG2F(context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]));
-
-
-
-                int32_t alpha_q3 =
-                    cfl_idx_to_alpha(cu_ptr->prediction_unit_array->cfl_alpha_idx, cu_ptr->prediction_unit_array->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
-                // TOCHANGE
-                // assert(chroma_size * CFL_BUF_LINE + chroma_size <=                CFL_BUF_SQUARE);
-
-                cfl_predict_hbd(
-                    context_ptr->md_context->pred_buf_q3,
-                    ((uint16_t*)predSamples16bit->buffer_cb) + predCbOffset,
-                    predSamples16bit->stride_cb,
-                    ((uint16_t*)predSamples16bit->buffer_cb) + predCbOffset,
-                    predSamples16bit->stride_cb,
-                    alpha_q3,
-                    10,
-                    context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]);
-
-                alpha_q3 =
-                    cfl_idx_to_alpha(cu_ptr->prediction_unit_array->cfl_alpha_idx, cu_ptr->prediction_unit_array->cfl_alpha_signs, CFL_PRED_V); // once for U, once for V
-                // TOCHANGE
-                //assert(chroma_size * CFL_BUF_LINE + chroma_size <=                CFL_BUF_SQUARE);
-
-                cfl_predict_hbd(
-                    context_ptr->md_context->pred_buf_q3,
-                    ((uint16_t*)predSamples16bit->buffer_cr) + predCrOffset,
-                    predSamples16bit->stride_cr,
-                    ((uint16_t*)predSamples16bit->buffer_cr) + predCrOffset,
-                    predSamples16bit->stride_cr,
-                    alpha_q3,
-                    10,
-                    context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]);
+        if (cu_ptr->prediction_mode_flag == INTRA_MODE && cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED) {
+            EbPictureBufferDesc *reconSamples = predSamples16bit;
+            uint32_t reconLumaOffset = (reconSamples->origin_y + origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + origin_x);
+            if (txb_ptr->y_has_coeff == EB_TRUE && cu_ptr->skip_flag == EB_FALSE) {
+                uint16_t     *predBuffer = ((uint16_t*)predSamples16bit->buffer_y) + predLumaOffset;
+                av1_inv_transform_recon(
+                    ((int32_t*)inverse_quant_buffer->buffer_y) + coeff1dOffset,
+                    CONVERT_TO_BYTEPTR(predBuffer),
+                    predSamples->stride_y,
+                    context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+                    BIT_INCREMENT_10BIT,
+                    txb_ptr->transform_type[PLANE_TYPE_Y],
+                    PLANE_TYPE_Y,
+                    eob[0]);
             }
+#if CFL_FIX
+            if (context_ptr->blk_geom->has_uv) {
+                reconLumaOffset = (reconSamples->origin_y + round_origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + round_origin_x);
+#endif
+            // Down sample Luma
+            cfl_luma_subsampling_420_hbd_c(
+                ((uint16_t*)reconSamples->buffer_y) + reconLumaOffset,
+                reconSamples->stride_y,
+                context_ptr->md_context->pred_buf_q3,
+#if CFL_FIX
+                context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bwidth ? (context_ptr->blk_geom->bwidth_uv << 1) : context_ptr->blk_geom->bwidth,
+                context_ptr->blk_geom->bheight_uv == context_ptr->blk_geom->bheight ? (context_ptr->blk_geom->bheight_uv << 1) : context_ptr->blk_geom->bheight);
+#else
+                context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
+                context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
+#endif
 
+            int32_t round_offset = ((context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr])*(context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr])) / 2;
+
+
+            subtract_average(
+                context_ptr->md_context->pred_buf_q3,
+                context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
+                context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr],
+                round_offset,
+                LOG2F(context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr]) + LOG2F(context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]));
+
+            int32_t alpha_q3 =
+                cfl_idx_to_alpha(cu_ptr->prediction_unit_array->cfl_alpha_idx, cu_ptr->prediction_unit_array->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
+            // TOCHANGE
+            // assert(chroma_size * CFL_BUF_LINE + chroma_size <=                CFL_BUF_SQUARE);
+
+            cfl_predict_hbd(
+                context_ptr->md_context->pred_buf_q3,
+                ((uint16_t*)predSamples16bit->buffer_cb) + predCbOffset,
+                predSamples16bit->stride_cb,
+                ((uint16_t*)predSamples16bit->buffer_cb) + predCbOffset,
+                predSamples16bit->stride_cb,
+                alpha_q3,
+                10,
+                context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
+                context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]);
+
+            alpha_q3 =
+                cfl_idx_to_alpha(cu_ptr->prediction_unit_array->cfl_alpha_idx, cu_ptr->prediction_unit_array->cfl_alpha_signs, CFL_PRED_V); // once for U, once for V
+            // TOCHANGE
+            //assert(chroma_size * CFL_BUF_LINE + chroma_size <=                CFL_BUF_SQUARE);
+
+            cfl_predict_hbd(
+                context_ptr->md_context->pred_buf_q3,
+                ((uint16_t*)predSamples16bit->buffer_cr) + predCrOffset,
+                predSamples16bit->stride_cr,
+                ((uint16_t*)predSamples16bit->buffer_cr) + predCrOffset,
+                predSamples16bit->stride_cr,
+                alpha_q3,
+                10,
+                context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr],
+                context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]);
         }
+#if CFL_FIX
+        }
+#endif
 
-        {
+        if (component_mask == PICTURE_BUFFER_DESC_FULL_MASK || component_mask == PICTURE_BUFFER_DESC_CHROMA_MASK) {
             //**********************************
             // Cb
             //**********************************
