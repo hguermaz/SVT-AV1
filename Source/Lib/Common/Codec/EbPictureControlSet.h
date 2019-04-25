@@ -14171,7 +14171,7 @@ extern "C" {
         uint8_t                               max_number_of_pus_per_sb;
 #if MRP_ME
 		uint8_t                               max_number_of_candidates_per_block;
-		MeLcuResults                       **me_results;
+		MeLcuResults                        **me_results;
 #else
         MeCuResults                       **me_results;
 #endif

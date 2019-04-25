@@ -44,8 +44,8 @@ extern "C" {
 
 
 // New  presets
-#define NEW_PRESETS                    1
-
+#define NEW_PRESETS                       1
+#define NEW_BUFF_CFG                      1
 /************************* Omar to remove disable_ang_uv *************************/
 #define MEMORY_FOOTPRINT_OPT              0                    
 #define CDEF_AVX_OPT                      1

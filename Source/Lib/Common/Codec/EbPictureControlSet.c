@@ -89,8 +89,6 @@ EbErrorType me_sb_results_ctor(
     objectPtr->xMvSearchAreaCenter[1][0] = 0;
     objectPtr->yMvSearchAreaCenter[1][0] = 0;
 #endif
-
-
     EB_MALLOC(uint8_t*, objectPtr->total_me_candidate_index, sizeof(uint8_t) * maxNumberOfPusPerLcu, EB_N_PTR);
 
 #if NSQ_OPTIMASATION
@@ -1075,7 +1073,7 @@ EbErrorType picture_parent_control_set_ctor(
     object_ptr->max_number_of_pus_per_sb = (initDataPtr->ext_block_flag) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
 #if MRP_CONNECTION
 #if MRP_MEM_OPT
-	object_ptr->max_number_of_candidates_per_block = 23; //[Single Ref = 7] + [BiDir = 12 = 3*4 ] + [UniDir = 4 = 3+1]
+	object_ptr->max_number_of_candidates_per_block = ME_RES_CAND; //[Single Ref = 7] + [BiDir = 12 = 3*4 ] + [UniDir = 4 = 3+1]
 #else
 	object_ptr->max_number_of_candidates_per_block = 100;//(initDataPtr->mePictureSearchCount * initDataPtr->mePictureSearchCount) + (initDataPtr->mePictureSearchCount << 1);
 #endif
