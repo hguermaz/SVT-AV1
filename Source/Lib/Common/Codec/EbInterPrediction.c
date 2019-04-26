@@ -1288,6 +1288,7 @@ EbErrorType av1_inter_prediction(
         mv.col = mv_unit->mv[REF_LIST_0].x;
         mv.row = mv_unit->mv[REF_LIST_0].y;
 
+        assert(ref_pic_list0 != NULL);
         src_ptr = ref_pic_list0->buffer_y + ref_pic_list0->origin_x + pu_origin_x + (ref_pic_list0->origin_y + pu_origin_y) * ref_pic_list0->stride_y;
         dst_ptr = prediction_ptr->buffer_y + prediction_ptr->origin_x + dst_origin_x + (prediction_ptr->origin_y + dst_origin_y) * prediction_ptr->stride_y;
         src_stride = ref_pic_list0->stride_y;
@@ -2655,7 +2656,7 @@ EbErrorType warped_motion_prediction(
     if (!is16bit) {
         uint8_t *src_ptr;
         uint8_t *dst_ptr;
-
+        assert(ref_pic_list0 != NULL);
         // Y - UNI_PRED_LIST_0
         src_ptr = ref_pic_list0->buffer_y + ref_pic_list0->origin_x + ref_pic_list0->origin_y * ref_pic_list0->stride_y;
         src_stride = ref_pic_list0->stride_y;
@@ -3001,6 +3002,7 @@ EbErrorType warped_motion_prediction_md(
     uint8_t *dst_ptr;
 
     // Y - UNI_PRED_LIST_0
+    assert(ref_pic_list0 != NULL);
 #if UNPACK_REF_POST_EP 
     src_ptr = ref_pic_list0->buffer_y + ref_pic_list0->origin_x + ref_pic_list0->origin_y * ref_pic_list0->stride_y;
 #else
