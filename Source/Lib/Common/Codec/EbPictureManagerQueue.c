@@ -20,8 +20,8 @@ EbErrorType input_queue_entry_ctor(
     EB_MALLOC(ReferenceList*, entryPtr->list0_ptr, sizeof(ReferenceList), EB_N_PTR);
     EB_MALLOC(ReferenceList*, entryPtr->list1_ptr, sizeof(ReferenceList), EB_N_PTR);
 #else
-	entryPtr->list0_ptr = (ReferenceList*)EB_NULL;
-	entryPtr->list1_ptr = (ReferenceList*)EB_NULL;
+    entryPtr->list0_ptr = (ReferenceList*)EB_NULL;
+    entryPtr->list1_ptr = (ReferenceList*)EB_NULL;
 #endif
     return EB_ErrorNone;
 }

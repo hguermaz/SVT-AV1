@@ -1193,12 +1193,12 @@ EbErrorType av1_inter_prediction(
                     conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstCb, BLOCK_SIZE_64, is_compound, EB_8BIT);
                     conv_params.use_jnt_comp_avg = 0;
 #if MCP_4XN_FIX
-					uint8_t ref_idx = get_ref_frame_idx(this_mbmi->ref_frame[0]);
+                    uint8_t ref_idx = get_ref_frame_idx(this_mbmi->ref_frame[0]);
 
-					EbPictureBufferDesc  *ref_pic = this_mbmi->ref_frame[0] ==
-						LAST_FRAME || this_mbmi->ref_frame[0] == LAST2_FRAME || this_mbmi->ref_frame[0] == LAST3_FRAME || this_mbmi->ref_frame[0] == GOLDEN_FRAME ?
-						((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx]->object_ptr)->reference_picture :
-						((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][ref_idx]->object_ptr)->reference_picture;
+                    EbPictureBufferDesc  *ref_pic = this_mbmi->ref_frame[0] ==
+                        LAST_FRAME || this_mbmi->ref_frame[0] == LAST2_FRAME || this_mbmi->ref_frame[0] == LAST3_FRAME || this_mbmi->ref_frame[0] == GOLDEN_FRAME ?
+                        ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx]->object_ptr)->reference_picture :
+                        ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][ref_idx]->object_ptr)->reference_picture;
 #else
                     EbPictureBufferDesc                  *ref_pic = this_mbmi->ref_frame[0] == LAST_FRAME ? ref_pic_list0 : ref_pic_list1;
 #endif
@@ -2327,12 +2327,12 @@ EbErrorType av1_inter_prediction_hbd(
                     conv_params = get_conv_params_no_round(0, 0, 0, tmp_dstCb, BLOCK_SIZE_64, is_compound, bit_depth);
                     conv_params.use_jnt_comp_avg = 0;
 #if MCP_4XN_FIX
-					uint8_t ref_idx = get_ref_frame_idx(this_mbmi->ref_frame[0]);
+                    uint8_t ref_idx = get_ref_frame_idx(this_mbmi->ref_frame[0]);
 
-					EbPictureBufferDesc  *ref_pic = this_mbmi->ref_frame[0] ==
-						LAST_FRAME || this_mbmi->ref_frame[0] == LAST2_FRAME || this_mbmi->ref_frame[0] == LAST3_FRAME || this_mbmi->ref_frame[0] == GOLDEN_FRAME ?
-						((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx]->object_ptr)->reference_picture16bit :
-						((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][ref_idx]->object_ptr)->reference_picture16bit;
+                    EbPictureBufferDesc  *ref_pic = this_mbmi->ref_frame[0] ==
+                        LAST_FRAME || this_mbmi->ref_frame[0] == LAST2_FRAME || this_mbmi->ref_frame[0] == LAST3_FRAME || this_mbmi->ref_frame[0] == GOLDEN_FRAME ?
+                        ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx]->object_ptr)->reference_picture16bit :
+                        ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][ref_idx]->object_ptr)->reference_picture16bit;
 #else
                     EbPictureBufferDesc                  *ref_pic = this_mbmi->ref_frame[0] == LAST_FRAME ? ref_pic_list0 : ref_pic_list1;
 #endif
@@ -4476,27 +4476,27 @@ EbErrorType inter_pu_prediction_av1(
 
 #if UNPACK_REF_POST_EP
  #if MRP_MD
- 	int8_t ref_idx_l0 = candidate_buffer_ptr->candidate_ptr->ref_frame_index_l0;
- 	int8_t ref_idx_l1 = candidate_buffer_ptr->candidate_ptr->ref_frame_index_l1;
-	// MRP_MD_UNI_DIR_BIPRED
-	MvReferenceFrame rf[2];
-	av1_set_ref_frame(rf, candidate_buffer_ptr->candidate_ptr->ref_frame_type);
-	uint8_t list_idx0, list_idx1;
-	list_idx0 = get_list_idx(rf[0]);
-	if (rf[1] == NONE_FRAME)
-		list_idx1 = get_list_idx(rf[0]);
-	else
-		list_idx1 = get_list_idx(rf[1]);
-	
-	if (ref_idx_l0 >= 0)
-		ref_pic_list0 = ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx0][ref_idx_l0]->object_ptr)->reference_picture;
-	else
-		ref_pic_list0 = (EbPictureBufferDesc*)EB_NULL;
-	if (ref_idx_l1 >= 0)
-		ref_pic_list1 = ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx1][ref_idx_l1]->object_ptr)->reference_picture;
-	else
-		ref_pic_list1 = (EbPictureBufferDesc*)EB_NULL;
-	
+     int8_t ref_idx_l0 = candidate_buffer_ptr->candidate_ptr->ref_frame_index_l0;
+     int8_t ref_idx_l1 = candidate_buffer_ptr->candidate_ptr->ref_frame_index_l1;
+    // MRP_MD_UNI_DIR_BIPRED
+    MvReferenceFrame rf[2];
+    av1_set_ref_frame(rf, candidate_buffer_ptr->candidate_ptr->ref_frame_type);
+    uint8_t list_idx0, list_idx1;
+    list_idx0 = get_list_idx(rf[0]);
+    if (rf[1] == NONE_FRAME)
+        list_idx1 = get_list_idx(rf[0]);
+    else
+        list_idx1 = get_list_idx(rf[1]);
+    
+    if (ref_idx_l0 >= 0)
+        ref_pic_list0 = ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx0][ref_idx_l0]->object_ptr)->reference_picture;
+    else
+        ref_pic_list0 = (EbPictureBufferDesc*)EB_NULL;
+    if (ref_idx_l1 >= 0)
+        ref_pic_list1 = ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx1][ref_idx_l1]->object_ptr)->reference_picture;
+    else
+        ref_pic_list1 = (EbPictureBufferDesc*)EB_NULL;
+    
  #else
     ref_pic_list0 = ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr)->reference_picture;
     if (picture_control_set_ptr->slice_type == B_SLICE)

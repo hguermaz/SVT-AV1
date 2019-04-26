@@ -547,7 +547,7 @@ void* resource_coordination_kernel(void *input_ptr)
             sequence_control_set_ptr->extra_frames_to_ref_islice = MAX(sequence_control_set_ptr->max_frame_window_to_ref_islice / (1 << sequence_control_set_ptr->static_config.hierarchical_levels) - 1, 0);
             sequence_control_set_ptr->max_frame_window_to_ref_islice = (sequence_control_set_ptr->extra_frames_to_ref_islice + 1)*(1 << sequence_control_set_ptr->static_config.hierarchical_levels) + 1;
 #endif  
-		}
+        }
 
         //Get a New ParentPCS where we will hold the new inputPicture
         eb_get_empty_object(

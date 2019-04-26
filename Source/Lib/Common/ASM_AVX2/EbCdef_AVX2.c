@@ -24,8 +24,8 @@
 /* Search for the best luma+chroma strength to add as an option, knowing we
 already selected nb_strengths options. */
 uint64_t search_one_dual_avx2(int *lev0, int *lev1, int nb_strengths,
-	uint64_t(**mse)[TOTAL_STRENGTHS], int sb_count,
-	int fast, int start_gi, int end_gi) {
+    uint64_t(**mse)[TOTAL_STRENGTHS], int sb_count,
+    int fast, int start_gi, int end_gi) {
 
 
   DECLARE_ALIGNED(32, uint64_t, tot_mse[TOTAL_STRENGTHS][TOTAL_STRENGTHS]);
@@ -58,9 +58,9 @@ uint64_t search_one_dual_avx2(int *lev0, int *lev1, int nb_strengths,
     best_mse_ = _mm256_set1_epi64x(best_mse);
     /* Find best mse when adding each possible new option. */
     //assert(~total_strengths % 4);
-	for (int j = start_gi; j < total_strengths; ++j) { // process by 4x4
-		tmp = _mm256_set1_epi64x(mse[0][i][j]);
-		for (int k = 0; k < total_strengths; k += 4) {
+    for (int j = start_gi; j < total_strengths; ++j) { // process by 4x4
+        tmp = _mm256_set1_epi64x(mse[0][i][j]);
+        for (int k = 0; k < total_strengths; k += 4) {
         v_mse = _mm256_loadu_si256((const __m256i*)&mse[1][i][k]);
         v_tot = _mm256_loadu_si256((const __m256i*)&tot_mse[j][k]);
         curr = _mm256_add_epi64(tmp, v_mse);
@@ -73,8 +73,8 @@ uint64_t search_one_dual_avx2(int *lev0, int *lev1, int nb_strengths,
     }
   }
   for (j = start_gi; j < total_strengths; j++) {
-	  int k;
-	  for (k = start_gi; k < total_strengths; k++) {
+      int k;
+      for (k = start_gi; k < total_strengths; k++) {
       if (tot_mse[j][k] < best_tot_mse) {
         best_tot_mse = tot_mse[j][k];
         best_id0 = j;

@@ -41,8 +41,8 @@ extern "C" {
         uint32_t                     pred_mv_weight;
         uint8_t                      ref_frame_type;
 #if MRP_MD
-		int8_t                       ref_frame_index_l0;
-		int8_t                       ref_frame_index_l1;
+        int8_t                       ref_frame_index_l0;
+        int8_t                       ref_frame_index_l1;
 #endif
         uint8_t                      ref_mv_index;
         EbBool                       is_new_mv;

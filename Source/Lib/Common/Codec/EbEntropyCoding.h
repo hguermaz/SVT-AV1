@@ -210,7 +210,7 @@ extern "C" {
         NeighborArrayUnit     *inter_pred_dir_neighbor_array,
         NeighborArrayUnit     *ref_frame_type_neighbor_array);
 #if MRP_COST_EST
-	extern void av1_collect_neighbors_ref_counts_new(MacroBlockD *const xd);
+    extern void av1_collect_neighbors_ref_counts_new(MacroBlockD *const xd);
 #endif
     // Obtain contexts to signal a reference frame be either BWDREF/ALTREF2, or
     // ALTREF.

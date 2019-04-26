@@ -1176,7 +1176,7 @@ void CopyStatisticsToRefObject(
     EbReferenceObject  * refObjL0, *refObjL1;
     ((EbReferenceObject*)picture_control_set_ptr->parent_pcs_ptr->reference_picture_wrapper_ptr->object_ptr)->penalize_skipflag = EB_FALSE;
     if (picture_control_set_ptr->slice_type == B_SLICE) {
-		//MRP_MD
+        //MRP_MD
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
         refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr;
 

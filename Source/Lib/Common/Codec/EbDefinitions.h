@@ -176,22 +176,22 @@ extern "C" {
 #if MRP_SUPPORT
 
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH  1
-#define DISABLE_NSQ_FOR_NON_REF 			   1
-#define DISABLE_NSQ							   1
-#define M0_ME_QUARTER_PEL_SEARCH			   1
-#define NSQ_OPTIMASATION					   1
-//#define M8_SKIP_BLK							   1
-#define DISABLE_IN_LOOP_ME					   1
-#define TILES								   1
-#define REMOVED_DUPLICATE_INTER				   1
-#define REMOVED_DUPLICATE_INTER_L1			   1
-#define REMOVED_DUPLICATE_INTER_BIPRED		   1
-#define ICOPY								   1
-#define INTRA_INTER_FAST_LOOP				   1
-#define M0_ME_SEARCH_BASE					   1
-#define SHUT_GLOBAL_MV						   1
-#define IMPROVED_BIPRED_INJECTION			   1
-#define IMPROVED_UNIPRED_INJECTION			   1
+#define DISABLE_NSQ_FOR_NON_REF                1
+#define DISABLE_NSQ                               1
+#define M0_ME_QUARTER_PEL_SEARCH               1
+#define NSQ_OPTIMASATION                       1
+//#define M8_SKIP_BLK                               1
+#define DISABLE_IN_LOOP_ME                       1
+#define TILES                                   1
+#define REMOVED_DUPLICATE_INTER                   1
+#define REMOVED_DUPLICATE_INTER_L1               1
+#define REMOVED_DUPLICATE_INTER_BIPRED           1
+#define ICOPY                                   1
+#define INTRA_INTER_FAST_LOOP                   1
+#define M0_ME_SEARCH_BASE                       1
+#define SHUT_GLOBAL_MV                           1
+#define IMPROVED_BIPRED_INJECTION               1
+#define IMPROVED_UNIPRED_INJECTION               1
 
 //NEEDED FLAGS  OFF
 //M0_HIGH_PRECISION_INTERPOLATION
@@ -1686,7 +1686,7 @@ static INLINE int32_t is_inter_compound_mode(PredictionMode mode) {
 }
 #if EC_UPDATE
 static INLINE int is_inter_singleref_mode(PredictionMode mode) {
-	return mode >= SINGLE_INTER_MODE_START && mode < SINGLE_INTER_MODE_END;
+    return mode >= SINGLE_INTER_MODE_START && mode < SINGLE_INTER_MODE_END;
 }
 #endif
 

@@ -630,8 +630,8 @@ void set_reference_sg_ep(
         break;
     case B_SLICE:
 #if MRP_MD
-		refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
-		refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][0]->object_ptr;
+        refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
+        refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][0]->object_ptr;
 #else
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
         refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr;
@@ -641,7 +641,7 @@ void set_reference_sg_ep(
         break;
     case P_SLICE:
 #if MRP_MD
-		refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
+        refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
 #else
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
 #endif
@@ -670,8 +670,8 @@ void set_reference_cdef_strength(
         break;
     case B_SLICE:
 #if MRP_MD
-		refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
-		refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][0]->object_ptr;
+        refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
+        refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][0]->object_ptr;
 #else
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
         refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr;
@@ -682,7 +682,7 @@ void set_reference_cdef_strength(
         break;
     case P_SLICE:
 #if MRP_MD
-		refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
+        refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
 #else
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
 #endif
@@ -716,7 +716,7 @@ void AdaptiveDlfParameterComputation(
 
 
     if (picture_control_set_ptr->slice_type == B_SLICE) {
-		//MRP_MD
+        //MRP_MD
 
         refObjL0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
         refObjL1 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr;
@@ -1397,25 +1397,25 @@ EbAuraStatus AuraDetection64x64Gold(
 
 
 #if MRP_ME
-		const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index];
-		const MeCandidate *me_block_results = me_results->me_candidate[0];
-		uint8_t total_me_cnt = me_results->total_me_candidate_index[0];
+        const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index];
+        const MeCandidate *me_block_results = me_results->me_candidate[0];
+        uint8_t total_me_cnt = me_results->total_me_candidate_index[0];
 
-		for (k = 0; k < total_me_cnt; k++) {
+        for (k = 0; k < total_me_cnt; k++) {
 
-			if (me_block_results[k].direction == UNI_PRED_LIST_0) {
-				// Get reference list 0 / reference index 0 MV
-				xMv0 = me_block_results[k].x_mv_l0;
-				yMv0 = me_block_results[k].y_mv_l0;
-			}
-			if (me_block_results[k].direction == UNI_PRED_LIST_1) {
-				// Get reference list  1 / reference index 0 MV
-				xMv1 = me_block_results[k].x_mv_l1;
-				yMv1 = me_block_results[k].y_mv_l1;
-			}
+            if (me_block_results[k].direction == UNI_PRED_LIST_0) {
+                // Get reference list 0 / reference index 0 MV
+                xMv0 = me_block_results[k].x_mv_l0;
+                yMv0 = me_block_results[k].y_mv_l0;
+            }
+            if (me_block_results[k].direction == UNI_PRED_LIST_1) {
+                // Get reference list  1 / reference index 0 MV
+                xMv1 = me_block_results[k].x_mv_l1;
+                yMv1 = me_block_results[k].y_mv_l1;
+            }
 
-		}
-		currDist = me_block_results[0].distortion;
+        }
+        currDist = me_block_results[0].distortion;
 #else
         MeCuResults * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][0];
 
@@ -1453,7 +1453,7 @@ EbAuraStatus AuraDetection64x64Gold(
             //Top Distortion
             lcuOffset = -picture_width_in_sb;
 #if MRP_CONNECTION
-			topDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
+            topDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
 #else
             topDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->distortion_direction[0].distortion;
 #endif
@@ -1461,7 +1461,7 @@ EbAuraStatus AuraDetection64x64Gold(
             //TopLeft Distortion
             lcuOffset = -picture_width_in_sb - 1;
 #if MRP_CONNECTION
-			topLDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
+            topLDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
 #else
             topLDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->distortion_direction[0].distortion;
 #endif
@@ -1469,7 +1469,7 @@ EbAuraStatus AuraDetection64x64Gold(
             //TopRightDistortion
             lcuOffset = -picture_width_in_sb + 1;
 #if MRP_CONNECTION
-			topRDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
+            topRDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
 #else
             topRDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->distortion_direction[0].distortion;
 #endif
@@ -1479,7 +1479,7 @@ EbAuraStatus AuraDetection64x64Gold(
             //left Distortion
             lcuOffset = -1;
 #if MRP_CONNECTION
-			leftDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
+            leftDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
 #else
             leftDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->distortion_direction[0].distortion;
 #endif
@@ -1488,7 +1488,7 @@ EbAuraStatus AuraDetection64x64Gold(
             //RightDistortion
             lcuOffset = 1;
 #if MRP_CONNECTION
-			rightDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
+            rightDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->me_candidate[0][0].distortion;
 #else
             rightDist = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index + lcuOffset]->distortion_direction[0].distortion;
 #endif
@@ -1839,7 +1839,7 @@ void derive_sb_score(
                 for (cu8x8Index = RASTER_SCAN_CU_INDEX_8x8_0; cu8x8Index <= RASTER_SCAN_CU_INDEX_8x8_63; cu8x8Index++) {
                     if (sb_params->raster_scan_cu_validity[cu8x8Index]) {
 #if MRP_CONNECTION
-						distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[cu8x8Index][0].distortion;
+                        distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[cu8x8Index][0].distortion;
 #else
                         distortion += picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cu8x8Index].distortion_direction[0].distortion;
 #endif
@@ -1855,7 +1855,7 @@ void derive_sb_score(
             }
             else {
 #if MRP_CONNECTION
-				distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[RASTER_SCAN_CU_INDEX_64x64][0].distortion;
+                distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[RASTER_SCAN_CU_INDEX_64x64][0].distortion;
 #else
                 distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][RASTER_SCAN_CU_INDEX_64x64].distortion_direction[0].distortion;
 #endif
@@ -1910,8 +1910,8 @@ void set_target_budget_oq(
         if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag) {
             EbReferenceObject  * ref_obj_l0, *ref_obj_l1;
 #if MRP_MD
-			ref_obj_l0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
-			ref_obj_l1 = (picture_control_set_ptr->parent_pcs_ptr->slice_type == B_SLICE) ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][0]->object_ptr : (EbReferenceObject*)EB_NULL;
+            ref_obj_l0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][0]->object_ptr;
+            ref_obj_l1 = (picture_control_set_ptr->parent_pcs_ptr->slice_type == B_SLICE) ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][0]->object_ptr : (EbReferenceObject*)EB_NULL;
 #else
             ref_obj_l0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;
             ref_obj_l1 = (picture_control_set_ptr->parent_pcs_ptr->slice_type == B_SLICE) ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1]->object_ptr : (EbReferenceObject*)EB_NULL;
@@ -2023,7 +2023,7 @@ EbErrorType signal_derivation_mode_decision_config_kernel_oq(
             picture_control_set_ptr->update_cdf = 1;
         else
             picture_control_set_ptr->update_cdf = 0;
-	else
+    else
 #endif
     picture_control_set_ptr->update_cdf = (picture_control_set_ptr->parent_pcs_ptr->enc_mode <= ENC_M5) ? 1 : 0;
 #else

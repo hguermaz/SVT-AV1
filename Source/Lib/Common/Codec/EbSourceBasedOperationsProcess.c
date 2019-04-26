@@ -198,12 +198,12 @@ void FailingMotionLcu(
 
             // Get ME SAD
 #if MRP_CONNECTION
-			cuMeSAD = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
+            cuMeSAD = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
 #else
             cuMeSAD = picture_control_set_ptr->me_results[sb_index][rasterScanCuIndex].distortion_direction[0].distortion;
 #endif
 
-            OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
+            OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];    
             OisCandidate *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[raster_scan_to_md_scan[rasterScanCuIndex]];
             sortedcuOisSAD = OisCuPtr[ois_sb_results_ptr->best_distortion_index[raster_scan_to_md_scan[rasterScanCuIndex]]].distortion;
 
@@ -255,12 +255,12 @@ void DetectUncoveredLcu(
 
                 // Get ME SAD
 #if MRP_CONNECTION
-				cuMeSAD = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
+                cuMeSAD = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
 #else
                 cuMeSAD = picture_control_set_ptr->me_results[sb_index][rasterScanCuIndex].distortion_direction[0].distortion;
 #endif
 
-            OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
+            OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];    
             OisCandidate *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[raster_scan_to_md_scan[rasterScanCuIndex]];
             sortedcuOisSAD = OisCuPtr[ois_sb_results_ptr->best_distortion_index[raster_scan_to_md_scan[rasterScanCuIndex]]].distortion;
 
@@ -372,12 +372,12 @@ void LumaContrastDetectorLcu(
         if (picture_control_set_ptr->slice_type != I_SLICE && picture_control_set_ptr->temporal_layer_index == 0) {
 
 
-            OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];	
+            OisSbResults        *ois_sb_results_ptr = picture_control_set_ptr->ois_sb_results[sb_index];    
             OisCandidate *OisCuPtr = ois_sb_results_ptr->ois_candidate_array[0];
             cuOisSAD = OisCuPtr[ois_sb_results_ptr->best_distortion_index[0]].distortion;
 
 #if MRP_CONNECTION
-			cuMeSAD = picture_control_set_ptr->me_results[sb_index]->me_candidate[0][0].distortion;
+            cuMeSAD = picture_control_set_ptr->me_results[sb_index]->me_candidate[0][0].distortion;
 #else
             cuMeSAD = picture_control_set_ptr->me_results[sb_index][0].distortion_direction[0].distortion;
 #endif
@@ -732,7 +732,7 @@ void TemporalHighContrastClassifier(
 
         for (blkIt = 0; blkIt < 4; blkIt++) {
 #if MRP_CONNECTION
-			nsad = ((uint32_t)picture_control_set_ptr->me_results[sb_index]->me_candidate[1 + blkIt][0].distortion) >> NORM_FACTOR;
+            nsad = ((uint32_t)picture_control_set_ptr->me_results[sb_index]->me_candidate[1 + blkIt][0].distortion) >> NORM_FACTOR;
 #else
             nsad = ((uint32_t)picture_control_set_ptr->me_results[sb_index][1 + blkIt].distortion_direction[0].distortion) >> NORM_FACTOR;
 #endif
