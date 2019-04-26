@@ -8170,7 +8170,6 @@ EbErrorType motion_estimate_lcu(
     uint8_t                  num_of_ref_pic_to_search;
     uint8_t                  candidate_index = 0;
     uint32_t                 next_candidate_index = 0;
-    uint8_t                  total_me_candidates = 0;
 
     MePredUnit             *me_candidate;
 #endif

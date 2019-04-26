@@ -359,9 +359,6 @@ void* packetization_kernel(void *input_ptr)
 
             output_stream_ptr->flags |= EB_BUFFERFLAG_SHOW_EXT;
 
-            if (picture_control_set_ptr->parent_pcs_ptr->av1_cm->tile_cols * picture_control_set_ptr->parent_pcs_ptr->av1_cm->tile_rows > 1)
-                output_stream_ptr->flags |= EB_BUFFERFLAG_TG;
-
         }
 
         // Send the number of bytes per frame to RC

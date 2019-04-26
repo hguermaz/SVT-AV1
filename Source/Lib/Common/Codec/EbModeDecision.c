@@ -675,10 +675,8 @@ void Unipred3x3CandidatesInjection(
     uint32_t                   bipredIndex;
     uint32_t                   canTotalCnt = (*candidateTotalCnt);
 #if MD_INJECTION
-    const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
-    const MeCandidate *me_block_candidates = me_results->me_candidate[me2Nx2NTableOffset];
-
-    uint8_t total_me_cnt = me_results->total_me_candidate_index[me2Nx2NTableOffset];
+    const MeLcuResults *me_results      = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
+    uint8_t total_me_cnt                = me_results->total_me_candidate_index[me2Nx2NTableOffset];
     const MeCandidate *me_block_results = me_results->me_candidate[me2Nx2NTableOffset];
 #else
     MeCuResults * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr][me2Nx2NTableOffset];
@@ -908,10 +906,8 @@ void Bipred3x3CandidatesInjection(
     uint32_t                   bipredIndex;
     uint32_t                   canTotalCnt = (*candidateTotalCnt);
 #if MD_INJECTION
-    const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
-    const MeCandidate *me_block_candidates = me_results->me_candidate[me2Nx2NTableOffset];
-
-    uint8_t total_me_cnt = me_results->total_me_candidate_index[me2Nx2NTableOffset];
+    const MeLcuResults *me_results      = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
+    uint8_t total_me_cnt                = me_results->total_me_candidate_index[me2Nx2NTableOffset];
     const MeCandidate *me_block_results = me_results->me_candidate[me2Nx2NTableOffset];
 #else
     MeCuResults * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr][me2Nx2NTableOffset];
@@ -1351,8 +1347,6 @@ void inject_mvp_candidates_II(
     }
     else if (allow_compound)
     {
-        uint8_t list_idx_0 = get_list_idx(rf[0]);
-        uint8_t list_idx_1 = get_list_idx(rf[1]);
         uint8_t ref_idx_0 = get_ref_frame_idx(rf[0]);
         uint8_t ref_idx_1 = get_ref_frame_idx(rf[1]);
 

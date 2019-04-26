@@ -24,7 +24,13 @@
 
 #define AV1_COST_PRECISION          0
 #define MV_COST_WEIGHT              108
+int av1_get_reference_mode_context_new(const MacroBlockD *xd);
 
+int av1_get_pred_context_uni_comp_ref_p(const MacroBlockD *xd);
+
+int av1_get_pred_context_uni_comp_ref_p1(const MacroBlockD *xd);
+
+int av1_get_pred_context_uni_comp_ref_p2(const MacroBlockD *xd);
 BlockSize GetBlockSize(uint8_t cu_size) {
     return (cu_size == 64 ? BLOCK_64X64 : cu_size == 32 ? BLOCK_32X32 : cu_size == 16 ? BLOCK_16X16 : cu_size == 8 ? BLOCK_8X8 : BLOCK_4X4);
 }
