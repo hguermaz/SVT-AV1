@@ -1198,6 +1198,8 @@ BIPred     : NEARST_NEARST  + upto 3x NEAR_NEAR
 **********************************************************************
 **********************************************************************/
 #if INJ_MVP
+void av1_set_ref_frame(MvReferenceFrame *rf,
+    int8_t ref_frame_type);
 void inject_mvp_candidates_II(
     struct ModeDecisionContext     *context_ptr,
     PictureControlSet              *picture_control_set_ptr,

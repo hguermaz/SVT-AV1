@@ -25,7 +25,12 @@
 #define  LAY2_OFF  5
 #define  LAY3_OFF  7
 #endif
+#if RPS_4L
+extern PredictionStructureConfigEntry four_level_hierarchical_pred_struct[];
+#endif
 #if REF_ORDER
+extern PredictionStructureConfigEntry five_level_hierarchical_pred_struct[];
+
 uint64_t  get_ref_poc(PictureDecisionContext *context, uint64_t curr_picture_number, int32_t delta_poc)
 {
     uint64_t ref_poc;
