@@ -20,7 +20,7 @@
 
 #include "EbPictureOperators.h"
 #include "EbPackUnPack.h"
-#include <immintrin.h>
+#include <malloc.h>
 
 #define VARIANCE_PRECISION      16
 #define MEAN_PRECISION      (VARIANCE_PRECISION >> 1)
@@ -62,8 +62,8 @@ void pic_copy_kernel(
     EbByte                  dst,
     uint32_t                   dst_stride,
     uint32_t                   area_width,
-    uint32_t                   area_height)
-{
+    uint32_t                   area_height){
+
     uint32_t   j;
 
     for (j = 0; j < area_height; j++)
