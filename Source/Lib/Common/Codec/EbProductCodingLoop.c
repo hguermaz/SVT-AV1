@@ -1033,11 +1033,11 @@ int sq_block_index[TOTAL_SQ_BLOCK_COUNT] = {
 };
 void init_nsq_block(   
     SequenceControlSet    *sequence_control_set_ptr,
-    ModeDecisionContext   *context_ptr)
-{
+    ModeDecisionContext   *context_ptr){
+
     uint32_t blk_idx = 0;
-    do
-    {
+    do {
+
         const BlockGeom * blk_geom = get_blk_geom_mds(blk_idx);
         context_ptr->md_local_cu_unit[blk_idx].avail_blk_flag = EB_FALSE;
         if (blk_geom->shape == PART_N)
@@ -1066,16 +1066,15 @@ void Initialize_cu_data_structure(
     ModeDecisionContext   *context_ptr,
     SequenceControlSet    *sequence_control_set_ptr,
     LargestCodingUnit        *sb_ptr,
-    const MdcLcuData        * const mdcResultTbPtr)
-{
+    const MdcLcuData        * const mdcResultTbPtr){
+
     UNUSED(*sequence_control_set_ptr);
     UNUSED(*sb_ptr);
     UNUSED(*mdcResultTbPtr);
     uint32_t blk_idx = 0;
 
     blk_idx = 0;
-    do
-    {
+    do {
         const BlockGeom * blk_geom = get_blk_geom_mds(blk_idx);
 
 #if RED_CU
@@ -2494,7 +2493,7 @@ void check_best_indepedant_cfl(
         // Update the current candidate
         candidateBuffer->candidate_ptr->intra_chroma_mode = context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]];
         candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = context_ptr->best_uv_angle[candidateBuffer->candidate_ptr->intra_luma_mode][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]];
-        candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]]);
+        candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)(context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]]));
 
         // check if candidateBuffer->candidate_ptr->fast_luma_rate = context_ptr->fast_luma_rate[candidateBuffer->candidate_ptr->intra_luma_mode];
         candidateBuffer->candidate_ptr->fast_chroma_rate = context_ptr->fast_chroma_rate[candidateBuffer->candidate_ptr->intra_luma_mode][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]];
@@ -3873,7 +3872,7 @@ void search_best_independent_uv_mode(
             int32_t uv_angle_delta = CLIP(uv_angle_delta_shift * (uv_angleDeltaCandidateCount == 1 ? 0 : uv_angleDeltaCounter - (uv_angleDeltaCandidateCount >> 1)), -MAX_ANGLE_DELTA, MAX_ANGLE_DELTA);
         
             candidateBuffer->candidate_ptr->intra_chroma_mode = uv_mode;
-            candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(uv_mode);
+            candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)uv_mode);
             candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = uv_angle_delta;
 
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
@@ -4571,8 +4570,7 @@ EB_EXTERN EbErrorType mode_decision_sb(
 
     uint8_t skip_sub_blocks;
 #endif
-    do
-    {
+    do {
 #if M8_SKIP_BLK     
         skip_sub_blocks = 0;
 #endif

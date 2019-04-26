@@ -103,10 +103,10 @@ void* set_me_hme_params_oq(
     me_context_ptr->number_hme_search_region_in_width = 2;
     me_context_ptr->number_hme_search_region_in_height = 2;
 
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     uint8_t sc_content_detected = picture_control_set_ptr->sc_content_detected;
 
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     picture_control_set_ptr->enable_hme_level0_flag = enable_hme_level0_flag[sc_content_detected][input_resolution][hmeMeLevel];
     picture_control_set_ptr->enable_hme_level1_flag = enable_hme_level1_flag[sc_content_detected][input_resolution][hmeMeLevel];
     picture_control_set_ptr->enable_hme_level2_flag = enable_hme_level2_flag[sc_content_detected][input_resolution][hmeMeLevel];
@@ -187,7 +187,7 @@ EbErrorType signal_derivation_me_kernel_oq(
         set_me_hme_params_from_config(
             sequence_control_set_ptr,
             context_ptr->me_context_ptr);
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         if (picture_control_set_ptr->sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 context_ptr->me_context_ptr->fractional_search_method = SSD_SEARCH ; 
@@ -206,7 +206,7 @@ EbErrorType signal_derivation_me_kernel_oq(
         else
         context_ptr->me_context_ptr->fractional_search_method = FULL_SAD_SEARCH;
 #endif
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         if (picture_control_set_ptr->sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 context_ptr->me_context_ptr->fractional_search64x64 = EB_TRUE;
@@ -259,7 +259,7 @@ EbErrorType signal_derivation_me_kernel_oq(
 #if USE_SAD_HME
     // HME Search Method
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
             context_ptr->me_context_ptr->hme_search_method = FULL_SAD_SEARCH;
@@ -283,7 +283,7 @@ EbErrorType signal_derivation_me_kernel_oq(
 #if USE_SAD_ME
     // ME Search Method
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M3)
             context_ptr->me_context_ptr->me_search_method = FULL_SAD_SEARCH;

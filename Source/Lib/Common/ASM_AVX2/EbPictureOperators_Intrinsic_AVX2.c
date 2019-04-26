@@ -1968,14 +1968,12 @@ void full_distortion_kernel32_bits_avx2(
     __m128i temp1, temp2, temp3;
 
     rowCount = area_height;
-    do
-    {
+    do {
         int32_t *coeffTemp = coeff;
         int32_t *reconCoeffTemp = recon_coeff;
 
         col_count = area_width / 4;
-        do
-        {
+        do {
             __m128i x0, y0;
             __m256i x, y, z;
             x0 = _mm_loadu_si128((__m128i *)(coeffTemp));
@@ -2025,13 +2023,11 @@ void full_distortion_kernel_cbf_zero32_bits_avx2(
     __m128i temp1, temp2;
 
     rowCount = area_height;
-    do
-    {
+    do {
         int32_t *coeffTemp = coeff;
 
         col_count = area_width / 4;
-        do
-        {
+        do {
             __m128i x0;
             __m256i y0, z0;
             x0 = _mm_loadu_si128((__m128i *)(coeffTemp));
@@ -2863,8 +2859,7 @@ uint64_t spatial_full_distortion_kernel4x_n_avx2_intrin(
 
     (void)area_width;
 
-    do
-    {
+    do {
         const __m128i in0 = _mm_cvtsi32_si128(*(uint32_t *)(input + 0 * input_stride));
         const __m128i in1 = _mm_cvtsi32_si128(*(uint32_t *)(input + 1 * input_stride));
         const __m128i re0 = _mm_cvtsi32_si128(*(uint32_t *)(recon + 0 * recon_stride));
@@ -2898,8 +2893,7 @@ uint64_t spatial_full_distortion_kernel8x_n_avx2_intrin(
 
     (void)area_width;
 
-    do
-    {
+    do {
         const __m128i in0 = _mm_loadl_epi64((__m128i *)(input + 0 * input_stride));
         const __m128i in1 = _mm_loadl_epi64((__m128i *)(input + 1 * input_stride));
         const __m128i re0 = _mm_loadl_epi64((__m128i *)(recon + 0 * recon_stride));
@@ -2940,8 +2934,7 @@ uint64_t spatial_full_distortion_kernel16x_n_avx2_intrin(
 
     (void)area_width;
 
-    do
-    {
+    do {
         SpatialFullDistortionKernel16_AVX2_INTRIN(input, recon, &sum);
         input += input_stride;
         recon += recon_stride;
@@ -2986,8 +2979,7 @@ uint64_t spatial_full_distortion_kernel32x_n_avx2_intrin(
 
     (void)area_width;
 
-    do
-    {
+    do {
         SpatialFullDistortionKernel32_AVX2_INTRIN(input, recon, &sum);
         input += input_stride;
         recon += recon_stride;
@@ -3009,8 +3001,7 @@ uint64_t spatial_full_distortion_kernel64x_n_avx2_intrin(
 
     (void)area_width;
 
-    do
-    {
+    do {
         SpatialFullDistortionKernel64_AVX2_INTRIN(input, recon, &sum);
         input += input_stride;
         recon += recon_stride;
@@ -3032,8 +3023,7 @@ uint64_t spatial_full_distortion_kernel128x_n_avx2_intrin(
 
     (void)area_width;
 
-    do
-    {
+    do {
         SpatialFullDistortionKernel64_AVX2_INTRIN(input + 0 * 64, recon + 0 * 64, &sum);
         SpatialFullDistortionKernel64_AVX2_INTRIN(input + 1 * 64, recon + 1 * 64, &sum);
         input += input_stride;

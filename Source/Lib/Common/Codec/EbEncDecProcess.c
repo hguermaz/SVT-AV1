@@ -1285,7 +1285,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 6                  4  
     // 7                  3 
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
@@ -1365,7 +1365,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // CHROMA_MODE_2  2     Chroma blind @ MD + CFL @ EP
     // CHROMA_MODE_3  3     Chroma blind @ MD + no CFL @ EP
 #if SEARCH_UV_MODE    
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
             context_ptr->chroma_level = CHROMA_MODE_1;
@@ -1400,7 +1400,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     //  0                   Collapsed fast loop
     //  1                   Decoupled fast loops ( intra/inter) 
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->decouple_intra_inter_fast_loop = 0;
@@ -1419,7 +1419,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // Set the search method when decoupled fast loop is used 
     // Hsan: FULL_SAD_SEARCH not supported
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->decoupled_fast_loop_search_method = SSD_SEARCH;
@@ -1445,7 +1445,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 2                    On both INTRA and INTER
 #if M9_FULL_LOOP_ESCAPE
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->full_loop_escape = 0;
@@ -1477,7 +1477,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // Level                Settings
     // 0                    Injection off (Hsan: but not derivation as used by MV ref derivation)
     // 1                    On
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->global_mv_injection = 1;
@@ -1510,7 +1510,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 0                    OFF
     // 1                    On
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->warped_motion_injection = 1;
@@ -1532,7 +1532,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 1                    ON FULL
     // 2                    Reduced set
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->unipred3x3_injection = 1;
@@ -1562,7 +1562,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     // 1                    ON FULL
     // 2                    Reduced set
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->bipred3x3_injection = 1;
@@ -1612,7 +1612,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 #if SPATIAL_SSE
     // Derive Spatial SSE Flag
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
             context_ptr->spatial_sse_full_loop = EB_TRUE;
@@ -1665,7 +1665,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
 
 #if NEW_PRESETS
     // Derive redundant block
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             context_ptr->redundant_blk = EB_TRUE;

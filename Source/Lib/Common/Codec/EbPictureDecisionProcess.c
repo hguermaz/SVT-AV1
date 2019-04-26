@@ -917,7 +917,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     uint8_t sc_content_detected = picture_control_set_ptr->sc_content_detected;
 
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         if (sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 picture_control_set_ptr->pic_depth_mode = PIC_ALL_DEPTH_MODE;
@@ -992,7 +992,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if NEW_PRESETS
         if (MR_MODE)
             picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_FULL;
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         else if (sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 picture_control_set_ptr->nsq_search_level = NSQ_SEARCH_LEVEL6;
@@ -1104,7 +1104,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #if NEW_PRESETS
         if (MR_MODE)
             picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP;
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         else if (sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
@@ -1174,7 +1174,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (!picture_control_set_ptr->sequence_control_set_ptr->static_config.disable_dlf_flag && picture_control_set_ptr->allow_intrabc == 0) {
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             picture_control_set_ptr->loop_filter_mode = 3;
@@ -1211,7 +1211,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     if (sequence_control_set_ptr->enable_cdef && picture_control_set_ptr->allow_intrabc == 0) {
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         if (sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 picture_control_set_ptr->cdef_filter_mode = 4;
@@ -1288,7 +1288,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 3                                            7-Tap luma/ 5-Tap chroma
 #if NEW_PRESETS
     
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             cm->wn_filter_mode = 3;
@@ -1318,7 +1318,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     // 2                                              Tx search at inter-depth
     // 3                                              Tx search at full loop
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
             picture_control_set_ptr->tx_search_level = TX_SEARCH_FULL_LOOP;
@@ -1373,7 +1373,7 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->tx_weight = FC_SKIP_TX_SR_TH010;
     }
 #else
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (sc_content_detected)
         picture_control_set_ptr->tx_weight = MAX_MODE_COST;
 #endif
@@ -1395,7 +1395,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     // Set tx search reduced set falg (0: full tx set; 1: reduced tx set; 1: two tx))
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M1)
             picture_control_set_ptr->tx_search_reduced_set = 0;
@@ -1456,7 +1456,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
     if (picture_control_set_ptr->slice_type == I_SLICE) 
 #if M9_INTRA     
-#if SCENE_CONTENT_SETTINGS  
+#if SCREEN_CONTENT_SETTINGS  
     if (sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M6)
             picture_control_set_ptr->intra_pred_mode = 0;
@@ -1480,7 +1480,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
     else {
 #if NEW_PRESETS      
-#if SCENE_CONTENT_SETTINGS  
+#if SCREEN_CONTENT_SETTINGS  
     if (sc_content_detected)
         if (picture_control_set_ptr->enc_mode <= ENC_M2)
             if (picture_control_set_ptr->temporal_layer_index == 0)
@@ -1553,7 +1553,7 @@ EbErrorType signal_derivation_multi_processes_oq(
 
 #endif
 #if M9_CU_8x8
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         if (picture_control_set_ptr->sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
                 picture_control_set_ptr->cu8x8_mode = CU_8x8_MODE_0;
@@ -3779,7 +3779,7 @@ void* picture_decision_kernel(void *input_ptr)
                                     0;
                             }
 #else
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
                             if (picture_control_set_ptr->sc_content_detected)
                                 if (picture_control_set_ptr->enc_mode <= ENC_M1)
                                     picture_control_set_ptr->use_subpel_flag = 1;

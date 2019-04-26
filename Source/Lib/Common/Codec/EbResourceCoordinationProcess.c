@@ -100,7 +100,7 @@ EbErrorType signal_derivation_pre_analysis_oq(
 
         picture_control_set_ptr->enable_hme_flag = EB_TRUE;
 #if NEW_PRESETS
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         picture_control_set_ptr->enable_hme_level0_flag = enable_hme_level0_flag[0][input_resolution][hme_me_level];
         picture_control_set_ptr->enable_hme_level1_flag = enable_hme_level1_flag[0][input_resolution][hme_me_level];
         picture_control_set_ptr->enable_hme_level2_flag = enable_hme_level2_flag[0][input_resolution][hme_me_level];

@@ -34,13 +34,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define WIKI_SETTINGS          0
 
-#if WIKI_SETTINGS
-#define MRP_SUPPORT            0// MRP Main Flag
-#else
 #define MRP_SUPPORT            1// MRP Main Flag
-#endif
 
 // New  presets
 #define NEW_PRESETS                       1
@@ -56,7 +51,7 @@ extern "C" {
 #define M8_SKIP_BLK                       1
 #define M8_OIS                            1
 #define QUICK_ME_CLEANUP                  1
-#define SCENE_CONTENT_SETTINGS            1
+#define SCREEN_CONTENT_SETTINGS           1
 
 // M9 settings toward 4K 60 fps           
 #define M9_SETTINGS                       1
@@ -95,11 +90,7 @@ extern "C" {
 #define RC_FEEDBACK                       1 // Feedback from previous base layer is received before starting the next base layer frame
 #endif
 #define RED_CU                            1 // Bypass redundant CU
-#if WIKI_SETTINGS
-#define NSQ_ME_OPT                        1 // NSQ ME Restructuring
-#else
 #define NSQ_ME_OPT                        0 // NSQ ME Restructuring
-#endif
 #define BYPASS_USELESS_TX_SEARCH          0
 // Testing MACROS
 #define M9_NEAR_INJECTION                 0
@@ -3517,7 +3508,7 @@ static const uint32_t MD_SCAN_TO_OIS_32x32_SCAN[CU_MAX_COUNT] =
     /*84 */3,
 };
 
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
 #define SC_MAX_LEVEL 2 // 2 sets of HME/ME settings are used depending on the scene content mode
 
 /******************************************************************************

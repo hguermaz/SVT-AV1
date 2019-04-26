@@ -220,14 +220,6 @@ void av1_init3smotion_compensation(SearchSiteConfig *cfg, int stride) {
   cfg->searches_per_step = 8;
 }
 
-static INLINE int check_bounds(const MvLimits *mv_limits, int row, int col,
-                               int range) {
-  return ((row - range) >= mv_limits->row_min) &
-         ((row + range) <= mv_limits->row_max) &
-         ((col - range) >= mv_limits->col_min) &
-         ((col + range) <= mv_limits->col_max);
-}
-
 static INLINE int is_mv_in(const MvLimits *mv_limits, const MV *mv) {
   return (mv->col >= mv_limits->col_min) && (mv->col <= mv_limits->col_max) &&
          (mv->row >= mv_limits->row_min) && (mv->row <= mv_limits->row_max);

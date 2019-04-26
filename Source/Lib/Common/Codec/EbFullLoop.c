@@ -1131,7 +1131,7 @@ static INLINE int get_coeff_cost_general(int is_last, int ci, TranLow abs_qc,
             if (is_last)
                 br_ctx = get_br_ctx_eob(ci, bwl, tx_class);
             else
-                br_ctx = get_br_ctx(levels, ci, bwl, tx_class);
+                br_ctx = get_br_ctx(levels, ci, bwl, (const TxType)tx_class);
             cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
         }
     }
@@ -1198,7 +1198,7 @@ static AOM_FORCE_INLINE int get_two_coeff_cost_simple(
     if (abs_qc) {
         cost += av1_cost_literal(1);
         if (abs_qc > NUM_BASE_LEVELS) {
-            const int br_ctx = get_br_ctx(levels, ci, bwl, tx_class);
+            const int br_ctx = get_br_ctx(levels, ci, bwl, (const TxType)tx_class);
             int brcost_diff = 0;
             cost += get_br_cost_with_diff(abs_qc, txb_costs->lps_cost[br_ctx],
                 &brcost_diff);
@@ -1285,7 +1285,7 @@ static AOM_FORCE_INLINE void update_coeff_eob(
         const int new_eob = si + 1;
         const int coeff_ctx_new_eob = get_lower_levels_ctx_eob(bwl, height, si);
         const int new_eob_cost =
-            get_eob_cost(new_eob, txb_eob_costs, txb_costs, tx_class);
+            get_eob_cost(new_eob, txb_eob_costs, txb_costs, (TxType)tx_class);
         int rate_coeff_eob =
             new_eob_cost + get_coeff_cost_eob(ci, abs_qc, sign, coeff_ctx_new_eob,
                 dc_sign_ctx, txb_costs, bwl,
@@ -1498,6 +1498,7 @@ static INLINE void update_skip(int *accu_rate, int64_t accu_dist, uint16_t *eob,
         *eob = 0;
     }
 }
+#if TRELLIS_SKIP
 static INLINE int32_t av1_cost_skip_txb(
 #if CABAC_UP
     uint8_t        allow_update_cdf,
@@ -1506,8 +1507,8 @@ static INLINE int32_t av1_cost_skip_txb(
     struct ModeDecisionCandidateBuffer    *candidate_buffer_ptr,
     TxSize                                  transform_size,
     PlaneType                               plane_type,
-    int16_t                                   txb_skip_ctx)
-{
+    int16_t                                   txb_skip_ctx){
+
     const TxSize txs_ctx = (TxSize)((txsize_sqr_map[transform_size] + txsize_sqr_up_map[transform_size] + 1) >> 1);
     assert(txs_ctx < TX_SIZES);
     const LvMapCoeffCost *const coeff_costs = &candidate_buffer_ptr->candidate_ptr->md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][plane_type];
@@ -1519,6 +1520,7 @@ static INLINE int32_t av1_cost_skip_txb(
 #endif 
     return coeff_costs->txb_skip_cost[txb_skip_ctx][1];
 }
+#endif
 enum {
     NO_AQ = 0,
     VARIANCE_AQ = 1,
@@ -1712,7 +1714,7 @@ void av1_optimize_b(
     // TODO(angirbird): check iqmatrix
     const int non_skip_cost = txb_costs->txb_skip_cost[txb_skip_context][0];
     const int skip_cost = txb_costs->txb_skip_cost[txb_skip_context][1];
-    const int eob_cost = get_eob_cost(*eob, txb_eob_costs, txb_costs, tx_class);
+    const int eob_cost = get_eob_cost(*eob, txb_eob_costs, txb_costs, (TxType)tx_class);
     int accu_rate = eob_cost;
 
 
@@ -2516,13 +2518,13 @@ void product_full_loop_tx_search(
     int32_t allowed_tx_mask[TX_TYPES] = { 0 };  // 1: allow; 0: skip.
     int32_t allowed_tx_num = 0;
     TxType uv_tx_type = DCT_DCT;
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
         txk_end = 2;
 #endif
 
     for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
         tx_type_index = (tx_type_index  == 1) ? IDTX : tx_type_index;
 #endif
@@ -2546,7 +2548,7 @@ void product_full_loop_tx_search(
     }
     TxType best_tx_type = DCT_DCT;
     for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
         tx_type_index = (tx_type_index  == 1) ? IDTX : tx_type_index;
 #endif
@@ -2757,12 +2759,12 @@ void encode_pass_tx_search(
         get_ext_tx_set_type(txSize, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 
     TxType best_tx_type = DCT_DCT;
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
     if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
         txk_end = 2;
 #endif
     for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
-#if SCENE_CONTENT_SETTINGS
+#if SCREEN_CONTENT_SETTINGS
         if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
             tx_type_index = (tx_type_index  == 1) ? IDTX : tx_type_index;
 #endif

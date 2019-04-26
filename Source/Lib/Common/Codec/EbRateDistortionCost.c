@@ -667,7 +667,7 @@ uint64_t av1_cost_coeffs_txb(
 
             if (level > NUM_BASE_LEVELS) {
                 const int base_range = level - 1 - NUM_BASE_LEVELS;
-                const int br_ctx = get_br_ctx(levels, pos, bwl, tx_class);
+                const int br_ctx = get_br_ctx(levels, pos, bwl, (const TxType)tx_class);
 
                 for (int idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
 
@@ -2685,7 +2685,7 @@ EbErrorType av1_tu_calc_cost_luma(
 
     return return_error;
     }
-
+#if !SPLIT_RATE_FIX
 static INLINE int32_t partition_cdf_length(BlockSize bsize) {
     if (bsize <= BLOCK_8X8)
         return PARTITION_TYPES;
@@ -2694,6 +2694,7 @@ static INLINE int32_t partition_cdf_length(BlockSize bsize) {
     else
         return EXT_PARTITION_TYPES;
 }
+#endif
 
 #if !SPLIT_RATE_FIX
 static int32_t cdf_element_prob(const int32_t *cdf,

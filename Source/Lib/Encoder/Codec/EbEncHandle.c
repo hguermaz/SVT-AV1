@@ -448,7 +448,7 @@ int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config, uint32_t core_count, 
         else{
             if (res_class < INPUT_SIZE_1080i_RANGE){
                 if (core_count < CONS_CORE_COUNT)
-                    ppcs_count = ppcs_count;                // 1 sec
+                    ppcs_count = ppcs_count * 1;                // 1 sec
                 else if (core_count < LOW_SERVER_CORE_COUNT)
                     ppcs_count = (ppcs_count * 3) >> 1;     // 1.5 sec
                 else if (core_count < MED_SERVER_CORE_COUNT)
@@ -469,11 +469,11 @@ int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config, uint32_t core_count, 
                 if (core_count < CONS_CORE_COUNT)
                     ppcs_count = min_ppcs_count;
                 else if (core_count < LOW_SERVER_CORE_COUNT)
-                    ppcs_count = ppcs_count;                // 1 sec
+                    ppcs_count = ppcs_count * 1;                // 1 sec
                 else if (core_count < MED_SERVER_CORE_COUNT)
-                    ppcs_count = ppcs_count;                // 1 sec
+                    ppcs_count = ppcs_count * 1;                // 1 sec
                 else
-                    ppcs_count = ppcs_count * 3;            // 3 sec
+                    ppcs_count = ppcs_count * 3;                // 3 sec
             }
         }
 #else
