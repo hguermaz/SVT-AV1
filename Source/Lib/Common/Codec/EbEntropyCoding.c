@@ -45,7 +45,7 @@ static INLINE int has_uni_comp_refs(const MbModeInfo *mbmi) {
     return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
         (mbmi->ref_frame[1] >= BWDREF_FRAME)));
 }
-
+int32_t is_inter_block(const MbModeInfo *mbmi);
 #define CHAR_BIT      8         /* number of bits in a char */
 #if ADD_DELTA_QP_SUPPORT
 #define OD_CLZ0 (1)
@@ -2781,6 +2781,7 @@ static void write_ref_frames(
 
     const MbModeInfo *const mbmi = &xd->mi[0]->mbmi;
     const int is_compound = has_second_ref(mbmi);
+    UNUSED(frame_context);
 #if 0
     const int segment_id = mbmi->segment_id;
     // If segment level coding of this signal is disabled...

@@ -1954,7 +1954,6 @@ void inject_warped_motion_candidates(
         const MeCandidate *me_block_results_ptr = &me_block_results[me_candidate_index];
         const uint8_t inter_direction = me_block_results_ptr->direction;
         const uint8_t list0_ref_index = me_block_results_ptr->ref_idx_l0;
-        const uint8_t list1_ref_index = me_block_results_ptr->ref_idx_l1;
         if (inter_direction == 0) {
 #endif
     for (int i=0; i<9; i++){
@@ -2082,7 +2081,6 @@ void  inject_inter_candidates(
     uint32_t                   canTotalCnt = *candidateTotalCnt;
     const uint32_t             lcuAddr = sb_ptr->index;
     ModeDecisionCandidate    *candidateArray = context_ptr->fast_candidate_array;
-    static MvReferenceFrame refFrames[] = { LAST_FRAME, BWDREF_FRAME, LAST_BWD_FRAME };
     EbBool isCompoundEnabled = (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE) ? 0 : 1;
     uint32_t me_sb_addr;
     uint32_t geom_offset_x = 0;
@@ -2117,10 +2115,8 @@ void  inject_inter_candidates(
 
 
 #if MD_INJECTION
-    MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
-    MeCandidate *me_block_candidates = me_results->me_candidate[me2Nx2NTableOffset];
-
-    uint8_t total_me_cnt = me_results->total_me_candidate_index[me2Nx2NTableOffset];
+    MeLcuResults *me_results            = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
+    uint8_t total_me_cnt                = me_results->total_me_candidate_index[me2Nx2NTableOffset];
     const MeCandidate *me_block_results = me_results->me_candidate[me2Nx2NTableOffset];
 #else
     MeCuResults_t * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr][me2Nx2NTableOffset];
@@ -2132,7 +2128,9 @@ void  inject_inter_candidates(
 #if BASE_LAYER_REF || MRP_REF_MODE
 #if MRP_ENABLE_BI_FOR_BASE
     EbBool allow_bipred = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
-    EbBool amp_allow_bipred = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0 || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
+#if !INJ_MVP 
+   EbBool amp_allow_bipred = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0 || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
+#endif
 #else
     EbBool allow_bipred = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0 || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
 #endif

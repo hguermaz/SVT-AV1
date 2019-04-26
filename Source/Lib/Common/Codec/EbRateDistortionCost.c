@@ -25,12 +25,11 @@
 #define AV1_COST_PRECISION          0
 #define MV_COST_WEIGHT              108
 int av1_get_reference_mode_context_new(const MacroBlockD *xd);
-
 int av1_get_pred_context_uni_comp_ref_p(const MacroBlockD *xd);
-
 int av1_get_pred_context_uni_comp_ref_p1(const MacroBlockD *xd);
-
 int av1_get_pred_context_uni_comp_ref_p2(const MacroBlockD *xd);
+int av1_get_comp_reference_type_context_new(const MacroBlockD *xd);
+
 BlockSize GetBlockSize(uint8_t cu_size) {
     return (cu_size == 64 ? BLOCK_64X64 : cu_size == 32 ? BLOCK_32X32 : cu_size == 16 ? BLOCK_16X16 : cu_size == 8 ? BLOCK_8X8 : BLOCK_4X4);
 }
@@ -2319,6 +2318,7 @@ void coding_loop_context_generation(
 #if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
     (void)sb_sz;
 #endif
+    UNUSED(ref_frame_type_neighbor_array);
     uint32_t modeTypeLeftNeighborIndex = get_neighbor_array_unit_left_index(
         mode_type_neighbor_array,
         cu_origin_y);
