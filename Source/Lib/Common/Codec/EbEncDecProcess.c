@@ -1903,13 +1903,14 @@ void* enc_dec_kernel(void *input_ptr)
                         int16_t mv_l0_y;
                         int16_t mv_l1_x;
                         int16_t mv_l1_y;
-                        uint32_t me_sb_addr;
+                        
 #if MRP_ME
                         mv_l0_x = 0;
                         mv_l0_y = 0;
                         mv_l1_x = 0;
                         mv_l1_y = 0;
 #else
+                        uint32_t me_sb_addr;
                         if (sequence_control_set_ptr->sb_size == BLOCK_128X128) {
 
                             uint32_t me_sb_size = sequence_control_set_ptr->sb_sz;

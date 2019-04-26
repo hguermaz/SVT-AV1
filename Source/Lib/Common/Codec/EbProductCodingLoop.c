@@ -3644,7 +3644,6 @@ void  order_nsq_table(
         get_me_info_index(max_number_of_pus_per_sb, context_ptr->blk_geom, geom_offset_x, geom_offset_y);
 #if MD_INJECTION
     const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
-    const MeCandidate *me_block_candidates = me_results->me_candidate[me2Nx2NTableOffset];
     uint8_t nsq0 = me_results->me_nsq_0[me2Nx2NTableOffset];
     uint8_t nsq1 = me_results->me_nsq_1[me2Nx2NTableOffset];
 #else

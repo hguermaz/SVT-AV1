@@ -32,11 +32,10 @@
 #include "av1me.h"
 #include "hash.h"
 
-
 #if CHECK_CAND
 #define  INCRMENT_CAND_TOTAL_COUNT(cnt) cnt++; if(cnt>=MODE_DECISION_CANDIDATE_MAX_COUNT) printf(" ERROR: reaching limit for MODE_DECISION_CANDIDATE_MAX_COUNT %i\n",cnt);
 #endif
-
+int8_t av1_ref_frame_type(const MvReferenceFrame *const rf);
 /********************************************
 * Constants
 ********************************************/
