@@ -427,7 +427,7 @@ void SwitchToRealTime(){
 #define SINGLE_CORE_COUNT       1
 #define CONS_CORE_COUNT         16
 #define LOW_SERVER_CORE_COUNT   48
-#define MED_SERVER_CORE_COUNT   112
+#define MED_SERVER_CORE_COUNT   128
 #define HIGH_SERVER_CORE_COUNT  224
 
 int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config, uint32_t core_count, EbInputResolution res_class) {
