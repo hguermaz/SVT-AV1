@@ -9310,8 +9310,6 @@ EbErrorType motion_estimate_lcu(
 
     }
 
-
-
     if (sequence_control_set_ptr->static_config.rate_control_mode) {
 
         // Compute the sum of the distortion of all 16 16x16 (best) blocks in the LCU

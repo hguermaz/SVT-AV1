@@ -467,10 +467,10 @@ void ReleasePaReferenceObjects(
             // Release PA Reference Pictures
 #if MRP_ME
 			uint8_t num_of_ref_pic_to_search = (picture_control_set_ptr->slice_type == P_SLICE) ?
-				MIN(picture_control_set_ptr->ref_list0_count, sequence_control_set_ptr->static_config.reference_count) :
+				MIN(picture_control_set_ptr->ref_list0_count, sequence_control_set_ptr->reference_count) :
 				(listIndex == REF_LIST_0) ?
-				MIN(picture_control_set_ptr->ref_list0_count, sequence_control_set_ptr->static_config.reference_count) :
-				MIN(picture_control_set_ptr->ref_list1_count, sequence_control_set_ptr->static_config.reference_count);
+				MIN(picture_control_set_ptr->ref_list0_count, sequence_control_set_ptr->reference_count) :
+				MIN(picture_control_set_ptr->ref_list1_count, sequence_control_set_ptr->reference_count);
 
 			for (ref_pic_index = 0; ref_pic_index < num_of_ref_pic_to_search; ++ref_pic_index) {
 				if (picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex][ref_pic_index] != EB_NULL) {

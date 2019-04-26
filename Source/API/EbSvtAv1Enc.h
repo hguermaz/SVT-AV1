@@ -25,10 +25,6 @@ extern "C" {
 #define EB_BUFFERFLAG_SHOW_EXT      0x00000002  // signals that the packet contains a show existing frame at the end
 #define EB_BUFFERFLAG_HAS_TD        0x00000004  // signals that the packet contains a show existing frame at the end
 
-#if TILES
-#define EB_BUFFERFLAG_TG            0x00000004  // signals that the packet contains Tile Group header
-#endif
-
 // Will contain the EbEncApi which will live in the EncHandle class
 // Only modifiable during config-time.
 typedef struct EbSvtAv1EncConfiguration
@@ -407,9 +403,6 @@ typedef struct EbSvtAv1EncConfiguration
 
     uint32_t                 ten_bit_format;
 
-#if 1//MRP_ME
-	uint8_t                 reference_count;
-#endif
 } EbSvtAv1EncConfiguration;
 
 

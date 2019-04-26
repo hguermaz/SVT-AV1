@@ -209,7 +209,7 @@ void* picture_manager_kernel(void *input_ptr)
                                 encode_context_ptr->prediction_structure_group_ptr,
                                 picture_control_set_ptr->pred_structure,
 #if MRP_ME
-								sequence_control_set_ptr->static_config.reference_count,
+								sequence_control_set_ptr->reference_count,
 #else
                                 1,
 #endif

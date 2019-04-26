@@ -745,7 +745,7 @@ EbErrorType update_base_layer_reference_queue_dependent_count(
                     encode_context_ptr->prediction_structure_group_ptr,
                     picture_control_set_ptr->pred_structure,
 #if MRP_ME
-					sequence_control_set_ptr->static_config.reference_count,
+					sequence_control_set_ptr->reference_count,
 #else
                     1,
 #endif
@@ -887,7 +887,7 @@ EbErrorType GenerateMiniGopRps(
                 encode_context_ptr->prediction_structure_group_ptr,
                 picture_control_set_ptr->pred_structure,
 #if MRP_ME
-				sequence_control_set_ptr->static_config.reference_count,
+				sequence_control_set_ptr->reference_count,
 #else
                 1,
 #endif
@@ -3502,7 +3502,7 @@ void* picture_decision_kernel(void *input_ptr)
                                     encode_context_ptr->prediction_structure_group_ptr,
                                     EB_PRED_LOW_DELAY_P,
 #if MRP_ME
-									sequence_control_set_ptr->static_config.reference_count,
+									sequence_control_set_ptr->reference_count,
 #else
                                     1,
 #endif

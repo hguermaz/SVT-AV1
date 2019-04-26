@@ -471,7 +471,7 @@ int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config, uint32_t core_count, 
                 else if (core_count < LOW_SERVER_CORE_COUNT)
                     ppcs_count = ppcs_count;                // 1 sec
                 else if (core_count < MED_SERVER_CORE_COUNT)
-                    ppcs_count = (ppcs_count * 3) >> 1;     // 1.5 sec
+                    ppcs_count = ppcs_count;                // 1 sec
                 else
                     ppcs_count = ppcs_count * 3;            // 3 sec
             }
@@ -529,7 +529,8 @@ EbErrorType load_default_buffer_configuration_settings(
         core_count = lp_count;
 #endif
 
-    int32_t return_ppcs = set_parent_pcs(&sequence_control_set_ptr->static_config, core_count, sequence_control_set_ptr->input_resolution);
+    int32_t return_ppcs = set_parent_pcs(&sequence_control_set_ptr->static_config, 
+                    core_count, sequence_control_set_ptr->input_resolution);
     if (return_ppcs == -1)
         return EB_ErrorInsufficientResources;
     uint32_t input_pic = (uint32_t)return_ppcs;
@@ -2279,10 +2280,7 @@ void CopyApiFromApp(
     if (sequence_control_set_ptr->cropping_bottom_offset == -1)
         sequence_control_set_ptr->cropping_bottom_offset = 0;
 
-    // Coding Structure
-#if MRP_ME
-	sequence_control_set_ptr->static_config.reference_count     = 4; // 1;//  NM: reference_count
-#endif
+
     sequence_control_set_ptr->static_config.intra_period_length = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->intra_period_length;
     sequence_control_set_ptr->static_config.intra_refresh_type = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->intra_refresh_type;
     sequence_control_set_ptr->static_config.base_layer_switch_mode = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->base_layer_switch_mode;
@@ -2669,6 +2667,10 @@ static EbErrorType VerifySettings(
         return_error = EB_ErrorBadParameter;
     }
 #endif
+    if (config->rate_control_mode == 1) {
+        SVT_LOG("Error Instance %u: The rate control mode 1 is currently not supported \n", channelNumber + 1);
+        return_error = EB_ErrorBadParameter;
+    }
 #if RC
     if ((config->rate_control_mode == 3|| config->rate_control_mode == 2) && config->look_ahead_distance != (uint32_t)config->intra_period_length) {
         SVT_LOG("Error Instance %u: The rate control mode 2/3 LAD must be equal to intra_period \n", channelNumber + 1);
@@ -2878,7 +2880,7 @@ EbErrorType eb_svt_enc_init_parameter(
 
     return return_error;
 }
-#define DEBUG_BUFFERS
+//#define DEBUG_BUFFERS
 static void print_lib_params(
     SequenceControlSet* scs) {
 
