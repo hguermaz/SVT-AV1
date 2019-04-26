@@ -1194,7 +1194,7 @@ EbErrorType av1_inter_prediction(
                     conv_params.use_jnt_comp_avg = 0;
 #if MCP_4XN_FIX
                     uint8_t ref_idx = get_ref_frame_idx(this_mbmi->ref_frame[0]);
-
+                    assert(ref_idx < REF_LIST_MAX_DEPTH);
                     EbPictureBufferDesc  *ref_pic = this_mbmi->ref_frame[0] ==
                         LAST_FRAME || this_mbmi->ref_frame[0] == LAST2_FRAME || this_mbmi->ref_frame[0] == LAST3_FRAME || this_mbmi->ref_frame[0] == GOLDEN_FRAME ?
                         ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx]->object_ptr)->reference_picture :
@@ -1287,7 +1287,7 @@ EbErrorType av1_inter_prediction(
         //List0-Y
         mv.col = mv_unit->mv[REF_LIST_0].x;
         mv.row = mv_unit->mv[REF_LIST_0].y;
-
+        assert(ref_pic_list0 != NULL);
         src_ptr = ref_pic_list0->buffer_y + ref_pic_list0->origin_x + pu_origin_x + (ref_pic_list0->origin_y + pu_origin_y) * ref_pic_list0->stride_y;
         dst_ptr = prediction_ptr->buffer_y + prediction_ptr->origin_x + dst_origin_x + (prediction_ptr->origin_y + dst_origin_y) * prediction_ptr->stride_y;
         src_stride = ref_pic_list0->stride_y;
@@ -2328,7 +2328,7 @@ EbErrorType av1_inter_prediction_hbd(
                     conv_params.use_jnt_comp_avg = 0;
 #if MCP_4XN_FIX
                     uint8_t ref_idx = get_ref_frame_idx(this_mbmi->ref_frame[0]);
-
+                    assert(ref_idx < REF_LIST_MAX_DEPTH);
                     EbPictureBufferDesc  *ref_pic = this_mbmi->ref_frame[0] ==
                         LAST_FRAME || this_mbmi->ref_frame[0] == LAST2_FRAME || this_mbmi->ref_frame[0] == LAST3_FRAME || this_mbmi->ref_frame[0] == GOLDEN_FRAME ?
                         ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx]->object_ptr)->reference_picture16bit :
@@ -2655,7 +2655,7 @@ EbErrorType warped_motion_prediction(
     if (!is16bit) {
         uint8_t *src_ptr;
         uint8_t *dst_ptr;
-
+        assert(ref_pic_list0 != NULL);
         // Y - UNI_PRED_LIST_0
         src_ptr = ref_pic_list0->buffer_y + ref_pic_list0->origin_x + ref_pic_list0->origin_y * ref_pic_list0->stride_y;
         src_stride = ref_pic_list0->stride_y;
@@ -3001,6 +3001,7 @@ EbErrorType warped_motion_prediction_md(
     uint8_t *dst_ptr;
 
     // Y - UNI_PRED_LIST_0
+    assert(ref_pic_list0 != NULL);
 #if UNPACK_REF_POST_EP 
     src_ptr = ref_pic_list0->buffer_y + ref_pic_list0->origin_x + ref_pic_list0->origin_y * ref_pic_list0->stride_y;
 #else
@@ -4487,7 +4488,8 @@ EbErrorType inter_pu_prediction_av1(
         list_idx1 = get_list_idx(rf[0]);
     else
         list_idx1 = get_list_idx(rf[1]);
-    
+    assert(list_idx0 < MAX_NUM_OF_REF_PIC_LIST);
+    assert(list_idx1 < MAX_NUM_OF_REF_PIC_LIST);
     if (ref_idx_l0 >= 0)
         ref_pic_list0 = ((EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx0][ref_idx_l0]->object_ptr)->reference_picture;
     else
@@ -4540,6 +4542,7 @@ EbErrorType inter_pu_prediction_av1(
                 &candidate_ptr->wm_params,
                 asm_type);
         } else {
+            assert(ref_pic_list0 != NULL);
             warped_motion_prediction(
                 &mv_unit,
                 md_context_ptr->cu_origin_x,
