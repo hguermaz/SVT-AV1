@@ -5109,19 +5109,20 @@ void* picture_analysis_kernel(void *input_ptr)
             sixteenth_decimated_picture_ptr,
             sb_total_count,
             asm_type);
-
-        picture_control_set_ptr->sc_content_detected = is_screen_content(
-            input_picture_ptr->buffer_y + input_picture_ptr->origin_x + input_picture_ptr->origin_y*input_picture_ptr->stride_y,
-            0,
-            input_picture_ptr->stride_y,
-            sequence_control_set_ptr->luma_width, sequence_control_set_ptr->luma_height);       
-        if (picture_control_set_ptr->sc_content_detected) {
-            if (picture_control_set_ptr->pic_avg_variance > 1000)
-                picture_control_set_ptr->sc_content_detected = 1;
-            else
-                picture_control_set_ptr->sc_content_detected = 0;
-        }
-
+        if (sequence_control_set_ptr->static_config.screen_content_mode == 2){ // auto detect
+            picture_control_set_ptr->sc_content_detected = is_screen_content(
+                input_picture_ptr->buffer_y + input_picture_ptr->origin_x + input_picture_ptr->origin_y*input_picture_ptr->stride_y,
+                0,
+                input_picture_ptr->stride_y,
+                sequence_control_set_ptr->luma_width, sequence_control_set_ptr->luma_height);
+            if (picture_control_set_ptr->sc_content_detected) {
+                if (picture_control_set_ptr->pic_avg_variance > 1000)
+                    picture_control_set_ptr->sc_content_detected = 1;
+                else
+                    picture_control_set_ptr->sc_content_detected = 0;
+            }
+        }else // off / on
+            picture_control_set_ptr->sc_content_detected = sequence_control_set_ptr->static_config.screen_content_mode;
         
 #if HARD_CODE_SC_SETTING
         picture_control_set_ptr->sc_content_detected = EB_TRUE;

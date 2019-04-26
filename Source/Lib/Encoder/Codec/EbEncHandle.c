@@ -2384,6 +2384,7 @@ void CopyApiFromApp(
     // Thresholds
     sequence_control_set_ptr->static_config.improve_sharpness = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->improve_sharpness;
     sequence_control_set_ptr->static_config.high_dynamic_range_input = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->high_dynamic_range_input;
+    sequence_control_set_ptr->static_config.screen_content_mode = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->screen_content_mode;
 
     // Annex A parameters
     sequence_control_set_ptr->static_config.profile = ((EbSvtAv1EncConfiguration*)pComponentParameterStructure)->profile;
@@ -2714,6 +2715,11 @@ static EbErrorType VerifySettings(
         return_error = EB_ErrorBadParameter;
     }
 
+    if (config->screen_content_mode > 2) {
+        SVT_LOG("Error instance %u : Invalid screen_content_mode. screen_content_mode must be [0 - 2]\n", channelNumber + 1);
+        return_error = EB_ErrorBadParameter;
+    }
+
     if ((config->encoder_bit_depth != 8) &&
         (config->encoder_bit_depth != 10)
         ) {
@@ -2849,6 +2855,7 @@ EbErrorType eb_svt_enc_init_parameter(
     //config_ptr->codeEosNal = 0;
 
     config_ptr->high_dynamic_range_input = 0;
+    config_ptr->screen_content_mode = 2;
 
     // Annex A parameters
     config_ptr->profile = 0;

@@ -279,7 +279,10 @@ typedef struct EbSvtAv1EncConfiguration
      *
      * Default is 0. */
     uint32_t                 min_qp_allowed;
-
+    /* Flag to signal the content being a screen sharing content type
+    *
+    * Default is 2. */
+    uint32_t                 screen_content_mode;
     // Tresholds
     /* Flag to signal that the input yuv is HDR10 BT2020 using SMPTE ST2048, requires
      *
