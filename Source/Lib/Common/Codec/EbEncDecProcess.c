@@ -1824,20 +1824,18 @@ void* enc_dec_kernel(void *input_ptr)
                     context_ptr->md_context->cu_use_ref_src_flag = (picture_control_set_ptr->parent_pcs_ptr->use_src_ref) && (picture_control_set_ptr->parent_pcs_ptr->edge_results_ptr[sb_index].edge_block_num == EB_FALSE || picture_control_set_ptr->parent_pcs_ptr->sb_flat_noise_array[sb_index]) ? EB_TRUE : EB_FALSE;
 
 #if CABAC_UP
-                    if (picture_control_set_ptr->update_cdf)
-                    {
+                    if (picture_control_set_ptr->update_cdf) {
+
                         MdRateEstimationContext* md_rate_estimation_array = sequence_control_set_ptr->encode_context_ptr->md_rate_estimation_array;
                         md_rate_estimation_array += picture_control_set_ptr->slice_type * TOTAL_NUMBER_OF_QP_VALUES + context_ptr->md_context->qp;
 
                         //this is temp, copy all default tables
                         picture_control_set_ptr->rate_est_array[sb_index] = *md_rate_estimation_array;
 #if CABAC_SERIAL
-                        if (sb_index == 0) {
+                        if (sb_index == 0)
                             picture_control_set_ptr->ec_ctx_array[sb_index] = *picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc;
-                        }
-                        else {
+                        else
                             picture_control_set_ptr->ec_ctx_array[sb_index] = picture_control_set_ptr->ec_ctx_array[sb_index - 1];
-                    }
 #else
                         if (sb_origin_x == 0) {
                             picture_control_set_ptr->ec_ctx_array[sb_index] = *picture_control_set_ptr->coeff_est_entropy_coder_ptr->fc;

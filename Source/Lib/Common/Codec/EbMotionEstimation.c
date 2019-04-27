@@ -9128,7 +9128,6 @@ EbErrorType motion_estimate_lcu(
 
 #if MRP_ME
         // Sorting of the ME candidates
-#if 1
         for (candidate_index = 0; candidate_index < total_me_candidate_index - 1; ++candidate_index) {
             for (next_candidate_index = candidate_index + 1; next_candidate_index < total_me_candidate_index; ++next_candidate_index) {
                 if (context_ptr->me_candidate[candidate_index].pu[pu_index].distortion > context_ptr->me_candidate[next_candidate_index].pu[pu_index].distortion) {
@@ -9139,41 +9138,7 @@ EbErrorType motion_estimate_lcu(
                 }
             }
         }
-#endif
 
-#if 0//TESTING
-        MeLcuResults_t * mePuResult = picture_control_set_ptr->me_results[sb_index];
-        mePuResult->totalMeCandidateIndex[pu_index] = totalMeCandidateIndex;
-
-#if NSQ_OPTIMASATION
-        uint8_t l0_nsq = is_nsq_table_used ? context_ptr->p_sb_best_nsq[0][0][nIdx] : 0;
-        uint8_t l1_nsq = is_nsq_table_used ? context_ptr->p_sb_best_nsq[1][0][nIdx] : 0;
-        mePuResult->me_nsq_0[pu_index] = l0_nsq;
-        mePuResult->me_nsq_1[pu_index] = l1_nsq;
-#endif
-        // Assining the ME candidates to the me Results buffer
-        uint8_t c_index = 0;
-        for (candidateIndex = 0; candidateIndex < totalMeCandidateIndex; ++candidateIndex) {
-            me_candidate = &(context_ptr->me_candidate[candidateIndex].pu[pu_index]);
-            
-            if ((me_candidate->prediction_direction == 0 && me_candidate->ref_index[0] == 0) ||
-                (me_candidate->prediction_direction == 1 && me_candidate->ref_index[1] == 0) ||
-                (me_candidate->prediction_direction == 2 && me_candidate->ref_index[0] == 0 && me_candidate->ref_index[1] == 0)){    
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].distortion = me_candidate->distortion;
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].direction = me_candidate->prediction_direction;
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].ref_idx_l0 = me_candidate->ref_index[0];
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].ref_idx_l1 = me_candidate->ref_index[1];
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].xMvL0 = _MVXT(me_candidate->mv[0]);
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].yMvL0 = _MVYT(me_candidate->mv[0]);
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].xMvL1 = _MVXT(me_candidate->mv[1]);
-                picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][c_index].yMvL1 = _MVYT(me_candidate->mv[1]);
-                c_index++;
-            }
-        }
-
-        mePuResult->totalMeCandidateIndex[pu_index] = c_index;
-
-#else
         MeLcuResults * mePuResult = picture_control_set_ptr->me_results[sb_index];
         mePuResult->total_me_candidate_index[pu_index] = total_me_candidate_index;
 
@@ -9202,7 +9167,6 @@ EbErrorType motion_estimate_lcu(
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].x_mv_l1 = _MVXT(me_candidate->mv[1]);
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].y_mv_l1 = _MVYT(me_candidate->mv[1]);
         }
-#endif
 #else
         MeCuResults * mePuResult = &picture_control_set_ptr->me_results[sb_index][pu_index];
         mePuResult->total_me_candidate_index = total_me_candidate_index;

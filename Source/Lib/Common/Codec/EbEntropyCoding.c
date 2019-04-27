@@ -2369,9 +2369,8 @@ INLINE void av1_collect_neighbors_ref_counts_new(MacroBlockD *const xd) {
     // Left neighbor
     if (left_in_image && is_inter_block(left_mbmi)) {
         ref_counts[left_mbmi->ref_frame[0]]++;
-        if (has_second_ref(left_mbmi)) {
+        if (has_second_ref(left_mbmi))
             ref_counts[left_mbmi->ref_frame[1]]++;
-        }
     }
 }
 #endif
@@ -2782,22 +2781,6 @@ static void write_ref_frames(
     const MbModeInfo *const mbmi = &xd->mi[0]->mbmi;
     const int is_compound = has_second_ref(mbmi);
     UNUSED(frame_context);
-#if 0
-    const int segment_id = mbmi->segment_id;
-    // If segment level coding of this signal is disabled...
-    // or the segment allows multiple reference frame options
-    if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
-        assert(!is_compound);
-        assert(mbmi->ref_frame[0] ==
-            get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME));
-    }
-    else if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP) ||
-        segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV)) {
-        assert(!is_compound);
-        assert(mbmi->ref_frame[0] == LAST_FRAME);
-    }
-    else
-#endif
     {
         // does the feature use compound prediction or not
         // (if not specified at the frame/segment level)
@@ -2857,9 +2840,8 @@ static void write_ref_frames(
             const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
             WRITE_REF_BIT(bit_bwd, comp_bwdref_p);
 
-            if (!bit_bwd) {
+            if (!bit_bwd)
                 WRITE_REF_BIT(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
-            }
         }
         else {
             const int bit0 = (mbmi->ref_frame[0] <= ALTREF_FRAME &&

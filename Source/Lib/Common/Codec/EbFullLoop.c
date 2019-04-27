@@ -1538,11 +1538,7 @@ enum {
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 17, 13 },
-#if 0
   { 16, 10 },
-#else
-  { 16, 10 },
-#endif
 };
 
 void av1_optimize_b(
@@ -1569,53 +1565,7 @@ void av1_optimize_b(
     (void)n_coeffs;
     (void)sc;
     (void)qparam;
-#if DEBUG_TRELLIS
-    tx_type = DCT_DCT;
-    const ScanOrder *const scan_order = &av1_scan_orders[tx_size][tx_type];
-    const int16_t *scan = scan_order->scan;
-    if (tx_size == TX_16X16) {
-        *eob = 10;
-        txb_skip_context = 0;
-        dc_sign_context = 0;
 
-
-        coeff_ptr[scan[0]] = -300;
-        coeff_ptr[scan[1]] = -200;
-        coeff_ptr[scan[2]] = -100;
-        coeff_ptr[scan[3]] = -50;
-        coeff_ptr[scan[4]] = 10;
-        coeff_ptr[scan[5]] = 22;
-        coeff_ptr[scan[6]] = 30;
-        coeff_ptr[scan[7]] = 55;
-        coeff_ptr[scan[8]] = 33;
-        coeff_ptr[scan[9]] = -1;
-
-
-        qcoeff_ptr[scan[0]] = 550;
-        qcoeff_ptr[scan[1]] = -323;
-        qcoeff_ptr[scan[2]] = 10;
-        qcoeff_ptr[scan[3]] = 120;
-        qcoeff_ptr[scan[4]] = 112;
-        qcoeff_ptr[scan[5]] = 8;
-        qcoeff_ptr[scan[6]] = -9;
-        qcoeff_ptr[scan[7]] = 5;
-        qcoeff_ptr[scan[8]] = 3;
-        qcoeff_ptr[scan[9]] = 1;
-
-
-        dqcoeff_ptr[scan[0]] = -20;
-        dqcoeff_ptr[scan[1]] = -10;
-        dqcoeff_ptr[scan[2]] = -7;
-        dqcoeff_ptr[scan[3]] = -3;
-        dqcoeff_ptr[scan[4]] = 22;
-        dqcoeff_ptr[scan[5]] = 22;
-        dqcoeff_ptr[scan[6]] = 22;
-        dqcoeff_ptr[scan[7]] = 22;
-        dqcoeff_ptr[scan[8]] = 22;
-        dqcoeff_ptr[scan[9]] = 1;
-
-    }
-#endif
     // Hsan (Trellis): hardcoded as not supported:
     int sharpness = 0; // No Sharpness
     int fast_mode = 0; // TBD
@@ -1623,70 +1573,24 @@ void av1_optimize_b(
     DELTAQ_MODE deltaq_mode = NO_DELTA_Q;
     int8_t segment_id = 0;
     int sb_energy_level = 0;
-#if 0
-    MACROBLOCKD *xd = &x->e_mbd;
-    struct macroblockd_plane *pd = &xd->plane[plane];
-    const struct macroblock_plane *p = &x->plane[plane];
-#endif
 #if !DEBUG_TRELLIS
     const ScanOrder *const scan_order = &av1_scan_orders[tx_size][tx_type];
-#endif
-#if 0
-    const ScanOrder *scan_order = get_scan(tx_size, tx_type);
 #endif
 #if !DEBUG_TRELLIS
     const int16_t *scan = scan_order->scan;
 #endif
     const int shift = av1_get_tx_scale(tx_size);
-#if 0
-    int eob = p->eobs[block];
-    const int16_t *dequant = p->dequant_QTX;
-    TranLow *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-    TranLow *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-    const TranLow *tcoeff = BLOCK_OFFSET(p->coeff, block);
-
-    if (fast_mode) {
-        update_coeff_eob_fast(&eob, shift, dequant, scan, tcoeff, qcoeff, dqcoeff);
-        p->eobs[block] = eob;
-        if (eob == 0) {
-            *rate_cost = av1_cost_skip_txb(x, txb_ctx, plane, tx_size);
-            return eob;
-        }
-    }
-
-    const AV1_COMMON *cm = &cpi->common;
-#endif
     const PlaneType plane_type = get_plane_type(plane);
-
     const TxSize txs_ctx = get_txsize_entropy_ctx(tx_size);
     const TxClass tx_class = tx_type_to_class[tx_type];
-#if 0
-    const MB_MODE_INFO *mbmi = xd->mi[0];
-#endif
     const int bwl = get_txb_bwl(tx_size);
     const int width = get_txb_wide(tx_size);
     const int height = get_txb_high(tx_size);
     assert(width == (1 << bwl));
     assert(txs_ctx < TX_SIZES);
-#if 0   
-    const int is_inter = is_inter_block(mbmi);
-#endif
-#if 1
     const LvMapCoeffCost *txb_costs = &md_context->md_rate_estimation_ptr->coeff_fac_bits[txs_ctx][plane_type];
-#else
-    const LvMapCoeffCost *txb_costs = &x->coeff_costs[txs_ctx][plane_type];
-#endif
-
     const int eob_multi_size = txsize_log2_minus4[tx_size];
-#if 1
     const LvMapEobCost *txb_eob_costs = &md_context->md_rate_estimation_ptr->eob_frac_bits[eob_multi_size][plane_type];
-#else
-    const LvMapEobCost *txb_eob_costs = &x->eob_costs[eob_multi_size][plane_type];
-#endif
-
-#if 0 // Hsan (Trellis): use default lambda
-    const int64_t rdmult = (int64_t)full_lambda;
-#else
     const int rshift =
         (sharpness +
         (aq_mode == VARIANCE_AQ && segment_id < 4
@@ -1701,16 +1605,10 @@ void av1_optimize_b(
         (plane_rd_mult[is_inter][plane_type] << (2 * bit_increment))) +
             2) >>
         rshift;
-#endif
     uint8_t levels_buf[TX_PAD_2D];
     uint8_t *const levels = set_levels(levels_buf, width);
 
-#if 1
     if (*eob > 1) av1_txb_init_levels(qcoeff_ptr, width, height, levels);
-#else
-    if (eob > 1) av1_txb_init_levels(qcoeff, width, height, levels);
-#endif
-
     // TODO(angirbird): check iqmatrix
     const int non_skip_cost = txb_costs->txb_skip_cost[txb_skip_context][0];
     const int skip_cost = txb_costs->txb_skip_cost[txb_skip_context][1];
@@ -1721,11 +1619,7 @@ void av1_optimize_b(
     int64_t accu_dist = 0;
     int si = *eob - 1;
     const int ci = scan[si];
-#if 1
     const TranLow qc = qcoeff_ptr[ci];
-#else
-    const TranLow qc = qcoeff[ci];
-#endif
     const TranLow abs_qc = abs(qc);
     const int sign = qc < 0;
     const int max_nz_num = 2;
@@ -1824,21 +1718,6 @@ void av1_optimize_b(
             p->dequant_QTX, scan, txb_costs, coeff_ptr, qcoeff_ptr, dqcoeff_ptr,
             levels);
     }
-#if 0 
-    const int tx_type_cost = get_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
-
-    if (*eob == 0)
-        accu_rate += skip_cost;
-    else
-        accu_rate += non_skip_cost + tx_type_cost;
-
-    p->eobs[block] = eob;
-    p->txb_entropy_ctx[block] =
-        av1_get_txb_entropy_context(qcoeff, scan_order, p->eobs[block]);
-
-    *rate_cost = accu_rate;
-    return eob;
-#endif
 }
 #endif
 void av1_quantize_inv_quantize(
@@ -2012,9 +1891,6 @@ void av1_quantize_inv_quantize(
 #if OPT_QUANT_COEFF
     EbBool is_inter = (pred_mode >= NEARESTMV);
     // Hsan (Trellis) : only luma for now and only @ encode pass  
-#if DEBUG_TRELLIS
-    if (*eob != 0 && is_encode_pass) {
-#else 
 #if TRELLIS_MD  
 #if TRELLIS_INTRA
     if (md_context->trellis_quant_coeff_optimization && *eob != 0 && component_type == COMPONENT_LUMA) {
@@ -2027,7 +1903,6 @@ void av1_quantize_inv_quantize(
 #endif
 #else
     if (*eob != 0 && is_encode_pass && is_inter && component_type == COMPONENT_LUMA) {
-#endif
 #endif
         uint64_t coeff_rate_non_opt;
         uint64_t coeff_rate_opt;

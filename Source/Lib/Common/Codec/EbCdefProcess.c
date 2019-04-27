@@ -519,20 +519,11 @@ void* cdef_kernel(void *input_ptr)
         }
         else {
 
-#if 1//CDEF_REF_ONLY || ICOPY
             picture_control_set_ptr->parent_pcs_ptr->cdef_bits = 0;
             picture_control_set_ptr->parent_pcs_ptr->cdef_strengths[0] = 0;
             picture_control_set_ptr->parent_pcs_ptr->nb_cdef_strengths = 1;
             picture_control_set_ptr->parent_pcs_ptr->cdef_uv_strengths[0] = 0;
-#else
-            picture_control_set_ptr->parent_pcs_ptr->cdef_bits = 0;
-
-            picture_control_set_ptr->parent_pcs_ptr->nb_cdef_strengths = 0;
-#endif
-
-
         }
-
 
         //restoration prep
 
