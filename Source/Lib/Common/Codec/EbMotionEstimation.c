@@ -9202,6 +9202,21 @@ EbErrorType motion_estimate_lcu(
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].x_mv_l1 = _MVXT(me_candidate->mv[1]);
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].y_mv_l1 = _MVYT(me_candidate->mv[1]);
         }
+
+#if MEMORY_FOOTPRINT_OPT_ME_MV
+        for (listIndex = REF_LIST_0; listIndex <= numOfListToSearch; ++listIndex) {
+            num_of_ref_pic_to_search = (picture_control_set_ptr->slice_type == P_SLICE) ? picture_control_set_ptr->ref_list0_count : (listIndex == REF_LIST_0) ?
+                picture_control_set_ptr->ref_list0_count : picture_control_set_ptr->ref_list1_count;
+
+            // Ref Picture Loop
+            for (ref_pic_index = 0; ref_pic_index < num_of_ref_pic_to_search; ++ref_pic_index) {
+                picture_control_set_ptr->me_results[sb_index]->me_mv_array[pu_index][(listIndex << 2) + ref_pic_index].x_mv = _MVXT(context_ptr->p_sb_best_mv[listIndex][ref_pic_index][nIdx]);
+                picture_control_set_ptr->me_results[sb_index]->me_mv_array[pu_index][(listIndex << 2) + ref_pic_index].y_mv = _MVYT(context_ptr->p_sb_best_mv[listIndex][ref_pic_index][nIdx]);
+
+            }
+        }
+#endif
+
 #endif
 #else
         MeCuResults * mePuResult = &picture_control_set_ptr->me_results[sb_index][pu_index];

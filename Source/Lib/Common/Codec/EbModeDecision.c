@@ -706,9 +706,13 @@ void Unipred3x3CandidatesInjection(
                 continue;
         }
 #if MD_INJECTION
+#if MEMORY_FOOTPRINT_OPT_ME_MV
+        int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (me_results->me_mv_array[me2Nx2NTableOffset][list0_ref_index].x_mv + BIPRED_3x3_X_POS[bipredIndex]) << 1;
+        int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (me_results->me_mv_array[me2Nx2NTableOffset][list0_ref_index].y_mv + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
+#else
         int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (me_block_results_ptr->x_mv_l0 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
         int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (me_block_results_ptr->y_mv_l0 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
-
+#endif
 #else
         int16_t to_inject_mv_x = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][0] + BIPRED_3x3_X_POS[bipredIndex]) << 1 : (mePuResult->x_mv_l0 + BIPRED_3x3_X_POS[bipredIndex]) << 1;
         int16_t to_inject_mv_y = use_close_loop_me ? (inloop_me_context->inloop_me_mv[0][0][close_loop_me_index][1] + BIPRED_3x3_Y_POS[bipredIndex]) << 1 : (mePuResult->y_mv_l0 + BIPRED_3x3_Y_POS[bipredIndex]) << 1;
@@ -2222,8 +2226,13 @@ void  inject_inter_candidates(
 
             if (inter_direction == 0) {
 
+#if MEMORY_FOOTPRINT_OPT_ME_MV                               
+                int16_t to_inject_mv_x = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : me_results->me_mv_array[me2Nx2NTableOffset][list0_ref_index].x_mv << 1;
+                int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : me_results->me_mv_array[me2Nx2NTableOffset][list0_ref_index].y_mv << 1;
+#else
                 int16_t to_inject_mv_x = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : me_block_results_ptr->x_mv_l0 << 1;
                 int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : me_block_results_ptr->y_mv_l0 << 1;
+#endif
 #if MRP_DUPLICATION_FIX
                 uint8_t to_inject_ref_type = svt_get_ref_frame_type(REF_LIST_0, list0_ref_index);
                 if (context_ptr->injected_mv_count_l0 == 0 || mrp_is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y, to_inject_ref_type) == EB_FALSE) {

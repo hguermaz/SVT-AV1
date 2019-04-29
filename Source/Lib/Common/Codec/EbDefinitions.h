@@ -46,8 +46,11 @@ extern "C" {
 #define NEW_PRESETS                       1
 #define NEW_BUFF_CFG                      1
 /************************* Omar to remove disable_ang_uv *************************/
-#define MEM_OPT_MRP                       1
-#define MEMORY_FOOTPRINT_OPT              0                    
+#define MEMORY_FOOTPRINT_OPT_ME_MV        1
+#if MEMORY_FOOTPRINT_OPT_ME_MV
+#define MEMORY_FOOTPRINT_OPT              1     
+#endif
+
 #define CDEF_AVX_OPT                      1
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
 #define HARD_CODE_SC_SETTING              0

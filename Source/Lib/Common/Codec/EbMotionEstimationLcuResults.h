@@ -25,6 +25,7 @@ extern "C" {
 #endif
     typedef struct MeCandidate 
     {
+#if 1//!MEMORY_FOOTPRINT_OPT_ME_MV
         union {
             struct {
                 signed short     x_mv_l0;  //Note: Do not change the order of these fields
@@ -34,6 +35,7 @@ extern "C" {
             };
             uint64_t mvs;
         };
+#endif
 #if MRP_MEM_OPT
         unsigned    distortion : 32;     // 20-bits holds maximum SAD of 64x64 PU
         unsigned    direction  : 2;
@@ -60,21 +62,29 @@ extern "C" {
         unsigned    direction : 8;      // 0: uni-pred L0, 1: uni-pred L1, 2: bi-pred
 #endif
     } MeCandidate;
-
+#if MEMORY_FOOTPRINT_OPT_ME_MV  
+    typedef struct MvCandidate
+    {
+        signed short      x_mv;
+        signed short      y_mv;
+    } MvCandidate;
+#endif
     // move this to a new file with ctor & dtor
     typedef struct MeLcuResults 
     {
         uint32_t          lcu_distortion;
         uint8_t          *total_me_candidate_index;
-//        int16_t           x_mv_hme_search_center[MAX_NUM_OF_REF_PIC_LIST][MAX_REF_IDX];
-//        int16_t           y_mv_hme_search_center[MAX_NUM_OF_REF_PIC_LIST][MAX_REF_IDX];
         MeCandidate     **me_candidate;
         MeCandidate      *me_candidate_array;
 #if MRP_ME
 #if NSQ_OPTIMASATION
-        uint8_t           *me_nsq_0; // 2 Number of reference lists
-        uint8_t           *me_nsq_1; // 2 Number of reference lists
+        uint8_t          *me_nsq_0; // 2 Number of reference lists
+        uint8_t          *me_nsq_1; // 2 Number of reference lists
 #endif
+#endif
+
+#if MEMORY_FOOTPRINT_OPT_ME_MV        
+        MvCandidate    **me_mv_array; // [PU][L0-Ref0, L0-Ref1, L0-Ref2, L0-Ref3, L1-Ref0, L1-Ref1, L1-Ref2]
 #endif
     } MeLcuResults;
 #if !MRP_ME
