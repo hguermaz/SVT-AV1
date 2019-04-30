@@ -84,7 +84,7 @@ extern "C" {
 #endif
 
 #if MEMORY_FOOTPRINT_OPT_ME_MV        
-        MvCandidate    **me_mv_array; // [PU][L0-Ref0, L0-Ref1, L0-Ref2, L0-Ref3, L1-Ref0, L1-Ref1, L1-Ref2]
+        MvCandidate    **me_mv_array; // [PU][LAST, LAST2, L0-Ref2, LAST3, GOLD, BWD, ALT2, ALT]
 #endif
     } MeLcuResults;
 #if !MRP_ME
