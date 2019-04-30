@@ -9196,11 +9196,12 @@ EbErrorType motion_estimate_lcu(
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].ref0_list = me_candidate->ref0_list;
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].ref1_list = me_candidate->ref1_list;
 #endif
-
+#if 1//!MEMORY_FOOTPRINT_OPT_ME_MV // --->
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].x_mv_l0 = _MVXT(me_candidate->mv[0]);
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].y_mv_l0 = _MVYT(me_candidate->mv[0]);
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].x_mv_l1 = _MVXT(me_candidate->mv[1]);
             picture_control_set_ptr->me_results[sb_index]->me_candidate[pu_index][candidateIndex].y_mv_l1 = _MVYT(me_candidate->mv[1]);
+#endif
         }
 
 #if MEMORY_FOOTPRINT_OPT_ME_MV

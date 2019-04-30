@@ -25,7 +25,7 @@ extern "C" {
 #endif
     typedef struct MeCandidate 
     {
-#if 1//!MEMORY_FOOTPRINT_OPT_ME_MV
+#if 1//!MEMORY_FOOTPRINT_OPT_ME_MV // --->
         union {
             struct {
                 signed short     x_mv_l0;  //Note: Do not change the order of these fields
