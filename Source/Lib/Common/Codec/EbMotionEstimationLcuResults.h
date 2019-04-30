@@ -37,7 +37,11 @@ extern "C" {
         };
 #endif
 #if MRP_MEM_OPT
+#if MEMORY_FOOTPRINT_OPT_ME_MV // --->
+        unsigned    distortion : 20;     // 20-bits holds maximum SAD of 64x64 PU
+#else
         unsigned    distortion : 32;     // 20-bits holds maximum SAD of 64x64 PU
+#endif
         unsigned    direction  : 2;
 #if MRP_ME
         unsigned    ref_idx_l0 : 2;      // allows for up to 4 references   
