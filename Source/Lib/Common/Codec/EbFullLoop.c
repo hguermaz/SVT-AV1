@@ -2219,9 +2219,9 @@ void product_full_loop(
     assert(asm_type >= 0 && asm_type < ASM_TYPE_TOTAL);
 #if TXS_MD
     uint8_t  tx_depth = candidateBuffer->candidate_ptr->tx_depth;
-    if (tx_depth != 0)
-        printf("Error FFFFFFF = %d\n ", tx_depth);
+
     uint16_t txb_count = context_ptr->blk_geom->txb_count[tx_depth];
+
     for (txb_itr = 0; txb_itr < txb_count; txb_itr++)
 #else
     for (txb_itr = 0; txb_itr < context_ptr->blk_geom->txb_count; txb_itr++)
@@ -2585,8 +2585,6 @@ void product_full_loop_tx_search(
     int32_t                        txb_itr = 0;
 #if TXS_MD
     uint8_t                        tx_depth = candidateBuffer->candidate_ptr->tx_depth;
-    if (tx_depth != 0)
-        printf("Error GGGGGGG = %d\n ", tx_depth);
     TxSize                         txSize = context_ptr->blk_geom->txsize[tx_depth][txb_itr];
 #else
     TxSize                         txSize = context_ptr->blk_geom->txsize[txb_itr];
@@ -2872,8 +2870,6 @@ void encode_pass_tx_search(
     TxType                 tx_type;
 #if TXS_ENC
     uint8_t                tx_depth = context_ptr->tx_depth;
-    if (tx_depth != 0)
-        printf("Error HHHHHHHHHHH = %d\n ", tx_depth);
     TxSize                 txSize = context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr];
     const uint32_t         scratchLumaOffset = context_ptr->blk_geom->tx_org_x[tx_depth][context_ptr->txb_itr] + context_ptr->blk_geom->tx_org_y[tx_depth][context_ptr->txb_itr] * SB_STRIDE_Y;
 #else
@@ -3360,14 +3356,15 @@ void full_loop_r(
     context_ptr->three_quad_energy = 0;
 #if TXS_MD
     uint8_t tx_depth = candidateBuffer->candidate_ptr->tx_depth;
-    if (tx_depth != 0)
-        printf("Error IIIIIIIII = %d\n ", tx_depth);
     tuCount = context_ptr->blk_geom->txb_count[candidateBuffer->candidate_ptr->tx_depth];
 #else
     tuCount = context_ptr->blk_geom->txb_count;
 #endif
     uint32_t  txb_1d_offset = 0;
+#if TXS_SPLIT
+    tuCount = tx_depth ? 1 : tuCount; //NM: 128x128 exeption
 
+#endif
     txb_itr = 0;
     do {
 #if TXS_MD
@@ -3692,8 +3689,6 @@ void cu_full_distortion_fast_tu_mode_r(
     //    SequenceControlSet           *sequence_control_set_ptr=((SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr);
 #if TXS_MD
     uint8_t tx_depth = candidateBuffer->candidate_ptr->tx_depth;
-    if (tx_depth != 0)
-        printf("Error JJJJJJ = %d\n ", tx_depth);
     tuTotalCount = context_ptr->blk_geom->txb_count[tx_depth];
 #else
     tuTotalCount = context_ptr->blk_geom->txb_count;
@@ -3705,6 +3700,9 @@ void cu_full_distortion_fast_tu_mode_r(
     uint32_t  txb_1d_offset = 0;
     candidate_ptr->u_has_coeff = 0;
     candidate_ptr->v_has_coeff = 0;
+#if TXS_SPLIT
+    tuTotalCount = tx_depth ? 1 : tuTotalCount; //NM: 128x128 exeption
+#endif
 
     do {
 #if TXS_MD

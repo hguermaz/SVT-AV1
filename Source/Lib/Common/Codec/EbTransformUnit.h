@@ -11,7 +11,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define TRANSFORM_UNIT_MAX_COUNT    5
+#define TRANSFORM_UNIT_MAX_COUNT    16//NADER5
 #define TRANSFORM_UNIT_2Nx2N_AREA   16
 #define TRANSFORM_UNIT_NxN_AREA     4
 

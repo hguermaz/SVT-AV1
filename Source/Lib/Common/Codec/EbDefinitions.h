@@ -253,6 +253,7 @@ extern "C" {
 #define TX_SIZE_UPDATE_GEOM                             1
 #define TXS_ENC                                         1
 #define TXS_MD                                          1
+#define TXS_SPLIT                                      1
 #endif
  
 struct Buf2D 
@@ -301,7 +302,7 @@ enum {
 #define ADD_DELTA_QP_SUPPORT                      0  // Add delta QP support - Please enable this flag and iproveSharpness (config) to test the QPM
 #define BLOCK_MAX_COUNT_SB_128                    4421  // TODO: reduce alloction for 64x64
 #define BLOCK_MAX_COUNT_SB_64                     1101  // TODO: reduce alloction for 64x64
-#define MAX_TXB_COUNT                             4 // Maximum number of transform blocks.
+#define MAX_TXB_COUNT                             16 // Maximum number of transform blocks.
 #define MAX_NFL                                   40
 #define MAX_LAD                                   120 // max lookahead-distance 2x60fps
 #define ROUND_UV(x) (((x)>>3)<<3)
@@ -745,6 +746,7 @@ static const uint8_t mi_size_high[BlockSizeS_ALL] = {
     1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 4, 1, 8, 2, 16, 4
 };
 
+
 typedef char PartitionContextType;
 #define PARTITION_PLOFFSET 4  // number of probability models per block size
 #define PARTITION_BlockSizeS 5
@@ -786,7 +788,87 @@ typedef enum ATTRIBUTE_PACKED {
 #else
 } TxSize;
 #endif
+#if TXS_SPLIT
+static const TxSize tx_depth_to_tx_size[3][BlockSizeS_ALL] = {
+    // tx_depth 0
+    {
+        TX_4X4,
+        TX_4X8,
+        TX_8X4,
+        TX_8X8,
+        TX_8X16,
+        TX_16X8,
+        TX_16X16,
+        TX_16X32,
+        TX_32X16,
+        TX_32X32,
+        TX_32X64,
+        TX_64X32,
+        TX_64X64,
+        TX_64X64,//TX_64X128,
+        TX_64X64,//TX_128X64,
+        TX_64X64,//TX_128X128,
+        TX_4X16,
+        TX_16X4,
+        TX_8X32,
+        TX_32X8,
+        TX_16X64,
+        TX_64X16
+    },
 
+    // tx_depth 1: use 32 instead of 64 and 16 instead of 32
+    {
+        TX_4X4,
+        TX_4X8,
+        TX_8X4,
+        TX_8X8,
+        TX_8X16,
+        TX_16X8,
+        TX_16X16,
+        TX_16X16,
+        TX_16X16,
+        TX_16X16,
+        TX_32X32,
+        TX_32X32,
+        TX_32X32,
+        TX_64X64,//TX_64X128,
+        TX_64X64,//TX_128X64,
+        TX_64X64,//TX_128X128,
+        TX_4X16,
+        TX_16X4,
+        TX_8X16,
+        TX_16X8,
+        TX_16X32,
+        TX_32X16
+    },
+
+    // tx_depth 2: use 16 instead of 64 and 6 instead of 32
+    {
+        TX_4X4,
+        TX_4X8,
+        TX_8X4,
+        TX_8X8,
+        TX_8X16,
+        TX_16X8,
+        TX_16X16,
+        TX_16X32,
+        TX_32X16,
+        TX_8X8,
+        TX_8X16,
+        TX_16X8,
+        TX_16X16,
+        TX_64X64,//TX_64X128,
+        TX_64X64,//TX_128X64,
+        TX_64X64,//TX_128X128,
+        TX_4X16,
+        TX_16X4,
+        TX_8X8,
+        TX_8X8,
+        TX_16X16,
+        TX_16X16
+    }
+};
+#endif
 static const int32_t tx_size_wide[TX_SIZES_ALL] = {
     4, 8, 16, 32, 64, 4, 8, 8, 16, 16, 32, 32, 64, 4, 16, 8, 32, 16, 64,
 };

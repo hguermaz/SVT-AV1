@@ -1761,20 +1761,20 @@ EbErrorType av1_tu_estimate_coeff_bits(
     PictureControlSet                    *picture_control_set_ptr,
     struct ModeDecisionCandidateBuffer   *candidate_buffer_ptr,
     CodingUnit                           *cu_ptr,
-    uint32_t                                  tu_origin_index,
-    uint32_t                                  tu_chroma_origin_index,
+    uint32_t                             tu_origin_index,
+    uint32_t                             tu_chroma_origin_index,
     EntropyCoder                         *entropy_coder_ptr,
     EbPictureBufferDesc                  *coeff_buffer_sb,
-    uint32_t                                 y_eob,
-    uint32_t                                 cb_eob,
-    uint32_t                                 cr_eob,
-    uint64_t                                 *y_tu_coeff_bits,
-    uint64_t                                 *cb_tu_coeff_bits,
-    uint64_t                                 *cr_tu_coeff_bits,
-    TxSize                                 txsize,
-    TxSize                                 txsize_uv,
-    COMPONENT_TYPE                          component_type,
-    EbAsm                                  asm_type)
+    uint32_t                              y_eob,
+    uint32_t                              cb_eob,
+    uint32_t                              cr_eob,
+    uint64_t                              *y_tu_coeff_bits,
+    uint64_t                              *cb_tu_coeff_bits,
+    uint64_t                              *cr_tu_coeff_bits,
+    TxSize                                txsize,
+    TxSize                                txsize_uv,
+    COMPONENT_TYPE                        component_type,
+    EbAsm                                 asm_type)
 {
     (void)asm_type;
     (void)entropy_coder_ptr;
@@ -2432,7 +2432,7 @@ void coding_loop_context_generation(
     cu_ptr->cr_txb_skip_context = 0;
     cu_ptr->cr_dc_sign_context = 0;
 #if TXS_MD
-    uint8_t tx_depth = context_ptr->tx_depth = cu_ptr->tx_depth = 0;
+    uint8_t tx_depth = context_ptr->tx_depth = cu_ptr->tx_depth;
     int32_t txb_count = context_ptr->blk_geom->txb_count[context_ptr->tx_depth]; //NM - TODO move inside Full loop
 #else
     int32_t txb_count = context_ptr->blk_geom->txb_count;

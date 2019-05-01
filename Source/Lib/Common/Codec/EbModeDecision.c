@@ -3488,8 +3488,6 @@ void  inject_intra_candidates_ois(
     
 #if TXS_MD
     uint8_t tx_depth = context_ptr->tx_depth;
-    if (tx_depth != 0)
-        printf("Error KKKKKK = %d\n ", tx_depth);
 #endif
     for (intra_candidate_counter = 0; intra_candidate_counter < total_intra_luma_mode; ++intra_candidate_counter) {
                 
@@ -4033,7 +4031,7 @@ void  inject_intra_candidates(
     angleDeltaCandidateCount = disable_angle_refinement ? 1: angleDeltaCandidateCount;
 #endif
 #if TXS_MD
-    uint8_t tx_depth = context_ptr->tx_depth = 0;
+    uint8_t tx_depth = context_ptr->tx_depth;
 #endif
     for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate <= intra_mode_end ; ++openLoopIntraCandidate) {
 
@@ -4395,9 +4393,6 @@ uint8_t product_full_mode_decision(
     cu_ptr->prediction_mode_flag = candidate_ptr->type;
 #if TX_SIZE_UPDATE_GEOM
     cu_ptr->tx_depth = candidate_ptr->tx_depth;
-
-    if (cu_ptr->tx_depth != 0)
-        printf("Error LLLLLLLL = %d\n ", cu_ptr->tx_depth);
 #endif
     cu_ptr->skip_flag = candidate_ptr->skip_flag; // note, the skip flag is re-checked in the ENCDEC process
     cu_ptr->block_has_coeff = ((candidate_ptr->block_has_coeff) > 0) ? EB_TRUE : EB_FALSE;
@@ -4507,9 +4502,6 @@ uint8_t product_full_mode_decision(
     {
 #if TX_SIZE_UPDATE_GEOM
         cu_ptr->tx_depth = candidate_ptr->tx_depth;
-
-        if (cu_ptr->tx_depth != 0)
-            printf("Error LLLLLLLL = %d\n ", cu_ptr->tx_depth);
         tuTotalCount = context_ptr->blk_geom->txb_count[candidate_ptr->tx_depth];
 #else
         tuTotalCount = context_ptr->blk_geom->txb_count;

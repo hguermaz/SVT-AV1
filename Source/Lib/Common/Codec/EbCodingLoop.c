@@ -555,8 +555,6 @@ static void Av1EncodeLoop(
 
 #if TXS_ENC
     uint8_t tx_depth = context_ptr->tx_depth;
-    if (cu_ptr->tx_depth != 0)
-        printf("Error AAAAA = %d\n ", cu_ptr->tx_depth);
     const uint32_t scratchLumaOffset = context_ptr->blk_geom->tx_org_x[tx_depth][context_ptr->txb_itr] + context_ptr->blk_geom->tx_org_y[tx_depth][context_ptr->txb_itr] * SB_STRIDE_Y;
     const uint32_t scratchCbOffset = ROUND_UV(context_ptr->blk_geom->tx_org_x[tx_depth][context_ptr->txb_itr]) / 2 + ROUND_UV(context_ptr->blk_geom->tx_org_y[tx_depth][context_ptr->txb_itr]) / 2 * SB_STRIDE_UV;
     const uint32_t scratchCrOffset = ROUND_UV(context_ptr->blk_geom->tx_org_x[tx_depth][context_ptr->txb_itr]) / 2 + ROUND_UV(context_ptr->blk_geom->tx_org_y[tx_depth][context_ptr->txb_itr]) / 2 * SB_STRIDE_UV;
@@ -2801,11 +2799,7 @@ EB_EXTERN void AV1EncodePass(
         UNUSED(blk_geom);
 
         sb_ptr->cu_partition_array[blk_it] = context_ptr->md_context->md_cu_arr_nsq[blk_it].part;
-#if TXS_ENC
-        context_ptr->tx_depth = cu_ptr->tx_depth;
-        if (context_ptr->tx_depth != 0)
-            printf("Error BBBBBBBBB = %d\n ", cu_ptr->tx_depth);
-#endif
+
 
         if (part != PARTITION_SPLIT) {
 
@@ -2828,7 +2822,9 @@ EB_EXTERN void AV1EncodePass(
                 int16_t                  *transform_inner_array_ptr = context_ptr->transform_inner_array_ptr;
 
                 CodingUnit            *cu_ptr = context_ptr->cu_ptr = &context_ptr->md_context->md_cu_arr_nsq[d1_itr];
-
+#if TXS_ENC
+                context_ptr->tx_depth = cu_ptr->tx_depth;
+#endif
                 context_ptr->cu_origin_x = (uint16_t)(sb_origin_x + blk_geom->origin_x);
                 context_ptr->cu_origin_y = (uint16_t)(sb_origin_y + blk_geom->origin_y);
                 cu_ptr->delta_qp = 0;
@@ -3548,6 +3544,9 @@ EB_EXTERN void AV1EncodePass(
 
                         for (tuIt = 0; tuIt < totTu; tuIt++) {
                             context_ptr->txb_itr = tuIt;
+#if TXS_SPLIT
+                            uint8_t uv_pass = context_ptr->tx_depth && tuIt ? 0 : 1; //NM: 128x128 exeption
+#endif
 #if TXS_ENC
                             txb_origin_x = context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->tx_depth][tuIt];
                             txb_origin_y = context_ptr->cu_origin_y + context_ptr->blk_geom->tx_boff_y[context_ptr->tx_depth][tuIt];
@@ -3572,7 +3571,11 @@ EB_EXTERN void AV1EncodePass(
                                     transform_inner_array_ptr,
                                     asm_type,
                                     count_non_zero_coeffs,
+#if TXS_SPLIT
+                                    context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+#else
                                     context_ptr->blk_geom->has_uv ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+#endif
                                     useDeltaQpSegments,
                                     cu_ptr->delta_qp > 0 ? 0 : dZoffset,
                                     eobs[context_ptr->txb_itr],
@@ -3665,7 +3668,11 @@ EB_EXTERN void AV1EncodePass(
                                         context_ptr->blk_geom->txsize[context_ptr->txb_itr],
                                         context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
 #endif
+#if TXS_SPLIT
+                                        context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
+#else
                                         context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
+#endif
                                         asm_type);
                                 }
 
@@ -3687,7 +3694,11 @@ EB_EXTERN void AV1EncodePass(
                                 // Update count_non_zero_coeffs after CBF decision
                                 if (cu_ptr->transform_unit_array[context_ptr->txb_itr].y_has_coeff == EB_FALSE)
                                     count_non_zero_coeffs[0] = 0;
+#if TXS_SPLIT
+                                if (context_ptr->blk_geom->has_uv && uv_pass) {
+#else
                                 if (context_ptr->blk_geom->has_uv) {
+#endif
                                     if (cu_ptr->transform_unit_array[context_ptr->txb_itr].u_has_coeff == EB_FALSE)
                                         count_non_zero_coeffs[1] = 0;
                                     if (cu_ptr->transform_unit_array[context_ptr->txb_itr].v_has_coeff == EB_FALSE)
@@ -3700,8 +3711,11 @@ EB_EXTERN void AV1EncodePass(
                                 cu_ptr->transform_unit_array[context_ptr->txb_itr].nz_coef_count[2] = (uint16_t)count_non_zero_coeffs[2];
 
                                 y_coeff_bits += y_tu_coeff_bits;
-
+#if TXS_SPLIT
+                                if (context_ptr->blk_geom->has_uv && uv_pass) {
+#else
                                 if (context_ptr->blk_geom->has_uv) {
+#endif
                                     cb_coeff_bits += cb_tu_coeff_bits;
                                     cr_coeff_bits += cr_tu_coeff_bits;
                                 }
@@ -3728,7 +3742,11 @@ EB_EXTERN void AV1EncodePass(
                                     //CHKN add updating eobs[] after CBF decision
                                     if (cu_ptr->transform_unit_array[context_ptr->txb_itr].y_has_coeff == EB_FALSE)
                                         eobs[context_ptr->txb_itr][0] = 0;
+#if TXS_SPLIT
+                                    if (context_ptr->blk_geom->has_uv && uv_pass) {
+#else
                                     if (context_ptr->blk_geom->has_uv) {
+#endif
                                         if (cu_ptr->transform_unit_array[context_ptr->txb_itr].u_has_coeff == EB_FALSE)
                                             eobs[context_ptr->txb_itr][1] = 0;
                                         if (cu_ptr->transform_unit_array[context_ptr->txb_itr].v_has_coeff == EB_FALSE)
@@ -3758,14 +3776,22 @@ EB_EXTERN void AV1EncodePass(
                                         context_ptr->blk_geom->txsize[context_ptr->txb_itr],
                                         context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
 #endif
+#if TXS_SPLIT
+                                        context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
+#else
                                         context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
+#endif
                                         asm_type);
                                 }
 #endif
                             }
 #if TXS_ENC
                             context_ptr->coded_area_sb += blk_geom->tx_width[context_ptr->tx_depth][tuIt] * blk_geom->tx_height[context_ptr->tx_depth][tuIt];
+#if TXS_SPLIT
+                            if (context_ptr->blk_geom->has_uv && uv_pass) 
+#else         
                             if (blk_geom->has_uv)
+#endif
                                 context_ptr->coded_area_sb_uv += blk_geom->tx_width_uv[context_ptr->tx_depth][tuIt] * blk_geom->tx_height_uv[context_ptr->tx_depth][tuIt];
 #else
                             context_ptr->coded_area_sb += blk_geom->tx_width[tuIt] * blk_geom->tx_height[tuIt];
@@ -3776,6 +3802,7 @@ EB_EXTERN void AV1EncodePass(
                         } // Transform Loop
 
                     }
+
 
                     //Set Final CU data flags after skip/Merge decision.
                     if (isFirstCUinRow == EB_FALSE) {
@@ -3797,19 +3824,19 @@ EB_EXTERN void AV1EncodePass(
                     v_has_coeff = 0;
 #if TXS_ENC
                     context_ptr->tx_depth = cu_ptr->tx_depth;
-                    if(context_ptr->tx_depth)
-                    printf("Error CCCCCCCC = %d\n ", cu_ptr->tx_depth);
                     totTu = context_ptr->blk_geom->txb_count[cu_ptr->tx_depth];
 #else
                     totTu = context_ptr->blk_geom->txb_count;
 #endif
-
 
                     //reset coeff buffer offsets at the start of a new Tx loop
                     context_ptr->coded_area_sb = coded_area_org;
                     context_ptr->coded_area_sb_uv = coded_area_org_uv;
                     for (tuIt = 0; tuIt < totTu; tuIt++)
                     {
+#if TXS_SPLIT
+                        uint8_t uv_pass = context_ptr->tx_depth && tuIt ? 0 : 1; //NM: 128x128 exeption
+#endif
                         context_ptr->txb_itr = tuIt;
 #if TXS_ENC
                         txb_origin_x = context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->tx_depth][tuIt];
@@ -3822,8 +3849,6 @@ EB_EXTERN void AV1EncodePass(
                             cu_ptr->transform_unit_array[context_ptr->txb_itr].y_has_coeff = EB_FALSE;
                             cu_ptr->transform_unit_array[context_ptr->txb_itr].u_has_coeff = EB_FALSE;
                             cu_ptr->transform_unit_array[context_ptr->txb_itr].v_has_coeff = EB_FALSE;
-
-
                         }
                         else if ((&cu_ptr->prediction_unit_array[0])->merge_flag == EB_TRUE) {
 
@@ -3844,7 +3869,11 @@ EB_EXTERN void AV1EncodePass(
                                 transform_inner_array_ptr,
                                 asm_type,
                                 count_non_zero_coeffs,
+#if TXS_SPLIT
+                                context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+#else
                                 context_ptr->blk_geom->has_uv ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+#endif
                                 useDeltaQpSegments,
                                 cu_ptr->delta_qp > 0 ? 0 : dZoffset,
                                 eobs[context_ptr->txb_itr],
@@ -3891,7 +3920,11 @@ EB_EXTERN void AV1EncodePass(
                                     context_ptr->blk_geom->txsize[context_ptr->txb_itr],
                                     context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
 #endif
+#if TXS_SPLIT
+                                    context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
+#else
                                     context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
+#endif
                                     asm_type);
                             }
 #endif
@@ -3899,7 +3932,11 @@ EB_EXTERN void AV1EncodePass(
 
                         }
 
+#if TXS_SPLIT
+                        if (context_ptr->blk_geom->has_uv && uv_pass) {
+#else
                         if (context_ptr->blk_geom->has_uv) {
+#endif
                             cu_ptr->block_has_coeff = cu_ptr->block_has_coeff |
                                 cu_ptr->transform_unit_array[context_ptr->txb_itr].y_has_coeff |
                                 cu_ptr->transform_unit_array[context_ptr->txb_itr].u_has_coeff |
@@ -3921,10 +3958,18 @@ EB_EXTERN void AV1EncodePass(
                                 recon_buffer,
                                 inverse_quant_buffer,
                                 transform_inner_array_ptr,
+#if TXS_SPLIT
+                                context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+#else
                                 context_ptr->blk_geom->has_uv ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+#endif
                                 eobs[context_ptr->txb_itr],
                                 asm_type);
+#if TXS_SPLIT
+                        if (context_ptr->blk_geom->has_uv && uv_pass) {
+#else
                         if (context_ptr->blk_geom->has_uv) {
+#endif
                             y_has_coeff |= cu_ptr->transform_unit_array[context_ptr->txb_itr].y_has_coeff;
                             u_has_coeff |= cu_ptr->transform_unit_array[context_ptr->txb_itr].u_has_coeff;
                             v_has_coeff |= cu_ptr->transform_unit_array[context_ptr->txb_itr].v_has_coeff;
@@ -3935,7 +3980,12 @@ EB_EXTERN void AV1EncodePass(
 
 #if TXS_ENC
                         context_ptr->coded_area_sb += blk_geom->tx_width[context_ptr->tx_depth][tuIt] * blk_geom->tx_height[context_ptr->tx_depth][tuIt];
+
+#if TXS_SPLIT    
+                        if (context_ptr->blk_geom->has_uv && uv_pass)
+#else
                         if (blk_geom->has_uv)
+#endif
                             context_ptr->coded_area_sb_uv += blk_geom->tx_width_uv[context_ptr->tx_depth][tuIt] * blk_geom->tx_height_uv[context_ptr->tx_depth][tuIt];
 #else
                         context_ptr->coded_area_sb += blk_geom->tx_width[tuIt] * blk_geom->tx_height[tuIt];

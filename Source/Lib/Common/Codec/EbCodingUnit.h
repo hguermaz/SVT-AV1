@@ -195,6 +195,9 @@ extern "C" {
 #if TX_SIZE_SEARCH_LEVELS
         uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
 #endif
+#if TXS_SPLIT
+        uint8_t tx_depth;
+#endif
     } MbModeInfo;
 
     typedef struct ModeInfo {

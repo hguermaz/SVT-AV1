@@ -1239,8 +1239,6 @@ void AV1PerformInverseTransformReconLuma(
     if (picture_control_set_ptr->intra_md_open_loop_flag == EB_FALSE) {
 #if TX_SIZE_UPDATE_GEOM
         uint8_t tx_depth = candidateBuffer->candidate_ptr->tx_depth;
-        if (tx_depth != 0)
-            printf("Error MMMMMMMMM = %d\n ", tx_depth);
         tuTotalCount = context_ptr->blk_geom->txb_count[tx_depth];
 #else
         tuTotalCount = blk_geom->txb_count;
@@ -1353,8 +1351,6 @@ void AV1PerformInverseTransformRecon(
     if (picture_control_set_ptr->intra_md_open_loop_flag == EB_FALSE) {
 #if TX_SIZE_UPDATE_GEOM
         uint8_t tx_depth = candidateBuffer->candidate_ptr->tx_depth;
-        if (tx_depth != 0)
-            printf("Error NNNNNNNNNNN = %d\n ", tx_depth);
         tuTotalCount = context_ptr->blk_geom->txb_count[tx_depth];
 #else
         tuTotalCount = context_ptr->blk_geom->txb_count;
@@ -1557,6 +1553,10 @@ void ProductCodingLoopInitFastLoop(
     // Keep track of the SB Ptr
     context_ptr->luma_intra_ref_samples_gen_done = EB_FALSE;
     context_ptr->chroma_intra_ref_samples_gen_done = EB_FALSE;
+#endif
+
+#if TXS_MD
+    context_ptr->tx_depth = context_ptr->cu_ptr->tx_depth = 0;
 #endif
     // Generate Split, Skip and intra mode contexts for the rate estimation
     coding_loop_context_generation(
@@ -2794,7 +2794,7 @@ void AV1PerformFullLoop(
         candidate_ptr->v_has_coeff = 0;
 
 #if TX_SIZE_UPDATE_GEOM
-        candidateBuffer->candidate_ptr->tx_depth = 0;
+        candidateBuffer->candidate_ptr->tx_depth = 0; // use tx_depth 0 (Max tx size) for tx_type serach.
 #endif
 
         uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_FULL_LOOP ? get_skip_tx_search_flag(
@@ -2825,6 +2825,12 @@ void AV1PerformFullLoop(
             candidate_ptr->y_has_coeff = 0;
         }
 
+#if TXS_SPLIT
+        if ((context_ptr->blk_geom->bsize == BLOCK_64X64 || 
+            context_ptr->blk_geom->bsize == BLOCK_32X32) &&
+            candidateBuffer->candidate_ptr->type == INTER_MODE)
+            candidateBuffer->candidate_ptr->tx_depth = rand() % 3; //Nader tx_candidate depth
+#endif
         product_full_loop(
             candidateBuffer,
             context_ptr,
@@ -3040,7 +3046,9 @@ void move_cu_data(
     dst_cu->org_delta_qp = src_cu->org_delta_qp;
 #endif
 
-
+#if TXS_MD
+    dst_cu->tx_depth = src_cu->tx_depth;
+#endif
 
     //CHKN    // Coded Tree
     //CHKN    struct {
@@ -3934,7 +3942,9 @@ void search_best_independent_uv_mode(
     uint8_t uv_mode_end = is_16_bit ? UV_SMOOTH_H_PRED : UV_PAETH_PRED;
 #endif
 #if TXS_MD
-    uint8_t tx_depth = candidateBuffer->candidate_ptr->tx_depth = 0;
+    candidateBuffer->candidate_ptr->tx_depth = 0;
+    uint8_t tx_depth = candidateBuffer->candidate_ptr->tx_depth;
+
 #endif
     for (uv_mode = uv_mode_start; uv_mode <= uv_mode_end; uv_mode++) {
 
@@ -4559,7 +4569,11 @@ void md_encode_block(
 #if RED_CU
         context_ptr->md_local_cu_unit[cu_ptr->mds_idx].avail_blk_flag = EB_TRUE;
 #endif
-
+#if 0//TXS_SPLIT
+        if (/*context_ptr->blk_geom->bsize == BLOCK_64X64 ||*/ context_ptr->blk_geom->bsize == BLOCK_32X32) {
+            context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost = context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost / 100;
+        }
+#endif
     }
     else
     {
