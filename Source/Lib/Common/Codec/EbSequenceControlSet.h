@@ -234,7 +234,9 @@ extern "C" {
         int32_t                                 extra_frames_to_ref_islice;
         int32_t                                 max_frame_window_to_ref_islice;
 #endif
-
+#if MRP_ME
+        uint32_t                                reference_count;
+#endif
 
 #if ADP_STATS_PER_LAYER
         uint64_t                                total_count[5];

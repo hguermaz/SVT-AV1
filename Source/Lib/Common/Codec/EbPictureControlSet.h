@@ -13472,12 +13472,12 @@ extern "C" {
     },
     };
 #if SETUP_SKIP
-	typedef struct {
-		int skip_mode_allowed;
-		int skip_mode_flag;
-		int ref_frame_idx_0;
-		int ref_frame_idx_1;
-	} SkipModeInfo;
+    typedef struct {
+        int skip_mode_allowed;
+        int skip_mode_flag;
+        int ref_frame_idx_0;
+        int ref_frame_idx_1;
+    } SkipModeInfo;
 #endif
     struct Buf2d 
     {
@@ -13730,12 +13730,12 @@ extern "C" {
 
         // Reference Lists
 #if MRP_MD
-		// Reference Lists
-		EbObjectWrapper                    *ref_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
-		//EB_S64                                refPicPocArray[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        // Reference Lists
+        EbObjectWrapper                    *ref_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        //EB_S64                                refPicPocArray[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
 
-		uint8_t                               ref_pic_qp_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
-		EB_SLICE                              ref_slice_type_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        uint8_t                               ref_pic_qp_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        EB_SLICE                              ref_slice_type_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
 #else
         EbObjectWrapper                    *ref_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST];
         uint8_t                               ref_pic_qp_array[MAX_NUM_OF_REF_PIC_LIST];
@@ -13995,7 +13995,7 @@ extern "C" {
         PredictionStructure                *pred_struct_ptr;          // need to check
         struct SequenceControlSet          *sequence_control_set_ptr;
 #if MRP_ME
-		struct PictureParentControlSet     *ref_pa_pcs_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        struct PictureParentControlSet     *ref_pa_pcs_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
 #else
         struct PictureParentControlSet     *ref_pa_pcs_array[MAX_NUM_OF_REF_PIC_LIST];
 #endif
@@ -14034,8 +14034,8 @@ extern "C" {
         uint8_t                               ref_list0_count;
         uint8_t                               ref_list1_count;
 #if MRP_MVP
-		MvReferenceFrame                      ref_frame_type_arr[MODE_CTX_REF_FRAMES];
-		uint8_t                               tot_ref_frame_types;
+        MvReferenceFrame                      ref_frame_type_arr[MODE_CTX_REF_FRAMES];
+        uint8_t                               tot_ref_frame_types;
 #endif
         // Rate Control
         uint64_t                              pred_bits_ref_qp[MAX_REF_QP_NUM];
@@ -14073,8 +14073,8 @@ extern "C" {
 
         // Pre Analysis
 #if MRP_ME
-		EbObjectWrapper                   *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
-		uint64_t                              ref_pic_poc_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        EbObjectWrapper                   *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        uint64_t                              ref_pic_poc_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
 #else
         EbObjectWrapper                    *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST];
         uint64_t                              ref_pic_poc_array[MAX_NUM_OF_REF_PIC_LIST];
@@ -14172,8 +14172,8 @@ extern "C" {
         // Motion Estimation Results
         uint8_t                               max_number_of_pus_per_sb;
 #if MRP_ME
-		uint8_t                               max_number_of_candidates_per_block;
-		MeLcuResults                       **me_results;
+        uint8_t                               max_number_of_candidates_per_block;
+        MeLcuResults                        **me_results;
 #else
         MeCuResults                       **me_results;
 #endif
@@ -14203,7 +14203,7 @@ extern "C" {
 
         // MD
         EbEncMode                             enc_mode;
-        EB_SB_DEPTH_MODE                     *sb_depth_mode_array;		
+        EB_SB_DEPTH_MODE                     *sb_depth_mode_array;        
         EbSbComplexityStatus                 *complex_sb_array;
         EbCu8x8Mode                           cu8x8_mode;
         EbBool                                use_src_ref;
@@ -14374,10 +14374,10 @@ extern "C" {
         uint8_t                              sc_content_detected;
         uint8_t                              ibc_mode;
 #if SETUP_SKIP
-		SkipModeInfo                         skip_mode_info;
+        SkipModeInfo                         skip_mode_info;
 #endif
 #if NO_UNI
-		uint8_t                              mrp_mode;
+        uint8_t                              mrp_mode;
 #endif
     } PictureParentControlSet;
 
@@ -14649,10 +14649,10 @@ extern "C" {
         EbPtr  object_init_data_ptr);
 
 #if MRP_ME
-	extern EbErrorType me_sb_results_ctor(
-		MeLcuResults     **objectDblPtr,
-		uint32_t           maxNumberOfPusPerLcu,
-		uint32_t           maxNumberOfMeCandidatesPerPU);
+    extern EbErrorType me_sb_results_ctor(
+        MeLcuResults     **objectDblPtr,
+        uint32_t           maxNumberOfPusPerLcu,
+        uint32_t           maxNumberOfMeCandidatesPerPU);
 #endif
 #ifdef __cplusplus
 }

@@ -249,12 +249,12 @@ cglobal dc_predictor_16x16, 4, 5, 3, dst, stride, above, left, goffset
   punpcklqdq            m0, m0
   packuswb              m0, m0
 .loop:
-  movdqu				[dstq          ], m0
-  movdqu				[dstq+strideq  ], m0
-  movdqu				[dstq+strideq*2], m0
-  movdqu				[dstq+stride3q ], m0
-  lea					dstq, [dstq+strideq*4]
-  dec					lines4d
+  movdqu                [dstq          ], m0
+  movdqu                [dstq+strideq  ], m0
+  movdqu                [dstq+strideq*2], m0
+  movdqu                [dstq+stride3q ], m0
+  lea                    dstq, [dstq+strideq*4]
+  dec                    lines4d
   jnz .loop
 
   RESTORE_GOT
@@ -590,12 +590,12 @@ cglobal h_predictor_16x16, 2, 5, 3, dst, stride, line, left
   punpcklbw             m0, m0              ; l1 to l4 each repeated 4 times
   pshufd            m1, m0, 0x0             ; l1 repeated 16 times
   pshufd            m2, m0, 0x55            ; l2 repeated 16 times
-  movdqu			[dstq          ], m1
-  movdqu			[dstq+strideq  ], m2
+  movdqu            [dstq          ], m1
+  movdqu            [dstq+strideq  ], m2
   pshufd            m1, m0, 0xaa
   pshufd            m2, m0, 0xff
-  movdqu			[dstq+strideq*2], m1
-  movdqu			[dstq+stride3q ], m2
+  movdqu            [dstq+strideq*2], m1
+  movdqu            [dstq+stride3q ], m2
   inc                lineq
   lea                leftq, [leftq+4       ]
   lea                 dstq, [dstq+strideq*4]

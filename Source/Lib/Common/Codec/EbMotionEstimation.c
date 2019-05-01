@@ -6988,8 +6988,8 @@ EbErrorType  BiPredictionCompensation(
     // First refrence
     // Set Candidate information
 #if MRP_FLAG
-	firstRefPosX = _MVXT(firstRefMv);
-	firstRefPosY = _MVYT(firstRefMv);
+    firstRefPosX = _MVXT(firstRefMv);
+    firstRefPosY = _MVYT(firstRefMv);
 #else
     firstRefPosX = _MVXT(firstRefMv),
     firstRefPosY = _MVYT(firstRefMv),
@@ -7026,8 +7026,8 @@ EbErrorType  BiPredictionCompensation(
 
     // Set Candidate information
 #if MRP_FLAG
-	secondRefPosX = _MVXT(secondRefMv);
-	secondRefPosY = _MVYT(secondRefMv);
+    secondRefPosX = _MVXT(secondRefMv);
+    secondRefPosY = _MVYT(secondRefMv);
 #else
     secondRefPosX = _MVXT(secondRefMv),
     secondRefPosY = _MVYT(secondRefMv),
@@ -7241,43 +7241,43 @@ EbErrorType  BiPredictionSearch(
 
 #if MRP_MD_UNI_DIR_BIPRED
 #if NO_UNI
-	if (picture_control_set_ptr->mrp_mode == 0)
-	{
+    if (picture_control_set_ptr->mrp_mode == 0)
+    {
 #endif
-		//NM: Within list 0	bipred: (LAST,LAST2)	(LAST,LAST3)	(LAST,GOLD)
-		for (firstListRefPictdx = 1; firstListRefPictdx < activeRefPicFirstLisNum; firstListRefPictdx++) {
-			BiPredictionCompensation(
-				context_ptr,
-				pu_index,
-				&(context_ptr->me_candidate[candidateIndex].pu[pu_index]),
-				REFERENCE_PIC_LIST_0,
-				0,
-				context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_0][0][nIndex],
-				REFERENCE_PIC_LIST_0,
-				firstListRefPictdx,
-				context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_0][firstListRefPictdx][nIndex],
-				asm_type);
+        //NM: Within list 0    bipred: (LAST,LAST2)    (LAST,LAST3)    (LAST,GOLD)
+        for (firstListRefPictdx = 1; firstListRefPictdx < activeRefPicFirstLisNum; firstListRefPictdx++) {
+            BiPredictionCompensation(
+                context_ptr,
+                pu_index,
+                &(context_ptr->me_candidate[candidateIndex].pu[pu_index]),
+                REFERENCE_PIC_LIST_0,
+                0,
+                context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_0][0][nIndex],
+                REFERENCE_PIC_LIST_0,
+                firstListRefPictdx,
+                context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_0][firstListRefPictdx][nIndex],
+                asm_type);
 
-			candidateIndex++;
-		}
-		//NM: Within list 1	bipred: (BWD, ALT)		 
-		for (secondListRefPictdx = 1; secondListRefPictdx < MIN(activeRefPicSecondLisNum, 1); secondListRefPictdx++) {
-			BiPredictionCompensation(
-				context_ptr,
-				pu_index,
-				&(context_ptr->me_candidate[candidateIndex].pu[pu_index]),
-				REFERENCE_PIC_LIST_1,
-				0,
-				context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_1][0][nIndex],
-				REFERENCE_PIC_LIST_1,
-				secondListRefPictdx,
-				context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_1][secondListRefPictdx][nIndex],
-				asm_type);
+            candidateIndex++;
+        }
+        //NM: Within list 1    bipred: (BWD, ALT)         
+        for (secondListRefPictdx = 1; secondListRefPictdx < MIN(activeRefPicSecondLisNum, 1); secondListRefPictdx++) {
+            BiPredictionCompensation(
+                context_ptr,
+                pu_index,
+                &(context_ptr->me_candidate[candidateIndex].pu[pu_index]),
+                REFERENCE_PIC_LIST_1,
+                0,
+                context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_1][0][nIndex],
+                REFERENCE_PIC_LIST_1,
+                secondListRefPictdx,
+                context_ptr->p_sb_best_mv[REFERENCE_PIC_LIST_1][secondListRefPictdx][nIndex],
+                asm_type);
 
-			candidateIndex++;
-		}
-#if NO_UNI		
-	}
+            candidateIndex++;
+        }
+#if NO_UNI        
+    }
 #endif
 #endif
     *total_me_candidate_index = candidateIndex;
@@ -8170,7 +8170,6 @@ EbErrorType motion_estimate_lcu(
     uint8_t                  num_of_ref_pic_to_search;
     uint8_t                  candidate_index = 0;
     uint32_t                 next_candidate_index = 0;
-    uint8_t                  total_me_candidates = 0;
 
     MePredUnit             *me_candidate;
 #endif
@@ -8263,7 +8262,7 @@ EbErrorType motion_estimate_lcu(
 #if BASE_LAYER_REF
             if (picture_control_set_ptr->temporal_layer_index > 0 || listIndex == 0 || ((ref0Poc != ref1Poc) && (listIndex == 1))) {
 #else
-			if (picture_control_set_ptr->temporal_layer_index > 0 || listIndex == 0) {
+            if (picture_control_set_ptr->temporal_layer_index > 0 || listIndex == 0) {
 #endif
                 // A - The MV center for Tier0 search could be either (0,0), or HME
                 // A - Set HME MV Center
@@ -8673,7 +8672,7 @@ EbErrorType motion_estimate_lcu(
                 {
                     if (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE) {
 #if MRP_ME
-						initialize_buffer32bits_func_ptr_array[asm_type](context_ptr->p_sb_best_sad[listIndex][ref_pic_index], 52, 1, MAX_SAD_VALUE);
+                        initialize_buffer32bits_func_ptr_array[asm_type](context_ptr->p_sb_best_sad[listIndex][ref_pic_index], 52, 1, MAX_SAD_VALUE);
 
                         context_ptr->p_best_sad64x64 = &(context_ptr->p_sb_best_sad[listIndex][ref_pic_index][ME_TIER_ZERO_PU_64x64]);
                         context_ptr->p_best_sad32x32 = &(context_ptr->p_sb_best_sad[listIndex][ref_pic_index][ME_TIER_ZERO_PU_32x32_0]);
@@ -8793,7 +8792,7 @@ EbErrorType motion_estimate_lcu(
                     else {
 
 #if MRP_ME
-					initialize_buffer32bits_func_ptr_array[asm_type](context_ptr->p_sb_best_sad[listIndex][ref_pic_index], 21, 1, MAX_SAD_VALUE);
+                    initialize_buffer32bits_func_ptr_array[asm_type](context_ptr->p_sb_best_sad[listIndex][ref_pic_index], 21, 1, MAX_SAD_VALUE);
                     context_ptr->p_best_sad64x64 = &(context_ptr->p_sb_best_sad[listIndex][ref_pic_index][ME_TIER_ZERO_PU_64x64]);
                     context_ptr->p_best_sad32x32 = &(context_ptr->p_sb_best_sad[listIndex][ref_pic_index][ME_TIER_ZERO_PU_32x32_0]);
                     context_ptr->p_best_sad16x16 = &(context_ptr->p_sb_best_sad[listIndex][ref_pic_index][ME_TIER_ZERO_PU_16x16_0]);
@@ -8954,9 +8953,9 @@ EbErrorType motion_estimate_lcu(
                             asm_type,
                             picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_1,
 #if M9_SUBPEL_SELECTION
-							enableHalfPel32x32,
-							enableHalfPel16x16,
-							enableHalfPel8x8,
+                            enableHalfPel32x32,
+                            enableHalfPel16x16,
+                            enableHalfPel8x8,
 #endif
                             enableQuarterPel,
 #if DISABLE_NSQ_FOR_NON_REF || DISABLE_NSQ
@@ -9022,7 +9021,7 @@ EbErrorType motion_estimate_lcu(
 
                     }
 #if MRP_ME
-					if (is_nsq_table_used && ref_pic_index == 0) {
+                    if (is_nsq_table_used && ref_pic_index == 0) {
 #else
                     if (is_nsq_table_used) {
 #endif
@@ -9184,7 +9183,7 @@ EbErrorType motion_estimate_lcu(
         mePuResult->me_nsq_0[pu_index] = l0_nsq;
         mePuResult->me_nsq_1[pu_index] = l1_nsq;
 #endif
-
+        mePuResult->total_me_candidate_index[pu_index] = MIN(total_me_candidate_index, ME_RES_CAND);
 
         // Assining the ME candidates to the me Results buffer
         for (candidateIndex = 0; candidateIndex < total_me_candidate_index; ++candidateIndex) {
@@ -9309,8 +9308,6 @@ EbErrorType motion_estimate_lcu(
 #endif
 
     }
-
-
 
     if (sequence_control_set_ptr->static_config.rate_control_mode) {
 

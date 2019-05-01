@@ -73,7 +73,7 @@
 #define HME_LEVEL1_HEIGHT               "-hme-l1-h"
 #define HME_LEVEL2_WIDTH                "-hme-l2-w"
 #define HME_LEVEL2_HEIGHT               "-hme-l2-h"
-
+#define SCREEN_CONTENT_TOKEN            "-scm"
 #define CONSTRAINED_INTRA_ENABLE_TOKEN  "-constrd-intra"
 #define IMPROVE_SHARPNESS_TOKEN         "-sharp"
 #define HDR_INPUT_TOKEN                 "-hdr"
@@ -215,6 +215,7 @@ static void SetHmeLevel1SearchAreaInWidthArray  (const char *value, EbConfig *cf
 static void SetHmeLevel1SearchAreaInHeightArray (const char *value, EbConfig *cfg) {cfg->hme_level1_search_area_in_height_array[cfg->hme_level1_row_index++] = strtoul(value, NULL, 0);};
 static void SetHmeLevel2SearchAreaInWidthArray  (const char *value, EbConfig *cfg) {cfg->hme_level2_search_area_in_width_array[cfg->hme_level2_column_index++] = strtoul(value, NULL, 0);};
 static void SetHmeLevel2SearchAreaInHeightArray (const char *value, EbConfig *cfg) {cfg->hme_level2_search_area_in_height_array[cfg->hme_level2_row_index++] = strtoul(value, NULL, 0);};
+static void SetScreenContentMode                (const char *value, EbConfig *cfg) {cfg->screen_content_mode                                                 = strtoul(value, NULL, 0);};
 static void SetEnableConstrainedIntra           (const char *value, EbConfig *cfg) {cfg->constrained_intra                                             = (EbBool)strtoul(value, NULL, 0);};
 static void SetImproveSharpness                 (const char *value, EbConfig *cfg) {cfg->improve_sharpness               = (EbBool)strtol(value,  NULL, 0);};
 static void SetHighDynamicRangeInput            (const char *value, EbConfig *cfg) {cfg->high_dynamic_range_input            = strtol(value,  NULL, 0);};
@@ -332,6 +333,7 @@ config_entry_t config_entry[] = {
     { SINGLE_INPUT, HME_SRCH_T_L0_HEIGHT_TOKEN, "HmeLevel0TotalSearchAreaHeight", SetCfgHmeLevel0TotalSearchAreaHeight },
 
     // MD Parameters
+    { SINGLE_INPUT, SCREEN_CONTENT_TOKEN, "ScreenContentMode", SetScreenContentMode},
     { SINGLE_INPUT, CONSTRAINED_INTRA_ENABLE_TOKEN, "ConstrainedIntra", SetEnableConstrainedIntra},
 
     // Thread Management
@@ -452,6 +454,7 @@ void eb_config_ctor(EbConfig *config_ptr)
     config_ptr->hme_level2_search_area_in_width_array[1]   = 1;
     config_ptr->hme_level2_search_area_in_height_array[0]  = 1;
     config_ptr->hme_level2_search_area_in_height_array[1]  = 1;
+    config_ptr->screen_content_mode                  = 2;
     config_ptr->constrained_intra                    = 0;
     config_ptr->film_grain_denoise_strength          = 0;
 

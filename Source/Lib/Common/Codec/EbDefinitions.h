@@ -42,10 +42,9 @@ extern "C" {
 #define MRP_SUPPORT            1// MRP Main Flag
 #endif
 
-
 // New  presets
-#define NEW_PRESETS                    1
-
+#define NEW_PRESETS                       1
+#define NEW_BUFF_CFG                      1
 /************************* Omar to remove disable_ang_uv *************************/
 #define MEMORY_FOOTPRINT_OPT              0                    
 #define CDEF_AVX_OPT                      1
@@ -177,22 +176,22 @@ extern "C" {
 #if MRP_SUPPORT
 
 #define M0_SSD_HALF_QUARTER_PEL_BIPRED_SEARCH  1
-#define DISABLE_NSQ_FOR_NON_REF 			   1
-#define DISABLE_NSQ							   1
-#define M0_ME_QUARTER_PEL_SEARCH			   1
-#define NSQ_OPTIMASATION					   1
-//#define M8_SKIP_BLK							   1
-#define DISABLE_IN_LOOP_ME					   1
-#define TILES								   1
-#define REMOVED_DUPLICATE_INTER				   1
-#define REMOVED_DUPLICATE_INTER_L1			   1
-#define REMOVED_DUPLICATE_INTER_BIPRED		   1
-#define ICOPY								   1
-#define INTRA_INTER_FAST_LOOP				   1
-#define M0_ME_SEARCH_BASE					   1
-#define SHUT_GLOBAL_MV						   1
-#define IMPROVED_BIPRED_INJECTION			   1
-#define IMPROVED_UNIPRED_INJECTION			   1
+#define DISABLE_NSQ_FOR_NON_REF                1
+#define DISABLE_NSQ                               1
+#define M0_ME_QUARTER_PEL_SEARCH               1
+#define NSQ_OPTIMASATION                       1
+//#define M8_SKIP_BLK                               1
+#define DISABLE_IN_LOOP_ME                       1
+#define TILES                                   1
+#define REMOVED_DUPLICATE_INTER                   1
+#define REMOVED_DUPLICATE_INTER_L1               1
+#define REMOVED_DUPLICATE_INTER_BIPRED           1
+#define ICOPY                                   1
+#define INTRA_INTER_FAST_LOOP                   1
+#define M0_ME_SEARCH_BASE                       1
+#define SHUT_GLOBAL_MV                           1
+#define IMPROVED_BIPRED_INJECTION               1
+#define IMPROVED_UNIPRED_INJECTION               1
 
 //NEEDED FLAGS  OFF
 //M0_HIGH_PRECISION_INTERPOLATION
@@ -230,12 +229,17 @@ extern "C" {
 #define RPS_4L                    1 //RPS for 4L case
 #define FIX_ORDER_HINT            1 //fix order hint usage.
 #define M8_CDEF_DEBUG             0 //Keep OFF Debug flag ofr M8
-#define MRP_M0_ONLY               1 // Enable MRP for Base only for M1-M9
+#define MRP_M0_ONLY               0 // Enable MRP for Base only for M1-M9
 #define NO_CFG_FILE               1 //allocate ME results for 209 PUs
 #define NO_UNI                    1
 #define MRP_MEM_OPT               1
 #define MRP_FLAG                  1
 #define MRP_FIX_CLOSE_GOP         1
+
+#define MRP_M1                    1 // replaces MRP_M0_ONLY
+#define FIXED_MRP_10BIT           1
+#define FIX_WARP_TILE             1 //fix Warped motion in presnece of Tiles
+#define MRP_FIX_RC_WARNINGS       1
 #endif
 
 
@@ -1773,7 +1777,7 @@ static INLINE int32_t is_inter_compound_mode(PredictionMode mode) {
 }
 #if EC_UPDATE
 static INLINE int is_inter_singleref_mode(PredictionMode mode) {
-	return mode >= SINGLE_INTER_MODE_START && mode < SINGLE_INTER_MODE_END;
+    return mode >= SINGLE_INTER_MODE_START && mode < SINGLE_INTER_MODE_END;
 }
 #endif
 

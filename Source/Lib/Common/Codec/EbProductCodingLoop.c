@@ -1695,7 +1695,7 @@ void perform_fast_loop(
                 context_ptr->cu_origin_y >> MI_SIZE_LOG2,
                 context_ptr->cu_origin_x >> MI_SIZE_LOG2,
 #if MRP_COST_EST
-				1,
+                1,
 #endif
                 context_ptr->intra_luma_left_mode,
                 context_ptr->intra_luma_top_mode);
@@ -1818,7 +1818,7 @@ void perform_fast_loop(
                 context_ptr->cu_origin_y >> MI_SIZE_LOG2,
                 context_ptr->cu_origin_x >> MI_SIZE_LOG2,
 #if MRP_COST_EST
-				1,
+                1,
 #endif
                 context_ptr->intra_luma_left_mode,
                 context_ptr->intra_luma_top_mode);
@@ -3731,10 +3731,9 @@ void  order_nsq_table(
     me2Nx2NTableOffset = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4 || context_ptr->blk_geom->bwidth == 128 || context_ptr->blk_geom->bheight == 128) ? 0 :
         get_me_info_index(max_number_of_pus_per_sb, context_ptr->blk_geom, geom_offset_x, geom_offset_y);
 #if MD_INJECTION
-	const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
-	const MeCandidate *me_block_candidates = me_results->me_candidate[me2Nx2NTableOffset];
-	uint8_t nsq0 = me_results->me_nsq_0[me2Nx2NTableOffset];
-	uint8_t nsq1 = me_results->me_nsq_1[me2Nx2NTableOffset];
+    const MeLcuResults *me_results = picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr];
+    uint8_t nsq0 = me_results->me_nsq_0[me2Nx2NTableOffset];
+    uint8_t nsq1 = me_results->me_nsq_1[me2Nx2NTableOffset];
 #else
     MeCuResults * mePuResult = &picture_control_set_ptr->parent_pcs_ptr->me_results[me_sb_addr][me2Nx2NTableOffset];
     uint8_t nsq0 = mePuResult->me_nsq[0];
@@ -4147,7 +4146,7 @@ void search_best_independent_uv_mode(
                         context_ptr->cu_origin_y >> MI_SIZE_LOG2,
                         context_ptr->cu_origin_x >> MI_SIZE_LOG2,
 #if MRP_COST_EST
-						1,
+                        1,
 #endif
                         context_ptr->intra_luma_left_mode,
                         context_ptr->intra_luma_top_mode);
@@ -4268,6 +4267,8 @@ void md_encode_block(
 
 
 #if SEARCH_UV_MODE
+        // Initialize uv_search_path     
+        context_ptr->uv_search_path = EB_FALSE;
         // Search the best independent intra chroma mode
         if (context_ptr->chroma_level == CHROMA_MODE_0) {
             if (context_ptr->blk_geom->sq_size < 128) {
@@ -4724,27 +4725,27 @@ EB_EXTERN EbErrorType mode_decision_sb(
             }
 
 #if MRP_COST_EST
-			int32_t mi_row = context_ptr->cu_origin_y >> MI_SIZE_LOG2;
-			int32_t mi_col = context_ptr->cu_origin_x >> MI_SIZE_LOG2;
-			int mi_stride = picture_control_set_ptr->parent_pcs_ptr->av1_cm->mi_stride;
-			const int32_t offset = mi_row * mi_stride + mi_col;
-			cu_ptr->av1xd->mi = picture_control_set_ptr->parent_pcs_ptr->av1_cm->pcs_ptr->mi_grid_base + offset;
-			ModeInfo *mi_ptr = *cu_ptr->av1xd->mi;
-			cu_ptr->av1xd->up_available = (mi_row > sb_ptr->tile_info.mi_row_start);
-			cu_ptr->av1xd->left_available = (mi_col > sb_ptr->tile_info.mi_col_start);
-			if (cu_ptr->av1xd->up_available) {
-				cu_ptr->av1xd->above_mbmi = &mi_ptr[-mi_stride].mbmi;
-			}
-			else {
-				cu_ptr->av1xd->above_mbmi = NULL;
-			}
+            int32_t mi_row = context_ptr->cu_origin_y >> MI_SIZE_LOG2;
+            int32_t mi_col = context_ptr->cu_origin_x >> MI_SIZE_LOG2;
+            int mi_stride = picture_control_set_ptr->parent_pcs_ptr->av1_cm->mi_stride;
+            const int32_t offset = mi_row * mi_stride + mi_col;
+            cu_ptr->av1xd->mi = picture_control_set_ptr->parent_pcs_ptr->av1_cm->pcs_ptr->mi_grid_base + offset;
+            ModeInfo *mi_ptr = *cu_ptr->av1xd->mi;
+            cu_ptr->av1xd->up_available = (mi_row > sb_ptr->tile_info.mi_row_start);
+            cu_ptr->av1xd->left_available = (mi_col > sb_ptr->tile_info.mi_col_start);
+            if (cu_ptr->av1xd->up_available) {
+                cu_ptr->av1xd->above_mbmi = &mi_ptr[-mi_stride].mbmi;
+            }
+            else {
+                cu_ptr->av1xd->above_mbmi = NULL;
+            }
 
-			if (cu_ptr->av1xd->left_available) {
-				cu_ptr->av1xd->left_mbmi = &mi_ptr[-1].mbmi;
-			}
-			else {
-				cu_ptr->av1xd->left_mbmi = NULL;
-			}
+            if (cu_ptr->av1xd->left_available) {
+                cu_ptr->av1xd->left_mbmi = &mi_ptr[-1].mbmi;
+            }
+            else {
+                cu_ptr->av1xd->left_mbmi = NULL;
+            }
 #endif
 
 #if RED_CU
@@ -8283,7 +8284,7 @@ EB_EXTERN EbErrorType in_loop_motion_estimation_sblock(
 
         EbBool  is16bit = (EbBool)(sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
 #if MRP_MD
-		referenceObject = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[listIndex][0]->object_ptr;
+        referenceObject = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[listIndex][0]->object_ptr;
 #else
         referenceObject = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[listIndex]->object_ptr;
 #endif

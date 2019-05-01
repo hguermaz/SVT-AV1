@@ -31,7 +31,7 @@ extern "C" {
         uint64_t                                ref_poc_list0;
         uint64_t                                ref_poc_list1;
 #if REF_ORDER
-		uint64_t                                ref_poc_array[7];
+        uint64_t                                ref_poc_array[7];
 #endif
         uint64_t                                 poc;
 #if RC

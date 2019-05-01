@@ -114,8 +114,8 @@ extern "C" {
         uint8_t                                ref_frame_type;
         uint8_t                                ref_mv_index;
 #if MRP_MD
-		int8_t                                 ref_frame_index_l0;
-		int8_t                                 ref_frame_index_l1;
+        int8_t                                 ref_frame_index_l0;
+        int8_t                                 ref_frame_index_l1;
 #endif
         EbBool                                 is_new_mv;
         EbBool                                 is_zero_mv;
@@ -158,7 +158,7 @@ extern "C" {
         uint32_t                                miRow,
         uint32_t                                miCol,
 #if MRP_COST_EST
-		uint8_t                                 md_pass,
+        uint8_t                                 md_pass,
 #endif
         uint32_t                                left_neighbor_mode,
         uint32_t                                top_neighbor_mode);
@@ -310,23 +310,23 @@ extern "C" {
         uint32_t                                transform_size);
     struct CodingLoopContext_s;
 #if MRP_LIST_REF_IDX_TYPE_LT
-	/*
-	  |-------------------------------------------------------------|
-	  | ref_idx          0	        1           2	        3       |
-	  | List0        	LAST	    LAST2	    LAST3	    GOLD    |
-	  | List1        	BWD	        ALT2	        ALT                |
-	  |-------------------------------------------------------------|
-	*/
+    /*
+      |-------------------------------------------------------------|
+      | ref_idx          0            1           2            3       |
+      | List0            LAST        LAST2        LAST3        GOLD    |
+      | List1            BWD            ALT2            ALT                |
+      |-------------------------------------------------------------|
+    */
 #define INVALID_REF 0xF
 #if  MCP_4XN_FIX 
-	uint8_t get_ref_frame_idx(uint8_t ref_type);
+    uint8_t get_ref_frame_idx(uint8_t ref_type);
 #else
-	extern uint8_t get_ref_frame_idx(uint8_t list, uint8_t ref_type);
+    extern uint8_t get_ref_frame_idx(uint8_t list, uint8_t ref_type);
 #endif
-	extern MvReferenceFrame svt_get_ref_frame_type(uint8_t list, uint8_t ref_idx);
+    extern MvReferenceFrame svt_get_ref_frame_type(uint8_t list, uint8_t ref_idx);
 #endif
 #if INJ_MVP
-	uint8_t get_list_idx(uint8_t ref_type);
+    uint8_t get_list_idx(uint8_t ref_type);
 #endif
 #ifdef __cplusplus
 }

@@ -1341,6 +1341,36 @@ void frame_level_rc_input_picture_vbr(
 
         uint32_t ref_qp;
         if ((int32_t)picture_control_set_ptr->temporal_layer_index == 0 && picture_control_set_ptr->slice_type != I_SLICE) {
+#if MRP_FIX_RC_WARNINGS
+            if (picture_control_set_ptr->ref_slice_type_array[0][0] == I_SLICE) {
+                picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
+                    (uint32_t)picture_control_set_ptr->ref_pic_qp_array[0][0],
+                    (uint32_t)picture_control_set_ptr->picture_qp,
+                    picture_control_set_ptr->picture_qp);
+            }
+            else {
+                picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
+                    (uint32_t)MAX((int32_t)picture_control_set_ptr->ref_pic_qp_array[0][0] - 1, 0),
+                    (uint32_t)picture_control_set_ptr->picture_qp,
+                    picture_control_set_ptr->picture_qp);
+            }
+        }
+        else {
+            ref_qp = 0;
+            if (picture_control_set_ptr->ref_slice_type_array[0][0] != I_SLICE) {
+                ref_qp = MAX(ref_qp, picture_control_set_ptr->ref_pic_qp_array[0][0]);
+            }
+            if ((picture_control_set_ptr->slice_type == B_SLICE) && (picture_control_set_ptr->ref_slice_type_array[1][0] != I_SLICE)) {
+                ref_qp = MAX(ref_qp, picture_control_set_ptr->ref_pic_qp_array[1][0]);
+            }
+            if (ref_qp > 0) {
+                picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
+                    (uint32_t)ref_qp - 1,
+                    picture_control_set_ptr->picture_qp,
+                    picture_control_set_ptr->picture_qp);
+            }
+        }
+#else
             if (picture_control_set_ptr->ref_slice_type_array[0] == I_SLICE) {
                 picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
                     (uint32_t)picture_control_set_ptr->ref_pic_qp_array[0],
@@ -1369,6 +1399,7 @@ void frame_level_rc_input_picture_vbr(
                     picture_control_set_ptr->picture_qp);
             }
         }
+#endif
         // limiting the QP between min Qp allowed and max Qp allowed
         picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
             sequence_control_set_ptr->static_config.min_qp_allowed,
@@ -2789,6 +2820,36 @@ void frame_level_rc_input_picture_cvbr(
 
         uint32_t ref_qp;
         if ((int32_t)picture_control_set_ptr->temporal_layer_index == 0 && picture_control_set_ptr->slice_type != I_SLICE) {
+#if MRP_FIX_RC_WARNINGS
+            if (picture_control_set_ptr->ref_slice_type_array[0][0] == I_SLICE) {
+                /*    picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
+                        (uint32_t)picture_control_set_ptr->ref_pic_qp_array[0],
+                        (uint32_t)picture_control_set_ptr->picture_qp,
+                        picture_control_set_ptr->picture_qp);*/
+            }
+            else {
+                picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
+                    (uint32_t)MAX((int32_t)picture_control_set_ptr->ref_pic_qp_array[0][0] - 1, 0),
+                    (uint32_t)picture_control_set_ptr->ref_pic_qp_array[0][0] + 3,
+                    picture_control_set_ptr->picture_qp);
+            }
+        }
+        else {
+            ref_qp = 0;
+            if (picture_control_set_ptr->ref_slice_type_array[0][0] != I_SLICE) {
+                ref_qp = MAX(ref_qp, picture_control_set_ptr->ref_pic_qp_array[0][0]);
+            }
+            if ((picture_control_set_ptr->slice_type == B_SLICE) && (picture_control_set_ptr->ref_slice_type_array[1][0] != I_SLICE)) {
+                ref_qp = MAX(ref_qp, picture_control_set_ptr->ref_pic_qp_array[1][0]);
+            }
+            if (ref_qp > 0) {
+                picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
+                    (uint32_t)ref_qp - 1,
+                    picture_control_set_ptr->picture_qp,
+                    picture_control_set_ptr->picture_qp);
+            }
+        }
+#else
             if (picture_control_set_ptr->ref_slice_type_array[0] == I_SLICE) {
                 /*    picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
                         (uint32_t)picture_control_set_ptr->ref_pic_qp_array[0],
@@ -2817,7 +2878,7 @@ void frame_level_rc_input_picture_cvbr(
                     picture_control_set_ptr->picture_qp);
             }
         }
-
+#endif
         // limiting the QP between min Qp allowed and max Qp allowed
         picture_control_set_ptr->picture_qp = (uint8_t)CLIP3(
             sequence_control_set_ptr->static_config.min_qp_allowed,

@@ -89,8 +89,6 @@ EbErrorType me_sb_results_ctor(
     objectPtr->xMvSearchAreaCenter[1][0] = 0;
     objectPtr->yMvSearchAreaCenter[1][0] = 0;
 #endif
-
-
     EB_MALLOC(uint8_t*, objectPtr->total_me_candidate_index, sizeof(uint8_t) * maxNumberOfPusPerLcu, EB_N_PTR);
 
 #if NSQ_OPTIMASATION
@@ -99,7 +97,7 @@ EbErrorType me_sb_results_ctor(
 #endif
 
     //objectPtr->lcuDistortion = 0;
-
+    return EB_ErrorNone;
 }
 #endif
 EbErrorType picture_control_set_ctor(
@@ -1088,23 +1086,23 @@ EbErrorType picture_parent_control_set_ctor(
     object_ptr->max_number_of_pus_per_sb = (initDataPtr->ext_block_flag) ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT;
 #if MRP_CONNECTION
 #if MRP_MEM_OPT
-	object_ptr->max_number_of_candidates_per_block = 23; //[Single Ref = 7] + [BiDir = 12 = 3*4 ] + [UniDir = 4 = 3+1]
+    object_ptr->max_number_of_candidates_per_block = ME_RES_CAND; //[Single Ref = 7] + [BiDir = 12 = 3*4 ] + [UniDir = 4 = 3+1]
 #else
-	object_ptr->max_number_of_candidates_per_block = 100;//(initDataPtr->mePictureSearchCount * initDataPtr->mePictureSearchCount) + (initDataPtr->mePictureSearchCount << 1);
+    object_ptr->max_number_of_candidates_per_block = 100;//(initDataPtr->mePictureSearchCount * initDataPtr->mePictureSearchCount) + (initDataPtr->mePictureSearchCount << 1);
 #endif
-	EB_MALLOC(MeLcuResults**, object_ptr->me_results, sizeof(MeLcuResults*) * object_ptr->sb_total_count, EB_N_PTR);
+    EB_MALLOC(MeLcuResults**, object_ptr->me_results, sizeof(MeLcuResults*) * object_ptr->sb_total_count, EB_N_PTR);
 
-	for (sb_index = 0; sb_index < object_ptr->sb_total_count; ++sb_index) {
+    for (sb_index = 0; sb_index < object_ptr->sb_total_count; ++sb_index) {
 
-		return_error = me_sb_results_ctor(
-			&(object_ptr->me_results[sb_index]),
+        return_error = me_sb_results_ctor(
+            &(object_ptr->me_results[sb_index]),
 #if NO_CFG_FILE
-			MAX_ME_PU_COUNT,
+            MAX_ME_PU_COUNT,
 #else
-			object_ptr->max_number_of_pus_per_sb,
+            object_ptr->max_number_of_pus_per_sb,
 #endif
-			object_ptr->max_number_of_candidates_per_block);
-	}
+            object_ptr->max_number_of_candidates_per_block);
+    }
 
 #else
 

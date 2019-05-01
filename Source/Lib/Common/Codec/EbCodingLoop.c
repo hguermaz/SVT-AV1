@@ -30,7 +30,8 @@
 #include "EbIntraPrediction.h"
 #include "aom_dsp_rtcd.h"
 #include "EbCodingLoop.h"
-
+void av1_set_ref_frame(MvReferenceFrame *rf,
+    int8_t ref_frame_type);
 extern void av1_predict_intra_block(
     TileInfo                    *tile,
 
@@ -694,7 +695,6 @@ static void Av1EncodeLoop(
 #endif
         txb_ptr->y_has_coeff = count_non_zero_coeffs[0] ? EB_TRUE : EB_FALSE;
 
-
         if (count_non_zero_coeffs[0] == 0) {
             // INTER. Chroma follows Luma in transform type
             if (cu_ptr->prediction_mode_flag == INTER_MODE) {
@@ -706,11 +706,7 @@ static void Av1EncodeLoop(
             }
         }
 
-
         if (cu_ptr->prediction_mode_flag == INTRA_MODE && (context_ptr->evaluate_cfl_ep || cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED)) {
-
-
-
             EbPictureBufferDesc *reconSamples = predSamples;
             uint32_t reconLumaOffset = (reconSamples->origin_y + origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + origin_x);
 
@@ -1285,7 +1281,6 @@ static void Av1EncodeLoop16bit(
 
         }
 
-        if (component_mask == PICTURE_BUFFER_DESC_FULL_MASK || component_mask == PICTURE_BUFFER_DESC_CHROMA_MASK) {
 
             if (cu_ptr->prediction_mode_flag == INTRA_MODE && cu_ptr->prediction_unit_array->intra_chroma_mode == UV_CFL_PRED) {
                 EbPictureBufferDesc *reconSamples = predSamples16bit;
@@ -1306,15 +1301,18 @@ static void Av1EncodeLoop16bit(
                         PLANE_TYPE_Y,
                         eob[0]);
                 }
-
+#if CFL_FIX
+            if (context_ptr->blk_geom->has_uv) {
+                reconLumaOffset = (reconSamples->origin_y + round_origin_y)            * reconSamples->stride_y + (reconSamples->origin_x + round_origin_x);
+#endif
                 // Down sample Luma
                 cfl_luma_subsampling_420_hbd_c(
                     ((uint16_t*)reconSamples->buffer_y) + reconLumaOffset,
                     reconSamples->stride_y,
                     context_ptr->md_context->pred_buf_q3,
-#if TXS_ENC
-                    context_ptr->blk_geom->tx_width[tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[tx_depth][context_ptr->txb_itr]);
+#if CFL_FIX
+                context_ptr->blk_geom->bwidth_uv == context_ptr->blk_geom->bwidth ? (context_ptr->blk_geom->bwidth_uv << 1) : context_ptr->blk_geom->bwidth,
+                context_ptr->blk_geom->bheight_uv == context_ptr->blk_geom->bheight ? (context_ptr->blk_geom->bheight_uv << 1) : context_ptr->blk_geom->bheight);
 #else
                     context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
                     context_ptr->blk_geom->tx_height[context_ptr->txb_itr]);
@@ -1340,7 +1338,6 @@ static void Av1EncodeLoop16bit(
                     round_offset,
                     LOG2F(context_ptr->blk_geom->tx_width_uv[context_ptr->txb_itr]) + LOG2F(context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]));
 #endif
-
 
                 int32_t alpha_q3 =
                     cfl_idx_to_alpha(cu_ptr->prediction_unit_array->cfl_alpha_idx, cu_ptr->prediction_unit_array->cfl_alpha_signs, CFL_PRED_U); // once for U, once for V
@@ -1385,10 +1382,11 @@ static void Av1EncodeLoop16bit(
                     context_ptr->blk_geom->tx_height_uv[context_ptr->txb_itr]);
 #endif
             }
-
+#if CFL_FIX
         }
+#endif
 
-        {
+        if (component_mask == PICTURE_BUFFER_DESC_FULL_MASK || component_mask == PICTURE_BUFFER_DESC_CHROMA_MASK) {
             //**********************************
             // Cb
             //**********************************
@@ -3482,8 +3480,13 @@ EB_EXTERN void AV1EncodePass(
                                     context_ptr->cu_origin_y,
                                     blk_geom->bwidth,
                                     blk_geom->bheight,
+#if FIXED_MRP_10BIT
+                                    cu_ptr->prediction_unit_array->ref_frame_index_l0 >= 0 ? refObj0->reference_picture16bit : (EbPictureBufferDesc*)EB_NULL,
+                                    cu_ptr->prediction_unit_array->ref_frame_index_l1 >= 0 ? refObj1->reference_picture16bit : (EbPictureBufferDesc*)EB_NULL,
+#else
                                     refObj0->reference_picture16bit,
                                     picture_control_set_ptr->slice_type == B_SLICE ? refObj1->reference_picture16bit : 0,
+#endif
                                     recon_buffer,
                                     context_ptr->cu_origin_x,
                                     context_ptr->cu_origin_y,
