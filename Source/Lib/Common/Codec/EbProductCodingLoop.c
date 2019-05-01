@@ -2794,7 +2794,8 @@ void AV1PerformFullLoop(
         candidate_ptr->v_has_coeff = 0;
 
 #if TX_SIZE_UPDATE_GEOM
-        candidateBuffer->candidate_ptr->tx_depth = 0; // use tx_depth 0 (Max tx size) for tx_type serach.
+        // Set tx_depth to zero 0 to use max_tx_size.
+        candidateBuffer->candidate_ptr->tx_depth = 0; 
 #endif
 
         uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_FULL_LOOP ? get_skip_tx_search_flag(
@@ -2826,10 +2827,21 @@ void AV1PerformFullLoop(
         }
 
 #if TXS_SPLIT
+#if TXS_DECISION
+        uint8_t check_smaller_tx_size = ((context_ptr->blk_geom->bsize == BLOCK_64X64 ||
+            context_ptr->blk_geom->bsize == BLOCK_32X32) &&
+            candidateBuffer->candidate_ptr->type == INTER_MODE) ? 1 : 0;
+        if(check_smaller_tx_size)
+            candidateBuffer->candidate_ptr->tx_depth = tx_size_search(
+                candidateBuffer,
+                context_ptr,
+                picture_control_set_ptr);
+#else
         if ((context_ptr->blk_geom->bsize == BLOCK_64X64 || 
             context_ptr->blk_geom->bsize == BLOCK_32X32) &&
             candidateBuffer->candidate_ptr->type == INTER_MODE)
             candidateBuffer->candidate_ptr->tx_depth = rand() % 3; //Nader tx_candidate depth
+#endif
 #endif
         product_full_loop(
             candidateBuffer,

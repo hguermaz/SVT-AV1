@@ -51,7 +51,7 @@ extern "C" {
 #define MOD_M0                            0 // Sub-SAD for @ HME and ME, 12 NFL, frequency see
 #define HARD_CODE_SC_SETTING              0
 #define MR_MODE                           0
-#define SHUT_FILTERING                    0 // CDEF RESTORATION DLF
+#define SHUT_FILTERING                    1 // CDEF RESTORATION DLF
 
 #define M8_SKIP_BLK                       1
 #define M8_OIS                            1
@@ -257,7 +257,8 @@ extern "C" {
 #define TX_SIZE_UPDATE_GEOM                             1
 #define TXS_ENC                                         1
 #define TXS_MD                                          1
-#define TXS_SPLIT                                      1
+#define TXS_SPLIT                                       1
+#define TXS_DECISION                                    1
 #endif
  
 struct Buf2D 
