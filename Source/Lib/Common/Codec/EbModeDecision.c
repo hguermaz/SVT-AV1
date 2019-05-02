@@ -4386,6 +4386,7 @@ uint8_t product_full_mode_decision(
     cu_ptr->prediction_mode_flag = candidate_ptr->type;
 #if TX_SIZE_UPDATE_GEOM
     cu_ptr->tx_depth = candidate_ptr->tx_depth;
+    
 #endif
     cu_ptr->skip_flag = candidate_ptr->skip_flag; // note, the skip flag is re-checked in the ENCDEC process
     cu_ptr->block_has_coeff = ((candidate_ptr->block_has_coeff) > 0) ? EB_TRUE : EB_FALSE;

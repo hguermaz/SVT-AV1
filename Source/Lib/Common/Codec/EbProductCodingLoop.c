@@ -2828,19 +2828,42 @@ void AV1PerformFullLoop(
 
 #if TXS_SPLIT
 #if TXS_DECISION
-        uint8_t check_smaller_tx_size = ((context_ptr->blk_geom->bsize == BLOCK_64X64 ||
-            context_ptr->blk_geom->bsize == BLOCK_32X32) &&
-            candidateBuffer->candidate_ptr->type == INTER_MODE) ? 1 : 0;
-        if(check_smaller_tx_size)
+        uint8_t end_tx_depth =  get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
+        uint64_t coefbits = 0;
+        if (end_tx_depth) {
             candidateBuffer->candidate_ptr->tx_depth = tx_size_search(
                 candidateBuffer,
                 context_ptr,
-                picture_control_set_ptr);
-#else
-        if ((context_ptr->blk_geom->bsize == BLOCK_64X64 || 
-            context_ptr->blk_geom->bsize == BLOCK_32X32) &&
+                picture_control_set_ptr,
+                &coefbits,
+                end_tx_depth);
+
+            candidate_ptr->full_distortion = 0;
+
+
+            memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+
+
+            //re-init
+            candidate_ptr->y_has_coeff = 0;
+
+        }
+#elif TXS_SPLIT_SETTINGS
+        if ((context_ptr->blk_geom->bsize == BLOCK_64X64|| 
+            context_ptr->blk_geom->bsize == BLOCK_32X32 || 
+            context_ptr->blk_geom->bsize == BLOCK_16X16 ||
+            context_ptr->blk_geom->bsize == BLOCK_64X32 ||
+            context_ptr->blk_geom->bsize == BLOCK_32X64 ||
+            context_ptr->blk_geom->bsize == BLOCK_16X32 ||
+            context_ptr->blk_geom->bsize == BLOCK_32X16 ||
+            context_ptr->blk_geom->bsize == BLOCK_16X8  ||
+            context_ptr->blk_geom->bsize == BLOCK_8X16  )  &&
             candidateBuffer->candidate_ptr->type == INTER_MODE)
             candidateBuffer->candidate_ptr->tx_depth = rand() % 3; //Nader tx_candidate depth
+
+        if ((context_ptr->blk_geom->bsize == BLOCK_8X8) &&
+            candidateBuffer->candidate_ptr->type == INTER_MODE)
+            candidateBuffer->candidate_ptr->tx_depth = rand() % 2; //Nader tx_candidate depth
 #endif
 #endif
         product_full_loop(
@@ -4582,8 +4605,8 @@ void md_encode_block(
 #if RED_CU
         context_ptr->md_local_cu_unit[cu_ptr->mds_idx].avail_blk_flag = EB_TRUE;
 #endif
-#if 0//TXS_SPLIT
-        if (/*context_ptr->blk_geom->bsize == BLOCK_64X64 ||*/ context_ptr->blk_geom->bsize == BLOCK_32X32) {
+#if 0//TXS_SPLIT_SETTINGS
+        if (context_ptr->blk_geom->bsize == BLOCK_64X32 || context_ptr->blk_geom->bsize == BLOCK_32X64) {
             context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost = context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost / 100;
         }
 #endif

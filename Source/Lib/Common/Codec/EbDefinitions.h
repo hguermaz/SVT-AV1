@@ -259,6 +259,7 @@ extern "C" {
 #define TXS_MD                                          1
 #define TXS_SPLIT                                       1
 #define TXS_DECISION                                    1
+#define TXS_SPLIT_SETTINGS                              1
 #endif
  
 struct Buf2D 
@@ -793,11 +794,12 @@ typedef enum ATTRIBUTE_PACKED {
 #else
 } TxSize;
 #endif
-#if TXS_SPLIT
+#if TXS_SPLIT_SETTINGS
+
 static const TxSize tx_depth_to_tx_size[3][BlockSizeS_ALL] = {
     // tx_depth 0
     {
-        TX_4X4,
+        TX_4X4, 
         TX_4X8,
         TX_8X4,
         TX_8X8,
@@ -821,15 +823,15 @@ static const TxSize tx_depth_to_tx_size[3][BlockSizeS_ALL] = {
         TX_64X16
     },
 
-    // tx_depth 1: use 32 instead of 64 and 16 instead of 32
+    // tx_depth 1: 
     {
         TX_4X4,
         TX_4X8,
         TX_8X4,
+        TX_4X4,
         TX_8X8,
-        TX_8X16,
-        TX_16X8,
-        TX_16X16,
+        TX_8X8,
+        TX_8X8,
         TX_16X16,
         TX_16X16,
         TX_16X16,
@@ -839,38 +841,38 @@ static const TxSize tx_depth_to_tx_size[3][BlockSizeS_ALL] = {
         TX_64X64,//TX_64X128,
         TX_64X64,//TX_128X64,
         TX_64X64,//TX_128X128,
-        TX_4X16,
-        TX_16X4,
-        TX_8X16,
-        TX_16X8,
-        TX_16X32,
-        TX_32X16
-    },
-
-    // tx_depth 2: use 16 instead of 64 and 6 instead of 32
-    {
         TX_4X4,
-        TX_4X8,
-        TX_8X4,
-        TX_8X8,
-        TX_8X16,
-        TX_16X8,
-        TX_16X16,
-        TX_16X32,
-        TX_32X16,
-        TX_8X8,
-        TX_8X16,
-        TX_16X8,
-        TX_16X16,
-        TX_64X64,//TX_64X128,
-        TX_64X64,//TX_128X64,
-        TX_64X64,//TX_128X128,
-        TX_4X16,
-        TX_16X4,
+        TX_4X4,
         TX_8X8,
         TX_8X8,
         TX_16X16,
         TX_16X16
+    },
+
+    // tx_depth 2
+    {
+        TX_4X4,
+        TX_4X8,
+        TX_8X4,
+        TX_8X8,
+        TX_4X4,
+        TX_4X4,
+        TX_4X4,
+        TX_8X8,
+        TX_8X8,
+        TX_8X8,
+        TX_16X16,
+        TX_16X16,
+        TX_16X16,
+        TX_64X64,//TX_64X128,
+        TX_64X64,//TX_128X64,
+        TX_64X64,//TX_128X128,
+        TX_4X16, // No depth 2
+        TX_16X4, // No depth 2
+        TX_4X4,
+        TX_4X4,
+        TX_8X8,
+        TX_8X8
     }
 };
 #endif
