@@ -45,7 +45,7 @@ static INLINE int has_uni_comp_refs(const MbModeInfo *mbmi) {
     return has_second_ref(mbmi) && (!((mbmi->ref_frame[0] >= BWDREF_FRAME) ^
         (mbmi->ref_frame[1] >= BWDREF_FRAME)));
 }
-int32_t is_inter_block(const MbModeInfo *mbmi);
+//int32_t is_inter_block(const MbModeInfo *mbmi);
 #define CHAR_BIT      8         /* number of bits in a char */
 #if ADD_DELTA_QP_SUPPORT
 #define OD_CLZ0 (1)
@@ -816,12 +816,13 @@ static void write_tx_size_vartx(MacroBlockD *xd, const MbModeInfo *mbmi,
     const int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
         xd->left_txfm_context + blk_row,
         mbmi->sb_type, tx_size);
-    const int txb_size_index =
-        av1_get_txb_size_index(mbmi->sb_type, blk_row, blk_col);
 #if TXS_SPLIT
     const int write_txfm_partition =
         (tx_size == tx_depth_to_tx_size[mbmi->tx_depth][mbmi->sb_type]);
 #else
+    const int txb_size_index =
+        av1_get_txb_size_index(mbmi->sb_type, blk_row, blk_col);
+
     const int write_txfm_partition =
         (tx_size == tx_size);// mbmi->inter_tx_size[txb_size_index];// NM-TO BE FIXED
 #endif
@@ -936,7 +937,7 @@ static INLINE int is_rect_tx_allowed_bsize(block_size bsize) {
     return LUT[bsize];
 }
 
-static INLINE int is_rect_tx_allowed(const MacroBlockD *xd,
+static INLINE int is_rect_tx_allowed(/*const MacroBlockD *xd,*/
     const MbModeInfo *mbmi) {
     return is_rect_tx_allowed_bsize(mbmi->sb_type) /*&&
         !xd->lossless[mbmi->segment_id]*/;
@@ -994,27 +995,27 @@ static void write_selected_tx_size(
 
         assert(depth >= 0 && depth <= max_depths);
         assert(!is_inter_block(mbmi));
-        assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
+        assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(/*xd,*/ mbmi)));
 
         aom_write_symbol(w, depth, ec_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
             max_depths + 1);
     }
 }
 static EbErrorType av1_code_tx_size(
-    CodingUnit          *cu_ptr,
+    //CodingUnit          *cu_ptr,
     FRAME_CONTEXT       *ec_ctx,
     aom_writer          *w,
     MacroBlockD         *xd,
     const MbModeInfo    *mbmi,
     TxMode              tx_mode,
     block_size          bsize,
-    TxSize              tx_size,
+    //TxSize              tx_size,
     uint8_t             skip) {
 
     EbErrorType return_error = EB_ErrorNone;
     int is_inter_tx = is_inter_block(mbmi) || is_intrabc_block(mbmi);
     //int skip = mbmi->skip;
-    int segment_id = 0;// mbmi->segment_id;
+    //int segment_id = 0;// mbmi->segment_id;
     if (tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
         !(is_inter_tx && skip) /*&& !xd->lossless[segment_id]*/) {
         if (is_inter_tx) {  // This implies skip flag is 0.
@@ -1038,7 +1039,7 @@ static EbErrorType av1_code_tx_size(
             skip && is_inter_block(mbmi), xd);
     }
 
-    return EB_ErrorNone;
+    return return_error;
 }
 
 static INLINE void set_mi_row_col(
@@ -1142,21 +1143,21 @@ void code_tx_size(
     xd->above_txfm_context = &txfm_context_array->top_array[txfm_context_above_index];
     xd->left_txfm_context = &txfm_context_array->left_array[txfm_context_left_index];
 #if TXS_ENC
-    const TxSize tx_size = blk_geom->txsize[cu_ptr->tx_depth][0];
+    //const TxSize tx_size = blk_geom->txsize[cu_ptr->tx_depth][0];
 #else
     const TxSize tx_size = blk_geom->txsize[0];
 #endif
     //if (pcsPtr->picture_number == 1 && cu_origin_y >> 2 == 0 && cu_origin_x >> 2 == 0)
      //   printf("\n");
     av1_code_tx_size(
-        cu_ptr,
+        //cu_ptr,
         ec_ctx,
         w,
         xd,
         mbmi,
         tx_mode,
         bsize,
-        tx_size,
+        //tx_size,
         skip);
     // AMIR
     //printf("%d\t%d\t%d\t%d\n", pcsPtr->picture_number, cu_origin_y >> 2, cu_origin_x >> 2, w->ec.rng);
@@ -1176,15 +1177,13 @@ static EbErrorType av1_encode_tx_coef_y(
     uint32_t               intraLumaDir,
     BlockSize              plane_bsize,
     EbPictureBufferDesc   *coeff_ptr,
-    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
-    NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
-    NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array)
+    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array)
 {
 
     EbErrorType return_error = EB_ErrorNone;
 
     const BlockGeom *blk_geom = get_blk_geom_mds(cu_ptr->mds_idx);
-    int32_t cul_level_y, cul_level_cb = 0, cul_level_cr = 0;
+    int32_t cul_level_y = 0;
 
 #if TXS_ENC
     uint8_t tx_depth = cu_ptr->tx_depth;
@@ -1194,23 +1193,12 @@ static EbErrorType av1_encode_tx_coef_y(
 #endif
     uint8_t txb_itr = 0;
 
-    uint8_t scan[16] = {
-         0, 1, 4, 5,
-         2, 3, 6, 7,
-         8, 9, 12,13,
-         10,11,14,15
-    };
-
     uint8_t tx_index;
     for (tx_index = 0; tx_index < txb_count; tx_index++) {
         txb_itr = tx_index;
-#if TXS_ENC
+
         const TxSize tx_size = blk_geom->txsize[tx_depth][txb_itr];
-        const TxSize chroma_tx_size = blk_geom->txsize_uv[tx_depth][txb_itr];
-#else
-        const TxSize tx_size = blk_geom->txsize[txb_itr];
-        const TxSize chroma_tx_size = blk_geom->txsize_uv[txb_itr];
-#endif
+        
         int32_t *coeff_buffer;
 
         const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
@@ -1263,29 +1251,14 @@ static EbErrorType av1_encode_tx_coef_y(
             neighbor_array_unit_mode_write(
                 luma_dc_sign_level_coeff_neighbor_array,
                 (uint8_t*)&dcSignLevelCoeff,
-#if TXS_ENC
                 cu_origin_x + blk_geom->tx_org_x[tx_depth][txb_itr] - blk_geom->origin_x,
                 cu_origin_y + blk_geom->tx_org_y[tx_depth][txb_itr] - blk_geom->origin_y,
                 blk_geom->tx_width[tx_depth][txb_itr],
                 blk_geom->tx_height[tx_depth][txb_itr],
-#else
-                cu_origin_x + blk_geom->tx_org_x[txb_itr] - blk_geom->origin_x,
-                cu_origin_y + blk_geom->tx_org_y[txb_itr] - blk_geom->origin_y,
-                blk_geom->tx_width[txb_itr],
-                blk_geom->tx_height[txb_itr],
-#endif
                 NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
         }
 
-
-#if TXS_ENC
         context_ptr->coded_area_sb += blk_geom->tx_width[tx_depth][txb_itr] * blk_geom->tx_height[tx_depth][txb_itr];
-#else
-        context_ptr->coded_area_sb += blk_geom->tx_width[txb_itr] * blk_geom->tx_height[txb_itr];
-
-        if (blk_geom->has_uv)
-            context_ptr->coded_area_sb_uv += blk_geom->tx_width_uv[txb_itr] * blk_geom->tx_height_uv[txb_itr];
-#endif
 
     }
 
@@ -1300,9 +1273,7 @@ static EbErrorType av1_encode_tx_coef_uv(
     uint32_t               cu_origin_x,
     uint32_t               cu_origin_y,
     uint32_t               intraLumaDir,
-    BlockSize              plane_bsize,
     EbPictureBufferDesc   *coeff_ptr,
-    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array)
 {
@@ -1313,7 +1284,7 @@ static EbErrorType av1_encode_tx_coef_uv(
 
     if (!blk_geom->has_uv) return return_error;
 
-    int32_t cul_level_y, cul_level_cb = 0, cul_level_cr = 0;
+    int32_t cul_level_cb = 0, cul_level_cr = 0;
 
 #if TXS_ENC
     uint8_t tx_depth = cu_ptr->tx_depth;
@@ -1335,7 +1306,6 @@ static EbErrorType av1_encode_tx_coef_uv(
 
         txb_itr = tx_index;
 
-        // const TxSize tx_size = blk_geom->txsize[tx_depth][txb_itr];
         const TxSize chroma_tx_size = blk_geom->txsize_uv[tx_depth][txb_itr];
 
         int32_t *coeff_buffer;
@@ -1516,9 +1486,7 @@ static EbErrorType Av1EncodeCoeff1D(
         intraLumaDir,
         plane_bsize,
         coeff_ptr,
-        luma_dc_sign_level_coeff_neighbor_array,
-        cr_dc_sign_level_coeff_neighbor_array,
-        cb_dc_sign_level_coeff_neighbor_array);
+        luma_dc_sign_level_coeff_neighbor_array);
 
     av1_encode_tx_coef_uv(
         pcs_ptr,
@@ -1529,9 +1497,7 @@ static EbErrorType Av1EncodeCoeff1D(
         cu_origin_x,
         cu_origin_y,
         intraLumaDir,
-        plane_bsize,
         coeff_ptr,
-        luma_dc_sign_level_coeff_neighbor_array,
         cr_dc_sign_level_coeff_neighbor_array,
         cb_dc_sign_level_coeff_neighbor_array);
 #else
@@ -5983,12 +5949,9 @@ EbErrorType ec_update_neighbors(
     NeighborArrayUnit     *inter_pred_dir_neighbor_array = picture_control_set_ptr->inter_pred_dir_neighbor_array;
     NeighborArrayUnit     *ref_frame_type_neighbor_array = picture_control_set_ptr->ref_frame_type_neighbor_array;
     NeighborArrayUnit32   *interpolation_type_neighbor_array = picture_control_set_ptr->interpolation_type_neighbor_array;
-#if TX_SIZE_SEARCH_LEVELS
-    NeighborArrayUnit     *txfm_context_array = picture_control_set_ptr->txfm_context_array;
-#endif
-    const BlockGeom         *blk_geom = get_blk_geom_mds(cu_ptr->mds_idx);
-    EbBool                   skipCoeff = EB_FALSE;
-    PartitionContext         partition;
+    const BlockGeom       *blk_geom = get_blk_geom_mds(cu_ptr->mds_idx);
+    EbBool                 skipCoeff = EB_FALSE;
+    PartitionContext       partition;
 
     skipCoeff = cu_ptr->block_has_coeff ? 0 : 1;
     // Update the Leaf Depth Neighbor Array

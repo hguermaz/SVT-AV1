@@ -3042,7 +3042,7 @@ uint8_t tx_size_search(
         //*candidateBuffer->full_cost_merge_ptr = 0;
         //*candidateBuffer->full_cost_skip_ptr = 0;
         if(tx_depth)
-            tx_cost[tx_depth] = (tx_cost[tx_depth] * 80) / 100;
+            tx_cost[tx_depth] = (tx_cost[tx_depth] * 50) / 100;
        
         if (tx_cost[tx_depth] < bestFullCost) {
             bestFullCost = tx_cost[tx_depth];
@@ -3050,7 +3050,6 @@ uint8_t tx_size_search(
             *coeff_bits = y_coeff_bits;
         }
     }
-
     return best_tx_depth;
 }
 #endif
