@@ -1689,7 +1689,10 @@ void perform_fast_loop(
         // Set the Candidate Buffer
         ModeDecisionCandidateBuffer   *candidateBuffer = candidateBufferPtrArrayBase[candidate_buffer_start_index];
         ModeDecisionCandidate         *candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
-
+#if TXS_ENC
+        // init tx_depth candidate
+        candidateBuffer->candidate_ptr->tx_depth = 0;
+#endif
         // Only check (src - src) candidates (Tier0 candidates)
         if (candidate_ptr->distortion_ready) {
 
@@ -1737,7 +1740,10 @@ void perform_fast_loop(
         ModeDecisionCandidateBuffer *candidateBuffer = candidateBufferPtrArrayBase[highestCostIndex];
         ModeDecisionCandidate       *candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
         EbPictureBufferDesc         *prediction_ptr = candidateBuffer->prediction_ptr;
-
+#if TXS_ENC
+        // init tx_depth candidate
+        candidateBuffer->candidate_ptr->tx_depth = 0;
+#endif
         if (!candidate_ptr->distortion_ready || fastLoopCandidateIndex == bestFirstFastCostSearchCandidateIndex) {
 
             // Prediction
@@ -4935,17 +4941,21 @@ EB_EXTERN EbErrorType mode_decision_sb(
             memcpy(dst_cu->neigh_left_recon[2], src_cu->neigh_left_recon[2], 128);
             memcpy(dst_cu->neigh_top_recon[0], src_cu->neigh_top_recon[0], 128);
             memcpy(dst_cu->neigh_top_recon[1], src_cu->neigh_top_recon[1], 128);
-            memcpy(dst_cu->neigh_top_recon[2], src_cu->neigh_top_recon[2], 128); 
+            memcpy(dst_cu->neigh_top_recon[2], src_cu->neigh_top_recon[2], 128);
             memcpy(&context_ptr->md_ep_pipe_sb[cu_ptr->mds_idx], &context_ptr->md_ep_pipe_sb[redundant_blk_mds], sizeof(MdEncPassCuData));
             if (context_ptr->blk_geom->shape == PART_N) {
 
                 uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;
-                context_ptr->parent_sq_type[sq_index] = src_cu->prediction_mode_flag;               
+                context_ptr->parent_sq_type[sq_index] = src_cu->prediction_mode_flag;
                 context_ptr->parent_sq_has_coeff[sq_index] = src_cu->block_has_coeff;
                 context_ptr->parent_sq_pred_mode[sq_index] = src_cu->pred_mode;
             }
         }
         else
+#endif
+#if TXS_MD
+        // Init tx_epth for the CU
+        cu_ptr->tx_depth = 0;
 #endif
         md_encode_block(
             sequence_control_set_ptr,
