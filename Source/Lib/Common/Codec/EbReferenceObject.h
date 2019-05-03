@@ -56,8 +56,9 @@ typedef struct EbPaReferenceObject
     uint8_t                         y_mean[MAX_NUMBER_OF_TREEBLOCKS_PER_PICTURE];
     EB_SLICE                        slice_type;
     uint32_t                        dependent_pictures_count; //number of pic using this reference frame
+#if !BUG_FIX_PCS_LIVE_COUNT
     PictureParentControlSet      *p_pcs_ptr;
-
+#endif
 } EbPaReferenceObject;
 
 typedef struct EbPaReferenceObjectDescInitData 

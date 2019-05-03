@@ -4096,9 +4096,9 @@ void* picture_decision_kernel(void *input_ptr)
                                         eb_object_inc_live_count(
                                             paReferenceEntryPtr->input_object_ptr,
                                             1);
-
-                                        ((EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[REF_LIST_0][ref_pic_index]->object_ptr)->p_pcs_ptr = paReferenceEntryPtr->p_pcs_ptr;
 #if !BUG_FIX_PCS_LIVE_COUNT
+                                        ((EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[REF_LIST_0][ref_pic_index]->object_ptr)->p_pcs_ptr = paReferenceEntryPtr->p_pcs_ptr;
+
                                         eb_object_inc_live_count(
                                             paReferenceEntryPtr->p_pcs_ptr->p_pcs_wrapper_ptr,
                                             1);
@@ -4172,9 +4172,9 @@ void* picture_decision_kernel(void *input_ptr)
                                         eb_object_inc_live_count(
                                             paReferenceEntryPtr->input_object_ptr,
                                             1);
-
-                                        ((EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[REF_LIST_1][ref_pic_index]->object_ptr)->p_pcs_ptr = paReferenceEntryPtr->p_pcs_ptr;
 #if !BUG_FIX_PCS_LIVE_COUNT
+                                        ((EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[REF_LIST_1][ref_pic_index]->object_ptr)->p_pcs_ptr = paReferenceEntryPtr->p_pcs_ptr;
+
                                         eb_object_inc_live_count(
                                             paReferenceEntryPtr->p_pcs_ptr->p_pcs_wrapper_ptr,
                                             1);
