@@ -1288,7 +1288,11 @@ void AV1PerformInverseTransformReconLuma(
 #else
                     context_ptr->blk_geom->txsize[txb_itr],
 #endif
+#if TXS_TX_TYPE
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
                     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
                     PLANE_TYPE_Y,
                     (uint16_t)candidateBuffer->candidate_ptr->eob[0][txb_itr]);
 
@@ -1400,7 +1404,11 @@ void AV1PerformInverseTransformRecon(
 #else
                     context_ptr->blk_geom->txsize[txb_itr],
 #endif
+#if TXS_TX_TYPE
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
                     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
                     PLANE_TYPE_Y,
                     (uint16_t)candidateBuffer->candidate_ptr->eob[0][txb_itr]);
             }
@@ -1450,7 +1458,11 @@ void AV1PerformInverseTransformRecon(
 #else
                     context_ptr->blk_geom->txsize_uv[txb_itr],
 #endif
+#if TXS_TX_TYPE
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
+#else
                     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+#endif
                     PLANE_TYPE_UV,
                     (uint16_t)candidateBuffer->candidate_ptr->eob[1][txb_itr]);
             }
@@ -1487,7 +1499,11 @@ void AV1PerformInverseTransformRecon(
 #else
                     context_ptr->blk_geom->txsize_uv[txb_itr],
 #endif
+#if TXS_TX_TYPE
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
+#else
                     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+#endif
                     PLANE_TYPE_UV,
                     (uint16_t)candidateBuffer->candidate_ptr->eob[2][txb_itr]);
                 }
@@ -2565,6 +2581,27 @@ void check_best_indepedant_cfl(
         // check if candidateBuffer->candidate_ptr->fast_luma_rate = context_ptr->fast_luma_rate[candidateBuffer->candidate_ptr->intra_luma_mode];
         candidateBuffer->candidate_ptr->fast_chroma_rate = context_ptr->fast_chroma_rate[candidateBuffer->candidate_ptr->intra_luma_mode][MAX_ANGLE_DELTA + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]];
 
+#if TXS_TX_TYPE
+        TxType tx_type_uv = av1_get_tx_type(
+                context_ptr->blk_geom->bsize,
+                0,
+                (PredictionMode)NULL,
+                (UvPredictionMode)context_ptr->best_uv_mode[candidateBuffer->candidate_ptr->intra_luma_mode][3 + candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y]],
+                PLANE_TYPE_UV,
+                0,
+                0,
+                0,
+#if TXS_MD
+                context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][0],
+#else
+                context_ptr->blk_geom->txsize_uv[0],
+#endif
+                picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+        uint8_t txb_itr;
+        for(txb_itr = 0; txb_itr < MAX_TXB_COUNT; txb_itr++)
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = tx_type_uv;
+#else
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
             av1_get_tx_type(
                 context_ptr->blk_geom->bsize,
@@ -2581,6 +2618,7 @@ void check_best_indepedant_cfl(
                 context_ptr->blk_geom->txsize_uv[0],
 #endif
                 picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+#endif
 
         // Start uv search path
         context_ptr->uv_search_path = EB_TRUE;
@@ -2793,79 +2831,113 @@ void AV1PerformFullLoop(
         candidate_ptr->u_has_coeff = 0;
         candidate_ptr->v_has_coeff = 0;
 
-#if TX_SIZE_UPDATE_GEOM
-        // Set tx_depth to zero 0 to use max_tx_size.
-        candidateBuffer->candidate_ptr->tx_depth = 0; 
-#endif
+#if TXS_DECISION
+        candidateBuffer->candidate_ptr->tx_depth = 0;
+        uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
+        if (end_tx_depth > 0) {
+            uint8_t best_tx_depth = 0;
+            uint64_t tx_depth0_cost = UINT64_MAX;
+            uint64_t tx_depth1_cost = UINT64_MAX;
+            uint64_t tx_depth2_cost = UINT64_MAX;
+            TxType tx_depth_tx_type[3][PLANE_TYPES][MAX_TXB_COUNT];
+            // Compute rd_cost for tx_depth 0
+            candidateBuffer->candidate_ptr->tx_depth = 0;
+            tx_depth0_cost = tx_depth_cost(
+                candidateBuffer,
+                context_ptr,
+                picture_control_set_ptr,
+                tx_depth_tx_type[0]);
+            candidate_ptr->full_distortion = 0;
+            memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+            //re-init
+            candidate_ptr->y_has_coeff = 0;
+            // Compute rd_cost for tx_depth 1
+            candidateBuffer->candidate_ptr->tx_depth = 1;
+            tx_depth1_cost = tx_depth_cost(
+                candidateBuffer,
+                context_ptr,
+                picture_control_set_ptr,
+                tx_depth_tx_type[1]);
+            candidate_ptr->full_distortion = 0;
+            memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+            //re-init
+            candidate_ptr->y_has_coeff = 0;
+            // Compute rd_cost for tx_depth 1
+            if (end_tx_depth > 2) {
+                candidateBuffer->candidate_ptr->tx_depth = 2;
+                tx_depth2_cost = tx_depth_cost(
+                    candidateBuffer,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    tx_depth_tx_type[2]);
+                candidate_ptr->full_distortion = 0;
+                memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                //re-init
+                candidate_ptr->y_has_coeff = 0;
+            }
+            // select tx_depth 
+            uint64_t best_tx_depth_cost = MIN(tx_depth0_cost, MIN(tx_depth1_cost, tx_depth2_cost));
+            // Set the best tx_depth
+            if (best_tx_depth_cost == tx_depth0_cost) {
+                best_tx_depth = 0;
+            }
+            else if (best_tx_depth_cost == tx_depth1_cost) {
+                best_tx_depth = 1;
+            }
+            else if (best_tx_depth_cost == tx_depth2_cost) {
+                best_tx_depth = 2;
+            }
+            else {
+                printf("Invalid tx_depth");
+            }
+            // Set candidate buffer tx param
+            candidateBuffer->candidate_ptr->tx_depth = best_tx_depth;
 
-        uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_FULL_LOOP ? get_skip_tx_search_flag(
+            uint8_t txb_itr = 0;
+            uint8_t txb_count = context_ptr->blk_geom->txb_count[best_tx_depth];
+
+            for (txb_itr = 0; txb_itr < txb_count; txb_itr++) {
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr] = tx_depth_tx_type[best_tx_depth][PLANE_TYPE_Y][txb_itr];
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = tx_depth_tx_type[best_tx_depth][PLANE_TYPE_UV][txb_itr];
+            }
+            
+        } else {
+#endif
+            uint8_t  tx_search_skip_fag = picture_control_set_ptr->parent_pcs_ptr->tx_search_level == TX_SEARCH_FULL_LOOP ? get_skip_tx_search_flag(
 #if BYPASS_USELESS_TX_SEARCH
-            context_ptr->blk_geom,
+                context_ptr->blk_geom,
 #else  
-            context_ptr->blk_geom->sq_size,
+                context_ptr->blk_geom->sq_size,
 #endif
-            ref_fast_cost,
-            *candidateBuffer->fast_cost_ptr,
-            picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
+                ref_fast_cost,
+                *candidateBuffer->fast_cost_ptr,
+                picture_control_set_ptr->parent_pcs_ptr->tx_weight) : 1;
 
-        tx_search_skip_fag = ( picture_control_set_ptr->parent_pcs_ptr->skip_tx_search && best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
-        if (!tx_search_skip_fag){
+            tx_search_skip_fag = (picture_control_set_ptr->parent_pcs_ptr->skip_tx_search && best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
+
+#if DISABLE_TX_TYPE
+            tx_search_skip_fag = 1;
+#endif
+            if (!tx_search_skip_fag) {
 
                 product_full_loop_tx_search(
                     candidateBuffer,
                     context_ptr,
                     picture_control_set_ptr);
 
-            candidate_ptr->full_distortion = 0;
+                candidate_ptr->full_distortion = 0;
 
 
-            memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
 
 
-            //re-init
-            candidate_ptr->y_has_coeff = 0;
-        }
-
-#if TXS_SPLIT
+                //re-init
+                candidate_ptr->y_has_coeff = 0;
+            }
 #if TXS_DECISION
-        uint8_t end_tx_depth =  get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
-        uint64_t coefbits = 0;
-        if (end_tx_depth) {
-            candidateBuffer->candidate_ptr->tx_depth = tx_size_search(
-                candidateBuffer,
-                context_ptr,
-                picture_control_set_ptr,
-                &coefbits,
-                end_tx_depth);
-
-            candidate_ptr->full_distortion = 0;
-
-
-            memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
-
-
-            //re-init
-            candidate_ptr->y_has_coeff = 0;
-
         }
-#elif TXS_SPLIT_SETTINGS
-        if ((context_ptr->blk_geom->bsize == BLOCK_64X64|| 
-            context_ptr->blk_geom->bsize == BLOCK_32X32 || 
-            context_ptr->blk_geom->bsize == BLOCK_16X16 ||
-            context_ptr->blk_geom->bsize == BLOCK_64X32 ||
-            context_ptr->blk_geom->bsize == BLOCK_32X64 ||
-            context_ptr->blk_geom->bsize == BLOCK_16X32 ||
-            context_ptr->blk_geom->bsize == BLOCK_32X16 ||
-            context_ptr->blk_geom->bsize == BLOCK_16X8  ||
-            context_ptr->blk_geom->bsize == BLOCK_8X16  )  &&
-            candidateBuffer->candidate_ptr->type == INTER_MODE)
-            candidateBuffer->candidate_ptr->tx_depth = rand() % 3; //Nader tx_candidate depth
+#endif
 
-        if ((context_ptr->blk_geom->bsize == BLOCK_8X8) &&
-            candidateBuffer->candidate_ptr->type == INTER_MODE)
-            candidateBuffer->candidate_ptr->tx_depth = rand() % 2; //Nader tx_candidate depth
-#endif
-#endif
         product_full_loop(
             candidateBuffer,
             context_ptr,
@@ -3538,8 +3610,13 @@ void inter_depth_tx_search(
             txb_ptr->y_has_coeff = (EbBool)(((candidate_ptr->y_has_coeff)  & (1 << tu_index)) > 0);
             txb_ptr->u_has_coeff = (EbBool)(((candidate_ptr->u_has_coeff) & (1 << (tu_index))) > 0);
             txb_ptr->v_has_coeff = (EbBool)(((candidate_ptr->v_has_coeff) & (1 << (tu_index))) > 0);
+#if TXS_TX_TYPE
+            txb_ptr->transform_type[PLANE_TYPE_Y] = candidate_ptr->transform_type[PLANE_TYPE_Y][tu_index];
+            txb_ptr->transform_type[PLANE_TYPE_UV] = candidate_ptr->transform_type[PLANE_TYPE_UV][tu_index];
+#else
             txb_ptr->transform_type[PLANE_TYPE_Y] = candidate_ptr->transform_type[PLANE_TYPE_Y];
             txb_ptr->transform_type[PLANE_TYPE_UV] = candidate_ptr->transform_type[PLANE_TYPE_UV];
+#endif
 
 #if NO_ENCDEC
 
@@ -4006,6 +4083,28 @@ void search_best_independent_uv_mode(
             candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode(uv_mode);
             candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = uv_angle_delta;
 
+#if TXS_TX_TYPE
+            TxType tx_type_uv = av1_get_tx_type(
+                context_ptr->blk_geom->bsize,
+                0,
+                (PredictionMode)NULL,
+                (UvPredictionMode)uv_mode,
+                PLANE_TYPE_UV,
+                0,
+                0,
+                0,
+#if TXS_MD
+                context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
+                context_ptr->blk_geom->txsize_uv[0],
+#endif
+                picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+            uint8_t txb_itr;
+            for (txb_itr = 0; txb_itr < MAX_TXB_COUNT; txb_itr++)
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = tx_type_uv;
+#else
+
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
                 av1_get_tx_type(
                     context_ptr->blk_geom->bsize,
@@ -4022,6 +4121,7 @@ void search_best_independent_uv_mode(
                     context_ptr->blk_geom->txsize_uv[0],
 #endif
                     picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+#endif
 
             uint8_t  cb_qp = context_ptr->qp;
             uint8_t  cr_qp = context_ptr->qp;
@@ -4116,7 +4216,14 @@ void search_best_independent_uv_mode(
             candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_Y] = angle_delta;
             candidateBuffer->candidate_ptr->cfl_alpha_signs = 0;
             candidateBuffer->candidate_ptr->cfl_alpha_idx = 0;
+#if TXS_TX_TYPE
+            uint8_t tx_itr;
+            for (tx_itr = 0; tx_itr < MAX_TXB_COUNT; tx_itr++) {
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][tx_itr] = DCT_DCT;
+            }
+#else
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = DCT_DCT;
+#endif
             candidateBuffer->candidate_ptr->ref_frame_type = INTRA_FRAME;
             candidateBuffer->candidate_ptr->pred_mode = (PredictionMode)intra_mode;
             candidateBuffer->candidate_ptr->motion_mode = SIMPLE_TRANSLATION;
@@ -4149,6 +4256,27 @@ void search_best_independent_uv_mode(
                     candidateBuffer->candidate_ptr->is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)uv_mode);
                     candidateBuffer->candidate_ptr->angle_delta[PLANE_TYPE_UV] = uv_angle_delta;
 
+#if TXS_TX_TYPE
+                    TxType tx_type_uv = av1_get_tx_type(
+                        context_ptr->blk_geom->bsize,
+                        0,
+                        (PredictionMode)candidateBuffer->candidate_ptr->intra_luma_mode,
+                        (UvPredictionMode)candidateBuffer->candidate_ptr->intra_chroma_mode,
+                        PLANE_TYPE_UV,
+                        0,
+                        0,
+                        0,
+#if TXS_MD
+                        context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
+                        context_ptr->blk_geom->txsize_uv[0],
+#endif
+                        picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+                    uint8_t txb_itr;
+                    for (txb_itr = 0; txb_itr < MAX_TXB_COUNT; txb_itr++)
+                        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = tx_type_uv;
+#else
                     candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] =
                         av1_get_tx_type(
                             context_ptr->blk_geom->bsize,
@@ -4165,6 +4293,7 @@ void search_best_independent_uv_mode(
                             context_ptr->blk_geom->txsize_uv[0],
 #endif
                             picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+#endif
 
                     // Fast Cost
                     *(candidateBuffer->fast_cost_ptr) = Av1ProductFastCostFuncTable[candidateBuffer->candidate_ptr->type](

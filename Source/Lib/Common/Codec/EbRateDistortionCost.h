@@ -31,6 +31,9 @@ extern "C" {
         uint16_t                                   eob,
         PlaneType                               plane_type,
         TxSize                                  transform_size,
+#if TXS_TX_TYPE
+        TxType                                  transform_type,
+#endif
         /*const uint32_t                             area_size,
         const uint32_t                             stride,*/
         int16_t                                   txb_skip_ctx,
