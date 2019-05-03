@@ -13992,10 +13992,12 @@ extern "C" {
         EbPictureBufferDesc                *chroma_downsampled_picture_ptr; //if 422/444 input, down sample to 420 for MD
         PredictionStructure                *pred_struct_ptr;          // need to check
         struct SequenceControlSet          *sequence_control_set_ptr;
+#if !BUG_FIX_PCS_LIVE_COUNT
 #if MRP_ME
         struct PictureParentControlSet     *ref_pa_pcs_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
 #else
         struct PictureParentControlSet     *ref_pa_pcs_array[MAX_NUM_OF_REF_PIC_LIST];
+#endif
 #endif
         EbObjectWrapper                    *p_pcs_wrapper_ptr;
         EbObjectWrapper                    *previous_picture_control_set_wrapper_ptr;
@@ -14071,11 +14073,14 @@ extern "C" {
 
         // Pre Analysis
 #if MRP_ME
-        EbObjectWrapper                   *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
+        EbObjectWrapper                      *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
         uint64_t                              ref_pic_poc_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
 #else
         EbObjectWrapper                    *ref_pa_pic_ptr_array[MAX_NUM_OF_REF_PIC_LIST];
         uint64_t                              ref_pic_poc_array[MAX_NUM_OF_REF_PIC_LIST];
+#endif
+#if BUG_FIX_INPUT_LIVE_COUNT
+        EbObjectWrapper                      *ref_input_ptr_array[MAX_NUM_OF_REF_PIC_LIST][REF_LIST_MAX_DEPTH];
 #endif
         uint16_t                            **variance;
         uint8_t                             **y_mean;

@@ -59,6 +59,10 @@ typedef struct EbPaReferenceObject
 #if !BUG_FIX_PCS_LIVE_COUNT
     PictureParentControlSet      *p_pcs_ptr;
 #endif
+
+#if BUG_FIX_INPUT_LIVE_COUNT
+    EbObjectWrapper              *input_picture_wrapper_ptr;
+#endif
 } EbPaReferenceObject;
 
 typedef struct EbPaReferenceObjectDescInitData 
