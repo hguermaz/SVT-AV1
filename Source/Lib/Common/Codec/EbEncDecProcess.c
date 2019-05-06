@@ -1485,7 +1485,11 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
             context_ptr->global_mv_injection = 0;
     else
 #endif
+#if M8_GLOBAL_MV
+	if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
         context_ptr->global_mv_injection = 1;
     else
         context_ptr->global_mv_injection = 0;

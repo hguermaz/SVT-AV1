@@ -1118,7 +1118,11 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
             else
                 picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
+#if M8_INTERPOLATION
+		else if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
         else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
             else
@@ -1219,7 +1223,11 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->cdef_filter_mode = 0;
         else
 #endif
+#if M8_CDEF
+		if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
             picture_control_set_ptr->cdef_filter_mode = 4;
         else
             picture_control_set_ptr->cdef_filter_mode = 2;

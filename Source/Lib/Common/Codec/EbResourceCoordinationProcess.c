@@ -122,7 +122,11 @@ EbErrorType signal_derivation_pre_analysis_oq(
         picture_control_set_ptr->enable_hme_level2_flag = sequence_control_set_ptr->static_config.enable_hme_level2_flag;
     }
 #if NEW_PRESETS
+#if M8_RESTORATION
+	if (picture_control_set_ptr->enc_mode >= ENC_M7)
+#else
     if (picture_control_set_ptr->enc_mode >= ENC_M8)
+#endif
         sequence_control_set_ptr->enable_restoration = 0;
 #else
     if (picture_control_set_ptr->enc_mode >= ENC_M7)

@@ -128,7 +128,10 @@ void* set_me_hme_params_oq(
     me_context_ptr->hme_level2_search_area_in_width_array[1] = hme_level2_search_area_in_width_array_left[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->hme_level2_search_area_in_height_array[0] = hme_level2_search_area_in_height_array_top[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->hme_level2_search_area_in_height_array[1] = hme_level2_search_area_in_height_array_bottom[sc_content_detected][input_resolution][hmeMeLevel];
-
+#if M8_ME
+	if (picture_control_set_ptr->enc_mode == 7)
+		hmeMeLevel = 8;
+#endif
     // ME
     me_context_ptr->search_area_width = search_area_width[sc_content_detected][input_resolution][hmeMeLevel];
     me_context_ptr->search_area_height = search_area_height[sc_content_detected][input_resolution][hmeMeLevel];

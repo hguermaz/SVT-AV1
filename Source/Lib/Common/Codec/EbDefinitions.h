@@ -155,7 +155,13 @@ extern "C" {
 #define USE_SAD_HMEL2                                   1
 #endif
 
-
+/************************M8 to M7***********************/
+#define M8_CDEF	1
+#define M8_ME	1
+#define M8_WIENER	1
+#define M8_RESTORATION	1
+#define M8_INTERPOLATION	1
+#define M8_GLOBAL_MV		1
 
 
 
