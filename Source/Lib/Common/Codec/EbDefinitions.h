@@ -156,13 +156,15 @@ extern "C" {
 #endif
 
 /************************M8 to M7***********************/
-#define M8_CDEF	1
-#define M8_ME	1
-#define M8_WIENER	1
-#define M8_RESTORATION	1
-#define M8_INTERPOLATION	1
-#define M8_GLOBAL_MV		1
+#define M8_CDEF				0
+#define M8_ME				0
+#define M8_WIENER			0
+#define M8_RESTORATION		0
+#define M8_INTERPOLATION	0
+#define M8_GLOBAL_MV		0
+#define M8_ADP				0
 
+/*****LEFTOVER ******/
 
 
 #if !MRP_SUPPORT
