@@ -1254,6 +1254,9 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->cdef_filter_mode = 1;
 #endif
 #endif
+#if CDEF_OFF
+		picture_control_set_ptr->cdef_filter_mode = 0;
+#endif
 #if LO_CDEF
 		picture_control_set_ptr->cdef_filter_mode = 1;
 #endif
@@ -1521,7 +1524,15 @@ EbErrorType signal_derivation_multi_processes_oq(
             else
                 picture_control_set_ptr->intra_pred_mode = 3;
         else
+#if LO_INTRA_5
+			picture_control_set_ptr->intra_pred_mode = 5;
+#else
+#if LO_INTRA_6
+			picture_control_set_ptr->intra_pred_mode = 6;
+#else
             picture_control_set_ptr->intra_pred_mode = 4;
+#endif
+#endif
 #else
         if (picture_control_set_ptr->enc_mode  <= ENC_M2) 
             if (picture_control_set_ptr->temporal_layer_index == 0)

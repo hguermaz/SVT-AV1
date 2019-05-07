@@ -1317,12 +1317,16 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         else
             context_ptr->nfl_level = 5;
     else
+#if NFL_3_ALL
+		context_ptr->nfl_level = 7;
+#else
         if (picture_control_set_ptr->parent_pcs_ptr->slice_type == I_SLICE)
             context_ptr->nfl_level = 5;
         else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
             context_ptr->nfl_level = 6;
         else
             context_ptr->nfl_level = 7;
+#endif
 #else
     if (picture_control_set_ptr->enc_mode == ENC_M0)
 #if MOD_M0

@@ -5344,6 +5344,9 @@ EbErrorType write_modes_b(
     NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->cr_dc_sign_level_coeff_neighbor_array;
     NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->cb_dc_sign_level_coeff_neighbor_array;
     NeighborArrayUnit     *ref_frame_type_neighbor_array = picture_control_set_ptr->ref_frame_type_neighbor_array;
+#if ! MRP_SUPPORT
+	NeighborArrayUnit     *inter_pred_dir_neighbor_array = picture_control_set_ptr->inter_pred_dir_neighbor_array;
+#endif
     NeighborArrayUnit32   *interpolation_type_neighbor_array = picture_control_set_ptr->interpolation_type_neighbor_array;
 
     const BlockGeom          *blk_geom = get_blk_geom_mds(cu_ptr->mds_idx);
@@ -5627,7 +5630,7 @@ assert(bsize < BlockSizeS_ALL);
                     blkOriginX,
                     blkOriginY,
                     mode_type_neighbor_array,
-                    inter_pred_dir_neighbor_array,
+					inter_pred_dir_neighbor_array,
                     ref_frame_type_neighbor_array);
 
 

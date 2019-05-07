@@ -210,7 +210,11 @@ EbErrorType signal_derivation_me_kernel_oq(
             context_ptr->me_context_ptr->fractionalSearchMethod = SUB_SAD_SEARCH;
 #else
         else
+#if SUB_SAD_FRAC_ME_SEARCH_METHOD
+		context_ptr->me_context_ptr->fractional_search_method = SUB_SAD_SEARCH;
+#else
         context_ptr->me_context_ptr->fractional_search_method = FULL_SAD_SEARCH;
+#endif
 #endif
 #if SCREEN_CONTENT_SETTINGS
         if (picture_control_set_ptr->sc_content_detected)
@@ -245,7 +249,11 @@ EbErrorType signal_derivation_me_kernel_oq(
             context_ptr->me_context_ptr->fractional_search_model = 0;
         }
         else {
+#if DISABLE_FRACIONAL_SEARCH_MODEL
+			context_ptr->me_context_ptr->fractional_search_model = 2;
+#else
             context_ptr->me_context_ptr->fractional_search_model = 1;
+#endif
         }
 #else
         if (picture_control_set_ptr->enc_mode <= ENC_M8) {
