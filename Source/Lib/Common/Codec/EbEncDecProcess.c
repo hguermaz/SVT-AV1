@@ -1471,8 +1471,9 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->full_loop_escape = 1;
 #endif
-
-
+#if LO_FL_ESCAPE
+context_ptr->full_loop_escape = 1;
+#endif
     // Set global MV injection
     // Level                Settings
     // 0                    Injection off (Hsan: but not derivation as used by MV ref derivation)

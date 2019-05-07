@@ -165,7 +165,14 @@ extern "C" {
 #define M8_ADP				0
 
 /*****LEFTOVER ******/
-
+#define LO_CDEF	             0
+#define LO_FL_ESCAPE         0
+#define LO_ME				 0
+#define LO_CU_8x8			 0
+#define LO_ADP_5			 0
+#define LO_ADP_10			 0
+#define LO_ADP_20			 0
+#define LO_HMELEVEL			 0
 
 #if !MRP_SUPPORT
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference

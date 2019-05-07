@@ -1231,6 +1231,8 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->cdef_filter_mode = 4;
         else
             picture_control_set_ptr->cdef_filter_mode = 2;
+
+
 #else
 #if  M9_CDEF
         {
@@ -1251,6 +1253,9 @@ EbErrorType signal_derivation_multi_processes_oq(
         else
             picture_control_set_ptr->cdef_filter_mode = 1;
 #endif
+#endif
+#if LO_CDEF
+		picture_control_set_ptr->cdef_filter_mode = 1;
 #endif
     }
     else
@@ -1561,6 +1566,11 @@ EbErrorType signal_derivation_multi_processes_oq(
 
 #endif
 #if M9_CU_8x8
+#if LO_CU_8x8
+	picture_control_set_ptr->cu8x8_mode = (picture_control_set_ptr->temporal_layer_index > 0) ?
+		CU_8x8_MODE_1 :
+		CU_8x8_MODE_0;
+#else
 #if SCREEN_CONTENT_SETTINGS
         if (picture_control_set_ptr->sc_content_detected)
             if (picture_control_set_ptr->enc_mode <= ENC_M1)
@@ -1577,6 +1587,8 @@ EbErrorType signal_derivation_multi_processes_oq(
             picture_control_set_ptr->cu8x8_mode = (picture_control_set_ptr->temporal_layer_index > 0) ?
             CU_8x8_MODE_1 :
             CU_8x8_MODE_0;
+#endif
+
 #endif
     return return_error;
 }
