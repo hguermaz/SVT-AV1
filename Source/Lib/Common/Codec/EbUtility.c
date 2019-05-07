@@ -926,7 +926,7 @@ void md_scan_all_blks(uint32_t *idx_mds, uint32_t sq_size, uint32_t x, uint32_t 
             {
                 blk_geom_mds[*idx_mds].txb_count[tx_depth] = 2;
             }
-#if H4
+#if TX_H4
             if (blk_geom_mds[*idx_mds].bsize == BLOCK_64X16 ||
                 blk_geom_mds[*idx_mds].bsize == BLOCK_16X64 ||
                 blk_geom_mds[*idx_mds].bsize == BLOCK_32X8 ||
@@ -1073,7 +1073,7 @@ void md_scan_all_blks(uint32_t *idx_mds, uint32_t sq_size, uint32_t x, uint32_t 
                     blk_geom_mds[*idx_mds].tx_org_x[tx_depth][txb_itr] = blk_geom_mds[*idx_mds].origin_x + tbx;
                     blk_geom_mds[*idx_mds].tx_org_y[tx_depth][txb_itr] = blk_geom_mds[*idx_mds].origin_y + tby;
                 }
-#if H4
+#if TX_H4
                 else if (blk_geom_mds[*idx_mds].bsize == BLOCK_64X16)
                 {
                     blk_geom_mds[*idx_mds].txsize[tx_depth][txb_itr] = av1_get_tx_size(BLOCK_16X16, 0);
@@ -1214,7 +1214,7 @@ void md_scan_all_blks(uint32_t *idx_mds, uint32_t sq_size, uint32_t x, uint32_t 
             {
                 blk_geom_mds[*idx_mds].txb_count[tx_depth] = 8;
             }
-#if H4
+#if TX_H4
             if (blk_geom_mds[*idx_mds].bsize == BLOCK_64X16 ||
                 blk_geom_mds[*idx_mds].bsize == BLOCK_16X64 ||
                 blk_geom_mds[*idx_mds].bsize == BLOCK_32X8  ||
@@ -1377,7 +1377,7 @@ void md_scan_all_blks(uint32_t *idx_mds, uint32_t sq_size, uint32_t x, uint32_t 
                     blk_geom_mds[*idx_mds].tx_org_x[tx_depth][txb_itr] = blk_geom_mds[*idx_mds].origin_x + tbx;
                     blk_geom_mds[*idx_mds].tx_org_y[tx_depth][txb_itr] = blk_geom_mds[*idx_mds].origin_y + tby;
                 }
-#if H4
+#if TX_H4
                 else if (blk_geom_mds[*idx_mds].bsize == BLOCK_64X16) {
                     blk_geom_mds[*idx_mds].txsize[tx_depth][txb_itr] = av1_get_tx_size(BLOCK_8X8, 0);
                     blk_geom_mds[*idx_mds].txsize_uv[tx_depth][txb_itr] = blk_geom_mds[*idx_mds].txsize_uv[0][0];

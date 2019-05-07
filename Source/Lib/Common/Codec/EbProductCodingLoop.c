@@ -1427,112 +1427,119 @@ void AV1PerformInverseTransformRecon(
                     PICTURE_BUFFER_DESC_Y_FLAG,
                     asm_type);
             }
-
-            if (context_ptr->chroma_level <= CHROMA_MODE_1) 
-            {
-            //CHROMA
-#if TX_SIZE_UPDATE_GEOM
-                uint32_t chroma_tu_width = tx_size_wide[context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr]];
-                uint32_t chroma_tu_height = tx_size_high[context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr]];
-#else
-            uint32_t chroma_tu_width = tx_size_wide[context_ptr->blk_geom->txsize_uv[txb_itr]];
-            uint32_t chroma_tu_height = tx_size_high[context_ptr->blk_geom->txsize_uv[txb_itr]];
+#if TXS_MD
+            uint8_t tx_depth = candidateBuffer->candidate_ptr->tx_depth;
+            if (tx_depth == 0 || txb_itr == 0) {
 #endif
-            uint32_t cbTuChromaOriginIndex = ((((txb_origin_x >> 3) << 3) + ((txb_origin_y >> 3) << 3) * candidateBuffer->recon_coeff_ptr->stride_cb) >> 1);
-            uint32_t crTuChromaOriginIndex = ((((txb_origin_x >> 3) << 3) + ((txb_origin_y >> 3) << 3) * candidateBuffer->recon_coeff_ptr->stride_cr) >> 1);
-
-            if (context_ptr->blk_geom->has_uv && txb_ptr->u_has_coeff) {
-                
-                uint8_t     *predBuffer = &(candidateBuffer->prediction_ptr->buffer_cb[cbTuChromaOriginIndex]);
-                uint8_t     *recBuffer = &(candidateBuffer->recon_ptr->buffer_cb[recCbOffset]);
-                uint32_t j;
-                for (j = 0; j < chroma_tu_height; j++)
-                    memcpy(recBuffer + j * candidateBuffer->recon_ptr->stride_cb, predBuffer + j * candidateBuffer->prediction_ptr->stride_cb, chroma_tu_width);
-
-                av1_inv_transform_recon8bit(
-                    &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_cb)[txb_1d_offset_uv]),
-                    recBuffer,
-                    candidateBuffer->recon_ptr->stride_cb,
+                if (context_ptr->chroma_level <= CHROMA_MODE_1)
+                {
+                    //CHROMA
 #if TX_SIZE_UPDATE_GEOM
-                    context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr],
+                    uint32_t chroma_tu_width = tx_size_wide[context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr]];
+                    uint32_t chroma_tu_height = tx_size_high[context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr]];
 #else
-                    context_ptr->blk_geom->txsize_uv[txb_itr],
+                    uint32_t chroma_tu_width = tx_size_wide[context_ptr->blk_geom->txsize_uv[txb_itr]];
+                    uint32_t chroma_tu_height = tx_size_high[context_ptr->blk_geom->txsize_uv[txb_itr]];
+#endif
+                    uint32_t cbTuChromaOriginIndex = ((((txb_origin_x >> 3) << 3) + ((txb_origin_y >> 3) << 3) * candidateBuffer->recon_coeff_ptr->stride_cb) >> 1);
+                    uint32_t crTuChromaOriginIndex = ((((txb_origin_x >> 3) << 3) + ((txb_origin_y >> 3) << 3) * candidateBuffer->recon_coeff_ptr->stride_cr) >> 1);
+
+                    if (context_ptr->blk_geom->has_uv && txb_ptr->u_has_coeff) {
+
+                        uint8_t     *predBuffer = &(candidateBuffer->prediction_ptr->buffer_cb[cbTuChromaOriginIndex]);
+                        uint8_t     *recBuffer = &(candidateBuffer->recon_ptr->buffer_cb[recCbOffset]);
+                        uint32_t j;
+                        for (j = 0; j < chroma_tu_height; j++)
+                            memcpy(recBuffer + j * candidateBuffer->recon_ptr->stride_cb, predBuffer + j * candidateBuffer->prediction_ptr->stride_cb, chroma_tu_width);
+
+                        av1_inv_transform_recon8bit(
+                            &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_cb)[txb_1d_offset_uv]),
+                            recBuffer,
+                            candidateBuffer->recon_ptr->stride_cb,
+#if TX_SIZE_UPDATE_GEOM
+                            context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr],
+#else
+                            context_ptr->blk_geom->txsize_uv[txb_itr],
 #endif
 #if TXS_TX_TYPE
-                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
+                            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
 #else
-                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+                            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
 #endif
-                    PLANE_TYPE_UV,
-                    (uint16_t)candidateBuffer->candidate_ptr->eob[1][txb_itr]);
-            }
-            else {
+                            PLANE_TYPE_UV,
+                            (uint16_t)candidateBuffer->candidate_ptr->eob[1][txb_itr]);
+                    }
+                    else {
 
-                picture_copy8_bit(
-                    candidateBuffer->prediction_ptr,
-                    0,
-                    cbTuChromaOriginIndex,
-                    candidateBuffer->recon_ptr,
-                    0,
-                    recCbOffset,
-                    0,
-                    0,
-                    chroma_tu_width,
-                    chroma_tu_height,
-                    PICTURE_BUFFER_DESC_Cb_FLAG,
-                    asm_type);
-            }
+                        picture_copy8_bit(
+                            candidateBuffer->prediction_ptr,
+                            0,
+                            cbTuChromaOriginIndex,
+                            candidateBuffer->recon_ptr,
+                            0,
+                            recCbOffset,
+                            0,
+                            0,
+                            chroma_tu_width,
+                            chroma_tu_height,
+                            PICTURE_BUFFER_DESC_Cb_FLAG,
+                            asm_type);
+                    }
 
-                if (context_ptr->blk_geom->has_uv && txb_ptr->v_has_coeff) {
-                    uint8_t     *predBuffer = &(candidateBuffer->prediction_ptr->buffer_cr[crTuChromaOriginIndex]);
-                    uint8_t     *recBuffer = &(candidateBuffer->recon_ptr->buffer_cr[recCrOffset]);
-                    uint32_t j;
-                    for (j = 0; j < chroma_tu_height; j++)
-                        memcpy(recBuffer + j * candidateBuffer->recon_ptr->stride_cr, predBuffer + j * candidateBuffer->prediction_ptr->stride_cr, chroma_tu_width);
+                    if (context_ptr->blk_geom->has_uv && txb_ptr->v_has_coeff) {
+                        uint8_t     *predBuffer = &(candidateBuffer->prediction_ptr->buffer_cr[crTuChromaOriginIndex]);
+                        uint8_t     *recBuffer = &(candidateBuffer->recon_ptr->buffer_cr[recCrOffset]);
+                        uint32_t j;
+                        for (j = 0; j < chroma_tu_height; j++)
+                            memcpy(recBuffer + j * candidateBuffer->recon_ptr->stride_cr, predBuffer + j * candidateBuffer->prediction_ptr->stride_cr, chroma_tu_width);
 
-                av1_inv_transform_recon8bit(
-                    &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_cr)[txb_1d_offset_uv]),
-                    recBuffer,
-                    candidateBuffer->recon_ptr->stride_cr,
+                        av1_inv_transform_recon8bit(
+                            &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_cr)[txb_1d_offset_uv]),
+                            recBuffer,
+                            candidateBuffer->recon_ptr->stride_cr,
 #if TX_SIZE_UPDATE_GEOM
-                    context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr],
+                            context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr],
 #else
-                    context_ptr->blk_geom->txsize_uv[txb_itr],
+                            context_ptr->blk_geom->txsize_uv[txb_itr],
 #endif
 #if TXS_TX_TYPE
-                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
+                            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
 #else
-                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
+                            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV],
 #endif
-                    PLANE_TYPE_UV,
-                    (uint16_t)candidateBuffer->candidate_ptr->eob[2][txb_itr]);
-                }
-                else {
+                            PLANE_TYPE_UV,
+                            (uint16_t)candidateBuffer->candidate_ptr->eob[2][txb_itr]);
+                    }
+                    else {
 
-                picture_copy8_bit(
-                    candidateBuffer->prediction_ptr,
-                    0,
-                    crTuChromaOriginIndex,
-                    candidateBuffer->recon_ptr,
-                    0,
-                    recCrOffset,
-                    0,
-                    0,
-                    chroma_tu_width,
-                    chroma_tu_height,
-                    PICTURE_BUFFER_DESC_Cr_FLAG,
-                    asm_type);
+                        picture_copy8_bit(
+                            candidateBuffer->prediction_ptr,
+                            0,
+                            crTuChromaOriginIndex,
+                            candidateBuffer->recon_ptr,
+                            0,
+                            recCrOffset,
+                            0,
+                            0,
+                            chroma_tu_width,
+                            chroma_tu_height,
+                            PICTURE_BUFFER_DESC_Cr_FLAG,
+                            asm_type);
 
 
-                }
-                //CHROMA END
-                if (context_ptr->blk_geom->has_uv)
+                    }
+
+                    //CHROMA END
+                    if (context_ptr->blk_geom->has_uv)
 #if TX_SIZE_UPDATE_GEOM
-                    txb_1d_offset_uv += context_ptr->blk_geom->tx_width_uv[tx_depth][txb_itr] * context_ptr->blk_geom->tx_height_uv[tx_depth][txb_itr];
+                        txb_1d_offset_uv += context_ptr->blk_geom->tx_width_uv[tx_depth][txb_itr] * context_ptr->blk_geom->tx_height_uv[tx_depth][txb_itr];
 #else
-                    txb_1d_offset_uv += context_ptr->blk_geom->tx_width_uv[txb_itr] * context_ptr->blk_geom->tx_height_uv[txb_itr];
+                        txb_1d_offset_uv += context_ptr->blk_geom->tx_width_uv[txb_itr] * context_ptr->blk_geom->tx_height_uv[txb_itr];
 #endif
+                }
+#if TXS_MD
             }
+#endif
 #if TX_SIZE_UPDATE_GEOM
             txb_1d_offset += context_ptr->blk_geom->tx_width[tx_depth][txb_itr] * context_ptr->blk_geom->tx_height[tx_depth][txb_itr];
 #else
@@ -2836,16 +2843,22 @@ void AV1PerformFullLoop(
         candidate_ptr->y_has_coeff = 0;
         candidate_ptr->u_has_coeff = 0;
         candidate_ptr->v_has_coeff = 0;
-
+        candidateBuffer->candidate_ptr->tx_depth = 0;
 #if TXS_DECISION
         candidateBuffer->candidate_ptr->tx_depth = 0;
-        uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
+        uint8_t end_tx_depth =  get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
+#if TXS_SEARCH_2
+        if (0) {
+#else
         if (end_tx_depth > 0) {
+#endif
             uint8_t best_tx_depth = 0;
             uint64_t tx_depth0_cost = UINT64_MAX;
             uint64_t tx_depth1_cost = UINT64_MAX;
             uint64_t tx_depth2_cost = UINT64_MAX;
+
             TxType tx_depth_tx_type[3][PLANE_TYPES][MAX_TXB_COUNT];
+
             // Compute rd_cost for tx_depth 0
             candidateBuffer->candidate_ptr->tx_depth = 0;
             tx_depth0_cost = tx_depth_cost(
@@ -2869,7 +2882,7 @@ void AV1PerformFullLoop(
             //re-init
             candidate_ptr->y_has_coeff = 0;
             // Compute rd_cost for tx_depth 1
-            if (end_tx_depth > 2) {
+            if (end_tx_depth > 1) {
                 candidateBuffer->candidate_ptr->tx_depth = 2;
                 tx_depth2_cost = tx_depth_cost(
                     candidateBuffer,
@@ -2944,6 +2957,26 @@ void AV1PerformFullLoop(
         }
 #endif
 
+#if TXS_SEARCH_2
+        if (end_tx_depth > 0) {
+            uint8_t txb_itr = 0;
+            uint8_t txb_count = context_ptr->blk_geom->txb_count[2];
+
+            for (txb_itr = 0; txb_itr < txb_count; txb_itr++) {
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][0];
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][0];
+            }
+            candidateBuffer->candidate_ptr->tx_depth = tx_size_search(
+                candidateBuffer,
+                context_ptr,
+                picture_control_set_ptr,
+                end_tx_depth);
+            candidate_ptr->full_distortion = 0;
+            memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+            //re-init
+            candidate_ptr->y_has_coeff = 0;
+        }
+#endif
         product_full_loop(
             candidateBuffer,
             context_ptr,
@@ -4741,7 +4774,16 @@ void md_encode_block(
         context_ptr->md_local_cu_unit[cu_ptr->mds_idx].avail_blk_flag = EB_TRUE;
 #endif
 #if 0//TXS_SPLIT_SETTINGS
-        if (context_ptr->blk_geom->bsize == BLOCK_64X32 || context_ptr->blk_geom->bsize == BLOCK_32X64) {
+        /*if (context_ptr->blk_geom->bsize == BLOCK_64X16 ||
+            context_ptr->blk_geom->bsize == BLOCK_16X64 ||
+            context_ptr->blk_geom->bsize == BLOCK_32X8 ||
+            context_ptr->blk_geom->bsize == BLOCK_8X32 ||
+            context_ptr->blk_geom->bsize == BLOCK_16X4 ||
+            context_ptr->blk_geom->bsize == BLOCK_4X16)*/
+            if (context_ptr->blk_geom->bsize == BLOCK_64X32 ||
+                context_ptr->blk_geom->bsize == BLOCK_32X16 ||
+                context_ptr->blk_geom->bsize == BLOCK_4X8 )
+        {
             context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost = context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost / 100;
         }
 #endif

@@ -332,6 +332,7 @@ extern "C" {
 #if INJ_MVP
     uint8_t get_list_idx(uint8_t ref_type);
 #endif
+
 #ifdef __cplusplus
 }
 #endif

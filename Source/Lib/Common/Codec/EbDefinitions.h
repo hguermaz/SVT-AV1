@@ -264,6 +264,10 @@ extern "C" {
 
 #define DISABLE_TX_TYPE                                 0
 #define TXS_TX_TYPE                                     1
+#define TX_H4                                           1
+#define ADD_TX_SIZE_COST                                0
+#define IMPERICAL_LAMBDA                                0
+#define TXS_SEARCH_2                                    1
 #endif
  
 struct Buf2D 
