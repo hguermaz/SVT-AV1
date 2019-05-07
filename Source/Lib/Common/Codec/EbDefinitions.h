@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#define MRP_SUPPORT            0// MRP Main Flag
+#define MRP_SUPPORT            1// MRP Main Flag
 
 // New  presets
 #define NEW_PRESETS                       1
@@ -179,6 +179,7 @@ extern "C" {
 #define SUB_SAD_FRAC_ME_SEARCH_METHOD	0
 #define DISABLE_FRACIONAL_SEARCH_MODEL	0
 #define NFL_3_ALL						0
+#define MRP_DISABLE_ADDED_CAND_M1		0
 #if !MRP_SUPPORT
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
 #endif
