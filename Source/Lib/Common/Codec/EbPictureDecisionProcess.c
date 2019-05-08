@@ -4217,7 +4217,7 @@ void* picture_decision_kernel(void *input_ptr)
 #if SETUP_SKIP
                             av1_setup_skip_mode_allowed(picture_control_set_ptr);
                             picture_control_set_ptr->is_skip_mode_allowed = picture_control_set_ptr->skip_mode_info.skip_mode_allowed;
-#if MRP_DISABLE_ADDED_CAND_M1
+#if 0// MRP_DISABLE_ADDED_CAND_M1
 							picture_control_set_ptr->is_skip_mode_allowed = picture_control_set_ptr->enc_mode >= ENC_M1 && picture_control_set_ptr->temporal_layer_index == 0 ? 0 : picture_control_set_ptr->is_skip_mode_allowed;
 #endif
                             picture_control_set_ptr->skip_mode_flag = picture_control_set_ptr->is_skip_mode_allowed;
