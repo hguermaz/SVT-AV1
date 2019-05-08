@@ -179,7 +179,7 @@ extern "C" {
 #define SUB_SAD_FRAC_ME_SEARCH_METHOD	0
 #define DISABLE_FRACIONAL_SEARCH_MODEL	0
 #define NFL_3_ALL						0
-#define MRP_DISABLE_ADDED_CAND_M1		1
+#define MRP_DISABLE_ADDED_CAND_M1		0
 #if !MRP_SUPPORT
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
 #endif
@@ -266,7 +266,7 @@ extern "C" {
 #define AOM_INTERP_EXTEND 4
 
 #define  TEST3  0
-#define  TEST2  1
+#define  TEST2  0
 
 struct Buf2D 
 {
