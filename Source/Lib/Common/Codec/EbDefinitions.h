@@ -2505,17 +2505,16 @@ app_malloc_count++;
 
 #define EB_CREATESEMAPHORE(type, pointer, n_elements, pointer_class, initial_count, max_count) \
     pointer = eb_create_semaphore(initial_count, max_count); \
-    if (pointer == (type)EB_NULL) { \
+    if (pointer == (type)EB_NULL) \
         return EB_ErrorInsufficientResources; \
-    } \
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
+        node->next_entry       = EB_NULL; \
+        memory_map->ptr_type   = pointer_class; \
+        memory_map->ptr        = pointer; \
         memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        memory_map             = node; \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += (n_elements); \
