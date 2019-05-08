@@ -55,13 +55,13 @@ EbErrorType me_context_ctor(
     (*object_dbl_ptr)->sixteenth_sb_buffer_stride = (BLOCK_SIZE_64 >> 2);
     EB_ALLIGN_MALLOC(uint8_t *, (*object_dbl_ptr)->sixteenth_sb_buffer, sizeof(uint8_t) * (BLOCK_SIZE_64 >> 2) * (*object_dbl_ptr)->sixteenth_sb_buffer_stride, EB_A_PTR);
 #if REDUCE_ME_SEARCH_AREA
-    (*object_dbl_ptr)->interpolated_stride = MIN(MAX_SEARCH_AREA_WIDTH, (max_input_luma_width + (PAD_VALUE << 1)));
+    (*object_dbl_ptr)->interpolated_stride = MIN((uint16_t)MAX_SEARCH_AREA_WIDTH, (uint16_t)(max_input_luma_width + (PAD_VALUE << 1)));
 #else
     (*object_dbl_ptr)->interpolated_stride = MAX_SEARCH_AREA_WIDTH;
 #endif
 
 #if REDUCE_ME_SEARCH_AREA
-    uint16_t max_search_area_height = MIN(MAX_PICTURE_HEIGHT_SIZE, (max_input_luma_height + (PAD_VALUE << 1)));
+    uint16_t max_search_area_height = MIN((uint16_t)MAX_PICTURE_HEIGHT_SIZE, (uint16_t)(max_input_luma_height + (PAD_VALUE << 1)));
 #endif
     EB_MEMSET((*object_dbl_ptr)->sb_buffer, 0, sizeof(uint8_t) * BLOCK_SIZE_64 * (*object_dbl_ptr)->sb_buffer_stride);
     EB_MALLOC(EbBitFraction *, (*object_dbl_ptr)->mvd_bits_array, sizeof(EbBitFraction) * NUMBER_OF_MVD_CASES, EB_N_PTR);

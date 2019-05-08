@@ -2275,14 +2275,16 @@ void move_cu_data(
 *   Coefficient Samples
 *
 *******************************************/
-EB_EXTERN void AV1EncodePass(
+EB_EXTERN void av1_encode_pass(
     SequenceControlSet      *sequence_control_set_ptr,
     PictureControlSet       *picture_control_set_ptr,
     LargestCodingUnit       *sb_ptr,
     uint32_t                   tbAddr,
     uint32_t                   sb_origin_x,
     uint32_t                   sb_origin_y,
+#if !MEMORY_FOOTPRINT_OPT
     uint32_t                   sb_qp,
+#endif
     EncDecContext           *context_ptr)
 {
 
@@ -2295,8 +2297,8 @@ EB_EXTERN void AV1EncodePass(
     inputPicture = context_ptr->input_samples = (EbPictureBufferDesc*)picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr;
 
     SbStat                *sb_stat_ptr = &(picture_control_set_ptr->parent_pcs_ptr->sb_stat_array[tbAddr]);
-    EbBool                    availableCoeff;
 #if !MEMORY_FOOTPRINT_OPT
+    EbBool                    availableCoeff;
     // QP Neighbor Arrays
     EbBool                    isDeltaQpNotCoded = EB_TRUE;
 #endif
@@ -3771,7 +3773,7 @@ EB_EXTERN void AV1EncodePass(
 
                 if (dlfEnableFlag)
                 {
-
+#if !MEMORY_FOOTPRINT_OPT
                     if (blk_geom->has_uv) {
                         availableCoeff = (cu_ptr->prediction_mode_flag == INTER_MODE) ? (EbBool)cu_ptr->block_has_coeff :
                             (cu_ptr->transform_unit_array[0].y_has_coeff ||
@@ -3782,7 +3784,6 @@ EB_EXTERN void AV1EncodePass(
                         availableCoeff = (cu_ptr->transform_unit_array[0].y_has_coeff) ? EB_TRUE : EB_FALSE;
                     }
 
-#if !MEMORY_FOOTPRINT_OPT
                     // Assign the LCU-level QP
                     //NM - To be revisited
                     EncodePassUpdateQp(

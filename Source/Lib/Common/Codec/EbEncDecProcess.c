@@ -1991,14 +1991,16 @@ void* enc_dec_kernel(void *input_ptr)
                         context_ptr);
 #else
                     // Encode Pass
-                    AV1EncodePass(
+                    av1_encode_pass(
                         sequence_control_set_ptr,
                         picture_control_set_ptr,
                         sb_ptr,
                         sb_index,
                         sb_origin_x,
                         sb_origin_y,
+#if !MEMORY_FOOTPRINT_OPT
                         sb_ptr->qp,
+#endif
                         context_ptr);
 #endif
 
