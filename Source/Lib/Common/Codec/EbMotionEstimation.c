@@ -7154,6 +7154,9 @@ EbErrorType  BiPredictionSearch(
     MeContext                    *context_ptr,
     uint32_t                        pu_index,
     uint8_t                        candidateIndex,
+#if TEST3
+	uint8_t                        usee_list0_ref0_flag,
+#endif
     uint32_t                        activeRefPicFirstLisNum,
     uint32_t                        activeRefPicSecondLisNum,
     uint8_t                        *total_me_candidate_index,
@@ -7216,6 +7219,12 @@ EbErrorType  BiPredictionSearch(
         for (secondListRefPictdx = 0; secondListRefPictdx < activeRefPicSecondLisNum; secondListRefPictdx++) {
 
             {
+#if TEST3
+				if ((usee_list0_ref0_flag == 0) && (secondListRefPictdx == 0))
+				{
+					continue;
+				}
+#endif
 
                 BiPredictionCompensation(
                     context_ptr,
@@ -7262,6 +7271,12 @@ EbErrorType  BiPredictionSearch(
         }
         //NM: Within list 1    bipred: (BWD, ALT)         
         for (secondListRefPictdx = 1; secondListRefPictdx < MIN(activeRefPicSecondLisNum, 1); secondListRefPictdx++) {
+#if TEST3
+			if ((usee_list0_ref0_flag == 0) && (secondListRefPictdx == 0))
+			{
+				continue;
+			}
+#endif
             BiPredictionCompensation(
                 context_ptr,
                 pu_index,
@@ -8228,6 +8243,11 @@ EbErrorType motion_estimate_lcu(
         ref1Poc = picture_control_set_ptr->ref_pic_poc_array[1];
     }
 #endif
+#if TEST3
+	
+	uint8_t usee_list0_ref0_flag = 1;
+	
+#endif
 
     // Uni-Prediction motion estimation loop
     // List Loop
@@ -8255,6 +8275,14 @@ EbErrorType motion_estimate_lcu(
             referenceObject = (EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex][ref_pic_index]->object_ptr;
 #else
             referenceObject = (EbPaReferenceObject*)picture_control_set_ptr->ref_pa_pic_ptr_array[listIndex]->object_ptr;
+#endif
+#if TEST3
+			if ((ref0Poc == ref1Poc) && (listIndex == 1))
+			{
+				usee_list0_ref0_flag = 0;
+				continue;
+
+			}
 #endif
             refPicPtr = (EbPictureBufferDesc*)referenceObject->input_padded_picture_ptr;
             quarterRefPicPtr = (EbPictureBufferDesc*)referenceObject->quarter_decimated_picture_ptr;
@@ -9091,6 +9119,13 @@ EbErrorType motion_estimate_lcu(
             // Ref Picture Loop
             for (ref_pic_index = 0; ref_pic_index < num_of_ref_pic_to_search; ++ref_pic_index) {
 
+#if TEST3
+				if ((usee_list0_ref0_flag == 0) && (listIndex == 1) && (ref_pic_index == 0))
+				{
+					continue;
+				}
+#endif
+
                 me_candidate = &(context_ptr->me_candidate[candidateIndex].pu[pu_index]);
                 me_candidate->prediction_direction = listIndex;
                 me_candidate->ref_index[listIndex] = ref_pic_index;
@@ -9106,13 +9141,26 @@ EbErrorType motion_estimate_lcu(
 
         total_me_candidate_index = candidateIndex;
 
+		//if (picture_control_set_ptr->picture_number == 16) {
+		//	printf("");
+		//}
+		//if (picture_control_set_ptr->picture_number == 32) {
+		//	printf("");
+		//}
+		//if (picture_control_set_ptr->picture_number == 48) {
+		//	printf("");
+		//}
+
         if (numOfListToSearch) {
             if (picture_control_set_ptr->cu8x8_mode == CU_8x8_MODE_0 || pu_index < 21 || (picture_control_set_ptr->pic_depth_mode <= PIC_ALL_C_DEPTH_MODE)) {
 
-                BiPredictionSearch(
-                    context_ptr,
-                    pu_index,
-                    candidateIndex,
+				BiPredictionSearch(
+					context_ptr,
+					pu_index,
+					candidateIndex,
+#if TEST3
+					usee_list0_ref0_flag,
+#endif
 #if MRP_ME
                     picture_control_set_ptr->ref_list0_count,
                     picture_control_set_ptr->ref_list1_count,
