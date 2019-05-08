@@ -2843,7 +2843,7 @@ void AV1PerformFullLoop(
         candidate_ptr->y_has_coeff = 0;
         candidate_ptr->u_has_coeff = 0;
         candidate_ptr->v_has_coeff = 0;
-        candidateBuffer->candidate_ptr->tx_depth = 0;
+        //candidateBuffer->candidate_ptr->tx_depth = 0;
 #if TXS_DECISION
         candidateBuffer->candidate_ptr->tx_depth = 0;
         uint8_t end_tx_depth =  get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);

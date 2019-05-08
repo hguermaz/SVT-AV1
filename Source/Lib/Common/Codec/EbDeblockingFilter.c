@@ -860,7 +860,7 @@ static TxSize get_transform_size(const MacroBlockD *const xd,
 #if TXS_SPLIT
         ? tx_depth_to_tx_size[0][mbmi->sb_type] // use max_tx_size
 #else
-         mbmi->tx_size
+         ? mbmi->tx_size
 #endif
         : av1_get_max_uv_txsize(mbmi->sb_type, plane_ptr);
     assert(tx_size < TX_SIZES_ALL);
