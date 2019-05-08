@@ -756,7 +756,9 @@ static EbErrorType eb_enc_handle_ctor(
     EbComponentType * ebHandlePtr)
 {
     EbErrorType return_error = EB_ErrorNone;
+#if !MEM_MAP_OPT
     uint32_t instance_index  = 0;
+#endif
     // Allocate Memory
     EbEncHandle *enc_handle_ptr = (EbEncHandle*)malloc(sizeof(EbEncHandle));
 
@@ -2021,7 +2023,6 @@ EB_API EbErrorType eb_deinit_encoder(EbComponentType *svt_enc_component){
 #if MEM_MAP_OPT
     EbEncHandle         *enc_handle_ptr = (EbEncHandle*)svt_enc_component->p_component_private;
     EbErrorType          return_error = EB_ErrorNone;
-    int32_t              ptrIndex     = 0;
     
     if (enc_handle_ptr) {
         if (enc_handle_ptr->memory_map_index) {

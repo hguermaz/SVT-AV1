@@ -2295,12 +2295,11 @@ EB_EXTERN void AV1EncodePass(
     inputPicture = context_ptr->input_samples = (EbPictureBufferDesc*)picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr;
 
     SbStat                *sb_stat_ptr = &(picture_control_set_ptr->parent_pcs_ptr->sb_stat_array[tbAddr]);
-
     EbBool                    availableCoeff;
-
+#if !MEMORY_FOOTPRINT_OPT
     // QP Neighbor Arrays
     EbBool                    isDeltaQpNotCoded = EB_TRUE;
-
+#endif
     // SB Stats
     uint32_t                  sb_width = MIN(sequence_control_set_ptr->sb_size_pix, sequence_control_set_ptr->luma_width - sb_origin_x);
     uint32_t                  sb_height = MIN(sequence_control_set_ptr->sb_size_pix, sequence_control_set_ptr->luma_height - sb_origin_y);
@@ -2321,8 +2320,9 @@ EB_EXTERN void AV1EncodePass(
     uint64_t                  cb_tu_coeff_bits;
     uint64_t                  cr_tu_coeff_bits;
     EncodeContext          *encode_context_ptr;
+#if !MEMORY_FOOTPRINT_OPT
     uint32_t                  lcuRowIndex = sb_origin_y / BLOCK_SIZE_64;
-
+#endif
     // Dereferencing early
     NeighborArrayUnit      *ep_mode_type_neighbor_array = picture_control_set_ptr->ep_mode_type_neighbor_array;
     NeighborArrayUnit      *ep_intra_luma_mode_neighbor_array = picture_control_set_ptr->ep_intra_luma_mode_neighbor_array;

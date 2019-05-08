@@ -326,8 +326,10 @@ uint8_t derive_contouring_class(
 void RefinementPredictionLoop(
     SequenceControlSet                   *sequence_control_set_ptr,
     PictureControlSet                    *picture_control_set_ptr,
+#if !MEMORY_FOOTPRINT_OPT
     LargestCodingUnit                    *sb_ptr,
-    uint32_t                                  sb_index,
+#endif
+    uint32_t                              sb_index,
     ModeDecisionConfigurationContext     *context_ptr)
 {
 
@@ -468,12 +470,9 @@ void ForwardCuToModeDecision(
 
     // CU Loop
     const CodedUnitStats *cuStatsPtr = get_coded_unit_stats(0);
-
-    SbStat *sb_stat_ptr = &(picture_control_set_ptr->parent_pcs_ptr->sb_stat_array[sb_index]);
 #if !MEMORY_FOOTPRINT_OPT 
+    SbStat *sb_stat_ptr = &(picture_control_set_ptr->parent_pcs_ptr->sb_stat_array[sb_index]);
     EbBool    testAllDepthIntraSliceFlag = EB_FALSE;
-
-
     testAllDepthIntraSliceFlag = slice_type == I_SLICE &&
         (sb_stat_ptr->stationary_edge_over_time_flag || picture_control_set_ptr->parent_pcs_ptr->logo_pic_flag ||
         (picture_control_set_ptr->parent_pcs_ptr->very_low_var_pic_flag && picture_control_set_ptr->parent_pcs_ptr->low_motion_content_flag)) ?
@@ -995,7 +994,9 @@ EbErrorType early_mode_decision_lcu(
     RefinementPredictionLoop(
         sequence_control_set_ptr,
         picture_control_set_ptr,
+#if !MEMORY_FOOTPRINT_OPT
         sb_ptr,
+#endif
         sb_index,
         context_ptr);
 
