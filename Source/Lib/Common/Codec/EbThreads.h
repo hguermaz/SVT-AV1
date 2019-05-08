@@ -86,11 +86,11 @@ extern "C" {
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->ptr_type         = pointer_class; \
-        node->ptr              = pointer;       \
-        node->next_entry       = EB_NULL;       \
-        memory_map->next_entry = (EbPtr)node;   \
-        memory_map             = node;          \
+        node->next_entry = EB_NULL; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
+        memory_map->next_entry = (EbPtr)node; \
+        memory_map = node; \
         (*memory_map_index)++;                  \
         if (n_elements % 8 == 0)                \
             *total_lib_memory += (n_elements);  \
@@ -122,9 +122,9 @@ extern    cpu_set_t                   group_affinity;
         pthread_setaffinity_np(*((pthread_t*)pointer),sizeof(cpu_set_t),&group_affinity); \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->ptr_type         = pointer_class; \
-        node->ptr              = pointer; \
-        node->next_entry       = EB_NULL; \
+        node->next_entry = EB_NULL; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \

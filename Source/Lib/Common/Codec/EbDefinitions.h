@@ -2426,9 +2426,9 @@ app_malloc_count++;
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->ptr_type = pointer_class; \
-        node->ptr = pointer; \
         node->next_entry = EB_NULL; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \
@@ -2446,9 +2446,9 @@ app_malloc_count++;
         pointer = (type) pointer;  \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->ptr_type = pointer_class; \
-        node->ptr = pointer; \
         node->next_entry = EB_NULL; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \
@@ -2467,11 +2467,11 @@ app_malloc_count++;
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->ptr_type          = pointer_class; \
-        node->ptr               = pointer; \
-        node->next_entry        = EB_NULL; \
-        memory_map->next_entry  = (EbPtr)node; \
-        memory_map              = node; \
+        node->next_entry = EB_NULL; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
+        memory_map->next_entry = (EbPtr)node; \
+        memory_map = node; \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) { \
                 *total_lib_memory += (n_elements); \
@@ -2490,9 +2490,9 @@ app_malloc_count++;
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->ptr_type = pointer_class; \
-        node->ptr = pointer; \
         node->next_entry = EB_NULL; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \
@@ -2511,10 +2511,10 @@ app_malloc_count++;
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->ptr_type = pointer_class; \
-        node->ptr = pointer; \
         node->next_entry = EB_NULL; \
-        memory_map->next_entry = node; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
+        memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
@@ -2531,9 +2531,9 @@ app_malloc_count++;
     else { \
             EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
             if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-            node->ptr_type = pointer_class; \
-            node->ptr = pointer; \
             node->next_entry = EB_NULL; \
+            memory_map->ptr_type = pointer_class; \
+            memory_map->ptr = pointer; \
             memory_map->next_entry = (EbPtr)node; \
             memory_map = node; \
             (*memory_map_index)++; \

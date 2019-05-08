@@ -2057,7 +2057,8 @@ EB_API EbErrorType eb_deinit_encoder(EbComponentType *svt_enc_component){
                     EbMemoryMapEntry*    tmp_memory_entry = memory_entry;
                     memory_entry = (EbMemoryMapEntry*)memory_entry->next_entry;
                     if (tmp_memory_entry) free(tmp_memory_entry);
-                } while(memory_entry != (EbMemoryMapEntry*)EB_NULL);
+                } while(memory_entry != (EbMemoryMapEntry*)EB_NULL && memory_entry->next_entry != (EbMemoryMapEntry*)EB_NULL);
+                if (memory_entry) free(memory_entry);
             }
         }
     }
