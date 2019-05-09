@@ -1317,12 +1317,16 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         else
             context_ptr->nfl_level = 5;
     else
+#if M7_60
+		context_ptr->nfl_level = 7;
+#else
         if (picture_control_set_ptr->parent_pcs_ptr->slice_type == I_SLICE)
             context_ptr->nfl_level = 5;
         else if (picture_control_set_ptr->parent_pcs_ptr->is_used_as_reference_flag)
             context_ptr->nfl_level = 6;
         else
             context_ptr->nfl_level = 7;
+#endif
 #else
     if (picture_control_set_ptr->enc_mode == ENC_M0)
 #if MOD_M0
@@ -1485,7 +1489,11 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
             context_ptr->global_mv_injection = 0;
     else
 #endif
+#if M7_60
+	if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
     if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
         context_ptr->global_mv_injection = 1;
     else
         context_ptr->global_mv_injection = 0;

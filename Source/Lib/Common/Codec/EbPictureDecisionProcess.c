@@ -1131,7 +1131,11 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
             else
                 picture_control_set_ptr->interpolation_search_level = IT_SEARCH_OFF;
+#if M7_60
+		else if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
         else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
             if (picture_control_set_ptr->temporal_layer_index == 0)
                 picture_control_set_ptr->interpolation_search_level = IT_SEARCH_FAST_LOOP_UV_BLIND;
             else
@@ -1234,7 +1238,11 @@ EbErrorType signal_derivation_multi_processes_oq(
                 picture_control_set_ptr->cdef_filter_mode = 0;
         else
 #endif
+#if M7_60
+	    if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
         if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
             picture_control_set_ptr->cdef_filter_mode = 4;
         else
             picture_control_set_ptr->cdef_filter_mode = 2;
@@ -4236,7 +4244,7 @@ void* picture_decision_kernel(void *input_ptr)
                             av1_setup_skip_mode_allowed(picture_control_set_ptr);
 
                             picture_control_set_ptr->is_skip_mode_allowed = picture_control_set_ptr->skip_mode_info.skip_mode_allowed;
-#if MRP_DISABLE_ADDED_CAND_M1
+#if MRP_DISABLE_ADDED_CAND_M1 && ! M7_60
                             picture_control_set_ptr->is_skip_mode_allowed = picture_control_set_ptr->enc_mode >= ENC_M1 && picture_control_set_ptr->temporal_layer_index == 0 ? 0 : picture_control_set_ptr->is_skip_mode_allowed;
 #endif
                             picture_control_set_ptr->skip_mode_flag = picture_control_set_ptr->is_skip_mode_allowed;
