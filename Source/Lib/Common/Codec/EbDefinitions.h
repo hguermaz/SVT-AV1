@@ -2350,8 +2350,9 @@ typedef struct EbMemoryMapEntry
 #define OIS_MEDUIM_MODE          2
 #define OIS_COMPLEX_MODE         3
 #define OIS_VERY_COMPLEX_MODE    4
-
+#if !MEM_MAP_OPT
 #define MAX_NUM_PTR                                 (0x1312D00 << 2) //0x4C4B4000            // Maximum number of pointers to be allocated for the library
+#endif
 // Display Total Memory at the end of the memory allocations
 #define DISPLAY_MEMORY                              0
 
@@ -2370,6 +2371,7 @@ extern    uint32_t                   lib_mutex_count;
 
 extern    uint32_t                   app_malloc_count;
 
+#define ALVALUE 32
 #define EB_APP_MALLOC(type, pointer, n_elements, pointer_class, return_type) \
 pointer = (type)malloc(n_elements); \
 if (pointer == (type)EB_NULL){ \
@@ -2432,10 +2434,10 @@ app_malloc_count++;
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \
-        if (n_elements % 8 == 0)\
-                *total_lib_memory += (n_elements); \
+        if (n_elements % 8 == 0) \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
-           *total_lib_memory += ((n_elements)+(8 - ((n_elements) % 8))); \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
         lib_malloc_count++; \
     }
 #else
@@ -2453,38 +2455,14 @@ app_malloc_count++;
         memory_map = node; \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
-            *total_lib_memory += (n_elements); \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
-            *total_lib_memory += ((n_elements)+(8 - ((n_elements) % 8))); \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
         lib_malloc_count++; \
     }
 #endif
 #define EB_MALLOC(type, pointer, n_elements, pointer_class) \
     pointer = (type) malloc(n_elements); \
-    if (pointer == (type)EB_NULL) { \
-        return EB_ErrorInsufficientResources; \
-    } \
-    else { \
-        EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
-        if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
-        (*memory_map_index)++; \
-        if (n_elements % 8 == 0) { \
-                *total_lib_memory += (n_elements); \
-        } \
-        else { \
-                *total_lib_memory += ((n_elements)+(8 - ((n_elements) % 8))); \
-        } \
-        lib_malloc_count++; \
-    }
-    
-
-#define EB_CALLOC(type, pointer, count, size, pointer_class) \
-    pointer = (type) calloc(count, size); \
     if (pointer == (type)EB_NULL) \
         return EB_ErrorInsufficientResources; \
     else { \
@@ -2496,10 +2474,30 @@ app_malloc_count++;
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \
-        if (count % 8 == 0) \
-            *total_lib_memory += (count); \
+        if (n_elements % 8 == 0) \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
-            *total_lib_memory += ((count)+(8 - ((count) % 8))); \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
+        lib_malloc_count++; \
+    }
+
+#define EB_CALLOC(type, pointer, n_elements, size, pointer_class) \
+    pointer = (type) calloc(n_elements, size); \
+    if (pointer == (type)EB_NULL) \
+        return EB_ErrorInsufficientResources; \
+    else { \
+        EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
+        if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
+        node->next_entry = EB_NULL; \
+        memory_map->ptr_type = pointer_class; \
+        memory_map->ptr = pointer; \
+        memory_map->next_entry = (EbPtr)node; \
+        memory_map = node; \
+        (*memory_map_index)++; \
+        if (n_elements % 8 == 0) \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
+        else \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
         lib_malloc_count++; \
     }
 
@@ -2517,9 +2515,9 @@ app_malloc_count++;
         memory_map             = node; \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
-            *total_lib_memory += (n_elements); \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
-            *total_lib_memory += ((n_elements)+(8 - ((n_elements) % 8))); \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
         lib_semaphore_count++; \
     }
 #define EB_CREATEMUTEX(type, pointer, n_elements, pointer_class) \
@@ -2537,9 +2535,9 @@ app_malloc_count++;
             memory_map = node; \
             (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
-            *total_lib_memory += (n_elements); \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
-            *total_lib_memory += ((n_elements)+(8 - ((n_elements) % 8))); \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
         lib_mutex_count++;\
     }
 #else

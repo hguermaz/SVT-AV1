@@ -768,7 +768,7 @@ static EbErrorType eb_enc_handle_ctor(
 #if MEM_MAP_OPT
     enc_handle_ptr->memory_map                = (EbMemoryMapEntry*)malloc(sizeof(EbMemoryMapEntry));
     enc_handle_ptr->memory_map_index          = 0;
-    enc_handle_ptr->total_lib_memory          = sizeof(EbEncHandle) + sizeof(EbMemoryMapEntry);
+    enc_handle_ptr->total_lib_memory          = sizeof(EbComponentType) + sizeof(EbEncHandle) + sizeof(EbMemoryMapEntry);
     enc_handle_ptr->memory_map_init_address   = enc_handle_ptr->memory_map;
 #else
     enc_handle_ptr->memory_map = (EbMemoryMapEntry*)malloc(sizeof(EbMemoryMapEntry) * MAX_NUM_PTR);
@@ -2023,9 +2023,9 @@ EB_API EbErrorType eb_deinit_encoder(EbComponentType *svt_enc_component){
 #if MEM_MAP_OPT
     EbEncHandle         *enc_handle_ptr = (EbEncHandle*)svt_enc_component->p_component_private;
     EbErrorType          return_error = EB_ErrorNone;
-    
+
     if (enc_handle_ptr) {
-        if (enc_handle_ptr->memory_map_index) {
+        if (enc_handle_ptr->memory_map_init_address) {
             // Loop through the ptr table and free all malloc'd pointers per channel
             EbMemoryMapEntry*    memory_entry = enc_handle_ptr->memory_map_init_address;
             if (memory_entry){

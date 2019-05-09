@@ -92,10 +92,10 @@ extern "C" {
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++;                  \
-        if (n_elements % 8 == 0)                \
-            *total_lib_memory += (n_elements);  \
+        if (n_elements % 8 == 0) \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
-            *total_lib_memory += ((n_elements) + (8 - ((n_elements) % 8))); \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
         if(num_groups == 1) \
             SetThreadAffinityMask(pointer, group_affinity.Mask);\
         else if (num_groups == 2 && alternate_groups){ \
