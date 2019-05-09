@@ -128,17 +128,13 @@ extern    cpu_set_t                   group_affinity;
         memory_map->next_entry = (EbPtr)node; \
         memory_map = node; \
         (*memory_map_index)++; \
-        if (n_elements % 8 == 0) { \
-            *total_lib_memory += (n_elements); \
-        } \
-        else { \
-            *total_lib_memory += ((n_elements) + (8 - ((n_elements) % 8))); \
-        } \
-    } \
-    if (*(memory_map_index) >= MAX_NUM_PTR) { \
-        return EB_ErrorInsufficientResources; \
-    } \
-    lib_thread_count++;
+        if (n_elements % 8 == 0) \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
+        else \
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
+        lib_thread_count++; \
+    }
+    
 #else
 #define EB_CREATETHREAD(type, pointer, n_elements, pointer_class, thread_function, thread_context) \
     pointer = eb_create_thread(thread_function, thread_context); \
@@ -155,10 +151,10 @@ extern    cpu_set_t                   group_affinity;
         memory_map = node; \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
-            *total_lib_memory += (n_elements); \
+            *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
-            *total_lib_memory += ((n_elements) + (8 - ((n_elements) % 8))); \
-        lib_thread_count++;\
+            *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
+        lib_thread_count++; \
     }
 #endif
 #else
