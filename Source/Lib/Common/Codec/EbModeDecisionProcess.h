@@ -26,7 +26,11 @@ extern "C" {
 #define IBC_CAND 2 //two intra bc candidates
 #if CHECK_CAND
 #if MRP_DUPLICATION_FIX
+#if SUB_PEL_REFINEMENT
+#define MODE_DECISION_CANDIDATE_MAX_COUNT               (480 +IBC_CAND) 
+#else
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (440 +IBC_CAND) 
+#endif
 #else
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (170 +IBC_CAND) 
 #endif
@@ -270,6 +274,10 @@ extern "C" {
 #endif  
 #if OPT_QUANT_COEFF
         EbBool                            trellis_quant_coeff_optimization;
+#endif
+#if SUB_PEL_REFINEMENT
+        int16_t                           bes_subpel_mv[2][4][2];
+        int8_t                            valid_subpel_mv[2][4];
 #endif
     } ModeDecisionContext;
 

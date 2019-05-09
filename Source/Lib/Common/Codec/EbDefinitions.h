@@ -252,6 +252,17 @@ extern "C" {
 #define AOM_INTERP_EXTEND 4
 #define MRP_DISABLE_ADDED_CAND_M1                        0
 
+#define SUB_PEL_REFINEMENT                               0
+#if  SUB_PEL_REFINEMENT                               
+#define SUB_PEL_REFINEMENT_T0                            0
+#define SUB_PEL_REFINEMENT_T2                            0
+#if SUB_PEL_REFINEMENT_T2
+#define SUB_PEL_REFINEMENT_T1                            0
+#else
+#define SUB_PEL_REFINEMENT_T1                            0
+#endif
+#endif
+
 struct Buf2D 
 {
     uint8_t *buf;

@@ -8886,6 +8886,7 @@ EbErrorType motion_estimate_lcu(
                 if (picture_control_set_ptr->use_subpel_flag == 1) {
                     enableQuarterPel = EB_TRUE; // AMIR enable in M1
 #endif
+#if !SUB_PEL_REFINEMENT_T2
                     if (enableHalfPel32x32 || enableHalfPel16x16 || enableHalfPel8x8 || enableQuarterPel) {
                         //if((picture_control_set_ptr->is_used_as_reference_flag == EB_TRUE)) {
 
@@ -9031,6 +9032,7 @@ EbErrorType motion_estimate_lcu(
 #endif
 
                     }
+#endif
 #if MRP_ME
                     if (is_nsq_table_used && ref_pic_index == 0) {
 #else
