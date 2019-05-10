@@ -188,18 +188,24 @@ typedef EbErrorType(*EB_ENC_PASS_INTRA_FUNC_PTR)(
 * Update Intra Mode Neighbor Arrays
 ***************************************************/
 static void EncodePassUpdateIntraModeNeighborArrays(
+#if TRELLIS_CONTEXT_UPDATE_EP
+    NeighborArrayUnit     *skip_coeff_neighbor_array,
+    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array,
+#endif
     NeighborArrayUnit     *mode_type_neighbor_array,
     NeighborArrayUnit     *intra_luma_mode_neighbor_array,
     NeighborArrayUnit     *intra_chroma_mode_neighbor_array,
-    uint8_t                    luma_mode,
-    uint8_t                    chroma_mode,
-    uint32_t                   origin_x,
-    uint32_t                   origin_y,
-    uint32_t                   width,
-    uint32_t                   height,
-    uint32_t                   width_uv,
-    uint32_t                   height_uv,
-    uint32_t                   component_mask)
+    uint8_t                luma_mode,
+    uint8_t                chroma_mode,
+    uint32_t               origin_x,
+    uint32_t               origin_y,
+    uint32_t               width,
+    uint32_t               height,
+    uint32_t               width_uv,
+    uint32_t               height_uv,
+    uint32_t               component_mask)
 {
     uint8_t modeType = INTRA_MODE;
 
@@ -245,15 +251,21 @@ static void EncodePassUpdateIntraModeNeighborArrays(
 * Update Inter Mode Neighbor Arrays
 ***************************************************/
 static void EncodePassUpdateInterModeNeighborArrays(
+#if TRELLIS_CONTEXT_UPDATE_EP
+    NeighborArrayUnit     *skip_coeff_neighbor_array,
+    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array,
+#endif
     NeighborArrayUnit     *mode_type_neighbor_array,
     NeighborArrayUnit     *mv_neighbor_array,
     NeighborArrayUnit     *skipNeighborArray,
     MvUnit                *mv_unit,
-    uint8_t                   *skip_flag,
-    uint32_t                   origin_x,
-    uint32_t                   origin_y,
-    uint32_t                   bwidth,
-    uint32_t                   bheight)
+    uint8_t               *skip_flag,
+    uint32_t               origin_x,
+    uint32_t               origin_y,
+    uint32_t               bwidth,
+    uint32_t               bheight)
 {
     uint8_t modeType = INTER_MODE;
 
@@ -288,7 +300,7 @@ static void EncodePassUpdateInterModeNeighborArrays(
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
 #if TRELLIS_CONTEXT_UPDATE_EP
-
+    // to do
 #endif
     return;
 }
@@ -418,9 +430,15 @@ static void EncodePassUpdateReconSampleNeighborArrays(
 ************************************************************/
 void GeneratePuIntraLumaNeighborModes(
     CodingUnit            *cu_ptr,
-    uint32_t                   pu_origin_x,
-    uint32_t                   pu_origin_y,
-    uint32_t                   sb_sz,
+    uint32_t               pu_origin_x,
+    uint32_t               pu_origin_y,
+    uint32_t               sb_sz,
+#if TRELLIS_CONTEXT_UPDATE_EP
+    NeighborArrayUnit     *skip_coeff_neighbor_array,
+    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array,
+#endif
     NeighborArrayUnit     *intraLumaNeighborArray,
     NeighborArrayUnit     *intraChromaNeighborArray,
     NeighborArrayUnit     *mode_type_neighbor_array)
@@ -2355,7 +2373,12 @@ EB_EXTERN void av1_encode_pass(
     NeighborArrayUnit      *ep_cb_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cb_recon_neighbor_array16bit : picture_control_set_ptr->ep_cb_recon_neighbor_array;
     NeighborArrayUnit      *ep_cr_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cr_recon_neighbor_array16bit : picture_control_set_ptr->ep_cr_recon_neighbor_array;
     NeighborArrayUnit      *ep_skip_flag_neighbor_array = picture_control_set_ptr->ep_skip_flag_neighbor_array;
-
+#if TRELLIS_CONTEXT_UPDATE_EP
+    NeighborArrayUnit      *ep_skip_coeff_neighbor_array = picture_control_set_ptr->ep_skip_coeff_neighbor_array;
+    NeighborArrayUnit      *ep_luma_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->ep_luma_dc_sign_level_coeff_neighbor_array;
+    NeighborArrayUnit      *ep_cr_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->ep_cr_dc_sign_level_coeff_neighbor_array;
+    NeighborArrayUnit      *ep_cb_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->ep_cb_dc_sign_level_coeff_neighbor_array;
+#endif
     EbBool                 constrained_intra_flag = picture_control_set_ptr->constrained_intra_flag;
 
     EbBool dlfEnableFlag = (EbBool)(picture_control_set_ptr->parent_pcs_ptr->loop_filter_mode &&
@@ -2746,6 +2769,12 @@ EB_EXTERN void av1_encode_pass(
                             context_ptr->cu_origin_x,
                             context_ptr->cu_origin_y,
                             BLOCK_SIZE_64,
+#if TRELLIS_CONTEXT_UPDATE_EP
+                            ep_skip_coeff_neighbor_array,
+                            ep_luma_dc_sign_level_coeff_neighbor_array,
+                            ep_cr_dc_sign_level_coeff_neighbor_array,
+                            ep_cb_dc_sign_level_coeff_neighbor_array,
+#endif
                             ep_intra_luma_mode_neighbor_array,
                             ep_intra_chroma_mode_neighbor_array,
                             ep_mode_type_neighbor_array);
@@ -3091,6 +3120,12 @@ EB_EXTERN void av1_encode_pass(
 
                             // Update the Intra-specific Neighbor Arrays
                             EncodePassUpdateIntraModeNeighborArrays(
+#if TRELLIS_CONTEXT_UPDATE_EP
+                                ep_skip_coeff_neighbor_array,
+                                ep_luma_dc_sign_level_coeff_neighbor_array,
+                                ep_cr_dc_sign_level_coeff_neighbor_array,
+                                ep_cb_dc_sign_level_coeff_neighbor_array,
+#endif
                                 ep_mode_type_neighbor_array,
                                 ep_intra_luma_mode_neighbor_array,
                                 ep_intra_chroma_mode_neighbor_array,
@@ -3747,6 +3782,12 @@ EB_EXTERN void av1_encode_pass(
                         {
                             uint8_t skip_flag = (uint8_t)cu_ptr->skip_flag;
                             EncodePassUpdateInterModeNeighborArrays(
+#if TRELLIS_CONTEXT_UPDATE_EP
+                                ep_skip_coeff_neighbor_array,
+                                ep_luma_dc_sign_level_coeff_neighbor_array,
+                                ep_cr_dc_sign_level_coeff_neighbor_array,
+                                ep_cb_dc_sign_level_coeff_neighbor_array,
+#endif
                                 ep_mode_type_neighbor_array,
                                 ep_mv_neighbor_array,
                                 ep_skip_flag_neighbor_array,

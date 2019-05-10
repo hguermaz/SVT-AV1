@@ -13862,6 +13862,13 @@ extern "C" {
         NeighborArrayUnit                  *ep_luma_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_cb_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_cr_recon_neighbor_array16bit;
+#if TRELLIS_CONTEXT_UPDATE_EP
+        NeighborArrayUnit                  *ep_skip_coeff_neighbor_array;
+        NeighborArrayUnit                  *ep_luma_dc_sign_level_coeff_neighbor_array;
+        NeighborArrayUnit                  *ep_cr_dc_sign_level_coeff_neighbor_array;
+        NeighborArrayUnit                  *ep_cb_dc_sign_level_coeff_neighbor_array;
+#endif
+
 #if !OPT_LOSSLESS_0
         // AMVP & MV Merge Neighbor Arrays
         NeighborArrayUnit                  *amvp_mv_merge_mv_neighbor_array;
