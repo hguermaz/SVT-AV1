@@ -249,6 +249,7 @@ extern "C" {
 
     void Av1TransformTwoD_16x16_c(int16_t *input, int32_t *output, uint32_t input_stride, TxType transform_type, uint8_t  bit_depth);
     void av1_fwd_txfm2d_16x16_avx2(int16_t *input, int32_t *output, uint32_t input_stride, TxType transform_type, uint8_t  bit_depth);
+    void av1_fwd_txfm2d_16x16_avx512(int16_t *input, int32_t *output, uint32_t input_stride, TxType transform_type, uint8_t  bit_depth);
     RTCD_EXTERN void(*av1_fwd_txfm2d_16x16)(int16_t *input, int32_t *output, uint32_t input_stride, TxType transform_type, uint8_t  bit_depth);
 
     void Av1TransformTwoD_8x8_c(int16_t *input, int32_t *output, uint32_t input_stride, TxType transform_type, uint8_t  bit_depth);
@@ -3205,7 +3206,11 @@ extern "C" {
         av1_fwd_txfm2d_32x32 = Av1TransformTwoD_32x32_c;
         if (flags & HAS_AVX2) av1_fwd_txfm2d_32x32 = av1_fwd_txfm2d_32x32_avx2;
         av1_fwd_txfm2d_16x16 = Av1TransformTwoD_16x16_c;
+#ifndef NON_AVX512_SUPPORT
+        if (flags & HAS_AVX2) av1_fwd_txfm2d_16x16 = av1_fwd_txfm2d_16x16_avx512;
+#else
         if (flags & HAS_AVX2) av1_fwd_txfm2d_16x16 = av1_fwd_txfm2d_16x16_avx2;
+#endif       
         av1_fwd_txfm2d_8x8 = Av1TransformTwoD_8x8_c;
         if (flags & HAS_AVX2) av1_fwd_txfm2d_8x8 = av1_fwd_txfm2d_8x8_avx2;
         av1_fwd_txfm2d_4x4 = Av1TransformTwoD_4x4_c;
