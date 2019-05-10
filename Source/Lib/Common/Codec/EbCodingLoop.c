@@ -287,6 +287,9 @@ static void EncodePassUpdateInterModeNeighborArrays(
         bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
+#if TRELLIS_CONTEXT_UPDATE_EP
+
+#endif
     return;
 }
 

@@ -2050,7 +2050,7 @@ void av1_quantize_inv_quantize(
                     *eob = 0;
 #endif
             }
-
+#if !SHUT_OPT_CHECK
             // Hsan (Trellis): redo Q/Q-1 if original cost better than Trellis cost (extra cycles are spent here but better than keeping a copy of original Q/Q-1 buffers then copy again to the final Q/Q-1 buffers
             if (*eob != 0 && cost_non_opt < cost_opt) {
                 if (bit_increment)
@@ -2077,6 +2077,7 @@ void av1_quantize_inv_quantize(
                         scan_order,
                         &qparam);
             }
+#endif
         }
     }
 
