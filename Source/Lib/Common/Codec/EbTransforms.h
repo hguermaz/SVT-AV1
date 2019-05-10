@@ -3931,6 +3931,9 @@ extern "C" {
         int16_t                        txb_skip_context,
         int16_t                        dc_sign_context,
         PredictionMode                 pred_mode,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+        EbBool                         trellis_rdoq,
+#endif
         EbBool                         is_encode_pass);
 
     extern EbErrorType av1_estimate_inv_transform(

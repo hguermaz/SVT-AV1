@@ -1746,6 +1746,9 @@ void av1_quantize_inv_quantize(
     int16_t                        txb_skip_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
     int16_t                        dc_sign_context,     // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
     PredictionMode                 pred_mode,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+    EbBool                         trellis_rdoq,     
+#endif
     EbBool                         is_encode_pass)
 {
     (void)coeff_stride;
@@ -1898,7 +1901,11 @@ void av1_quantize_inv_quantize(
 #if TRELLIS_CHROMA
     if (md_context->trellis_quant_coeff_optimization && *eob != 0 && is_inter) {
 #else
+#if TRELLIS_MD_TX_SEARCH_ONLY
+    if (md_context->trellis_quant_coeff_optimization && trellis_rdoq&& *eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
+#else
     if (md_context->trellis_quant_coeff_optimization && *eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
+#endif
 #endif
 #endif
 #else
@@ -1954,6 +1961,10 @@ void av1_quantize_inv_quantize(
             (component_type == COMPONENT_LUMA) ? 0 : 1,
             txb_skip_context);
 #endif
+
+#if TRELLIS_SPATIAL_SSE
+
+#else
         full_distortion_kernel32_bits_func_ptr_array[asm_type](
             coeff,
             get_txb_wide(txsize),
@@ -1965,7 +1976,7 @@ void av1_quantize_inv_quantize(
         int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txsize)) * 2;
         distortion_non_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_RESIDUAL], shift);
         distortion_non_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_PREDICTION], shift);
-
+#endif
         cost_non_opt = RDCOST(md_context->full_lambda, coeff_rate_non_opt, distortion_non_opt[DIST_CALC_RESIDUAL]);
 #if TRELLIS_SKIP // To test
         cost_skip_non_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_non_opt, distortion_non_opt[DIST_CALC_PREDICTION]);
@@ -2016,6 +2027,9 @@ void av1_quantize_inv_quantize(
                     (component_type == COMPONENT_LUMA) ? 0 : 1,
                     txb_skip_context);
 #endif
+#if TRELLIS_SPATIAL_SSE
+
+#else
                 full_distortion_kernel32_bits_func_ptr_array[asm_type](
                     coeff,
                     get_txb_wide(txsize),
@@ -2024,7 +2038,7 @@ void av1_quantize_inv_quantize(
                     distortion_opt,
                     get_txb_wide(txsize),
                     get_txb_wide(txsize));
-
+#endif
                 int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txsize)) * 2;
                 distortion_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_RESIDUAL], shift);
                 distortion_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_PREDICTION], shift);
@@ -2143,6 +2157,9 @@ void product_full_loop(
             context_ptr->cu_ptr->luma_txb_skip_context,
             context_ptr->cu_ptr->luma_dc_sign_context,
             candidateBuffer->candidate_ptr->pred_mode,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+            EB_FALSE,
+#endif
             EB_FALSE);
 
         candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]);
@@ -2484,6 +2501,9 @@ void product_full_loop_tx_search(
                 context_ptr->cu_ptr->luma_txb_skip_context,
                 context_ptr->cu_ptr->luma_dc_sign_context,
                 candidateBuffer->candidate_ptr->pred_mode,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+                EB_TRUE,
+#endif
                 EB_FALSE);
 
             candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[tu_origin_index]);
@@ -2707,6 +2727,9 @@ void encode_pass_tx_search(
             0,
             0,
             0,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+            EB_TRUE,
+#endif
             EB_FALSE);
 #endif
 
@@ -2927,6 +2950,9 @@ void encode_pass_tx_search_hbd(
             0,
             0,
             0,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+            EB_TRUE,
+#endif
             EB_FALSE);
 #endif
 
@@ -3144,6 +3170,9 @@ void full_loop_r(
                 0,
                 0,
                 0,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+                EB_FALSE,
+#endif
                 EB_FALSE);
 #endif
             candidateBuffer->candidate_ptr->quantized_dc[1] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_cb)[txb_1d_offset]);
@@ -3247,6 +3276,9 @@ void full_loop_r(
                 0,
                 0,
                 0,
+#if TRELLIS_MD_TX_SEARCH_ONLY
+                EB_FALSE,
+#endif
                 EB_FALSE);
 #endif
             candidateBuffer->candidate_ptr->quantized_dc[2] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_cr)[txb_1d_offset]);
