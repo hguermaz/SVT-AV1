@@ -2363,7 +2363,7 @@ typedef struct EbMemoryMapEntry
 #define MAX_NUM_PTR                                 (0x1312D00 << 2) //0x4C4B4000            // Maximum number of pointers to be allocated for the library
 #endif
 // Display Total Memory at the end of the memory allocations
-#define DISPLAY_MEMORY                              1
+#define DISPLAY_MEMORY                              0
 
 extern    EbMemoryMapEntry          *app_memory_map;            // App Memory table
 extern    uint32_t                  *app_memory_map_index;       // App Memory index
