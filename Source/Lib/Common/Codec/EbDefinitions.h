@@ -45,8 +45,13 @@ extern "C" {
 #define M8_50							  1 // M8 reaches 50fps for 1080p @QP30
 #endif
 /************************* Omar to remove disable_ang_uv *************************/
+#if MRP_SUPPORT
 #define MEMORY_FOOTPRINT_OPT_ME_MV        1
-#if MEMORY_FOOTPRINT_OPT_ME_MV
+#else
+#define MEMORY_FOOTPRINT_OPT_ME_MV        0
+#endif
+
+#if MEMORY_FOOTPRINT_OPT_ME_MV 
 #define MEMORY_FOOTPRINT_OPT              1     
 #define FROM_7_TO_4_MV                    1
 #define REDUCE_BLOCK_COUNT_ME             1
@@ -2358,7 +2363,7 @@ typedef struct EbMemoryMapEntry
 #define MAX_NUM_PTR                                 (0x1312D00 << 2) //0x4C4B4000            // Maximum number of pointers to be allocated for the library
 #endif
 // Display Total Memory at the end of the memory allocations
-#define DISPLAY_MEMORY                              0
+#define DISPLAY_MEMORY                              1
 
 extern    EbMemoryMapEntry          *app_memory_map;            // App Memory table
 extern    uint32_t                  *app_memory_map_index;       // App Memory index

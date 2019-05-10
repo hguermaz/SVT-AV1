@@ -5627,7 +5627,7 @@ assert(bsize < BlockSizeS_ALL);
                     blkOriginX,
                     blkOriginY,
                     mode_type_neighbor_array,
-                    inter_pred_dir_neighbor_array,
+					picture_control_set_ptr->inter_pred_dir_neighbor_array,
                     ref_frame_type_neighbor_array);
 
 
@@ -5640,7 +5640,7 @@ assert(bsize < BlockSizeS_ALL);
                     blkOriginX,
                     blkOriginY,
                     mode_type_neighbor_array,
-                    inter_pred_dir_neighbor_array);
+					picture_control_set_ptr->inter_pred_dir_neighbor_array);
 #endif
 
                 MvReferenceFrame rf[2];
