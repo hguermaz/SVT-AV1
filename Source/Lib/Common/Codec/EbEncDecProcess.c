@@ -241,7 +241,6 @@ static void ResetEncodePassNeighborArrays(PictureControlSet *picture_control_set
     neighbor_array_unit_reset(picture_control_set_ptr->amvp_mv_merge_mode_type_neighbor_array);
 #endif
 #if TRELLIS_CONTEXT_UPDATE_EP
-    neighbor_array_unit_reset(picture_control_set_ptr->ep_skip_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_luma_dc_sign_level_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cr_dc_sign_level_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cb_dc_sign_level_coeff_neighbor_array);

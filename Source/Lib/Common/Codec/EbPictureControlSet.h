@@ -13863,7 +13863,6 @@ extern "C" {
         NeighborArrayUnit                  *ep_cb_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_cr_recon_neighbor_array16bit;
 #if TRELLIS_CONTEXT_UPDATE_EP
-        NeighborArrayUnit                  *ep_skip_coeff_neighbor_array;
         NeighborArrayUnit                  *ep_luma_dc_sign_level_coeff_neighbor_array;
         NeighborArrayUnit                  *ep_cr_dc_sign_level_coeff_neighbor_array;
         NeighborArrayUnit                  *ep_cb_dc_sign_level_coeff_neighbor_array;

@@ -189,7 +189,6 @@ typedef EbErrorType(*EB_ENC_PASS_INTRA_FUNC_PTR)(
 ***************************************************/
 static void EncodePassUpdateIntraModeNeighborArrays(
 #if TRELLIS_CONTEXT_UPDATE_EP
-    NeighborArrayUnit     *skip_coeff_neighbor_array,
     NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array,
@@ -252,7 +251,7 @@ static void EncodePassUpdateIntraModeNeighborArrays(
 ***************************************************/
 static void EncodePassUpdateInterModeNeighborArrays(
 #if TRELLIS_CONTEXT_UPDATE_EP
-    NeighborArrayUnit     *skip_coeff_neighbor_array,
+    EncDecContext         *context_ptr,
     NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array,
@@ -300,7 +299,85 @@ static void EncodePassUpdateInterModeNeighborArrays(
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
 #if TRELLIS_CONTEXT_UPDATE_EP
-    // to do
+    {
+        uint8_t y_has_coeff = context_ptr->cu_ptr->transform_unit_array[0].y_has_coeff;
+        int32_t lumaDcCoeff = (int32_t)context_ptr->cu_ptr->quantized_dc[0];
+        uint8_t u_has_coeff = context_ptr->cu_ptr->transform_unit_array[0].u_has_coeff;
+        int32_t cbDcCoeff = (int32_t)context_ptr->cu_ptr->quantized_dc[1];
+        uint8_t v_has_coeff = context_ptr->cu_ptr->transform_unit_array[0].v_has_coeff;
+        int32_t crDcCoeff = (int32_t)context_ptr->cu_ptr->quantized_dc[2];
+
+        uint8_t dcSignCtx = 0;
+        if (lumaDcCoeff > 0)
+            dcSignCtx = 2;
+        else if (lumaDcCoeff < 0)
+            dcSignCtx = 1;
+        else
+            dcSignCtx = 0;
+        uint8_t dcSignLevelCoeff = (uint8_t)((dcSignCtx << COEFF_CONTEXT_BITS) | y_has_coeff);
+        if (!y_has_coeff)
+            dcSignLevelCoeff = 0;
+
+        neighbor_array_unit_mode_write(
+            luma_dc_sign_level_coeff_neighbor_array,
+            (uint8_t*)&dcSignLevelCoeff,
+            origin_x,
+            origin_y,
+            context_ptr->blk_geom->bwidth,
+            context_ptr->blk_geom->bheight,
+            NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+
+        if (context_ptr->blk_geom->has_uv) {
+
+            //  Update chroma CB cbf and Dc context
+            {
+                uint8_t dcSignCtx = 0;
+                if (cbDcCoeff > 0)
+                    dcSignCtx = 2;
+                else if (cbDcCoeff < 0)
+                    dcSignCtx = 1;
+                else
+                    dcSignCtx = 0;
+                uint8_t dcSignLevelCoeff = (uint8_t)((dcSignCtx << COEFF_CONTEXT_BITS) | u_has_coeff);
+                if (!u_has_coeff)
+                    dcSignLevelCoeff = 0;
+
+                neighbor_array_unit_mode_write(
+                    cb_dc_sign_level_coeff_neighbor_array,
+                    (uint8_t*)&dcSignLevelCoeff,
+                    origin_x >> 1,
+                    origin_y >> 1,
+                    context_ptr->blk_geom->bwidth_uv,  
+                    context_ptr->blk_geom->bheight_uv, 
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+            }
+
+            //  Update chroma CR cbf and Dc context
+            {
+                uint8_t dcSignCtx = 0;
+                if (crDcCoeff > 0)
+                    dcSignCtx = 2;
+                else if (crDcCoeff < 0)
+                    dcSignCtx = 1;
+                else
+                    dcSignCtx = 0;
+                uint8_t dcSignLevelCoeff = (uint8_t)((dcSignCtx << COEFF_CONTEXT_BITS) | v_has_coeff);
+                if (!v_has_coeff)
+                    dcSignLevelCoeff = 0;
+
+                neighbor_array_unit_mode_write(
+                    cr_dc_sign_level_coeff_neighbor_array,
+                    (uint8_t*)&dcSignLevelCoeff,
+                    origin_x >> 1,
+                    origin_y >> 1,
+                    context_ptr->blk_geom->bwidth_uv,
+                    context_ptr->blk_geom->bheight_uv,
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+            }
+
+        }
+
+    }
 #endif
     return;
 }
@@ -433,12 +510,6 @@ void GeneratePuIntraLumaNeighborModes(
     uint32_t               pu_origin_x,
     uint32_t               pu_origin_y,
     uint32_t               sb_sz,
-#if TRELLIS_CONTEXT_UPDATE_EP
-    NeighborArrayUnit     *skip_coeff_neighbor_array,
-    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
-    NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
-    NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array,
-#endif
     NeighborArrayUnit     *intraLumaNeighborArray,
     NeighborArrayUnit     *intraChromaNeighborArray,
     NeighborArrayUnit     *mode_type_neighbor_array)
@@ -492,10 +563,70 @@ void GeneratePuIntraLumaNeighborModes(
         (mode_type_neighbor_array->top_array[modeTypeTopNeighborIndex_round] != INTRA_MODE) ? UV_DC_PRED :
         (uint32_t)intraChromaNeighborArray->top_array[intraChromaModeTopNeighborIndex]);       //   use DC. This seems like we could use a LCU-width
 
-
     return;
 }
 
+#if TRELLIS_CONTEXT_UPDATE_EP
+void generate_txb_skip_dc_sign_context(
+    EncDecContext         *context_ptr,
+    CodingUnit            *cu_ptr,
+    uint32_t               pu_origin_x,
+    uint32_t               pu_origin_y,
+    NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
+    NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array)
+{
+
+    uint32_t pu_origin_x_round = (pu_origin_x >> 3) << 3;
+    uint32_t pu_origin_y_round = (pu_origin_y >> 3) << 3;
+
+    cu_ptr->luma_txb_skip_context = 0;
+    cu_ptr->luma_dc_sign_context  = 0;
+    cu_ptr->cb_txb_skip_context   = 0;
+    cu_ptr->cb_dc_sign_context    = 0;
+    cu_ptr->cr_txb_skip_context   = 0;
+    cu_ptr->cr_dc_sign_context    = 0;
+
+    for (int32_t txb_itr = 0; txb_itr < context_ptr->blk_geom->txb_count; txb_itr++) {
+
+        get_txb_ctx(       
+            COMPONENT_LUMA,
+            luma_dc_sign_level_coeff_neighbor_array,
+            pu_origin_x_round,
+            pu_origin_y_round,
+            context_ptr->blk_geom->bsize,
+            context_ptr->blk_geom->txsize[txb_itr],
+            &cu_ptr->luma_txb_skip_context,
+            &cu_ptr->luma_dc_sign_context);
+
+
+        if (context_ptr->blk_geom->has_uv) {
+
+            get_txb_ctx(
+                COMPONENT_CHROMA,
+                cb_dc_sign_level_coeff_neighbor_array,
+                pu_origin_x_round >> 1,
+                pu_origin_y_round >> 1,
+                context_ptr->blk_geom->bsize_uv,
+                context_ptr->blk_geom->txsize_uv[txb_itr],
+                &cu_ptr->cb_txb_skip_context,
+                &cu_ptr->cb_dc_sign_context);
+
+            get_txb_ctx(
+                COMPONENT_CHROMA,
+                cr_dc_sign_level_coeff_neighbor_array,
+                pu_origin_x_round >> 1,
+                pu_origin_y_round >> 1,
+                context_ptr->blk_geom->bsize_uv,
+                context_ptr->blk_geom->txsize_uv[txb_itr],
+                &cu_ptr->cr_txb_skip_context,
+                &cu_ptr->cr_dc_sign_context);
+        }
+    }
+
+    return;
+}
+#endif
 void encode_pass_tx_search(
     PictureControlSet            *picture_control_set_ptr,
     EncDecContext                *context_ptr,
@@ -689,6 +820,10 @@ static void Av1EncodeLoop(
             EB_TRUE,
 #endif
             EB_TRUE);
+
+#if TRELLIS_CONTEXT_UPDATE_EP
+        cu_ptr->quantized_dc[0] = ((int32_t*)coeffSamplesTB->buffer_y)[coeff1dOffset];
+#endif
 
 #if BLK_SKIP_DECISION
         if (context_ptr->md_skip_blk) {
@@ -930,6 +1065,9 @@ static void Av1EncodeLoop(
 #endif
             EB_TRUE);
 
+#if TRELLIS_CONTEXT_UPDATE_EP
+        cu_ptr->quantized_dc[1] = ((int32_t*)coeffSamplesTB->buffer_cb)[context_ptr->coded_area_sb_uv];
+#endif
 #if BLK_SKIP_DECISION
         if (context_ptr->md_skip_blk) {
             count_non_zero_coeffs[1] = 0;
@@ -988,6 +1126,11 @@ static void Av1EncodeLoop(
             EB_TRUE,
 #endif
             EB_TRUE);
+
+#if TRELLIS_CONTEXT_UPDATE_EP
+        cu_ptr->quantized_dc[2] = ((int32_t*)coeffSamplesTB->buffer_cr)[context_ptr->coded_area_sb_uv];
+#endif
+
 #if BLK_SKIP_DECISION
         if (context_ptr->md_skip_blk) {
             count_non_zero_coeffs[2] = 0;
@@ -1192,6 +1335,11 @@ static void Av1EncodeLoop16bit(
                 EB_TRUE,
 #endif
                 EB_TRUE);
+
+#if TRELLIS_CONTEXT_UPDATE_EP
+            cu_ptr->quantized_dc[0] = ((int32_t*)coeffSamplesTB->buffer_y)[coeff1dOffset];
+#endif
+
 #if BLK_SKIP_DECISION
             if (context_ptr->md_skip_blk) {
                 count_non_zero_coeffs[0] = 0;
@@ -1367,7 +1515,9 @@ static void Av1EncodeLoop16bit(
                 EB_TRUE,
 #endif
                 EB_TRUE);
-
+#if TRELLIS_CONTEXT_UPDATE_EP
+            cu_ptr->quantized_dc[1] = ((int32_t*)coeffSamplesTB->buffer_cb)[context_ptr->coded_area_sb_uv];
+#endif
 #if BLK_SKIP_DECISION
             if (context_ptr->md_skip_blk) {
                 count_non_zero_coeffs[1] = 0;
@@ -1431,6 +1581,11 @@ static void Av1EncodeLoop16bit(
                 EB_TRUE,
 #endif
                 EB_TRUE);
+
+#if TRELLIS_CONTEXT_UPDATE_EP
+            cu_ptr->quantized_dc[2] = ((int32_t*)coeffSamplesTB->buffer_cr)[context_ptr->coded_area_sb_uv];
+#endif
+
 #if BLK_SKIP_DECISION
             if (context_ptr->md_skip_blk) {
                 count_non_zero_coeffs[2] = 0;
@@ -2374,7 +2529,6 @@ EB_EXTERN void av1_encode_pass(
     NeighborArrayUnit      *ep_cr_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cr_recon_neighbor_array16bit : picture_control_set_ptr->ep_cr_recon_neighbor_array;
     NeighborArrayUnit      *ep_skip_flag_neighbor_array = picture_control_set_ptr->ep_skip_flag_neighbor_array;
 #if TRELLIS_CONTEXT_UPDATE_EP
-    NeighborArrayUnit      *ep_skip_coeff_neighbor_array = picture_control_set_ptr->ep_skip_coeff_neighbor_array;
     NeighborArrayUnit      *ep_luma_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->ep_luma_dc_sign_level_coeff_neighbor_array;
     NeighborArrayUnit      *ep_cr_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->ep_cr_dc_sign_level_coeff_neighbor_array;
     NeighborArrayUnit      *ep_cb_dc_sign_level_coeff_neighbor_array = picture_control_set_ptr->ep_cb_dc_sign_level_coeff_neighbor_array;
@@ -2750,6 +2904,18 @@ EB_EXTERN void av1_encode_pass(
 
 #endif
 #endif
+
+
+#if TRELLIS_CONTEXT_UPDATE_EP
+                generate_txb_skip_dc_sign_context(
+                    context_ptr,
+                    cu_ptr,
+                    context_ptr->cu_origin_x,
+                    context_ptr->cu_origin_y,
+                    ep_luma_dc_sign_level_coeff_neighbor_array,
+                    ep_cr_dc_sign_level_coeff_neighbor_array,
+                    ep_cb_dc_sign_level_coeff_neighbor_array);
+#endif
                 if (cu_ptr->prediction_mode_flag == INTRA_MODE) {
                     context_ptr->is_inter = cu_ptr->av1xd->use_intrabc;
                     context_ptr->tot_intra_coded_area += blk_geom->bwidth* blk_geom->bheight;
@@ -2769,12 +2935,6 @@ EB_EXTERN void av1_encode_pass(
                             context_ptr->cu_origin_x,
                             context_ptr->cu_origin_y,
                             BLOCK_SIZE_64,
-#if TRELLIS_CONTEXT_UPDATE_EP
-                            ep_skip_coeff_neighbor_array,
-                            ep_luma_dc_sign_level_coeff_neighbor_array,
-                            ep_cr_dc_sign_level_coeff_neighbor_array,
-                            ep_cb_dc_sign_level_coeff_neighbor_array,
-#endif
                             ep_intra_luma_mode_neighbor_array,
                             ep_intra_chroma_mode_neighbor_array,
                             ep_mode_type_neighbor_array);
@@ -3121,7 +3281,6 @@ EB_EXTERN void av1_encode_pass(
                             // Update the Intra-specific Neighbor Arrays
                             EncodePassUpdateIntraModeNeighborArrays(
 #if TRELLIS_CONTEXT_UPDATE_EP
-                                ep_skip_coeff_neighbor_array,
                                 ep_luma_dc_sign_level_coeff_neighbor_array,
                                 ep_cr_dc_sign_level_coeff_neighbor_array,
                                 ep_cb_dc_sign_level_coeff_neighbor_array,
@@ -3783,7 +3942,7 @@ EB_EXTERN void av1_encode_pass(
                             uint8_t skip_flag = (uint8_t)cu_ptr->skip_flag;
                             EncodePassUpdateInterModeNeighborArrays(
 #if TRELLIS_CONTEXT_UPDATE_EP
-                                ep_skip_coeff_neighbor_array,
+                                context_ptr,
                                 ep_luma_dc_sign_level_coeff_neighbor_array,
                                 ep_cr_dc_sign_level_coeff_neighbor_array,
                                 ep_cb_dc_sign_level_coeff_neighbor_array,
