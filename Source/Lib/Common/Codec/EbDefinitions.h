@@ -2332,7 +2332,7 @@ typedef struct EbMemoryMapEntry
     EbPtr                    ptr;            // points to a memory pointer
     EbPtrType                ptr_type;       // pointer type
 #if MEM_MAP_OPT
-    EbPtr                    next_entry;     // pointer to the next entry
+    EbPtr                    prev_entry;     // pointer to the prev entry
 #endif
 } EbMemoryMapEntry;
 
@@ -2422,17 +2422,15 @@ app_malloc_count++;
 #ifdef _MSC_VER
 #define EB_ALLIGN_MALLOC(type, pointer, n_elements, pointer_class) \
     pointer = (type) _aligned_malloc(n_elements,ALVALUE); \
-    if (pointer == (type)EB_NULL) { \
+    if (pointer == (type)EB_NULL) \
         return EB_ErrorInsufficientResources; \
-    } \
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
@@ -2448,11 +2446,10 @@ app_malloc_count++;
         pointer = (type) pointer;  \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
@@ -2468,11 +2465,10 @@ app_malloc_count++;
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
@@ -2488,11 +2484,10 @@ app_malloc_count++;
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
@@ -2502,19 +2497,18 @@ app_malloc_count++;
     }
 
 #define EB_CREATESEMAPHORE(type, pointer, n_elements, pointer_class, initial_count, max_count) \
-    pointer = eb_create_semaphore(initial_count, max_count); \
+    pointer = (type)eb_create_semaphore(initial_count, max_count); \
     if (pointer == (type)EB_NULL) \
         return EB_ErrorInsufficientResources; \
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry       = EB_NULL; \
-        memory_map->ptr_type   = pointer_class; \
-        memory_map->ptr        = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map             = node; \
-        (*memory_map_index)++; \
-        if (n_elements % 8 == 0) \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
+        (*memory_map_index)++;                  \
+        if (n_elements % 8 == 0)                \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
         else \
             *total_lib_memory += (((n_elements)+(8 - ((n_elements) % 8))) + sizeof(EbMemoryMapEntry)); \
@@ -2522,17 +2516,15 @@ app_malloc_count++;
     }
 #define EB_CREATEMUTEX(type, pointer, n_elements, pointer_class) \
     pointer = eb_create_mutex(); \
-    if (pointer == (type)EB_NULL){ \
+    if (pointer == (type)EB_NULL) \
         return EB_ErrorInsufficientResources; \
-    } \
     else { \
             EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
             if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-            node->next_entry = EB_NULL; \
-            memory_map->ptr_type = pointer_class; \
-            memory_map->ptr = pointer; \
-            memory_map->next_entry = (EbPtr)node; \
-            memory_map = node; \
+            node->ptr_type         = pointer_class; \
+            node->ptr              = (EbPtr)pointer;\
+            node->prev_entry       = (EbPtr)memory_map;   \
+            memory_map             = node;          \
             (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
