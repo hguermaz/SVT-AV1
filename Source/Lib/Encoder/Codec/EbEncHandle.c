@@ -792,7 +792,7 @@ static EbErrorType eb_enc_handle_ctor(
     if (return_error == EB_ErrorInsufficientResources)
         return EB_ErrorInsufficientResources;
 #if MEM_MAP_OPT
-    enc_handle_ptr->memory_map->next_entry                                = EB_NULL;
+    enc_handle_ptr->memory_map->prev_entry                                = EB_NULL;
     enc_handle_ptr->encode_instance_total_count                           = EB_EncodeInstancesTotalCount;
     enc_handle_ptr->compute_segments_total_count_array                    = EB_ComputeSegmentInitCount;
 #else
@@ -2025,9 +2025,9 @@ EB_API EbErrorType eb_deinit_encoder(EbComponentType *svt_enc_component){
     EbErrorType          return_error = EB_ErrorNone;
 
     if (enc_handle_ptr) {
-        if (enc_handle_ptr->memory_map_init_address) {
+        if (memory_map) {
             // Loop through the ptr table and free all malloc'd pointers per channel
-            EbMemoryMapEntry*    memory_entry = enc_handle_ptr->memory_map_init_address;
+            EbMemoryMapEntry*    memory_entry = memory_map;
             if (memory_entry){
                 do {
                     switch (memory_entry->ptr_type) {
@@ -2055,10 +2055,10 @@ EB_API EbErrorType eb_deinit_encoder(EbComponentType *svt_enc_component){
                             break;
                     }
                     EbMemoryMapEntry*    tmp_memory_entry = memory_entry;
-                    memory_entry = (EbMemoryMapEntry*)memory_entry->next_entry;
+                    memory_entry = (EbMemoryMapEntry*)tmp_memory_entry->prev_entry;
                     if (tmp_memory_entry) free(tmp_memory_entry);
-                } while(memory_entry != (EbMemoryMapEntry*)EB_NULL && memory_entry->next_entry != (EbMemoryMapEntry*)EB_NULL);
-                if (memory_entry) free(memory_entry);
+                } while(memory_entry != enc_handle_ptr->memory_map_init_address && memory_entry);
+                if (enc_handle_ptr->memory_map_init_address) free(enc_handle_ptr->memory_map_init_address);
             }
         }
     }
