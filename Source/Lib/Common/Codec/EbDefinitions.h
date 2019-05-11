@@ -149,7 +149,7 @@ extern "C" {
 #define TRELLIS_MD_TX_SEARCH_ONLY                       0
 #define TRELLIS_SPATIAL_SSE                             0
 #define SHUT_OPT_CHECK                                  1
-#define TRELLIS_CONTEXT_UPDATE_EP                       0  
+#define TRELLIS_CONTEXT_UPDATE_EP                       1  
 
 
 #endif
