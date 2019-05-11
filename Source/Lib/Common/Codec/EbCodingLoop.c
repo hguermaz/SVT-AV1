@@ -189,6 +189,7 @@ typedef EbErrorType(*EB_ENC_PASS_INTRA_FUNC_PTR)(
 ***************************************************/
 static void EncodePassUpdateIntraModeNeighborArrays(
 #if TRELLIS_CONTEXT_UPDATE_EP
+    EncDecContext         *context_ptr,
     NeighborArrayUnit     *luma_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cr_dc_sign_level_coeff_neighbor_array,
     NeighborArrayUnit     *cb_dc_sign_level_coeff_neighbor_array,
@@ -242,7 +243,87 @@ static void EncodePassUpdateIntraModeNeighborArrays(
             height_uv,
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
     }
+#if TRELLIS_CONTEXT_UPDATE_EP
+    {
+        uint8_t y_has_coeff = context_ptr->cu_ptr->transform_unit_array[0].y_has_coeff;
+        int32_t lumaDcCoeff = (int32_t)context_ptr->cu_ptr->quantized_dc[0];
+        uint8_t u_has_coeff = context_ptr->cu_ptr->transform_unit_array[0].u_has_coeff;
+        int32_t cbDcCoeff = (int32_t)context_ptr->cu_ptr->quantized_dc[1];
+        uint8_t v_has_coeff = context_ptr->cu_ptr->transform_unit_array[0].v_has_coeff;
+        int32_t crDcCoeff = (int32_t)context_ptr->cu_ptr->quantized_dc[2];
 
+        uint8_t dcSignCtx = 0;
+        if (lumaDcCoeff > 0)
+            dcSignCtx = 2;
+        else if (lumaDcCoeff < 0)
+            dcSignCtx = 1;
+        else
+            dcSignCtx = 0;
+        uint8_t dcSignLevelCoeff = (uint8_t)((dcSignCtx << COEFF_CONTEXT_BITS) | y_has_coeff);
+        if (!y_has_coeff)
+            dcSignLevelCoeff = 0;
+
+        neighbor_array_unit_mode_write(
+            luma_dc_sign_level_coeff_neighbor_array,
+            (uint8_t*)&dcSignLevelCoeff,
+            origin_x,
+            origin_y,
+            context_ptr->blk_geom->bwidth,
+            context_ptr->blk_geom->bheight,
+            NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+
+        if (context_ptr->blk_geom->has_uv) {
+
+            //  Update chroma CB cbf and Dc context
+            {
+                uint8_t dcSignCtx = 0;
+                if (cbDcCoeff > 0)
+                    dcSignCtx = 2;
+                else if (cbDcCoeff < 0)
+                    dcSignCtx = 1;
+                else
+                    dcSignCtx = 0;
+                uint8_t dcSignLevelCoeff = (uint8_t)((dcSignCtx << COEFF_CONTEXT_BITS) | u_has_coeff);
+                if (!u_has_coeff)
+                    dcSignLevelCoeff = 0;
+
+                neighbor_array_unit_mode_write(
+                    cb_dc_sign_level_coeff_neighbor_array,
+                    (uint8_t*)&dcSignLevelCoeff,
+                    origin_x >> 1,
+                    origin_y >> 1,
+                    context_ptr->blk_geom->bwidth_uv,
+                    context_ptr->blk_geom->bheight_uv,
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+            }
+
+            //  Update chroma CR cbf and Dc context
+            {
+                uint8_t dcSignCtx = 0;
+                if (crDcCoeff > 0)
+                    dcSignCtx = 2;
+                else if (crDcCoeff < 0)
+                    dcSignCtx = 1;
+                else
+                    dcSignCtx = 0;
+                uint8_t dcSignLevelCoeff = (uint8_t)((dcSignCtx << COEFF_CONTEXT_BITS) | v_has_coeff);
+                if (!v_has_coeff)
+                    dcSignLevelCoeff = 0;
+
+                neighbor_array_unit_mode_write(
+                    cr_dc_sign_level_coeff_neighbor_array,
+                    (uint8_t*)&dcSignLevelCoeff,
+                    origin_x >> 1,
+                    origin_y >> 1,
+                    context_ptr->blk_geom->bwidth_uv,
+                    context_ptr->blk_geom->bheight_uv,
+                    NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+            }
+
+        }
+
+    }
+#endif
     return;
 }
 
@@ -3280,7 +3361,8 @@ EB_EXTERN void av1_encode_pass(
 
                             // Update the Intra-specific Neighbor Arrays
                             EncodePassUpdateIntraModeNeighborArrays(
-#if TRELLIS_CONTEXT_UPDATE_EP
+#if TRELLIS_CONTEXT_UPDATE_EP    
+                                context_ptr,
                                 ep_luma_dc_sign_level_coeff_neighbor_array,
                                 ep_cr_dc_sign_level_coeff_neighbor_array,
                                 ep_cb_dc_sign_level_coeff_neighbor_array,

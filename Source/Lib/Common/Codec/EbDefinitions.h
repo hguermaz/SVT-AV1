@@ -137,12 +137,12 @@ extern "C" {
 #define OPT_QUANT_COEFF                                 1
 #if OPT_QUANT_COEFF
 #define DEBUG_TRELLIS                                   0
-#define TRELLIS_SKIP                                    0
 #define TRELLIS_MD                                      1
 
 
 
 // Modified Trellis
+#define TRELLIS_SKIP                                    0
 #define TRELLIS_INTRA                                   1
 #define TRELLIS_CHROMA                                  0
 #define ENHANCED_TRELLIS                                0   // TBD

@@ -2046,7 +2046,7 @@ void av1_quantize_inv_quantize(
                 cost_opt = RDCOST(md_context->full_lambda, coeff_rate_opt, distortion_opt[0]);
 #if TRELLIS_SKIP // To test
                 cost_skip_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_opt, distortion_opt[1]);
-                if (cost_skip_opt < cost_opt)
+                if (is_inter && cost_skip_opt < cost_opt)
                     *eob = 0;
 #endif
             }
