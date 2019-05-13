@@ -86,11 +86,10 @@ extern "C" {
     else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
         (*memory_map_index)++;                  \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
@@ -122,11 +121,10 @@ extern    cpu_set_t                   group_affinity;
         pthread_setaffinity_np(*((pthread_t*)pointer),sizeof(cpu_set_t),&group_affinity); \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
@@ -144,11 +142,10 @@ extern    cpu_set_t                   group_affinity;
    else { \
         EbMemoryMapEntry *node = malloc(sizeof(EbMemoryMapEntry)); \
         if (node == (EbMemoryMapEntry*)EB_NULL) return EB_ErrorInsufficientResources; \
-        node->next_entry = EB_NULL; \
-        memory_map->ptr_type = pointer_class; \
-        memory_map->ptr = pointer; \
-        memory_map->next_entry = (EbPtr)node; \
-        memory_map = node; \
+        node->ptr_type         = pointer_class; \
+        node->ptr              = (EbPtr)pointer;\
+        node->prev_entry       = (EbPtr)memory_map;   \
+        memory_map             = node;          \
         (*memory_map_index)++; \
         if (n_elements % 8 == 0) \
             *total_lib_memory += ((n_elements) + sizeof(EbMemoryMapEntry)); \
