@@ -2915,7 +2915,7 @@ EbErrorType av1_encode_tu_calc_cost(
 
         yZeroCbfRate = yZeroCbfLumaFlagBitsNum;
         TransformUnit       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
-#if 0//TRELLIS_SKIP
+#if SHUT_EP_CBF_ZERO_MODE
         if (1) {
 #else
         if (txb_ptr->transform_type[PLANE_TYPE_Y] != DCT_DCT) {

@@ -151,8 +151,14 @@ extern "C" {
 #define SHUT_OPT_CHECK                                  1
 #define TRELLIS_CONTEXT_UPDATE_EP                       1  
 
-
+#define SHUT_EP_CBF_ZERO_MODE                           0
 #endif
+
+
+
+#define NEW_NEAR_INJECTION                              0
+
+
 
 #define CHROMA_DC_ONLY                                  0
 #define SEARCH_UV_MODE                                  1
