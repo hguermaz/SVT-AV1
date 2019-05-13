@@ -13,7 +13,15 @@
 #define REDUCED_TOTAL_STRENGTHS (REDUCED_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
 #define TOTAL_STRENGTHS (CDEF_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
 
+#ifndef _mm256_set_m128i
+#define _mm256_set_m128i(/* __m128i */ hi, /* __m128i */ lo) \
+    _mm256_insertf128_si256(_mm256_castsi128_si256(lo), (hi), 0x1)
+#endif
 
+#ifndef _mm256_setr_m128i
+#define _mm256_setr_m128i(/* __m128i */ lo, /* __m128i */ hi) \
+    _mm256_set_m128i((hi), (lo))
+#endif
 /* Search for the best luma+chroma strength to add as an option, knowing we
 already selected nb_strengths options. */
 uint64_t search_one_dual_avx2(int *lev0, int *lev1, int nb_strengths,

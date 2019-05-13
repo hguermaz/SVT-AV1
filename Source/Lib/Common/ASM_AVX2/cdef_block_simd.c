@@ -23,6 +23,10 @@
 
 #define SIMD_FUNC(name) name##_avx2
 
+#if defined(__SSE4_1__)
+#undef CDEF_AVX_OPT
+#define CDEF_AVX_OPT 0
+#endif
 
 
 /* partial A is a 16-bit vector of the form:
