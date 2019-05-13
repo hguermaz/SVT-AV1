@@ -163,24 +163,29 @@ extern "C" {
 #define NFL_3_ALL						1
 #define MRP_DISABLE_ADDED_CAND_M1		1
 
+/****************M8-53fps**********************/
+#define CDEF_OFF			            1
+#define LO_ME				            1
+#define LO_CU_8x8			            1
+#define M8_WIENER			1
+#define M8_RESTORATION		1
+#define LO_ADP_20			            1
 
 /*****LEFTOVER ******/
 #define LO_CDEF	                        0
 #define LO_FL_ESCAPE                    0
-#define LO_ME				            0
-#define LO_CU_8x8			            0
+#define SUB_SAD_FRAC_ME_SEARCH_METHOD	0
 #define LO_ADP_5			            0
 #define LO_ADP_10			            0
-#define LO_ADP_20			            0
+
 #define M8_ADP							0
 #define LO_HMELEVEL			            0
 #define LO_INTRA_5			            0
 #define LO_INTRA_6			            0
-#define CDEF_OFF			            0
-#define SUB_SAD_FRAC_ME_SEARCH_METHOD	0
+
+
 #define DISABLE_FRACIONAL_SEARCH_MODEL	0
-#define M8_WIENER			0
-#define M8_RESTORATION		0
+
 
 
 #if !MRP_SUPPORT
