@@ -156,13 +156,13 @@ extern "C" {
 #endif
 
 /************************M8 to M7***********************/
-#define M8_CDEF				0
-#define M8_ME				0
-#define M8_WIENER			0
-#define M8_RESTORATION		0
-#define M8_INTERPOLATION	0
-#define M8_GLOBAL_MV		0
-#define M8_ADP				0
+#define M8_CDEF				1
+#define M8_ME				1
+#define M8_INTERPOLATION	1
+#define M8_GLOBAL_MV		1
+#define NFL_3_ALL						1
+#define MRP_DISABLE_ADDED_CAND_M1		1
+
 
 /*****LEFTOVER ******/
 #define LO_CDEF	                        0
@@ -172,14 +172,17 @@ extern "C" {
 #define LO_ADP_5			            0
 #define LO_ADP_10			            0
 #define LO_ADP_20			            0
+#define M8_ADP							0
 #define LO_HMELEVEL			            0
 #define LO_INTRA_5			            0
 #define LO_INTRA_6			            0
 #define CDEF_OFF			            0
 #define SUB_SAD_FRAC_ME_SEARCH_METHOD	0
 #define DISABLE_FRACIONAL_SEARCH_MODEL	0
-#define NFL_3_ALL						0
-#define MRP_DISABLE_ADDED_CAND_M1		0
+#define M8_WIENER			0
+#define M8_RESTORATION		0
+
+
 #if !MRP_SUPPORT
 #define BASE_LAYER_REF                                  1 // Base layer pictures use the previous I slice as the second reference
 #endif

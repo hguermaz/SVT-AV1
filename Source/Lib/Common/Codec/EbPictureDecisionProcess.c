@@ -1315,7 +1315,11 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
     if (picture_control_set_ptr->enc_mode <= ENC_M5)
         cm->wn_filter_mode = 3;
+#if M8_WIENER
+	else if (picture_control_set_ptr->enc_mode <= ENC_M6)
+#else
     else if (picture_control_set_ptr->enc_mode <= ENC_M7)
+#endif
         cm->wn_filter_mode = 2;
     else
         cm->wn_filter_mode = 0;
