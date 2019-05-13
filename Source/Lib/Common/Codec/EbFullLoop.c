@@ -1770,18 +1770,6 @@ void av1_quantize_inv_quantize(
     }
     MacroblockPlane      candidate_plane ;
 
-    //    EB_SLICE          slice_type = picture_control_set_ptr->slice_type;
-    //    uint32_t            temporal_layer_index = picture_control_set_ptr->temporal_layer_index;
-
-    // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
-    //const QmVal *qmatrix =
-    //    IS_2D_TRANSFORM(tx_type) ? pd->seg_qmatrix[seg_id][qm_tx_size]
-    //    : cm->gqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
-    //const QmVal *iqmatrix =
-    //    IS_2D_TRANSFORM(tx_type)
-    //    ? pd->seg_iqmatrix[seg_id][qm_tx_size]
-    //    : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
-
     const QmVal *qMatrix = picture_control_set_ptr->parent_pcs_ptr->gqmatrix[NUM_QM_LEVELS - 1][0][txsize];
     const QmVal *iqMatrix = picture_control_set_ptr->parent_pcs_ptr->giqmatrix[NUM_QM_LEVELS - 1][0][txsize];
 #if ADD_DELTA_QP_SUPPORT
@@ -1911,6 +1899,7 @@ void av1_quantize_inv_quantize(
 #else
     if (*eob != 0 && is_encode_pass && is_inter && component_type == COMPONENT_LUMA) {
 #endif
+#if !SHUT_OPT_CHECK
         uint64_t coeff_rate_non_opt;
         uint64_t coeff_rate_opt;
 
@@ -1919,7 +1908,7 @@ void av1_quantize_inv_quantize(
 
         uint64_t cost_non_opt;
         uint64_t cost_opt;
-        
+#endif
 #if TRELLIS_SKIP
         uint64_t coeff_rate_skip_non_opt;
         uint64_t coeff_rate_skip_opt;
@@ -1938,7 +1927,7 @@ void av1_quantize_inv_quantize(
             candidateBuffer->candidate_ptr->pred_mode = pred_mode;
             candidateBuffer->candidate_ptr->md_rate_estimation_ptr = md_context->md_rate_estimation_ptr;
         }
-
+#if !SHUT_OPT_CHECK
         // Compute the cost when using non-optimized coefficients (i.e. original coefficients) 
         coeff_rate_non_opt = av1_cost_coeffs_txb(
             0,//picture_control_set_ptr->update_cdf,
@@ -1951,7 +1940,7 @@ void av1_quantize_inv_quantize(
             txb_skip_context,     
             dc_sign_context,    
             picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-
+#endif
 #if TRELLIS_SKIP
         coeff_rate_skip_non_opt = av1_cost_skip_txb(
             0,//picture_control_set_ptr->update_cdf,
@@ -1962,9 +1951,7 @@ void av1_quantize_inv_quantize(
             txb_skip_context);
 #endif
 
-#if TRELLIS_SPATIAL_SSE
-
-#else
+#if !SHUT_OPT_CHECK
         full_distortion_kernel32_bits_func_ptr_array[asm_type](
             coeff,
             get_txb_wide(txsize),
@@ -1976,8 +1963,9 @@ void av1_quantize_inv_quantize(
         int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txsize)) * 2;
         distortion_non_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_RESIDUAL], shift);
         distortion_non_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_non_opt[DIST_CALC_PREDICTION], shift);
-#endif
+
         cost_non_opt = RDCOST(md_context->full_lambda, coeff_rate_non_opt, distortion_non_opt[DIST_CALC_RESIDUAL]);
+#endif
 #if TRELLIS_SKIP // To test
         cost_skip_non_opt = RDCOST(md_context->full_lambda, coeff_rate_skip_non_opt, distortion_non_opt[DIST_CALC_PREDICTION]);
         if (cost_skip_non_opt < cost_non_opt)
@@ -2003,7 +1991,7 @@ void av1_quantize_inv_quantize(
                 is_inter,
                 bit_increment,
                 (component_type == COMPONENT_LUMA) ? 0 : 1);
-
+#if !SHUT_OPT_CHECK
             // Compute the cost when using optimized coefficients(i.e.after Trellis coefficients)
             if (*eob != 0) {
                 coeff_rate_opt = av1_cost_coeffs_txb(
@@ -2027,9 +2015,7 @@ void av1_quantize_inv_quantize(
                     (component_type == COMPONENT_LUMA) ? 0 : 1,
                     txb_skip_context);
 #endif
-#if TRELLIS_SPATIAL_SSE
 
-#else
                 full_distortion_kernel32_bits_func_ptr_array[asm_type](
                     coeff,
                     get_txb_wide(txsize),
@@ -2038,7 +2024,7 @@ void av1_quantize_inv_quantize(
                     distortion_opt,
                     get_txb_wide(txsize),
                     get_txb_wide(txsize));
-#endif
+
                 int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txsize)) * 2;
                 distortion_opt[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_RESIDUAL], shift);
                 distortion_opt[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(distortion_opt[DIST_CALC_PREDICTION], shift);
@@ -2050,7 +2036,7 @@ void av1_quantize_inv_quantize(
                     *eob = 0;
 #endif
             }
-#if !SHUT_OPT_CHECK
+
             // Hsan (Trellis): redo Q/Q-1 if original cost better than Trellis cost (extra cycles are spent here but better than keeping a copy of original Q/Q-1 buffers then copy again to the final Q/Q-1 buffers
             if (*eob != 0 && cost_non_opt < cost_opt) {
                 if (bit_increment)
