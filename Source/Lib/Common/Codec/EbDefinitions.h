@@ -154,11 +154,10 @@ extern "C" {
 #define SHUT_EP_CBF_ZERO_MODE                           0
 #endif
 
-
-
+#define NEW_INJECTION_CLEAN_UP                          1
+#if NEW_INJECTION_CLEAN_UP
 #define NEW_NEAR_INJECTION                              0
-
-
+#endif
 
 #define CHROMA_DC_ONLY                                  0
 #define SEARCH_UV_MODE                                  1
