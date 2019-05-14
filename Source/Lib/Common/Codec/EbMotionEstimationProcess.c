@@ -130,10 +130,11 @@ void* set_me_hme_params_oq(
     me_context_ptr->hme_level2_search_area_in_height_array[1] = hme_level2_search_area_in_height_array_bottom[sc_content_detected][input_resolution][hmeMeLevel];
 #if LO_ME
 	hmeMeLevel = 9;
-#endif
+#else
 #if M8_ME
 	if (picture_control_set_ptr->enc_mode == 7)
 		hmeMeLevel = 8;
+#endif
 #endif
     // ME
     me_context_ptr->search_area_width = search_area_width[sc_content_detected][input_resolution][hmeMeLevel];
