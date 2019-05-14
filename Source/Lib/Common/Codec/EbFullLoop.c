@@ -1723,33 +1723,31 @@ void av1_optimize_b(
 void av1_quantize_inv_quantize(
     PictureControlSet           *picture_control_set_ptr,
     ModeDecisionContext         *md_context,
-    int32_t               *coeff,
-    const uint32_t          coeff_stride,
-    int32_t               *quant_coeff,
-    int32_t               *recon_coeff,
-    uint32_t                qp,
-    uint32_t                width,
-    uint32_t                height,
-    TxSize                         txsize,
-    uint16_t                *eob,
-    //  MacroblockPlane      candidate_plane,
-    EbAsm                asm_type,
-    uint32_t                      *count_non_zero_coeffs,
+    int32_t                     *coeff,
+    const uint32_t               coeff_stride,
+    int32_t                     *quant_coeff,
+    int32_t                     *recon_coeff,
+    uint32_t                     qp,
+    uint32_t                     width,
+    uint32_t                     height,
+    TxSize                       txsize,
+    uint16_t                    *eob,
+    EbAsm                        asm_type,
+    uint32_t                    *count_non_zero_coeffs,
 #if !PF_N2_SUPPORT                
-    EbPfMode              pf_mode,
+    EbPfMode                     pf_mode,
 #endif
-    uint32_t                component_type,
-    uint32_t                bit_increment,
-
-    TxType               tx_type,
+    uint32_t                     component_type,
+    uint32_t                     bit_increment,
+    TxType                       tx_type,
     ModeDecisionCandidateBuffer *candidateBuffer,
-    int16_t                        txb_skip_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
-    int16_t                        dc_sign_context,     // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
-    PredictionMode                 pred_mode,
-#if TRELLIS_MD_TX_SEARCH_ONLY
-    EbBool                         trellis_rdoq,     
-#endif
-    EbBool                         is_encode_pass)
+    int16_t                      txb_skip_context,    // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+    int16_t                      dc_sign_context,     // Hsan (Trellis): derived @ MD (what about re-generating @ EP ?)
+    PredictionMode               pred_mode,
+#if TRELLIS_MD_TX_SEARCH_ONLY    
+    EbBool                       trellis_rdoq,     
+#endif                           
+    EbBool                       is_encode_pass)
 {
     (void)coeff_stride;
 #if !PF_N2_SUPPORT
@@ -1884,13 +1882,17 @@ void av1_quantize_inv_quantize(
     // Hsan (Trellis) : only luma for now and only @ encode pass  
 #if TRELLIS_MD  
 #if TRELLIS_INTRA
+#if TRELLIS_MD_TX_SEARCH_ONLY
+    if (md_context->trellis_quant_coeff_optimization && trellis_rdoq && *eob != 0 && component_type == COMPONENT_LUMA) {
+#else
     if (md_context->trellis_quant_coeff_optimization && *eob != 0 && component_type == COMPONENT_LUMA) {
+#endif
 #else
 #if TRELLIS_CHROMA
     if (md_context->trellis_quant_coeff_optimization && *eob != 0 && is_inter) {
 #else
 #if TRELLIS_MD_TX_SEARCH_ONLY
-    if (md_context->trellis_quant_coeff_optimization && trellis_rdoq&& *eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
+    if (md_context->trellis_quant_coeff_optimization && trellis_rdoq && *eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
 #else
     if (md_context->trellis_quant_coeff_optimization && *eob != 0 && is_inter && component_type == COMPONENT_LUMA) {
 #endif
