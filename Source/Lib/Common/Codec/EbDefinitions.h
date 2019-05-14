@@ -153,8 +153,8 @@ extern "C" {
 #define SHUT_EP_CBF_ZERO_MODE                           0
 #endif
 
-#define NEW_INJECTION_CLEAN_UP                          1
-#if NEW_INJECTION_CLEAN_UP
+#define CLEAN_UP_INJECTION                              1
+#if CLEAN_UP_INJECTION
 #define NEW_NEARESTMV_INJECTION                         0
 #define NEAREST_NEWMV_INJECTION                         0
 #define NEW_NEARMV_INJECTION                            0

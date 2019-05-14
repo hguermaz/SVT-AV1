@@ -26,7 +26,7 @@ extern "C" {
 #define IBC_CAND 2 //two intra bc candidates
 #if CHECK_CAND
 #if MRP_DUPLICATION_FIX
-#if NEW_INJECTION_CLEAN_UP
+#if CLEAN_UP_INJECTION
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (1024 +IBC_CAND) 
 #else
 #define MODE_DECISION_CANDIDATE_MAX_COUNT               (440 +IBC_CAND) 
@@ -240,7 +240,7 @@ extern "C" {
 #if MEMORY_FOOTPRINT_OPT_ME_MV   
         uint32_t                          me_block_offset;
 #endif
-#if NEW_INJECTION_CLEAN_UP
+#if CLEAN_UP_INJECTION
         uint32_t                          me_sb_addr;
 #endif
         // Multi-modes signal(s) 
