@@ -158,6 +158,8 @@ extern "C" {
 #if NEW_INJECTION_CLEAN_UP
 #define NEW_NEARESTMV_INJECTION                         0
 #define NEAREST_NEWMV_INJECTION                         0
+#define NEW_NEARMV_INJECTION                            0
+#define NEAR_NEWMV_INJECTION                            0
 #endif
 
 #define CHROMA_DC_ONLY                                  0
