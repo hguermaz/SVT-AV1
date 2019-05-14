@@ -362,6 +362,7 @@ extern "C" {
 
     void av1_inv_txfm2d_add_32x32_c(const int32_t *input, uint16_t *output, int32_t stride, TxType tx_type, int32_t bd);
     void av1_inv_txfm2d_add_32x32_avx2(const int32_t *input, uint16_t *output, int32_t stride, TxType tx_type, int32_t bd);
+    void av1_inv_txfm2d_add_32x32_avx512(const int32_t *input, uint16_t *output, int32_t stride, TxType tx_type, int32_t bd);
     RTCD_EXTERN void(*av1_inv_txfm2d_add_32x32)(const int32_t *input, uint16_t *output, int32_t stride, TxType tx_type, int32_t bd);
 
     void av1_inv_txfm2d_add_64x64_c(const int32_t *input, uint16_t *output, int32_t stride, TxType tx_type, int32_t bd);
@@ -2507,8 +2508,6 @@ extern "C" {
         aom_highbd_quantize_b = aom_highbd_quantize_b_c;
         if (flags & HAS_AVX2) aom_highbd_quantize_b = aom_highbd_quantize_b_avx2;
 
-        av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_c;
-        if (flags & HAS_AVX2) av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_avx2;
         av1_inv_txfm2d_add_4x4 = av1_inv_txfm2d_add_4x4_c;
         if (flags & HAS_AVX2) av1_inv_txfm2d_add_4x4 = av1_inv_txfm2d_add_4x4_avx2;
         av1_inv_txfm2d_add_64x64 = av1_inv_txfm2d_add_64x64_c;
@@ -2516,10 +2515,14 @@ extern "C" {
         av1_inv_txfm2d_add_8x8 = av1_inv_txfm2d_add_8x8_c;
         if (flags & HAS_AVX2) av1_inv_txfm2d_add_8x8 = av1_inv_txfm2d_add_8x8_avx2;
         av1_inv_txfm2d_add_16x16 = av1_inv_txfm2d_add_16x16_c;
+        av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_c;
+
 #ifndef NON_AVX512_SUPPORT
         if (flags & HAS_AVX2) av1_inv_txfm2d_add_16x16 = av1_inv_txfm2d_add_16x16_avx512;
+        if (flags & HAS_AVX2) av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_avx512;
 #else
         if (flags & HAS_AVX2) av1_inv_txfm2d_add_16x16 = av1_inv_txfm2d_add_16x16_avx2;
+        if (flags & HAS_AVX2) av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_avx2;
 #endif
 
         av1_inv_txfm2d_add_8x16 = av1_inv_txfm2d_add_8x16_c;
