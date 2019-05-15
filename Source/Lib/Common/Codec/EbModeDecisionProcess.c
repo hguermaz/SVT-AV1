@@ -191,6 +191,9 @@ void reset_mode_decision_neighbor_arrays(PictureControlSet *picture_control_set_
         neighbor_array_unit_reset(picture_control_set_ptr->md_ref_frame_type_neighbor_array[depth]);
 
         neighbor_array_unit_reset32(picture_control_set_ptr->md_interpolation_type_neighbor_array[depth]);
+#if TXS_INTRA
+        neighbor_array_unit_reset(picture_control_set_ptr->md_txfm_context_array[depth]);
+#endif
 
     }
 

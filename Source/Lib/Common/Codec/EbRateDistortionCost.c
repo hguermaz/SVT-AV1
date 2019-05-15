@@ -2021,6 +2021,22 @@ EbErrorType Av1FullCost(
     totalDistortion = luma_sse + chromaSse;
 
     rate = lumaRate + chromaRate + coeffRate;
+
+#if TXS_INTRA
+    if (candidate_buffer_ptr->candidate_ptr->block_has_coeff) {
+        uint64_t tx_size_bits = estimate_tx_size_bits(
+            picture_control_set_ptr,
+            context_ptr->cu_origin_x,
+            context_ptr->cu_origin_y,
+            context_ptr->cu_ptr,
+            context_ptr->blk_geom,
+            context_ptr->txfm_context_array,
+            candidate_buffer_ptr->candidate_ptr->tx_depth,
+            context_ptr->md_rate_estimation_ptr);
+        rate += tx_size_bits;
+    }
+#endif
+
     // Assign full cost
     *(candidate_buffer_ptr->full_cost_ptr) = RDCOST(lambda, rate, totalDistortion);
 
@@ -2130,6 +2146,20 @@ EbErrorType  Av1MergeSkipFullCost(
 
 
     mergeRate += coeffRate;
+#if TXS_INTRA
+    if (candidate_buffer_ptr->candidate_ptr->block_has_coeff) {
+        uint64_t tx_size_bits = estimate_tx_size_bits(
+            picture_control_set_ptr,
+            context_ptr->cu_origin_x,
+            context_ptr->cu_origin_y,
+            context_ptr->cu_ptr,
+            context_ptr->blk_geom,
+            context_ptr->txfm_context_array,
+            candidate_buffer_ptr->candidate_ptr->tx_depth,
+            context_ptr->md_rate_estimation_ptr);
+        mergeRate += tx_size_bits;
+    }
+#endif
 
     mergeDistortion = (mergeLumaSse + mergeChromaSse);
 

@@ -13838,6 +13838,9 @@ extern "C" {
         NeighborArrayUnit                  *md_cr_dc_sign_level_coeff_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit                  *md_inter_pred_dir_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
         NeighborArrayUnit                  *md_ref_frame_type_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
+#if TXS_INTRA
+        NeighborArrayUnit                  *md_txfm_context_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
+#endif
 
 
         NeighborArrayUnit32                *md_interpolation_type_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
@@ -13867,6 +13870,16 @@ extern "C" {
         NeighborArrayUnit                  *amvp_mv_merge_mv_neighbor_array;
         NeighborArrayUnit                  *amvp_mv_merge_mode_type_neighbor_array;
 #endif
+#if TXS_INTRA
+        NeighborArrayUnit                  *ep_luma_recon_neighbor_array_txs;
+        NeighborArrayUnit                  *ep_luma_recon_neighbor_array16bit_txs;
+        NeighborArrayUnit                  *ep_txfm_context_array;
+#endif
+#if TXS_CTX_EP
+        NeighborArrayUnit                  *ep_luma_dc_sign_level_coeff_neighbor_array;
+        NeighborArrayUnit                  *ep_cr_dc_sign_level_coeff_neighbor_array;
+        NeighborArrayUnit                  *ep_cb_dc_sign_level_coeff_neighbor_array;
+#endif
         // Entropy Coding Neighbor Arrays
         NeighborArrayUnit                  *mode_type_neighbor_array;
         NeighborArrayUnit                  *partition_context_neighbor_array;
@@ -13882,6 +13895,7 @@ extern "C" {
 #if TX_SIZE_SEARCH_LEVELS
         NeighborArrayUnit                  *txfm_context_array;
 #endif
+
         ModeInfo                            **mi_grid_base; //2 SB Rows of mi Data are enough
 
         ModeInfo                             *mip;

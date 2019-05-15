@@ -126,6 +126,14 @@ extern "C" {
         ModeDecisionCandidateBuffer           *candidate_buffer_ptr,
         EbAsm                                  asm_type);
 
+#if TXS_INTRA
+    extern EbErrorType av1_intra_luma_prediction(
+        struct ModeDecisionContext           *context_ptr,
+        PictureControlSet                    *picture_control_set_ptr,
+        ModeDecisionCandidateBuffer          *candidate_buffer_ptr,
+        EbAsm                                 asm_type);
+#endif
+
     extern void intra_mode_angular_horizontal_kernel_ssse3_intrin(
         uint32_t            size,
         uint8_t            *ref_samp_main,

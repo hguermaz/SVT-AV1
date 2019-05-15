@@ -724,6 +724,9 @@ void Unipred3x3CandidatesInjection(
             candidateArray[canTotalCnt].type = INTER_MODE;
             candidateArray[canTotalCnt].distortion_ready = 0;
             candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+            candidateArray[canTotalCnt].tx_depth = 0;
+#endif
             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
             candidateArray[canTotalCnt].prediction_direction[0] = (EbPredDirection)0;
             candidateArray[canTotalCnt].inter_mode = NEWMV;
@@ -830,6 +833,9 @@ void Unipred3x3CandidatesInjection(
                 candidateArray[canTotalCnt].type = INTER_MODE;
                 candidateArray[canTotalCnt].distortion_ready = 0;
                 candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                candidateArray[canTotalCnt].tx_depth = 0;
+#endif
                 candidateArray[canTotalCnt].merge_flag = EB_FALSE;
                 candidateArray[canTotalCnt].prediction_direction[0] = (EbPredDirection)1;
                 candidateArray[canTotalCnt].inter_mode = NEWMV;
@@ -984,6 +990,9 @@ void Bipred3x3CandidatesInjection(
                 candidateArray[canTotalCnt].type = INTER_MODE;
                 candidateArray[canTotalCnt].distortion_ready = 0;
                 candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                candidateArray[canTotalCnt].tx_depth = 0;
+#endif
                 candidateArray[canTotalCnt].merge_flag = EB_FALSE;
                 candidateArray[canTotalCnt].is_new_mv = 1;
                 candidateArray[canTotalCnt].is_zero_mv = 0;
@@ -1100,6 +1109,9 @@ void Bipred3x3CandidatesInjection(
                 candidateArray[canTotalCnt].type = INTER_MODE;
                 candidateArray[canTotalCnt].distortion_ready = 0;
                 candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                candidateArray[canTotalCnt].tx_depth = 0;
+#endif
                 candidateArray[canTotalCnt].merge_flag = EB_FALSE;
 
                 candidateArray[canTotalCnt].is_new_mv = 1;
@@ -1273,6 +1285,9 @@ void inject_mvp_candidates_II(
             candidateArray[canIdx].is_compound = 0;
             candidateArray[canIdx].distortion_ready = 0;
             candidateArray[canIdx].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+            candidateArray[canIdx].tx_depth = 0;
+#endif
             candidateArray[canIdx].merge_flag = EB_FALSE;
             candidateArray[canIdx].prediction_direction[0] = list_idx;
             candidateArray[canIdx].is_new_mv = 0;
@@ -1348,6 +1363,9 @@ void inject_mvp_candidates_II(
                 candidateArray[canIdx].is_compound = 0;
                 candidateArray[canIdx].distortion_ready = 0;
                 candidateArray[canIdx].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                candidateArray[canIdx].tx_depth = 0;
+#endif
                 candidateArray[canIdx].merge_flag = EB_FALSE;
                 candidateArray[canIdx].prediction_direction[0] = list_idx;
                 candidateArray[canIdx].is_new_mv = 0;
@@ -1419,6 +1437,9 @@ void inject_mvp_candidates_II(
                 candidateArray[canIdx].is_compound = 1;
                 candidateArray[canIdx].distortion_ready = 0;
                 candidateArray[canIdx].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                candidateArray[canIdx].tx_depth = 0;
+#endif
 
                 candidateArray[canIdx].merge_flag =
                     picture_control_set_ptr->parent_pcs_ptr->is_skip_mode_allowed &&
@@ -1492,6 +1513,9 @@ void inject_mvp_candidates_II(
                     candidateArray[canIdx].is_compound = 1;
                     candidateArray[canIdx].distortion_ready = 0;
                     candidateArray[canIdx].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                    candidateArray[canIdx].tx_depth = 0;
+#endif
                     candidateArray[canIdx].merge_flag = EB_FALSE;
                     candidateArray[canIdx].prediction_direction[0] = BI_PRED;
                     candidateArray[canIdx].is_new_mv = 0;
@@ -1870,6 +1894,9 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].is_compound = 0;
         candidateArray[canIdx].distortion_ready = 0;
         candidateArray[canIdx].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+        candidateArray[canIdx].tx_depth = 0;
+#endif
         candidateArray[canIdx].merge_flag = EB_FALSE;
         candidateArray[canIdx].prediction_direction[0] = UNI_PRED_LIST_0;
         candidateArray[canIdx].is_new_mv = 0;
@@ -1955,6 +1982,9 @@ void inject_warped_motion_candidates(
             candidateArray[canIdx].is_compound = 0;
             candidateArray[canIdx].distortion_ready = 0;
             candidateArray[canIdx].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+            candidateArray[canIdx].tx_depth = 0;
+#endif
             candidateArray[canIdx].merge_flag = EB_FALSE;
             candidateArray[canIdx].prediction_direction[0] = UNI_PRED_LIST_0;
             candidateArray[canIdx].is_new_mv = 0;
@@ -2046,6 +2076,9 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].type = INTER_MODE;
         candidateArray[canIdx].distortion_ready = 0;
         candidateArray[canIdx].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+        candidateArray[canIdx].tx_depth = 0;
+#endif
         candidateArray[canIdx].merge_flag = EB_FALSE;
         candidateArray[canIdx].prediction_direction[0] = (EbPredDirection)0;
         candidateArray[canIdx].inter_mode = NEWMV;
@@ -2320,6 +2353,9 @@ void  inject_inter_candidates(
                     candidateArray[canTotalCnt].type = INTER_MODE;
                     candidateArray[canTotalCnt].distortion_ready = 0;
                     candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                    candidateArray[canTotalCnt].tx_depth = 0;
+#endif
                     candidateArray[canTotalCnt].merge_flag = EB_FALSE;
                     candidateArray[canTotalCnt].prediction_direction[0] = (EbPredDirection)0;
                     candidateArray[canTotalCnt].inter_mode = NEWMV;
@@ -2409,6 +2445,9 @@ void  inject_inter_candidates(
                         candidateArray[canTotalCnt].type = INTER_MODE;
                         candidateArray[canTotalCnt].distortion_ready = 0;
                         candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                        candidateArray[canTotalCnt].tx_depth = 0;
+#endif
                         candidateArray[canTotalCnt].merge_flag = EB_FALSE;
                         candidateArray[canTotalCnt].prediction_direction[0] = (EbPredDirection)1;
 
@@ -2509,6 +2548,9 @@ void  inject_inter_candidates(
 
                             candidateArray[canTotalCnt].distortion_ready = 0;
                             candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                            candidateArray[canTotalCnt].tx_depth = 0;
+#endif
 
                             candidateArray[canTotalCnt].merge_flag = EB_FALSE;
 
@@ -2623,6 +2665,9 @@ void  inject_inter_candidates(
 
                 candidateArray[canTotalCnt].distortion_ready = 0;
                 candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                candidateArray[canTotalCnt].tx_depth = 0;
+#endif
 
                 candidateArray[canTotalCnt].merge_flag = EB_FALSE;
                 candidateArray[canTotalCnt].prediction_direction[0] = (EbPredDirection)0;
@@ -2697,6 +2742,9 @@ void  inject_inter_candidates(
                 candidateArray[canTotalCnt].type = INTER_MODE;
                 candidateArray[canTotalCnt].distortion_ready = 0;
                 candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                candidateArray[canTotalCnt].tx_depth = 0;
+#endif
 
                 candidateArray[canTotalCnt].merge_flag = EB_FALSE;
 
@@ -3616,6 +3664,9 @@ void  inject_intra_candidates_ois(
             candidate_array[can_total_cnt].distortion_ready =  1;
             candidate_array[can_total_cnt].me_distortion = ois_blk_ptr[can_total_cnt].distortion;
             candidate_array[can_total_cnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+            candidate_array[can_total_cnt].tx_depth = 0;
+#endif
             candidate_array[can_total_cnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
 #if !SEARCH_UV_CLEAN_UP
             candidate_array[can_total_cnt].use_angle_delta = use_angle_delta ? candidate_array[can_total_cnt].is_directional_mode_flag : 0;
@@ -3692,6 +3743,9 @@ void  inject_intra_candidates_ois(
             candidate_array[can_total_cnt].distortion_ready =  1;
             candidate_array[can_total_cnt].me_distortion = ois_blk_ptr[can_total_cnt].distortion;
             candidate_array[can_total_cnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+            candidate_array[can_total_cnt].tx_depth = 0;
+#endif
             candidate_array[can_total_cnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)intra_mode);
 #if !SEARCH_UV_CLEAN_UP
             candidate_array[can_total_cnt].use_angle_delta = candidate_array[can_total_cnt].is_directional_mode_flag;
@@ -4059,6 +4113,9 @@ void  inject_intra_bc_candidates(
         candidateArray[*cand_cnt].intra_luma_mode = DC_PRED;
         candidateArray[*cand_cnt].distortion_ready = 0;
         candidateArray[*cand_cnt].use_intrabc = 1;
+#if TXS_ADDED_AS_MD_CAND
+        candidateArray[*cand_cnt].tx_depth = 0;
+#endif
         candidateArray[*cand_cnt].is_directional_mode_flag = 0;
 #if !SEARCH_UV_CLEAN_UP
         candidateArray[*cand_cnt].use_angle_delta = 0;
@@ -4105,6 +4162,359 @@ void  inject_intra_bc_candidates(
     }
 
 }
+#if TXS_ADDED_AS_MD_CAND
+void  inject_intra_candidates_tx(
+    PictureControlSet            *picture_control_set_ptr,
+    ModeDecisionContext          *context_ptr,
+    const SequenceControlSet     *sequence_control_set_ptr,
+    LargestCodingUnit            *sb_ptr,
+#if M8_SKIP_BLK
+    uint32_t                       *candidateTotalCnt) {
+#else
+    uint32_t                       *candidateTotalCnt,
+    const uint32_t                  leaf_index){
+
+    (void)leaf_index;
+#endif
+    (void)sequence_control_set_ptr;
+    (void)sb_ptr;
+    uint8_t                     is16bit = (sequence_control_set_ptr->static_config.encoder_bit_depth > EB_8BIT);
+    uint8_t                     intra_mode_start = DC_PRED;
+    uint8_t                     intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
+    uint8_t                     openLoopIntraCandidate;
+    uint32_t                    canTotalCnt = 0;
+    uint8_t                     angleDeltaCounter = 0;
+    EbBool                      use_angle_delta = (context_ptr->blk_geom->bsize >= BLOCK_8X8);
+    uint8_t                     angleDeltaCandidateCount = use_angle_delta ? 7 : 1;
+    ModeDecisionCandidate    *candidateArray = context_ptr->fast_candidate_array;
+#if CFL_FIX
+    EbBool                      disable_cfl_flag = (MAX(context_ptr->blk_geom->bheight, context_ptr->blk_geom->bwidth) > 32) ? EB_TRUE : EB_FALSE;
+#if TXS_DISABLE_CFL
+    disable_cfl_flag = EB_TRUE;
+#endif
+#else
+    EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 ||
+        context_ptr->blk_geom->bwidth == 4 ||
+        context_ptr->blk_geom->bheight == 4) ? EB_TRUE : EB_FALSE;
+#endif
+    uint8_t                     disable_z2_prediction;
+    uint8_t                     disable_angle_refinement;
+    uint8_t                     disable_angle_prediction;
+#if M9_INTRA
+    uint8_t     angle_delta_shift = 1;
+    if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 4) {
+        if (picture_control_set_ptr->slice_type == I_SLICE) {
+            intra_mode_end = is16bit ? SMOOTH_H_PRED : PAETH_PRED;
+#if M10_INTRA
+            angleDeltaCandidateCount = use_angle_delta ? 3 : 1;
+#else
+            angleDeltaCandidateCount = use_angle_delta ? 5 : 1;
+#endif
+            disable_angle_prediction = 0;
+            angle_delta_shift = 2;
+            disable_z2_prediction = 0;
+        }
+        else {
+            intra_mode_end = DC_PRED;
+            disable_angle_prediction = 1;
+            angleDeltaCandidateCount = 1;
+            angle_delta_shift = 1;
+            disable_z2_prediction = 0;
+
+        }
+    }
+    else
+#endif
+        if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 3) {
+            disable_z2_prediction = 0;
+            disable_angle_refinement = 0;
+            disable_angle_prediction = 1;
+#if M9_INTRA
+            angleDeltaCandidateCount = disable_angle_refinement ? 1 : angleDeltaCandidateCount;
+#endif
+        }
+        else if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 2) {
+            disable_z2_prediction = 0;
+            disable_angle_refinement = 0;
+            disable_angle_prediction = (context_ptr->blk_geom->sq_size > 16 ||
+                context_ptr->blk_geom->bwidth == 4 ||
+                context_ptr->blk_geom->bheight == 4) ? 1 : 0;
+#if M9_INTRA
+            angleDeltaCandidateCount = disable_angle_refinement ? 1 : angleDeltaCandidateCount;
+#endif
+        }
+        else if (picture_control_set_ptr->parent_pcs_ptr->intra_pred_mode == 1) {
+            disable_z2_prediction = (context_ptr->blk_geom->sq_size > 16 ||
+                context_ptr->blk_geom->bwidth == 4 ||
+                context_ptr->blk_geom->bheight == 4) ? 1 : 0;
+            disable_angle_refinement = (context_ptr->blk_geom->sq_size > 16 ||
+                context_ptr->blk_geom->bwidth == 4 ||
+                context_ptr->blk_geom->bheight == 4) ? 1 : 0;
+            disable_angle_prediction = 0;
+#if M9_INTRA
+            angleDeltaCandidateCount = disable_angle_refinement ? 1 : angleDeltaCandidateCount;
+#endif
+        }
+        else {
+            disable_z2_prediction = 0;
+            disable_angle_refinement = 0;
+            disable_angle_prediction = 0;
+#if M9_INTRA
+            angleDeltaCandidateCount = disable_angle_refinement ? 1 : angleDeltaCandidateCount;
+#endif
+        }
+#if MR_MODE
+    disable_z2_prediction = 0;
+    disable_angle_refinement = 0;
+    disable_angle_prediction = 0;
+#endif
+#if !M9_INTRA
+    angleDeltaCandidateCount = disable_angle_refinement ? 1 : angleDeltaCandidateCount;
+#endif
+#if TXS_MD
+    uint8_t tx_depth = context_ptr->tx_depth;
+#endif
+    for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate <= intra_mode_end; ++openLoopIntraCandidate) {
+
+        if (av1_is_directional_mode((PredictionMode)openLoopIntraCandidate)) {
+
+            if (!disable_angle_prediction) {
+                for (angleDeltaCounter = 0; angleDeltaCounter < angleDeltaCandidateCount; ++angleDeltaCounter) {
+#if M9_INTRA
+                    int32_t angle_delta = CLIP(angle_delta_shift * (angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1)), -3, 3);
+#else
+                    int32_t angle_delta = angleDeltaCandidateCount == 1 ? 0 : angleDeltaCounter - (angleDeltaCandidateCount >> 1);
+#endif
+                    int32_t  p_angle = mode_to_angle_map[(PredictionMode)openLoopIntraCandidate] + angle_delta * ANGLE_STEP;
+                    if (!disable_z2_prediction || (p_angle <= 90 || p_angle >= 180)) {
+                        candidateArray[canTotalCnt].type = INTRA_MODE;
+                        candidateArray[canTotalCnt].intra_luma_mode = openLoopIntraCandidate;
+                        candidateArray[canTotalCnt].distortion_ready = 0;
+                        candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                        candidateArray[canTotalCnt].tx_depth = 0;
+#endif
+#if TXS_ADDED_AS_MD_CAND
+                        candidateArray[canTotalCnt].tx_depth = 1;
+#endif
+                        candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
+#if !SEARCH_UV_CLEAN_UP
+                        candidateArray[canTotalCnt].use_angle_delta = use_angle_delta ? candidateArray[canTotalCnt].is_directional_mode_flag : 0;
+#endif
+                        candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = angle_delta;
+#if SEARCH_UV_MODE
+                        // Search the best independent intra chroma mode
+                        if (context_ptr->chroma_level == CHROMA_MODE_0) {
+                            candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                                context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA + candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y]] :
+                                UV_CFL_PRED;
+                        }
+                        else {
+                            // Hsan/Omar: why the restriction below ? (i.e. disable_ang_uv)
+                            const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+                            candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                                intra_luma_to_chroma[openLoopIntraCandidate] :
+                                (context_ptr->chroma_level == CHROMA_MODE_1) ?
+                                UV_CFL_PRED :
+                                UV_DC_PRED;
+                            candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
+                                UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
+                        }
+#else
+                        const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+                        candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                            intra_luma_to_chroma[openLoopIntraCandidate] :
+                            (context_ptr->chroma_level <= CHROMA_MODE_1) ?
+                            UV_CFL_PRED :
+                            UV_DC_PRED;
+                        candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
+                            UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
+#endif
+#if CHROMA_DC_ONLY
+                        candidateArray[canTotalCnt].intra_chroma_mode = UV_DC_PRED;
+#endif
+                        candidateArray[canTotalCnt].cfl_alpha_signs = 0;
+                        candidateArray[canTotalCnt].cfl_alpha_idx = 0;
+                        candidateArray[canTotalCnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode);
+                        candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_UV] = 0;
+#if TXS_TX_TYPE
+                        uint8_t tx_itr;
+                        for (tx_itr = 0; tx_itr < MAX_TXB_COUNT; tx_itr++) {
+                            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][tx_itr] = DCT_DCT;
+
+                            if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
+                                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][tx_itr] = DCT_DCT;
+                            else
+                                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][tx_itr] =
+                                av1_get_tx_type(
+                                    context_ptr->blk_geom->bsize,
+                                    0,
+                                    (PredictionMode)candidateArray[canTotalCnt].intra_luma_mode,
+                                    (UvPredictionMode)candidateArray[canTotalCnt].intra_chroma_mode,
+                                    PLANE_TYPE_UV,
+                                    0,
+                                    0,
+                                    0,
+#if TXS_MD
+                                    context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
+                                    context_ptr->blk_geom->txsize_uv[0],
+#endif
+                                    picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+                        }
+#else
+                        candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
+
+                        if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
+                            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+                        else
+                            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] =
+                            av1_get_tx_type(
+                                context_ptr->blk_geom->bsize,
+                                0,
+                                (PredictionMode)candidateArray[canTotalCnt].intra_luma_mode,
+                                (UvPredictionMode)candidateArray[canTotalCnt].intra_chroma_mode,
+                                PLANE_TYPE_UV,
+                                0,
+                                0,
+                                0,
+#if TXS_MD
+                                context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
+                                context_ptr->blk_geom->txsize_uv[0],
+#endif
+                                picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+#endif
+                        candidateArray[canTotalCnt].ref_frame_type = INTRA_FRAME;
+                        candidateArray[canTotalCnt].pred_mode = (PredictionMode)openLoopIntraCandidate;
+                        candidateArray[canTotalCnt].motion_mode = SIMPLE_TRANSLATION;
+#if CHECK_CAND
+                        INCRMENT_CAND_TOTAL_COUNT(canTotalCnt);
+#else
+                        ++canTotalCnt;
+#endif
+                    }
+                }
+            }
+        }
+        else {
+            candidateArray[canTotalCnt].type = INTRA_MODE;
+            candidateArray[canTotalCnt].intra_luma_mode = openLoopIntraCandidate;
+            candidateArray[canTotalCnt].distortion_ready = 0;
+            candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+            candidateArray[canTotalCnt].tx_depth = 0;
+#endif
+#if TXS_ADDED_AS_MD_CAND
+            candidateArray[canTotalCnt].tx_depth = 1;
+#endif
+            candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
+#if !SEARCH_UV_CLEAN_UP
+            candidateArray[canTotalCnt].use_angle_delta = candidateArray[canTotalCnt].is_directional_mode_flag;
+#endif
+            candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y] = 0;
+#if SEARCH_UV_MODE
+            // Search the best independent intra chroma mode
+            if (context_ptr->chroma_level == CHROMA_MODE_0) {
+                candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                    context_ptr->best_uv_mode[openLoopIntraCandidate][MAX_ANGLE_DELTA + candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_Y]] :
+                    UV_CFL_PRED;
+            }
+            else {
+                // Hsan/Omar: why the restriction below ? (i.e. disable_ang_uv)
+                const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+                candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                    intra_luma_to_chroma[openLoopIntraCandidate] :
+                    (context_ptr->chroma_level == CHROMA_MODE_1) ?
+                    UV_CFL_PRED :
+                    UV_DC_PRED;
+
+                candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
+                    UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
+            }
+#else
+            const int32_t disable_ang_uv = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) && context_ptr->blk_geom->has_uv ? 1 : 0;
+            candidateArray[canTotalCnt].intra_chroma_mode = disable_cfl_flag ?
+                intra_luma_to_chroma[openLoopIntraCandidate] :
+                (context_ptr->chroma_level <= CHROMA_MODE_1) ?
+                UV_CFL_PRED :
+                UV_DC_PRED;
+
+            candidateArray[canTotalCnt].intra_chroma_mode = disable_ang_uv && av1_is_directional_mode(candidateArray[canTotalCnt].intra_chroma_mode) ?
+                UV_DC_PRED : candidateArray[canTotalCnt].intra_chroma_mode;
+#endif
+#if CHROMA_DC_ONLY
+            candidateArray[canTotalCnt].intra_chroma_mode = UV_DC_PRED;
+#endif
+            candidateArray[canTotalCnt].cfl_alpha_signs = 0;
+            candidateArray[canTotalCnt].cfl_alpha_idx = 0;
+            candidateArray[canTotalCnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode);
+            candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_UV] = 0;
+#if TXS_TX_TYPE
+            uint8_t tx_itr;
+            for (tx_itr = 0; tx_itr < MAX_TXB_COUNT; tx_itr++) {
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][tx_itr] = DCT_DCT;
+
+                if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
+                    candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][tx_itr] = DCT_DCT;
+                else
+                    candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][tx_itr] =
+                    av1_get_tx_type(
+                        context_ptr->blk_geom->bsize,
+                        0,
+                        (PredictionMode)candidateArray[canTotalCnt].intra_luma_mode,
+                        (UvPredictionMode)candidateArray[canTotalCnt].intra_chroma_mode,
+                        PLANE_TYPE_UV,
+                        0,
+                        0,
+                        0,
+#if TXS_MD
+                        context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
+                        context_ptr->blk_geom->txsize_uv[0],
+#endif
+                        picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+            }
+#else
+            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
+
+            if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+            else
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] =
+                av1_get_tx_type(
+                    context_ptr->blk_geom->bsize,
+                    0,
+                    (PredictionMode)candidateArray[canTotalCnt].intra_luma_mode,
+                    (UvPredictionMode)candidateArray[canTotalCnt].intra_chroma_mode,
+                    PLANE_TYPE_UV,
+                    0,
+                    0,
+                    0,
+#if TXS_MD
+                    context_ptr->blk_geom->txsize_uv[tx_depth][0],
+#else
+                    context_ptr->blk_geom->txsize_uv[0],
+#endif
+                    picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+#endif
+            candidateArray[canTotalCnt].ref_frame_type = INTRA_FRAME;
+            candidateArray[canTotalCnt].pred_mode = (PredictionMode)openLoopIntraCandidate;
+            candidateArray[canTotalCnt].motion_mode = SIMPLE_TRANSLATION;
+#if CHECK_CAND
+            INCRMENT_CAND_TOTAL_COUNT(canTotalCnt);
+#else
+            ++canTotalCnt;
+#endif
+        }
+    }
+
+    // update the total number of candidates injected
+    (*candidateTotalCnt) = canTotalCnt;
+
+    return;
+}
+#endif
 // END of Function Declarations
 void  inject_intra_candidates(
     PictureControlSet            *picture_control_set_ptr,
@@ -4132,6 +4542,9 @@ void  inject_intra_candidates(
     ModeDecisionCandidate    *candidateArray = context_ptr->fast_candidate_array;
 #if CFL_FIX
     EbBool                      disable_cfl_flag = (MAX(context_ptr->blk_geom->bheight, context_ptr->blk_geom->bwidth) > 32) ? EB_TRUE : EB_FALSE;
+#if TXS_DISABLE_CFL
+    disable_cfl_flag = EB_TRUE;
+#endif
 #else
     EbBool                      disable_cfl_flag = (context_ptr->blk_geom->sq_size > 32 || 
                                                     context_ptr->blk_geom->bwidth == 4  ||   
@@ -4227,6 +4640,9 @@ void  inject_intra_candidates(
                         candidateArray[canTotalCnt].intra_luma_mode = openLoopIntraCandidate;
                         candidateArray[canTotalCnt].distortion_ready = 0;
                         candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+                        candidateArray[canTotalCnt].tx_depth = 0;
+#endif
                         candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
 #if !SEARCH_UV_CLEAN_UP
                         candidateArray[canTotalCnt].use_angle_delta = use_angle_delta ? candidateArray[canTotalCnt].is_directional_mode_flag : 0;
@@ -4332,6 +4748,9 @@ void  inject_intra_candidates(
             candidateArray[canTotalCnt].intra_luma_mode = openLoopIntraCandidate;
             candidateArray[canTotalCnt].distortion_ready = 0;
             candidateArray[canTotalCnt].use_intrabc = 0;
+#if TXS_ADDED_AS_MD_CAND
+            candidateArray[canTotalCnt].tx_depth = 0;
+#endif
             candidateArray[canTotalCnt].is_directional_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)openLoopIntraCandidate);
 #if !SEARCH_UV_CLEAN_UP
             candidateArray[canTotalCnt].use_angle_delta = candidateArray[canTotalCnt].is_directional_mode_flag;
@@ -4524,6 +4943,23 @@ EbErrorType ProductGenerateMdCandidatesCu(
                 &canTotalCnt,
                 leaf_index);
 #endif
+#if TXS_ADDED_AS_MD_CAND
+        if (inject_intra_candidate)
+            if (context_ptr->blk_geom->sq_size > 8) {
+                inject_intra_candidates_tx(
+                    picture_control_set_ptr,
+                    context_ptr,
+                    sequence_control_set_ptr,
+                    sb_ptr,
+#if M8_SKIP_BLK
+                    &canTotalCnt);
+#else
+                    &canTotalCnt,
+                    leaf_index);
+#endif
+            }
+#endif
+
     }
 
     if (picture_control_set_ptr->parent_pcs_ptr->allow_intrabc)
@@ -4623,8 +5059,7 @@ uint8_t product_full_mode_decision(
 
     cu_ptr->prediction_mode_flag = candidate_ptr->type;
 #if TX_SIZE_UPDATE_GEOM
-    cu_ptr->tx_depth = candidate_ptr->tx_depth;
-    
+    cu_ptr->tx_depth = candidate_ptr->tx_depth;  
 #endif
     cu_ptr->skip_flag = candidate_ptr->skip_flag; // note, the skip flag is re-checked in the ENCDEC process
     cu_ptr->block_has_coeff = ((candidate_ptr->block_has_coeff) > 0) ? EB_TRUE : EB_FALSE;
@@ -4733,8 +5168,8 @@ uint8_t product_full_mode_decision(
 
     {
 #if TX_SIZE_UPDATE_GEOM
-        cu_ptr->tx_depth = candidate_ptr->tx_depth;
-        tuTotalCount = context_ptr->blk_geom->txb_count[candidate_ptr->tx_depth];
+        //cu_ptr->tx_depth = candidate_ptr->tx_depth;
+        tuTotalCount = context_ptr->blk_geom->txb_count[cu_ptr->tx_depth];
 #else
         tuTotalCount = context_ptr->blk_geom->txb_count;
 #endif

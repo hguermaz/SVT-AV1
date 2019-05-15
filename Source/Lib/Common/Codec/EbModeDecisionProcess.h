@@ -124,6 +124,10 @@ extern "C" {
         NeighborArrayUnit            *ref_frame_type_neighbor_array;
         NeighborArrayUnit            *leaf_partition_neighbor_array;
         NeighborArrayUnit32          *interpolation_type_neighbor_array;
+
+#if TXS_INTRA
+        NeighborArrayUnit            *txfm_context_array;
+#endif
 #if !OPT_LOSSLESS_0
         // TMVP
         EbReferenceObject            *reference_object_write_ptr;
@@ -270,6 +274,9 @@ extern "C" {
 #endif
 #if TXS_MD
         uint8_t                           tx_depth;
+#endif
+#if TXS_INTRA
+        uint8_t                           tx_idx;
 #endif
     } ModeDecisionContext;
 

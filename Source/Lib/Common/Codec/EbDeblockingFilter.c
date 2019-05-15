@@ -858,7 +858,7 @@ static TxSize get_transform_size(const MacroBlockD *const xd,
 
     TxSize tx_size = (plane == COMPONENT_LUMA)
 #if TXS_SPLIT
-        ? tx_depth_to_tx_size[0][mbmi->sb_type] // use max_tx_size
+        ? (is_inter_block(mbmi) ? tx_depth_to_tx_size[0][mbmi->sb_type] : tx_depth_to_tx_size[mbmi->tx_depth][mbmi->sb_type]) // use max_tx_size
 #else
          ? mbmi->tx_size
 #endif

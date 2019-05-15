@@ -2205,14 +2205,393 @@ void av1_quantize_inv_quantize(
 /****************************************
  ************  Full loop ****************
 ****************************************/
+#if TXS_INTRA
+void full_loop_luma_intra(
+    ModeDecisionCandidateBuffer  *candidateBuffer,
+    ModeDecisionContext          *context_ptr,
+    PictureControlSet            *picture_control_set_ptr,
+    uint32_t                      qp,
+    uint32_t                     *y_count_non_zero_coeffs,
+    uint64_t                     *y_coeff_bits,
+    uint64_t                     *y_full_distortion)
+{
+    uint32_t                       tu_origin_index;
+    uint64_t                      y_full_cost;
+    SequenceControlSet        *sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
+    EbAsm                         asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
+    //    uint32_t   currentTuIndex,tuIt;
+    uint64_t   y_tu_coeff_bits;
+    uint64_t   tuFullDistortion[3][DIST_CALC_TOTAL];
+    context_ptr->three_quad_energy = 0;
+    uint32_t  txb_1d_offset = 0;
+    uint32_t txb_itr = 0;
+    assert(asm_type >= 0 && asm_type < ASM_TYPE_TOTAL);
+#if TXS_MD
+    uint8_t  tx_depth = candidateBuffer->candidate_ptr->tx_depth;
+
+    uint16_t txb_count = context_ptr->blk_geom->txb_count[tx_depth];
+
+    for (txb_itr = 0; txb_itr < txb_count; txb_itr++)
+#else
+    for (txb_itr = 0; txb_itr < context_ptr->blk_geom->txb_count; txb_itr++)
+#endif
+    {
+#if TXS_MD
+        uint16_t tx_org_x = context_ptr->blk_geom->tx_org_x[tx_depth][txb_itr];
+        uint16_t tx_org_y = context_ptr->blk_geom->tx_org_y[tx_depth][txb_itr];
+#else
+        uint16_t tx_org_x = context_ptr->blk_geom->tx_org_x[txb_itr];
+        uint16_t tx_org_y = context_ptr->blk_geom->tx_org_y[txb_itr];
+#endif
+        tu_origin_index = tx_org_x + (tx_org_y * candidateBuffer->residual_ptr->stride_y);
+        y_tu_coeff_bits = 0;
+#if TXS_INTRA
+        EbPictureBufferDesc          *input_picture_ptr = picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr;
+        uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+        //prediction
+        context_ptr->tx_idx = txb_itr;
+        av1_intra_luma_prediction(
+            context_ptr,
+            picture_control_set_ptr,
+            candidateBuffer,
+            asm_type);
+        //Y Residual
+        ResidualKernel(
+            &(input_picture_ptr->buffer_y[input_tu_origin_index]),
+            input_picture_ptr->stride_y,
+            &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]),
+            candidateBuffer->prediction_ptr->stride_y,
+            &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
+            candidateBuffer->residual_ptr->stride_y,
+            context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+            context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+#endif
+        // Y: T Q iQ
+        av1_estimate_transform(
+            &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
+            candidateBuffer->residual_ptr->stride_y,
+            &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
+            NOT_USED_VALUE,
+#if TXS_MD
+            context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+#else
+            context_ptr->blk_geom->txsize[txb_itr],
+#endif
+            &context_ptr->three_quad_energy,
+            context_ptr->transform_inner_array_ptr,
+            0,
+#if TXS_TX_TYPE
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
+            asm_type,
+            PLANE_TYPE_Y,
+#if PF_N2_SUPPORT
+            DEFAULT_SHAPE);
+#else
+            context_ptr->pf_md_mode);
+#endif
+        av1_quantize_inv_quantize(
+            picture_control_set_ptr,
+            context_ptr,
+            &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
+            NOT_USED_VALUE,
+            &(((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]),
+            &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
+            qp,
+#if TXS_MD
+            context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+            context_ptr->blk_geom->tx_height[tx_depth][txb_itr],
+            context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+#else
+            context_ptr->blk_geom->tx_width[txb_itr],
+            context_ptr->blk_geom->tx_height[txb_itr],
+            context_ptr->blk_geom->txsize[txb_itr],
+#endif
+            &candidateBuffer->candidate_ptr->eob[0][txb_itr],
+            asm_type,
+            &(y_count_non_zero_coeffs[txb_itr]),
+#if !PF_N2_SUPPORT
+            context_ptr->pf_md_mode,
+#endif
+            COMPONENT_LUMA,
+            BIT_INCREMENT_8BIT,
+#if TXS_TX_TYPE
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
+            candidateBuffer,
+            context_ptr->cu_ptr->luma_txb_skip_context,
+            context_ptr->cu_ptr->luma_dc_sign_context,
+            candidateBuffer->candidate_ptr->pred_mode,
+            EB_FALSE);
+
+        candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]);
+
+#if SPATIAL_SSE
+#if TXS_INTRA
+        if (context_ptr->spatial_sse_full_loop || 1) {
+#else
+        if (context_ptr->spatial_sse_full_loop) {
+#endif
+#if !TXS_INTRA
+            EbPictureBufferDesc          *input_picture_ptr = picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr;
+            uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+#endif
+            uint32_t y_has_coeff = y_count_non_zero_coeffs[txb_itr] > 0;
+
+            if (y_has_coeff) {
+                (void)context_ptr;
+                uint8_t     *pred_buffer = &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
+                uint8_t     *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
+
+                uint32_t j;
+#if TXS_MD
+                for (j = 0; j < context_ptr->blk_geom->tx_height[tx_depth][txb_itr]; j++)
+                    memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, context_ptr->blk_geom->tx_width[tx_depth][txb_itr]);
+
+#else
+                for (j = 0; j < context_ptr->blk_geom->tx_height[txb_itr]; j++)
+
+                    memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, context_ptr->blk_geom->tx_width[txb_itr]);
+#endif
+                av1_inv_transform_recon8bit(
+
+                    &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
+                    rec_buffer,
+                    candidateBuffer->recon_ptr->stride_y,
+#if TXS_MD
+                    context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+#else
+                    context_ptr->blk_geom->txsize[txb_itr],
+#endif
+#if TXS_TX_TYPE
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
+                    PLANE_TYPE_Y,
+                    (uint16_t)candidateBuffer->candidate_ptr->eob[0][txb_itr]);
+
+            }
+            else {
+
+                picture_copy8_bit(
+                    candidateBuffer->prediction_ptr,
+                    tu_origin_index,
+                    0,
+                    candidateBuffer->recon_ptr,
+                    tu_origin_index,
+                    0,
+#if TXS_MD
+                    context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                    context_ptr->blk_geom->tx_height[tx_depth][txb_itr],
+#else
+                    context_ptr->blk_geom->tx_width[txb_itr],
+                    context_ptr->blk_geom->tx_height[txb_itr],
+#endif
+                    0,
+                    0,
+                    PICTURE_BUFFER_DESC_Y_FLAG,
+                    asm_type);
+            }
+
+#if TXS_MD
+            tuFullDistortion[0][DIST_CALC_PREDICTION] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[tx_depth][txb_itr]) - 2](
+#else
+            tuFullDistortion[0][DIST_CALC_PREDICTION] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[txb_itr]) - 2](
+#endif
+                input_picture_ptr->buffer_y + input_tu_origin_index,
+                input_picture_ptr->stride_y,
+                candidateBuffer->prediction_ptr->buffer_y + tu_origin_index,
+                candidateBuffer->prediction_ptr->stride_y,
+#if TXS_MD
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+#else
+                context_ptr->blk_geom->tx_width[txb_itr],
+                context_ptr->blk_geom->tx_height[txb_itr]);
+#endif
+#if TXS_MD
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[tx_depth][txb_itr]) - 2](
+
+#else
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[txb_itr]) - 2](
+#endif
+                input_picture_ptr->buffer_y + input_tu_origin_index,
+                input_picture_ptr->stride_y,
+                &(((uint8_t*)candidateBuffer->recon_ptr->buffer_y)[tu_origin_index]),
+                candidateBuffer->recon_ptr->stride_y,
+#if TXS_MD
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+#else
+                context_ptr->blk_geom->tx_width[txb_itr],
+                context_ptr->blk_geom->tx_height[txb_itr]);
+#endif
+
+            tuFullDistortion[0][DIST_CALC_PREDICTION] <<= 4;
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] <<= 4;
+        }
+        else {
+            // LUMA DISTORTION
+            picture_full_distortion32_bits(
+                context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr,
+                txb_1d_offset,
+                0,
+                candidateBuffer->recon_coeff_ptr,
+                txb_1d_offset,
+                0,
+#if TXS_MD
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr],
+#else
+                context_ptr->blk_geom->tx_width[txb_itr],
+                context_ptr->blk_geom->tx_height[txb_itr],
+#endif
+                NOT_USED_VALUE,
+                NOT_USED_VALUE,
+                tuFullDistortion[0],
+                NOT_USED_VALUE,
+                NOT_USED_VALUE,
+                y_count_non_zero_coeffs[txb_itr],
+                0,
+                0,
+                COMPONENT_LUMA,
+                asm_type);
+
+
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] += context_ptr->three_quad_energy;
+            tuFullDistortion[0][DIST_CALC_PREDICTION] += context_ptr->three_quad_energy;
+            //assert(context_ptr->three_quad_energy == 0 && context_ptr->cu_stats->size < 64);
+#if TXS_MD
+            TxSize    tx_size = context_ptr->blk_geom->txsize[tx_depth][0]; // NM: why  tu_index 0?
+#else
+            TxSize    tx_size = context_ptr->blk_geom->txsize[0];
+#endif
+            int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_RESIDUAL], shift);
+            tuFullDistortion[0][DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_PREDICTION], shift);
+        }
+#else
+        // LUMA DISTORTION
+        picture_full_distortion32_bits(
+            context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr,
+            txb_1d_offset,
+            0,
+            candidateBuffer->recon_coeff_ptr,
+            txb_1d_offset,
+            0,
+            context_ptr->blk_geom->tx_width[txb_itr],
+            context_ptr->blk_geom->tx_height[txb_itr],
+            NOT_USED_VALUE,
+            NOT_USED_VALUE,
+            tuFullDistortion[0],
+            NOT_USED_VALUE,
+            NOT_USED_VALUE,
+            y_count_non_zero_coeffs[txb_itr],
+            0,
+            0,
+            COMPONENT_LUMA,
+            asm_type);
+
+
+        tuFullDistortion[0][DIST_CALC_RESIDUAL] += context_ptr->three_quad_energy;
+        tuFullDistortion[0][DIST_CALC_PREDICTION] += context_ptr->three_quad_energy;
+        //assert(context_ptr->three_quad_energy == 0 && context_ptr->cu_stats->size < 64);
+        TxSize    txSize = context_ptr->blk_geom->txsize[0];
+        int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txSize)) * 2;
+        tuFullDistortion[0][DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_RESIDUAL], shift);
+        tuFullDistortion[0][DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_PREDICTION], shift);
+#endif
+
+        //LUMA-ONLY
+        av1_tu_estimate_coeff_bits(
+#if CABAC_UP
+            0,//allow_update_cdf,
+            NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
+            picture_control_set_ptr,
+            candidateBuffer,
+            context_ptr->cu_ptr,
+            txb_1d_offset,
+            0,
+            context_ptr->coeff_est_entropy_coder_ptr,
+            candidateBuffer->residual_quant_coeff_ptr,
+            y_count_non_zero_coeffs[txb_itr],
+            0,
+            0,
+            &y_tu_coeff_bits,
+            &y_tu_coeff_bits,
+            &y_tu_coeff_bits,
+#if TXS_MD
+            context_ptr->blk_geom->txsize[tx_depth][txb_itr],// NM: why  tu_index 0?
+            context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr],// NM: why  tu_index 0?
+#else
+            context_ptr->blk_geom->txsize[0],
+            context_ptr->blk_geom->txsize_uv[0],
+#endif
+#if TXS_TX_TYPE
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
+#endif
+            COMPONENT_LUMA,
+            asm_type);
+
+
+
+        //TODO: fix cbf decision
+        av1_tu_calc_cost_luma(
+            context_ptr->cu_ptr->luma_txb_skip_context,//this should be updated here.
+            candidateBuffer->candidate_ptr,
+            txb_itr,
+#if TXS_MD
+            context_ptr->blk_geom->txsize[tx_depth][0],// NM: why  tu_index 0?
+#else
+            context_ptr->blk_geom->txsize[0],
+#endif
+            y_count_non_zero_coeffs[txb_itr],
+            tuFullDistortion[0],      //gets updated inside based on cbf decision
+            &y_tu_coeff_bits,            //gets updated inside based on cbf decision
+            &y_full_cost,
+            context_ptr->full_lambda);
+
+
+        (*y_coeff_bits) += y_tu_coeff_bits;
+
+        y_full_distortion[DIST_CALC_RESIDUAL] += tuFullDistortion[0][DIST_CALC_RESIDUAL];
+        y_full_distortion[DIST_CALC_PREDICTION] += tuFullDistortion[0][DIST_CALC_PREDICTION];
+
+#if TXS_INTRA
+        //copy neigh recon data in cu_ptr
+        {
+            uint32_t j;
+            EbPictureBufferDesc  *recon_ptr = candidateBuffer->recon_ptr;
+            uint32_t rec_luma_offset = tx_org_x + tx_org_y * recon_ptr->stride_y;
+            memcpy(context_ptr->cu_ptr->neigh_top_recon[0], recon_ptr->buffer_y + rec_luma_offset + (context_ptr->blk_geom->tx_height[tx_depth][txb_itr] - 1)*recon_ptr->stride_y, context_ptr->blk_geom->tx_width[tx_depth][txb_itr]);
+            for (j = 0; j < context_ptr->blk_geom->tx_height[tx_depth][txb_itr]; ++j)
+                context_ptr->cu_ptr->neigh_left_recon[0][j] = recon_ptr->buffer_y[rec_luma_offset + context_ptr->blk_geom->tx_width[tx_depth][txb_itr] - 1 + j * recon_ptr->stride_y];
+        }
+#endif
+#if TXS_MD
+        txb_1d_offset += context_ptr->blk_geom->tx_width[tx_depth][txb_itr] * context_ptr->blk_geom->tx_height[tx_depth][txb_itr];
+#else
+        txb_1d_offset += context_ptr->blk_geom->tx_width[txb_itr] * context_ptr->blk_geom->tx_height[txb_itr];
+#endif
+
+        }
+    }
+#endif
 void product_full_loop(
     ModeDecisionCandidateBuffer  *candidateBuffer,
     ModeDecisionContext          *context_ptr,
     PictureControlSet            *picture_control_set_ptr,
-    uint32_t                          qp,
-    uint32_t                          *y_count_non_zero_coeffs,
-    uint64_t                         *y_coeff_bits,
-    uint64_t                         *y_full_distortion)
+    uint32_t                      qp,
+    uint32_t                     *y_count_non_zero_coeffs,
+    uint64_t                     *y_coeff_bits,
+    uint64_t                     *y_full_distortion)
 {
     uint32_t                       tu_origin_index;
     uint64_t                      y_full_cost;
@@ -2311,8 +2690,10 @@ void product_full_loop(
 
 #if SPATIAL_SSE
         if (context_ptr->spatial_sse_full_loop) {
+
             EbPictureBufferDesc          *input_picture_ptr = picture_control_set_ptr->parent_pcs_ptr->enhanced_picture_ptr;
             uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+
             uint32_t y_has_coeff           = y_count_non_zero_coeffs[txb_itr] > 0;
 
             if (y_has_coeff) {
@@ -2536,6 +2917,7 @@ void product_full_loop(
 
         y_full_distortion[DIST_CALC_RESIDUAL] += tuFullDistortion[0][DIST_CALC_RESIDUAL];
         y_full_distortion[DIST_CALC_PREDICTION] += tuFullDistortion[0][DIST_CALC_PREDICTION];
+
 #if TXS_MD
         txb_1d_offset += context_ptr->blk_geom->tx_width[tx_depth][txb_itr] * context_ptr->blk_geom->tx_height[tx_depth][txb_itr];
 #else
@@ -2830,6 +3212,661 @@ static int tx_size_cost(
     }
 }
 #endif
+#if TXS_INTRA
+uint64_t tx_depth_cost_intra(
+    ModeDecisionCandidateBuffer  *candidateBuffer,
+    ModeDecisionContext          *context_ptr,
+    PictureControlSet            *picture_control_set_ptr,
+    EbPictureBufferDesc          *input_picture_ptr,
+    TxType                        transform_type[PLANE_TYPES][MAX_TXB_COUNT])
+{
+    uint32_t                       tu_origin_index;
+    SequenceControlSet            *sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
+    EbAsm                          asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
+    uint64_t                       y_tu_coeff_bits;
+    uint64_t                       tuFullDistortion[3][DIST_CALC_TOTAL];
+    int32_t                        plane = 0;
+    const int32_t                  is_inter = (candidateBuffer->candidate_ptr->type == INTER_MODE || candidateBuffer->candidate_ptr->use_intrabc) ? EB_TRUE : EB_FALSE;
+    //uint64_t                       bestFullCost = UINT64_MAX;
+    uint64_t                       y_full_cost = MAX_MODE_COST;
+    uint32_t                       yCountNonZeroCoeffsTemp;
+    TxType                         txk_start = DCT_DCT;
+    TxType                         txk_end = TX_TYPES;
+    TxType                         tx_type;
+    uint8_t                        tx_depth = candidateBuffer->candidate_ptr->tx_depth;
+    context_ptr->three_quad_energy = 0;
+    uint32_t txb_itr = 0;
+    TxType best_tx_type = DCT_DCT;
+    
+    int64_t y_tx_type_cost[TX_TYPES] = { 0 };
+    int8_t test_tx_type[TX_TYPES] = { 0 };
+    uint64_t tx_depth_cost = 0;
+    uint64_t tx_depth_dist = 0;
+    uint64_t tx_depth_bit = 0;
+    uint64_t tx_depth_eob = 0;
+    uint64_t best_tx_eob = 0;
+
+#if IMPERICAL_LAMBDA
+    int sharpness = 0; // No Sharpness
+    int fast_mode = 0; // TBD
+    AQ_MODE aq_mode = NO_AQ;
+    DELTAQ_MODE deltaq_mode = NO_DELTA_Q;
+    int8_t segment_id = 0;
+    int sb_energy_level = 0;
+    int bit_increment = 0;
+    const int rshift =
+        (sharpness +
+        (aq_mode == VARIANCE_AQ && segment_id < 4
+            ? 7 - segment_id
+            : 2) +
+            (aq_mode != VARIANCE_AQ &&
+                deltaq_mode > NO_DELTA_Q && sb_energy_level < 0
+                ? (3 - sb_energy_level)
+                : 0));
+    const int64_t rdmult =
+        (((int64_t)context_ptr->full_lambda *
+        (plane_rd_mult[is_inter][PLANE_TYPE_Y] << (2 * bit_increment))) +
+            2) >>
+        rshift;
+#else
+    const int64_t rdmult = (int64_t)context_ptr->full_lambda;
+#endif
+
+    uint32_t  txb_1d_offset = 0;
+    uint16_t txb_count = context_ptr->blk_geom->txb_count[tx_depth];
+    uint64_t tx_size_bits = estimate_tx_size_bits(
+        picture_control_set_ptr,
+        context_ptr->cu_origin_x,
+        context_ptr->cu_origin_y,
+        context_ptr->cu_ptr,
+        context_ptr->blk_geom,
+        context_ptr->txfm_context_array,
+        tx_depth,
+        context_ptr->md_rate_estimation_ptr);
+
+    for (txb_itr = 0; txb_itr < txb_count; txb_itr++)
+    {
+        TxSize tx_size = context_ptr->blk_geom->txsize[tx_depth][txb_itr];
+        uint8_t txb_origin_x = context_ptr->blk_geom->tx_org_x[tx_depth][txb_itr];
+        uint8_t txb_origin_y = context_ptr->blk_geom->tx_org_y[tx_depth][txb_itr];
+        uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + txb_origin_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + txb_origin_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+
+        tu_origin_index = txb_origin_x + (txb_origin_y * candidateBuffer->residual_ptr->stride_y);
+        y_tu_coeff_bits = 0;
+        yCountNonZeroCoeffsTemp = 0;
+        uint64_t bestFullCost = UINT64_MAX;
+        uint64_t best_tx_type_cost = UINT64_MAX;
+        uint64_t best_tx_type_dist = 0;
+        uint64_t best_tx_type_bit = 0;
+        assert(tx_size < TX_SIZES_ALL);
+
+        TxType uv_tx_type = DCT_DCT;
+        transform_type[PLANE_TYPE_Y][txb_itr] = DCT_DCT;
+        transform_type[PLANE_TYPE_UV][txb_itr] = DCT_DCT;
+#if SCENE_CONTENT_SETTINGS
+        if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
+            txk_end = 2;
+#endif
+
+        uint32_t tx_height = context_ptr->blk_geom->tx_height[tx_depth][txb_itr];
+        uint32_t tx_width = context_ptr->blk_geom->tx_width[tx_depth][txb_itr];
+
+        best_tx_type = DCT_DCT;
+        txk_start = DCT_DCT;
+        txk_end = TX_TYPES;
+        const TxSetType                tx_set_type =
+            get_ext_tx_set_type(tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+        for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
+            context_ptr->three_quad_energy = 0;
+            best_tx_eob = 0;
+            tx_type = (TxType)tx_type_index;
+#if SCENE_CONTENT_SETTINGS
+            if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
+                tx_type_index = (tx_type_index == 1) ? IDTX : tx_type_index;
+#endif
+            tx_type = (TxType)tx_type_index;
+            if (tx_type != DCT_DCT) {
+                if (is_inter) {
+                    TxSize max_tx_size = context_ptr->blk_geom->txsize_uv[0][txb_itr];
+                    const TxSetType                tx_set_type =
+                        get_ext_tx_set_type(max_tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+                    int32_t eset = get_ext_tx_set(max_tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+                    // eset == 0 should correspond to a set with only DCT_DCT and there
+                    // is no need to send the tx_type
+                    if (eset <= 0) continue;
+                    else if (av1_ext_tx_used[tx_set_type][tx_type] == 0) continue;
+                    else if (tx_height > 32 || tx_width > 32)  continue;
+                }
+
+                int32_t eset = get_ext_tx_set(tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+                // eset == 0 should correspond to a set with only DCT_DCT and there
+                // is no need to send the tx_type
+                if (eset <= 0) continue;
+                else if (av1_ext_tx_used[tx_set_type][tx_type] == 0) continue;
+                else if (tx_height > 32 || tx_width > 32) continue;
+            }
+
+            if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set)
+                if (!allowed_tx_set_a[tx_size][tx_type]) continue;
+
+            y_tu_coeff_bits = 0;
+            yCountNonZeroCoeffsTemp = 0;
+
+            //prediction
+            context_ptr->tx_idx = txb_itr;
+            av1_intra_luma_prediction(
+                context_ptr,
+                picture_control_set_ptr,
+                candidateBuffer,
+                asm_type);
+
+            //Y Residual
+            ResidualKernel(
+                &(input_picture_ptr->buffer_y[input_tu_origin_index]), // To be verified
+                input_picture_ptr->stride_y,
+                &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]),
+                candidateBuffer->prediction_ptr->stride_y,
+                &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
+                candidateBuffer->residual_ptr->stride_y,
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+            // Y: T Q iQ
+            av1_estimate_transform(
+                &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
+                candidateBuffer->residual_ptr->stride_y,
+                &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
+                NOT_USED_VALUE,
+#if TXS_MD
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+#else
+                context_ptr->blk_geom->txsize[txb_itr],
+#endif
+                &context_ptr->three_quad_energy,
+                context_ptr->transform_inner_array_ptr,
+                0,
+#if TXS_TX_TYPE
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
+                asm_type,
+                PLANE_TYPE_Y,
+#if PF_N2_SUPPORT
+                DEFAULT_SHAPE);
+#else
+                context_ptr->pf_md_mode);
+#endif
+            av1_quantize_inv_quantize(
+                picture_control_set_ptr,
+                context_ptr,
+                &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
+                NOT_USED_VALUE,
+                &(((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]),
+                &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
+                context_ptr->cu_ptr->qp,
+#if TXS_MD
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr],
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+#else
+                context_ptr->blk_geom->tx_width[txb_itr],
+                context_ptr->blk_geom->tx_height[txb_itr],
+                context_ptr->blk_geom->txsize[txb_itr],
+#endif
+                &candidateBuffer->candidate_ptr->eob[0][txb_itr],
+                asm_type,
+                &(yCountNonZeroCoeffsTemp),
+#if !PF_N2_SUPPORT
+                context_ptr->pf_md_mode,
+#endif
+                COMPONENT_LUMA,
+                BIT_INCREMENT_8BIT,
+#if TXS_TX_TYPE
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
+                candidateBuffer,
+                context_ptr->cu_ptr->luma_txb_skip_context,
+                context_ptr->cu_ptr->luma_dc_sign_context,
+                candidateBuffer->candidate_ptr->pred_mode,
+                EB_FALSE);
+
+           
+            candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[tu_origin_index]);
+
+            //Recon
+            uint32_t y_has_coeff = yCountNonZeroCoeffsTemp > 0;
+
+            if (y_has_coeff) {
+                (void)context_ptr;
+                uint8_t     *pred_buffer = &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
+                uint8_t     *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
+
+                uint32_t j;
+
+                for (j = 0; j < context_ptr->blk_geom->tx_height[tx_depth][txb_itr]; j++)
+                    memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, context_ptr->blk_geom->tx_width[tx_depth][txb_itr]);
+
+                av1_inv_transform_recon8bit(
+                    &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
+                    rec_buffer,
+                    candidateBuffer->recon_ptr->stride_y,
+                    context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+                    PLANE_TYPE_Y,
+                    (uint16_t)candidateBuffer->candidate_ptr->eob[0][txb_itr]);
+
+            }
+            else {
+
+                picture_copy8_bit(
+                    candidateBuffer->prediction_ptr,
+                    tu_origin_index,
+                    0,
+                    candidateBuffer->recon_ptr,
+                    tu_origin_index,
+                    0,
+                    context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                    context_ptr->blk_geom->tx_height[tx_depth][txb_itr],
+                    0,
+                    0,
+                    PICTURE_BUFFER_DESC_Y_FLAG,
+                    asm_type);
+            }
+
+            tuFullDistortion[0][DIST_CALC_PREDICTION] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[tx_depth][txb_itr]) - 2](
+                input_picture_ptr->buffer_y + input_tu_origin_index,
+                input_picture_ptr->stride_y,
+                candidateBuffer->prediction_ptr->buffer_y + tu_origin_index,
+                candidateBuffer->prediction_ptr->stride_y,
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[tx_depth][txb_itr]) - 2](
+                input_picture_ptr->buffer_y + input_tu_origin_index,
+                input_picture_ptr->stride_y,
+                &(((uint8_t*)candidateBuffer->recon_ptr->buffer_y)[tu_origin_index]),
+                candidateBuffer->recon_ptr->stride_y,
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+
+            tuFullDistortion[0][DIST_CALC_PREDICTION] <<= 4;
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] <<= 4;
+
+            av1_tu_estimate_coeff_bits(
+#if CABAC_UP
+                0,//allow_update_cdf,
+                NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
+                picture_control_set_ptr,
+                candidateBuffer,
+                context_ptr->cu_ptr,
+                txb_1d_offset,
+                0,
+                context_ptr->coeff_est_entropy_coder_ptr,
+                candidateBuffer->residual_quant_coeff_ptr,
+                yCountNonZeroCoeffsTemp,
+                0,
+                0,
+                &y_tu_coeff_bits,
+                &y_tu_coeff_bits,
+                &y_tu_coeff_bits,
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+                context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr],
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
+                COMPONENT_LUMA,
+                asm_type);
+
+            y_full_cost = 0;
+
+            //TODO: fix cbf decision
+            av1_tu_calc_cost_luma(
+                context_ptr->cu_ptr->luma_txb_skip_context,
+                candidateBuffer->candidate_ptr,
+                txb_itr,
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+                yCountNonZeroCoeffsTemp,
+                tuFullDistortion[0],
+                &y_tu_coeff_bits,
+                &y_full_cost,
+                context_ptr->full_lambda);
+
+            //#if CFL_FIX
+            //            if (!context_ptr->blk_geom->has_uv && candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
+            //
+            //                // Store the luma data for 4x* and *x4 blocks to be used for CFL
+            //                EbPictureBufferDesc  *recon_ptr = candidateBuffer->recon_ptr;
+            //                uint32_t rec_luma_offset = context_ptr->blk_geom->origin_x + context_ptr->blk_geom->origin_y * recon_ptr->stride_y;
+            //                for (uint32_t j = 0; j < context_ptr->blk_geom->bheight; ++j) {
+            //                    memcpy(&context_ptr->cfl_temp_luma_recon[rec_luma_offset + j * recon_ptr->stride_y], recon_ptr->buffer_y + rec_luma_offset + j * recon_ptr->stride_y, context_ptr->blk_geom->bwidth);
+            //                }
+            //            }
+            //#endif
+
+            y_tx_type_cost[tx_type_index] += y_full_cost;
+            test_tx_type[tx_type_index] = 1;
+
+            if (y_full_cost < bestFullCost) {
+                bestFullCost = y_full_cost;
+                best_tx_type_cost = bestFullCost;
+                best_tx_type_dist = tuFullDistortion[0][DIST_CALC_RESIDUAL];
+                best_tx_type_bit = y_tu_coeff_bits;
+                best_tx_type = tx_type;
+                best_tx_eob = yCountNonZeroCoeffsTemp;
+            }
+        }
+
+        transform_type[PLANE_TYPE_Y][txb_itr] = best_tx_type;
+        // For Inter blocks, transform type of chroma follows luma transfrom type
+        if (is_inter) {
+            transform_type[PLANE_TYPE_UV][txb_itr] = best_tx_type;
+        }
+        tx_depth_cost += best_tx_type_cost;
+        tx_depth_dist += best_tx_type_dist;
+        tx_depth_bit += best_tx_type_bit;
+        tx_depth_eob += best_tx_eob;
+        //copy neigh recon data in cu_ptr
+        {
+            uint32_t j;
+            EbPictureBufferDesc  *recon_ptr = candidateBuffer->recon_ptr;
+            uint32_t rec_luma_offset = txb_origin_x + txb_origin_y * recon_ptr->stride_y;
+            memcpy(context_ptr->cu_ptr->neigh_top_recon[0], recon_ptr->buffer_y + rec_luma_offset + (context_ptr->blk_geom->tx_height[tx_depth][txb_itr] - 1)*recon_ptr->stride_y, context_ptr->blk_geom->tx_width[tx_depth][txb_itr]);
+            for (j = 0; j < context_ptr->blk_geom->tx_height[tx_depth][txb_itr]; ++j)
+                context_ptr->cu_ptr->neigh_left_recon[0][j] = recon_ptr->buffer_y[rec_luma_offset + context_ptr->blk_geom->tx_width[tx_depth][txb_itr] - 1 + j * recon_ptr->stride_y];
+        }
+
+        txb_1d_offset += context_ptr->blk_geom->tx_width[tx_depth][txb_itr] * context_ptr->blk_geom->tx_height[tx_depth][txb_itr];
+    }
+    tx_depth_bit += tx_depth_eob > 0 ? tx_size_bits : 0;
+    tx_depth_cost = RDCOST(rdmult, tx_depth_bit, tx_depth_dist);
+    return tx_depth_cost;
+}
+uint8_t tx_size_search_intra(
+    ModeDecisionCandidateBuffer  *candidateBuffer,
+    ModeDecisionContext          *context_ptr,
+    PictureControlSet            *picture_control_set_ptr,
+    EbPictureBufferDesc          *input_picture_ptr,
+    uint8_t                       end_tx_depth)
+{
+    uint32_t                       tu_origin_index;
+    SequenceControlSet             *sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
+    EbAsm                          asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
+    uint64_t                       y_tu_coeff_bits;
+    uint64_t                       tuFullDistortion[3][DIST_CALC_TOTAL];
+    uint64_t                       y_full_distortion[2] = { 0 };
+    uint64_t                       u_full_distortion[2] = { 0 };
+    uint64_t                       v_full_distortion[2] = { 0 };
+    uint64_t                       y_coeff_bits = 0;
+    uint64_t                       u_coeff_bits = 0;
+    uint64_t                       v_coeff_bits = 0;
+    uint64_t                       y_coeff_dist = 0;
+    int32_t                        plane = 0;
+    const int32_t                  is_inter = (candidateBuffer->candidate_ptr->type == INTER_MODE || candidateBuffer->candidate_ptr->use_intrabc) ? EB_TRUE : EB_FALSE;
+    uint64_t                       bestFullCost = UINT64_MAX;
+    uint64_t                       y_full_cost = MAX_CU_COST;
+    uint32_t                       yCountNonZeroCoeffsTemp;
+    uint8_t                        tx_depth;
+    uint8_t                        start_tx_depth = 0;
+    uint8_t                        best_tx_depth = 0;
+    uint64_t                       tx_cost[3] = { 0 };
+    uint32_t                       txb_1d_offset = 0;
+
+    for (tx_depth = start_tx_depth; tx_depth <= end_tx_depth; tx_depth++) {
+        context_ptr->three_quad_energy = 0;
+        y_full_distortion[0] = 0;
+        y_full_distortion[1] = 0;
+        y_coeff_bits = 0;
+        y_coeff_dist = 0;
+        uint32_t txb_itr = 0;
+        uint32_t y_eob = 0;
+        uint16_t txb_count = context_ptr->blk_geom->txb_count[tx_depth];
+        txb_1d_offset = 0;
+
+        uint64_t tx_size_bits = estimate_tx_size_bits(
+            picture_control_set_ptr,
+            context_ptr->cu_origin_x,
+            context_ptr->cu_origin_y,
+            context_ptr->cu_ptr,
+            context_ptr->blk_geom,
+            context_ptr->txfm_context_array,
+            tx_depth,
+            context_ptr->md_rate_estimation_ptr);
+
+        for (txb_itr = 0; txb_itr < txb_count; txb_itr++) {
+            TxSize tx_size = context_ptr->blk_geom->txsize[tx_depth][txb_itr];
+            uint8_t txb_origin_x = context_ptr->blk_geom->tx_org_x[tx_depth][txb_itr];
+            uint8_t txb_origin_y = context_ptr->blk_geom->tx_org_y[tx_depth][txb_itr];
+
+            uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + txb_origin_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + txb_origin_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+           
+            tu_origin_index = txb_origin_x + (txb_origin_y * candidateBuffer->residual_ptr->stride_y);
+            y_tu_coeff_bits = 0;
+            yCountNonZeroCoeffsTemp = 0;
+
+            //prediction
+            context_ptr->tx_idx = txb_itr;
+            av1_intra_luma_prediction(
+                context_ptr,
+                picture_control_set_ptr,
+                candidateBuffer,
+                asm_type);
+           
+            //Y Residual
+            ResidualKernel(
+                &(input_picture_ptr->buffer_y[input_tu_origin_index]), // To be verified
+                input_picture_ptr->stride_y,
+                &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]),
+                candidateBuffer->prediction_ptr->stride_y,
+                &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
+                candidateBuffer->residual_ptr->stride_y,
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+            // Y: T Q iQ
+            av1_estimate_transform(
+                &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
+                candidateBuffer->residual_ptr->stride_y,
+                &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
+                NOT_USED_VALUE,
+#if TXS_MD
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+#else
+                context_ptr->blk_geom->txsize[txb_itr],
+#endif
+                &context_ptr->three_quad_energy,
+                context_ptr->transform_inner_array_ptr,
+                0,
+#if TXS_TX_TYPE
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
+                asm_type,
+                PLANE_TYPE_Y,
+#if PF_N2_SUPPORT
+                DEFAULT_SHAPE);
+#else
+                context_ptr->pf_md_mode);
+#endif
+            av1_quantize_inv_quantize(
+                picture_control_set_ptr,
+                context_ptr,
+                &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
+                NOT_USED_VALUE,
+                &(((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]),
+                &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
+                context_ptr->cu_ptr->qp,
+#if TXS_MD
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr],
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+#else
+                context_ptr->blk_geom->tx_width[txb_itr],
+                context_ptr->blk_geom->tx_height[txb_itr],
+                context_ptr->blk_geom->txsize[txb_itr],
+#endif
+                &candidateBuffer->candidate_ptr->eob[0][txb_itr],
+                asm_type,
+                &(yCountNonZeroCoeffsTemp),
+#if !PF_N2_SUPPORT
+                context_ptr->pf_md_mode,
+#endif
+                COMPONENT_LUMA,
+                BIT_INCREMENT_8BIT,
+#if TXS_TX_TYPE
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+#else
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y],
+#endif
+                candidateBuffer,
+                context_ptr->cu_ptr->luma_txb_skip_context,
+                context_ptr->cu_ptr->luma_dc_sign_context,
+                candidateBuffer->candidate_ptr->pred_mode,
+                EB_FALSE);
+
+            candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]);
+
+            //Recon
+            uint32_t y_has_coeff = yCountNonZeroCoeffsTemp > 0;
+
+            if (y_has_coeff) {
+                (void)context_ptr;
+                uint8_t     *pred_buffer = &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
+                uint8_t     *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
+
+                uint32_t j;
+
+                for (j = 0; j < context_ptr->blk_geom->tx_height[tx_depth][txb_itr]; j++)
+                    memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, context_ptr->blk_geom->tx_width[tx_depth][txb_itr]);
+
+                av1_inv_transform_recon8bit(
+                    &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
+                    rec_buffer,
+                    candidateBuffer->recon_ptr->stride_y,
+                    context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+                    PLANE_TYPE_Y,
+                    (uint16_t)candidateBuffer->candidate_ptr->eob[0][txb_itr]);
+
+            }
+            else {
+                picture_copy8_bit(
+                    candidateBuffer->prediction_ptr,
+                    tu_origin_index,
+                    0,
+                    candidateBuffer->recon_ptr,
+                    tu_origin_index,
+                    0,
+                    context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                    context_ptr->blk_geom->tx_height[tx_depth][txb_itr],
+                    0,
+                    0,
+                    PICTURE_BUFFER_DESC_Y_FLAG,
+                    asm_type);
+            }
+
+            tuFullDistortion[0][DIST_CALC_PREDICTION] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[tx_depth][txb_itr]) - 2](
+                input_picture_ptr->buffer_y + input_tu_origin_index,
+                input_picture_ptr->stride_y,
+                candidateBuffer->prediction_ptr->buffer_y + tu_origin_index,
+                candidateBuffer->prediction_ptr->stride_y,
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[tx_depth][txb_itr]) - 2](
+                input_picture_ptr->buffer_y + input_tu_origin_index,
+                input_picture_ptr->stride_y,
+                &(((uint8_t*)candidateBuffer->recon_ptr->buffer_y)[tu_origin_index]),
+                candidateBuffer->recon_ptr->stride_y,
+                context_ptr->blk_geom->tx_width[tx_depth][txb_itr],
+                context_ptr->blk_geom->tx_height[tx_depth][txb_itr]);
+
+            tuFullDistortion[0][DIST_CALC_PREDICTION] <<= 4;
+            tuFullDistortion[0][DIST_CALC_RESIDUAL] <<= 4;
+
+            av1_tu_estimate_coeff_bits(
+#if CABAC_UP
+                0,//allow_update_cdf,
+                NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
+                picture_control_set_ptr,
+                candidateBuffer,
+                context_ptr->cu_ptr,
+                txb_1d_offset,
+                0,
+                context_ptr->coeff_est_entropy_coder_ptr,
+                candidateBuffer->residual_quant_coeff_ptr,
+                yCountNonZeroCoeffsTemp,
+                0,
+                0,
+                &y_tu_coeff_bits,
+                &y_tu_coeff_bits,
+                &y_tu_coeff_bits,
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+                context_ptr->blk_geom->txsize_uv[tx_depth][txb_itr],
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr],
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr],
+                COMPONENT_LUMA,
+                asm_type);
+
+            y_full_cost = 0;
+
+            //TODO: fix cbf decision
+            av1_tu_calc_cost_luma(
+                context_ptr->cu_ptr->luma_txb_skip_context,
+                candidateBuffer->candidate_ptr,
+                txb_itr,
+                context_ptr->blk_geom->txsize[tx_depth][txb_itr],
+                yCountNonZeroCoeffsTemp,
+                tuFullDistortion[0],      
+                &y_tu_coeff_bits,
+                &y_full_cost,
+                context_ptr->full_lambda);
+
+            y_full_distortion[DIST_CALC_RESIDUAL] += tuFullDistortion[0][DIST_CALC_RESIDUAL];
+            y_full_distortion[DIST_CALC_PREDICTION] += tuFullDistortion[0][DIST_CALC_PREDICTION];
+            y_coeff_bits += y_tu_coeff_bits;
+            y_coeff_dist += tuFullDistortion[0][DIST_CALC_RESIDUAL];
+            y_eob += yCountNonZeroCoeffsTemp;
+       
+
+//#if CFL_FIX
+//            if (!context_ptr->blk_geom->has_uv && candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
+//
+//                // Store the luma data for 4x* and *x4 blocks to be used for CFL
+//                EbPictureBufferDesc  *recon_ptr = candidateBuffer->recon_ptr;
+//                uint32_t rec_luma_offset = context_ptr->blk_geom->origin_x + context_ptr->blk_geom->origin_y * recon_ptr->stride_y;
+//                for (uint32_t j = 0; j < context_ptr->blk_geom->bheight; ++j) {
+//                    memcpy(&context_ptr->cfl_temp_luma_recon[rec_luma_offset + j * recon_ptr->stride_y], recon_ptr->buffer_y + rec_luma_offset + j * recon_ptr->stride_y, context_ptr->blk_geom->bwidth);
+//                }
+//            }
+//#endif
+            //copy neigh recon data in cu_ptr
+            {
+                uint32_t j;
+                EbPictureBufferDesc  *recon_ptr = candidateBuffer->recon_ptr;
+                uint32_t rec_luma_offset = txb_origin_x + txb_origin_y * recon_ptr->stride_y;
+                memcpy(context_ptr->cu_ptr->neigh_top_recon[0], recon_ptr->buffer_y + rec_luma_offset + (context_ptr->blk_geom->tx_height[tx_depth][txb_itr] - 1)*recon_ptr->stride_y, context_ptr->blk_geom->tx_width[tx_depth][txb_itr]);
+                for (j = 0; j < context_ptr->blk_geom->tx_height[tx_depth][txb_itr]; ++j)
+                    context_ptr->cu_ptr->neigh_left_recon[0][j] = recon_ptr->buffer_y[rec_luma_offset + context_ptr->blk_geom->tx_width[tx_depth][txb_itr] - 1 + j * recon_ptr->stride_y];
+            }
+
+            txb_1d_offset += context_ptr->blk_geom->tx_width[tx_depth][txb_itr] * context_ptr->blk_geom->tx_height[tx_depth][txb_itr];
+        }
+
+        y_coeff_bits += y_eob ? tx_size_bits : 0;
+        tx_cost[tx_depth] = RDCOST(context_ptr->full_lambda, y_coeff_bits, y_coeff_dist);
+        if (tx_cost[tx_depth] < bestFullCost) {
+            bestFullCost = tx_cost[tx_depth];
+            best_tx_depth = tx_depth;
+        }
+    }
+    return best_tx_depth;
+}
+#endif
 #if TXS_SEARCH_2
 uint8_t tx_size_search(
     ModeDecisionCandidateBuffer  *candidateBuffer,
@@ -2866,7 +3903,18 @@ uint8_t tx_size_search(
         y_coeff_bits = 0;
         y_coeff_dist = 0;
         uint32_t txb_itr = 0;
+        uint32_t y_eob = 0;
         uint16_t txb_count = context_ptr->blk_geom->txb_count[tx_depth];
+
+        uint64_t tx_size_bits = estimate_tx_size_bits(
+            picture_control_set_ptr,
+            context_ptr->cu_origin_x,
+            context_ptr->cu_origin_y,
+            context_ptr->cu_ptr,
+            context_ptr->blk_geom,
+            context_ptr->txfm_context_array,
+            tx_depth,
+            context_ptr->md_rate_estimation_ptr);
 
         for (txb_itr = 0; txb_itr < txb_count; txb_itr++) {
             TxSize tx_size = context_ptr->blk_geom->txsize[tx_depth][txb_itr];
@@ -2998,6 +4046,8 @@ uint8_t tx_size_search(
                 &y_full_cost,
                 context_ptr->full_lambda);
 
+            y_eob += yCountNonZeroCoeffsTemp;
+
             y_full_distortion[DIST_CALC_RESIDUAL] += tuFullDistortion[0][DIST_CALC_RESIDUAL];
             y_full_distortion[DIST_CALC_PREDICTION] += tuFullDistortion[0][DIST_CALC_PREDICTION];
 
@@ -3007,6 +4057,7 @@ uint8_t tx_size_search(
             tx_cost[tx_depth] += y_full_cost;
         }
 
+        y_coeff_bits += y_eob ? tx_size_bits : 0;
         tx_cost[tx_depth] = RDCOST(context_ptr->full_lambda, y_coeff_bits, y_coeff_dist);
         if (tx_cost[tx_depth] < bestFullCost) {
             bestFullCost = tx_cost[tx_depth];
@@ -3047,6 +4098,8 @@ uint64_t tx_depth_cost(
     uint64_t tx_depth_cost = 0;
     uint64_t tx_depth_dist = 0;
     uint64_t tx_depth_bit = 0;
+    uint64_t tx_depth_eob = 0;
+    uint64_t best_tx_eob = 0;
 
 #if IMPERICAL_LAMBDA
     int sharpness = 0; // No Sharpness
@@ -3073,6 +4126,17 @@ uint64_t tx_depth_cost(
 #else
     const int64_t rdmult = (int64_t)context_ptr->full_lambda;
 #endif
+
+    uint64_t tx_size_bits = estimate_tx_size_bits(
+        picture_control_set_ptr,
+        context_ptr->cu_origin_x,
+        context_ptr->cu_origin_y,
+        context_ptr->cu_ptr,
+        context_ptr->blk_geom,
+        context_ptr->txfm_context_array,
+        tx_depth,
+        context_ptr->md_rate_estimation_ptr);
+
 #if TXS_MD
     uint16_t txb_count = context_ptr->blk_geom->txb_count[tx_depth];
     for (txb_itr = 0; txb_itr < txb_count; txb_itr++)
@@ -3106,6 +4170,7 @@ uint64_t tx_depth_cost(
             get_ext_tx_set_type(tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
         for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
             context_ptr->three_quad_energy = 0;
+            best_tx_eob = 0;
             tx_type = (TxType)tx_type_index;
 #if SCENE_CONTENT_SETTINGS
             if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set == 2)
@@ -3304,6 +4369,7 @@ uint64_t tx_depth_cost(
                 best_tx_type_dist = tuFullDistortion[0][DIST_CALC_RESIDUAL];
                 best_tx_type_bit = y_tu_coeff_bits;
                 best_tx_type = tx_type;
+                best_tx_eob = yCountNonZeroCoeffsTemp;
             }
         }
         transform_type[PLANE_TYPE_Y][txb_itr] = best_tx_type;
@@ -3314,8 +4380,10 @@ uint64_t tx_depth_cost(
         tx_depth_cost += best_tx_type_cost;
         tx_depth_dist += best_tx_type_dist;
         tx_depth_bit  += best_tx_type_bit;
+        tx_depth_eob  += best_tx_eob;
     }
 
+    tx_depth_bit += tx_depth_eob > 0 ? tx_size_bits : 0;
     tx_depth_cost = RDCOST(rdmult, tx_depth_bit, tx_depth_dist);
     return tx_depth_cost;
 }
@@ -3838,8 +4906,43 @@ void product_full_loop_tx_search(
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y];
 }
 #endif
-#if TXS_DECISION
+#if TXS_SPLIT_SETTINGS
 uint8_t get_end_tx_depth(BlockSize bsize, uint8_t btype) {
+
+#if TXS_INTRA
+   uint8_t tx_depth = 0;
+     if (bsize == BLOCK_64X64 ||
+        bsize == BLOCK_32X32 ||
+        bsize == BLOCK_16X16 ||
+        bsize == BLOCK_64X32 ||
+        bsize == BLOCK_32X64 ||
+        bsize == BLOCK_16X32 ||
+        bsize == BLOCK_32X16 ||
+        bsize == BLOCK_16X8 ||
+        bsize == BLOCK_8X16)
+        tx_depth = 2;
+    else if (bsize == BLOCK_8X8 ||
+       bsize == BLOCK_64X16 ||
+        bsize == BLOCK_16X64 ||
+        bsize == BLOCK_32X8 ||
+        bsize == BLOCK_8X32 ||
+        bsize == BLOCK_16X4 ||
+        bsize == BLOCK_4X16)
+        tx_depth = 1;
+
+   /*if (bsize == BLOCK_64X64 ||
+       bsize == BLOCK_32X32 ||
+       bsize == BLOCK_16X16 ||
+       bsize == BLOCK_64X32 ||
+       bsize == BLOCK_32X64 ||
+       bsize == BLOCK_16X32 ||
+       bsize == BLOCK_32X16 )
+       tx_depth = 1;*/
+
+    tx_depth = btype == INTRA_MODE ? MIN(tx_depth, 1) : tx_depth;
+
+    return tx_depth;
+#else
     if ((bsize == BLOCK_64X64 ||
         bsize == BLOCK_32X32  ||
         bsize == BLOCK_16X16  ||
@@ -3871,10 +4974,8 @@ uint8_t get_end_tx_depth(BlockSize bsize, uint8_t btype) {
          bsize == BLOCK_4X16) &&
          btype == INTER_MODE)
         return 1;
-
-    
-
     return 0;
+#endif
 }
 #endif
 void encode_pass_tx_search(
@@ -4390,6 +5491,453 @@ void encode_pass_tx_search_hbd(
         txb_ptr->transform_type[PLANE_TYPE_UV] = txb_ptr->transform_type[PLANE_TYPE_Y];
 
 }
+
+#if TXS_INTRA
+void ep_tx_size_cost(
+    PictureControlSet            *picture_control_set_ptr,
+    EncDecContext                *context_ptr,
+    LargestCodingUnit            *sb_ptr,
+    uint32_t                      origin_x,   //pic based tx org x
+    uint32_t                      origin_y,   //pic based tx org y
+    EbPictureBufferDesc          *predSamples,             // no basis/offset
+    EbPictureBufferDesc          *coeffSamplesTB,
+    EbPictureBufferDesc          *residual16bit,
+    EbPictureBufferDesc          *transform16bit,
+    EbPictureBufferDesc          *inverse_quant_buffer,
+    int16_t                      *transformScratchBuffer,
+    EbAsm                        asm_type,
+    uint16_t                     *eob,
+    uint64_t                     *y_tu_coeff_bits,
+    uint64_t                     y_tu_distortion[DIST_CALC_TOTAL]) {
+
+    CodingUnit            *cu_ptr = context_ptr->cu_ptr;
+    TransformUnit         *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
+    TransformUnit         *txb_0_ptr = &cu_ptr->transform_unit_array[0];
+
+    uint32_t               qp = cu_ptr->qp;
+    const uint32_t         coeff1dOffset = context_ptr->coded_area_sb;
+    const int32_t          is_inter = context_ptr->is_inter;
+    uint64_t               bestFullCost = UINT64_MAX;
+    uint64_t               y_full_cost;
+    uint32_t               yCountNonZeroCoeffsTemp[3];
+    uint8_t                tx_depth = context_ptr->tx_depth;
+    TxSize                 txSize = context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr];
+    const uint32_t         scratchLumaOffset = context_ptr->blk_geom->tx_org_x[tx_depth][context_ptr->txb_itr] + context_ptr->blk_geom->tx_org_y[tx_depth][context_ptr->txb_itr] * SB_STRIDE_Y;
+    context_ptr->three_quad_energy = 0;
+    *y_tu_coeff_bits = 0;
+
+
+    EbPictureBufferDesc  *input_samples = context_ptr->input_samples;
+
+    const uint32_t inputLumaOffset = ((origin_y + input_samples->origin_y)          * input_samples->stride_y) + (origin_x + input_samples->origin_x);
+    const uint32_t predLumaOffset = ((predSamples->origin_y + origin_y)        * predSamples->stride_y) + (predSamples->origin_x + origin_x);
+   
+    context_ptr->three_quad_energy = 0;
+    //**********************************
+    // Luma
+    //**********************************
+    txb_ptr->transform_type[PLANE_TYPE_Y] = txb_0_ptr->transform_type[PLANE_TYPE_Y];
+    ResidualKernel(
+        input_samples->buffer_y + inputLumaOffset,
+        input_samples->stride_y,
+        predSamples->buffer_y + predLumaOffset,
+        predSamples->stride_y,
+        ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
+        residual16bit->stride_y,
+        context_ptr->blk_geom->tx_width[tx_depth][context_ptr->txb_itr],
+        context_ptr->blk_geom->tx_height[tx_depth][context_ptr->txb_itr]);
+
+    av1_estimate_transform(
+        ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
+        residual16bit->stride_y,
+        ((TranLow*)transform16bit->buffer_y) + coeff1dOffset,
+        NOT_USED_VALUE,
+        context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+        &context_ptr->three_quad_energy,
+        transformScratchBuffer,
+        BIT_INCREMENT_8BIT,
+        txb_ptr->transform_type[PLANE_TYPE_Y],
+        asm_type,
+        PLANE_TYPE_Y,
+        DEFAULT_SHAPE);
+
+    av1_quantize_inv_quantize(
+        sb_ptr->picture_control_set_ptr,
+        context_ptr->md_context,
+        ((TranLow*)transform16bit->buffer_y) + coeff1dOffset,
+        NOT_USED_VALUE,
+        ((int32_t*)coeffSamplesTB->buffer_y) + coeff1dOffset,
+        ((int32_t*)inverse_quant_buffer->buffer_y) + coeff1dOffset,
+        qp,
+        context_ptr->blk_geom->tx_width[tx_depth][context_ptr->txb_itr],
+        context_ptr->blk_geom->tx_height[tx_depth][context_ptr->txb_itr],
+        context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+        &eob[0],
+        asm_type,
+        &yCountNonZeroCoeffsTemp[0],
+#if !PF_N2_SUPPORT
+        0,
+#endif
+        COMPONENT_LUMA,
+        BIT_INCREMENT_8BIT,
+        txb_ptr->transform_type[PLANE_TYPE_Y],
+        &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
+#if TRELLIS_CHROMA
+        cu_ptr->luma_txb_skip_context,
+        cu_ptr->luma_dc_sign_context,
+        cu_ptr->pred_mode,
+        EB_TRUE);
+#else
+        0,
+        0,
+        0,
+        EB_FALSE);
+#endif
+
+    // LUMA DISTORTION
+    picture_full_distortion32_bits(
+        transform16bit,
+        coeff1dOffset,
+        0,
+        inverse_quant_buffer,
+        coeff1dOffset,
+        0,
+        context_ptr->blk_geom->tx_width[tx_depth][context_ptr->txb_itr],
+        context_ptr->blk_geom->tx_height[tx_depth][context_ptr->txb_itr],
+        context_ptr->blk_geom->tx_width_uv[tx_depth][context_ptr->txb_itr],
+        context_ptr->blk_geom->tx_height_uv[tx_depth][context_ptr->txb_itr],
+        y_tu_distortion,
+        y_tu_distortion,
+        y_tu_distortion,
+        yCountNonZeroCoeffsTemp[0],
+        0,
+        0,
+        COMPONENT_LUMA,
+        asm_type);
+
+    y_tu_distortion[DIST_CALC_RESIDUAL] += context_ptr->three_quad_energy;
+    y_tu_distortion[DIST_CALC_PREDICTION] += context_ptr->three_quad_energy;
+
+    int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txSize)) * 2;
+    y_tu_distortion[DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(y_tu_distortion[DIST_CALC_RESIDUAL], shift);
+    y_tu_distortion[DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(y_tu_distortion[DIST_CALC_PREDICTION], shift);
+
+    //LUMA-ONLY
+    ModeDecisionCandidateBuffer         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+    ModeDecisionCandidateBuffer         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+    ModeDecisionCandidateBuffer          *candidateBuffer;
+
+    // Set the Candidate Buffer
+    candidateBuffer = candidate_buffer_ptr_array[0];
+    // Rate estimation function uses the values from CandidatePtr. The right values are copied from cu_ptr to CandidatePtr
+    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
+    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
+    EntropyCoder  *coeff_est_entropy_coder_ptr = picture_control_set_ptr->coeff_est_entropy_coder_ptr;
+    candidateBuffer->candidate_ptr->type = cu_ptr->prediction_mode_flag;
+    candidateBuffer->candidate_ptr->pred_mode = cu_ptr->pred_mode;
+
+    av1_tu_estimate_coeff_bits(
+#if CABAC_UP
+        1,//allow_update_cdf,
+        &picture_control_set_ptr->ec_ctx_array[sb_ptr->index],
+#endif
+        picture_control_set_ptr,
+        candidateBuffer,
+        context_ptr->cu_ptr,
+        coeff1dOffset,
+        0,
+        coeff_est_entropy_coder_ptr,
+        coeffSamplesTB,
+        yCountNonZeroCoeffsTemp[0],
+        0,
+        0,
+        y_tu_coeff_bits,
+        y_tu_coeff_bits,
+        y_tu_coeff_bits,
+        context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+        context_ptr->blk_geom->txsize_uv[tx_depth][context_ptr->txb_itr],
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr],
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr],
+        COMPONENT_LUMA,
+        asm_type);
+
+    /*av1_tu_calc_cost_luma(
+        context_ptr->cu_ptr->luma_txb_skip_context,
+        candidateBuffer->candidate_ptr,
+        context_ptr->txb_itr,
+        context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+        yCountNonZeroCoeffsTemp,
+        y_tu_distortion,
+        y_tu_coeff_bits,
+        &y_full_cost,
+        context_ptr->full_lambda);*/
+
+    av1_encode_tu_calc_cost(
+        context_ptr,
+        yCountNonZeroCoeffsTemp,
+        y_tu_distortion,
+        y_tu_coeff_bits,
+        PICTURE_BUFFER_DESC_LUMA_MASK);
+    eob[0] = yCountNonZeroCoeffsTemp[0];
+
+    txb_ptr->y_has_coeff = yCountNonZeroCoeffsTemp[0] > 0 ? 1 : 0;
+}
+
+void ep_tx_size_cost_hd(
+    PictureControlSet            *picture_control_set_ptr,
+    EncDecContext                *context_ptr,
+    LargestCodingUnit            *sb_ptr,
+    uint32_t                       cb_qp,
+    EbPictureBufferDesc          *coeffSamplesTB,
+    EbPictureBufferDesc          *residual16bit,
+    EbPictureBufferDesc          *transform16bit,
+    EbPictureBufferDesc          *inverse_quant_buffer,
+    int16_t                        *transformScratchBuffer,
+    EbAsm                          asm_type,
+    uint32_t                       *count_non_zero_coeffs,
+    uint32_t                       component_mask,
+    uint32_t                       use_delta_qp,
+    uint32_t                       dZoffset,
+    uint16_t                       *eob,
+    MacroblockPlane                *candidate_plane) {
+
+    (void)dZoffset;
+    (void)use_delta_qp;
+    (void)cb_qp;
+    (void)candidate_plane;
+    UNUSED(component_mask);
+    UNUSED(count_non_zero_coeffs);
+
+    CodingUnit    *cu_ptr = context_ptr->cu_ptr;
+    TransformUnit *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
+    uint32_t         qp = cu_ptr->qp;
+    const uint32_t   scratchLumaOffset = context_ptr->blk_geom->origin_x + context_ptr->blk_geom->origin_y * SB_STRIDE_Y;
+    const uint32_t   coeff1dOffset = context_ptr->coded_area_sb;
+
+    //Update QP for Quant
+    qp += QP_BD_OFFSET;
+    uint64_t                    y_tu_coeff_bits;
+    uint64_t                    tuFullDistortion[3][DIST_CALC_TOTAL];
+    const int32_t               is_inter = context_ptr->is_inter;
+    uint64_t                    bestFullCost = UINT64_MAX;
+    uint64_t                    y_full_cost;
+    uint32_t                    yCountNonZeroCoeffsTemp;
+    TxType                      txk_start = DCT_DCT;
+    TxType                      txk_end = TX_TYPES;
+    TxType                      tx_type;
+#if TXS_ENC
+    uint8_t tx_depth = context_ptr->tx_depth;
+    TxSize                      txSize = context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr];
+#else
+    TxSize                      txSize = context_ptr->blk_geom->txsize[context_ptr->txb_itr];
+#endif
+    assert(txSize < TX_SIZES_ALL);
+    const TxSetType             tx_set_type =
+        get_ext_tx_set_type(txSize, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+
+    TxType best_tx_type = DCT_DCT;
+
+    for (int32_t tx_type_index = txk_start; tx_type_index < txk_end; ++tx_type_index) {
+        tx_type = (TxType)tx_type_index;
+        ////if (!allowed_tx_mask[tx_type]) continue;
+        if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set)
+            if (!allowed_tx_set_a[txSize][tx_type]) continue;
+
+        const int32_t eset = get_ext_tx_set(txSize, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+        // eset == 0 should correspond to a set with only DCT_DCT and there
+        // is no need to send the tx_type
+        if (eset <= 0) continue;
+        if (av1_ext_tx_used[tx_set_type][tx_type] == 0) continue;
+
+        context_ptr->three_quad_energy = 0;
+
+
+        y_tu_coeff_bits = 0;
+
+
+        av1_estimate_transform(
+            ((int16_t*)residual16bit->buffer_y) + scratchLumaOffset,
+            residual16bit->stride_y,
+            ((TranLow*)transform16bit->buffer_y) + coeff1dOffset,
+            NOT_USED_VALUE,
+#if TXS_ENC
+            context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+#else
+            context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+#endif
+            &context_ptr->three_quad_energy,
+            transformScratchBuffer,
+            BIT_INCREMENT_10BIT,
+            tx_type,
+            asm_type,
+            PLANE_TYPE_Y,
+#if PF_N2_SUPPORT
+            DEFAULT_SHAPE);
+#else
+            context_ptr->trans_coeff_shape_luma);
+#endif
+        av1_quantize_inv_quantize(
+            sb_ptr->picture_control_set_ptr,
+            context_ptr->md_context,
+            ((int32_t*)transform16bit->buffer_y) + coeff1dOffset,
+            NOT_USED_VALUE,
+            ((int32_t*)coeffSamplesTB->buffer_y) + coeff1dOffset,
+            ((int32_t*)inverse_quant_buffer->buffer_y) + coeff1dOffset,
+            qp,
+#if TXS_ENC
+            context_ptr->blk_geom->tx_width[tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->tx_height[tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+#else
+            context_ptr->blk_geom->tx_width[context_ptr->txb_itr],
+            context_ptr->blk_geom->tx_height[context_ptr->txb_itr],
+            context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+#endif
+            &eob[0],
+            asm_type,
+            &yCountNonZeroCoeffsTemp,
+#if !PF_N2_SUPPORT
+            0,
+#endif
+            COMPONENT_LUMA,
+            BIT_INCREMENT_10BIT,
+            tx_type,
+            &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
+#if TRELLIS_CHROMA
+            cu_ptr->luma_txb_skip_context,
+            cu_ptr->luma_dc_sign_context,
+            cu_ptr->pred_mode,
+            0,
+            EB_TRUE);
+#else
+            0,
+            0,
+            0,
+            EB_FALSE);
+#endif
+
+        //tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
+        if (yCountNonZeroCoeffsTemp == 0 && tx_type != DCT_DCT) {
+            continue;
+        }
+
+
+        // LUMA DISTORTION
+        picture_full_distortion32_bits(
+            transform16bit,
+            coeff1dOffset,
+            0,
+            inverse_quant_buffer,
+            coeff1dOffset,
+            0,
+            context_ptr->blk_geom->bwidth,
+            context_ptr->blk_geom->bheight,
+            context_ptr->blk_geom->bwidth_uv,
+            context_ptr->blk_geom->bheight_uv,
+            tuFullDistortion[0],
+            tuFullDistortion[0],
+            tuFullDistortion[0],
+            yCountNonZeroCoeffsTemp,
+            0,
+            0,
+            COMPONENT_LUMA,
+            asm_type);
+
+        tuFullDistortion[0][DIST_CALC_RESIDUAL] += context_ptr->three_quad_energy;
+        tuFullDistortion[0][DIST_CALC_PREDICTION] += context_ptr->three_quad_energy;
+
+        int32_t shift = (MAX_TX_SCALE - av1_get_tx_scale(txSize)) * 2;
+        tuFullDistortion[0][DIST_CALC_RESIDUAL] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_RESIDUAL], shift);
+        tuFullDistortion[0][DIST_CALC_PREDICTION] = RIGHT_SIGNED_SHIFT(tuFullDistortion[0][DIST_CALC_PREDICTION], shift);
+        txb_ptr->transform_type[PLANE_TYPE_Y] = tx_type;
+
+        //LUMA-ONLY
+
+        ModeDecisionCandidateBuffer         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+        ModeDecisionCandidateBuffer         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+        ModeDecisionCandidateBuffer          *candidateBuffer;
+
+        // Set the Candidate Buffer
+        candidateBuffer = candidate_buffer_ptr_array[0];
+        // Rate estimation function uses the values from CandidatePtr. The right values are copied from cu_ptr to CandidatePtr
+#if TXS_TX_TYPE
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
+#else
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
+        candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
+#endif
+        EntropyCoder  *coeff_est_entropy_coder_ptr = picture_control_set_ptr->coeff_est_entropy_coder_ptr;
+        candidateBuffer->candidate_ptr->type = cu_ptr->prediction_mode_flag;
+        candidateBuffer->candidate_ptr->pred_mode = cu_ptr->pred_mode;
+
+        const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
+
+        av1_tu_estimate_coeff_bits(
+#if CABAC_UP
+            0,//allow_update_cdf,
+            NULL,//FRAME_CONTEXT *ec_ctx,
+#endif
+            picture_control_set_ptr,
+            candidateBuffer,
+            context_ptr->cu_ptr,
+            coeff1dOffset,
+            0,
+            coeff_est_entropy_coder_ptr,
+            coeffSamplesTB,
+            yCountNonZeroCoeffsTemp,
+            0,
+            0,
+            &y_tu_coeff_bits,
+            &y_tu_coeff_bits,
+            &y_tu_coeff_bits,
+#if TXS_ENC
+            context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->txsize_uv[tx_depth][context_ptr->txb_itr],
+#else
+            context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+            context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
+#endif
+#if TXS_TX_TYPE
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr],
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr],
+#endif
+            COMPONENT_LUMA,
+            asm_type);
+
+        av1_tu_calc_cost_luma(
+            context_ptr->cu_ptr->luma_txb_skip_context,
+            candidateBuffer->candidate_ptr,
+            context_ptr->txb_itr,
+#if TXS_ENC
+            context_ptr->blk_geom->txsize[tx_depth][context_ptr->txb_itr],
+#else
+            context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+#endif
+            yCountNonZeroCoeffsTemp,
+            tuFullDistortion[0],
+            &y_tu_coeff_bits,
+            &y_full_cost,
+            context_ptr->full_lambda);
+
+        if (y_full_cost < bestFullCost) {
+            bestFullCost = y_full_cost;
+            best_tx_type = tx_type;
+        }
+
+
+    }
+
+
+    txb_ptr->transform_type[PLANE_TYPE_Y] = best_tx_type;
+
+    // For Inter blocks, transform type of chroma follows luma transfrom type
+    if (is_inter)
+        txb_ptr->transform_type[PLANE_TYPE_UV] = txb_ptr->transform_type[PLANE_TYPE_Y];
+
+}
+
+#endif
 /****************************************
  ************  Full loop ****************
 ****************************************/

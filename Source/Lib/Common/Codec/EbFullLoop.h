@@ -51,6 +51,30 @@ extern "C" {
         uint64_t                         *y_coeff_bits,
         uint64_t                         *y_full_distortion);
 
+#if TXS_INTRA
+    void full_loop_luma_intra(
+        ModeDecisionCandidateBuffer  *candidateBuffer,
+        ModeDecisionContext          *context_ptr,
+        PictureControlSet            *picture_control_set_ptr,
+        uint32_t                      qp,
+        uint32_t                     *y_count_non_zero_coeffs,
+        uint64_t                     *y_coeff_bits,
+        uint64_t                     *y_full_distortion);
+
+    uint8_t tx_size_search_intra(
+        ModeDecisionCandidateBuffer  *candidateBuffer,
+        ModeDecisionContext          *context_ptr,
+        PictureControlSet            *picture_control_set_ptr,
+        EbPictureBufferDesc          *input_picture_ptr,
+        uint8_t                       end_tx_depth);
+#endif
+#if TXS_SEARCH_2
+    uint8_t tx_size_search(
+        ModeDecisionCandidateBuffer  *candidateBuffer,
+        ModeDecisionContext          *context_ptr,
+        PictureControlSet            *picture_control_set_ptr,
+        uint8_t                       end_tx_depth);
+#endif
 
     void product_full_loop_tx_search(
         ModeDecisionCandidateBuffer  *candidateBuffer,

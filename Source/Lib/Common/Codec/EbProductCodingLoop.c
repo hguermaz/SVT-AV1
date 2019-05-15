@@ -491,6 +491,18 @@ void copy_neighbour_arrays(
         blk_geom->bheight,
         NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 
+#if TXS_INTRA
+    //neighbor_array_unit_reset(picture_control_set_ptr->md_txfm_context_array[depth]);
+    copy_neigh_arr(
+        picture_control_set_ptr->md_txfm_context_array[src_idx],
+        picture_control_set_ptr->md_txfm_context_array[dst_idx],
+        blk_org_x,
+        blk_org_y,
+        blk_geom->bwidth,
+        blk_geom->bheight,
+        NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+#endif
+
     if (blk_geom->has_uv && context_ptr->chroma_level <= CHROMA_MODE_1) {
         copy_neigh_arr(
             picture_control_set_ptr->md_cb_dc_sign_level_coeff_neighbor_array[src_idx],
@@ -1039,7 +1051,9 @@ void init_nsq_block(
     do
     {
         const BlockGeom * blk_geom = get_blk_geom_mds(blk_idx);
+#if RED_CU
         context_ptr->md_local_cu_unit[blk_idx].avail_blk_flag = EB_FALSE;
+#endif
         if (blk_geom->shape == PART_N)
         {
             context_ptr->md_cu_arr_nsq[blk_idx].split_flag = EB_TRUE; 
@@ -1696,7 +1710,7 @@ void perform_fast_loop(
         // Set the Candidate Buffer
         ModeDecisionCandidateBuffer   *candidateBuffer = candidateBufferPtrArrayBase[candidate_buffer_start_index];
         ModeDecisionCandidate         *candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
-#if TXS_ENC
+#if TXS_ENC && !TXS_ADDED_AS_MD_CAND
         // init tx_depth candidate
         candidateBuffer->candidate_ptr->tx_depth = 0;
 #endif
@@ -1747,7 +1761,7 @@ void perform_fast_loop(
         ModeDecisionCandidateBuffer *candidateBuffer = candidateBufferPtrArrayBase[highestCostIndex];
         ModeDecisionCandidate       *candidate_ptr = candidateBuffer->candidate_ptr = &fast_candidate_array[fastLoopCandidateIndex];
         EbPictureBufferDesc         *prediction_ptr = candidateBuffer->prediction_ptr;
-#if TXS_ENC
+#if TXS_ENC && !TXS_ADDED_AS_MD_CAND
         // init tx_depth candidate
         candidateBuffer->candidate_ptr->tx_depth = 0;
 #endif
@@ -2781,8 +2795,6 @@ void AV1PerformFullLoop(
         memset(candidate_ptr->eob[1], 0, sizeof(uint16_t));
         memset(candidate_ptr->eob[2], 0, sizeof(uint16_t));
 
-
-
         candidate_ptr->chroma_distortion = 0;
         candidate_ptr->chroma_distortion_inter_depth = 0;
         // Set Skip Flag
@@ -2843,10 +2855,12 @@ void AV1PerformFullLoop(
         candidate_ptr->y_has_coeff = 0;
         candidate_ptr->u_has_coeff = 0;
         candidate_ptr->v_has_coeff = 0;
-        //candidateBuffer->candidate_ptr->tx_depth = 0;
+
 #if TXS_DECISION
         candidateBuffer->candidate_ptr->tx_depth = 0;
-        uint8_t end_tx_depth =  get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
+        uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
+        //end_tx_depth = (candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->use_intrabc == 0) ? end_tx_depth : 0;
+
 #if TXS_SEARCH_2
         if (0) {
 #else
@@ -2858,6 +2872,88 @@ void AV1PerformFullLoop(
             uint64_t tx_depth2_cost = UINT64_MAX;
 
             TxType tx_depth_tx_type[3][PLANE_TYPES][MAX_TXB_COUNT];
+
+#if TXS_INTRA
+            if (candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->use_intrabc == 0) {
+                // Compute rd_cost for tx_depth 0
+                candidateBuffer->candidate_ptr->tx_depth = 0;
+                tx_depth0_cost = tx_depth_cost_intra(
+                    candidateBuffer,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    input_picture_ptr,
+                    tx_depth_tx_type[0]);
+                candidate_ptr->full_distortion = 0;
+                memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                //re-init
+                candidate_ptr->y_has_coeff = 0;
+                // Compute rd_cost for tx_depth 1
+                candidateBuffer->candidate_ptr->tx_depth = 1;
+                tx_depth1_cost = tx_depth_cost_intra(
+                    candidateBuffer,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    input_picture_ptr,
+                    tx_depth_tx_type[1]);
+                candidate_ptr->full_distortion = 0;
+                memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                //re-init
+                candidate_ptr->y_has_coeff = 0;
+                // Compute rd_cost for tx_depth 1
+                if (end_tx_depth > 1) {
+                    candidateBuffer->candidate_ptr->tx_depth = 2;
+                    tx_depth2_cost = tx_depth_cost_intra(
+                        candidateBuffer,
+                        context_ptr,
+                        picture_control_set_ptr,
+                        input_picture_ptr,
+                        tx_depth_tx_type[2]);
+                    candidate_ptr->full_distortion = 0;
+                    memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                    //re-init
+                    candidate_ptr->y_has_coeff = 0;
+                }
+            }
+            else if (candidateBuffer->candidate_ptr->type == INTER_MODE) {
+                // Compute rd_cost for tx_depth 0
+                candidateBuffer->candidate_ptr->tx_depth = 0;
+                tx_depth0_cost = tx_depth_cost(
+                    candidateBuffer,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    tx_depth_tx_type[0]);
+                candidate_ptr->full_distortion = 0;
+                memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                //re-init
+                candidate_ptr->y_has_coeff = 0;
+                // Compute rd_cost for tx_depth 1
+                candidateBuffer->candidate_ptr->tx_depth = 1;
+                tx_depth1_cost = tx_depth_cost(
+                    candidateBuffer,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    tx_depth_tx_type[1]);
+                candidate_ptr->full_distortion = 0;
+                memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                //re-init
+                candidate_ptr->y_has_coeff = 0;
+                // Compute rd_cost for tx_depth 1
+                if (end_tx_depth > 1) {
+                    candidateBuffer->candidate_ptr->tx_depth = 2;
+                    tx_depth2_cost = tx_depth_cost(
+                        candidateBuffer,
+                        context_ptr,
+                        picture_control_set_ptr,
+                        tx_depth_tx_type[2]);
+                    candidate_ptr->full_distortion = 0;
+                    memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
+                    //re-init
+                    candidate_ptr->y_has_coeff = 0;
+                }
+            }
+
+
+#else
 
             // Compute rd_cost for tx_depth 0
             candidateBuffer->candidate_ptr->tx_depth = 0;
@@ -2894,6 +2990,7 @@ void AV1PerformFullLoop(
                 //re-init
                 candidate_ptr->y_has_coeff = 0;
             }
+#endif
             // select tx_depth 
             uint64_t best_tx_depth_cost = MIN(tx_depth0_cost, MIN(tx_depth1_cost, tx_depth2_cost));
             // Set the best tx_depth
@@ -2917,7 +3014,8 @@ void AV1PerformFullLoop(
 
             for (txb_itr = 0; txb_itr < txb_count; txb_itr++) {
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr] = tx_depth_tx_type[best_tx_depth][PLANE_TYPE_Y][txb_itr];
-                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = tx_depth_tx_type[best_tx_depth][PLANE_TYPE_UV][txb_itr];
+                if (candidateBuffer->candidate_ptr->type == INTER_MODE) 
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = tx_depth_tx_type[best_tx_depth][PLANE_TYPE_UV][txb_itr];
             }
             
         } else {
@@ -2945,11 +3043,7 @@ void AV1PerformFullLoop(
                     picture_control_set_ptr);
 
                 candidate_ptr->full_distortion = 0;
-
-
                 memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
-
-
                 //re-init
                 candidate_ptr->y_has_coeff = 0;
             }
@@ -2966,17 +3060,60 @@ void AV1PerformFullLoop(
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][txb_itr] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][0];
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][txb_itr] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][0];
             }
+#if TXS_INTRA
+            if (candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->use_intrabc == 0) {
+                candidateBuffer->candidate_ptr->tx_depth = tx_size_search_intra(
+                    candidateBuffer,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    input_picture_ptr,
+                    end_tx_depth);
+
+            }else if (candidateBuffer->candidate_ptr->type == INTER_MODE) {
+                candidateBuffer->candidate_ptr->tx_depth = tx_size_search(
+                    candidateBuffer,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    end_tx_depth);
+            }
+#else
+
             candidateBuffer->candidate_ptr->tx_depth = tx_size_search(
                 candidateBuffer,
                 context_ptr,
                 picture_control_set_ptr,
                 end_tx_depth);
+#endif
             candidate_ptr->full_distortion = 0;
             memset(candidate_ptr->eob[0], 0, sizeof(uint16_t));
             //re-init
             candidate_ptr->y_has_coeff = 0;
+
         }
+
 #endif
+#if TXS_INTRA
+        if (candidateBuffer->candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->use_intrabc == 0) {
+            full_loop_luma_intra(
+                candidateBuffer,
+                context_ptr,
+                picture_control_set_ptr,
+                context_ptr->cu_ptr->qp,
+                &(*count_non_zero_coeffs[0]),
+                &y_coeff_bits,
+                &y_full_distortion[0]);
+        }
+        else {
+            product_full_loop(
+                candidateBuffer,
+                context_ptr,
+                picture_control_set_ptr,
+                context_ptr->cu_ptr->qp,
+                &(*count_non_zero_coeffs[0]),
+                &y_coeff_bits,
+                &y_full_distortion[0]);
+        }
+#else
         product_full_loop(
             candidateBuffer,
             context_ptr,
@@ -2985,6 +3122,7 @@ void AV1PerformFullLoop(
             &(*count_non_zero_coeffs[0]),
             &y_coeff_bits,
             &y_full_distortion[0]);
+#endif
 
 
         if (candidate_ptr->type == INTRA_MODE && candidateBuffer->candidate_ptr->intra_chroma_mode == UV_CFL_PRED) {
@@ -4874,6 +5012,9 @@ EB_EXTERN EbErrorType mode_decision_sb(
     context_ptr->inter_pred_dir_neighbor_array = picture_control_set_ptr->md_inter_pred_dir_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
     context_ptr->ref_frame_type_neighbor_array = picture_control_set_ptr->md_ref_frame_type_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
     context_ptr->interpolation_type_neighbor_array = picture_control_set_ptr->md_interpolation_type_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
+#if TXS_INTRA
+    context_ptr->txfm_context_array = picture_control_set_ptr->md_txfm_context_array[MD_NEIGHBOR_ARRAY_INDEX];
+#endif
 
     //CU Loop
     cuIdx = 0;  //index over mdc array
