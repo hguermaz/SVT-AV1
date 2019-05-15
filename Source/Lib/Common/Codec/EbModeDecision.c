@@ -3083,6 +3083,28 @@ void  inject_inter_candidates(
         &canTotalCnt);
 
 #endif
+
+#if CLEAN_UP_INJECTION
+    //----------------------
+    //    NEAREST_NEWMV, NEW_NEARESTMV, NEAR_NEWMV, NEW_NEARMV.
+    //----------------------
+
+    EbBool allow_compound = (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
+    if (allow_compound) {
+        //compound ref pairs only: (3)compound Bi-Dir List0-List1  (4)compound Uni-Dir List0-List0  (5)compound Uni-Dir List1-List1
+        for (refIt = 2; refIt < picture_control_set_ptr->parent_pcs_ptr->tot_ref_frame_types; ++refIt) {
+            MvReferenceFrame ref_frame_pair = picture_control_set_ptr->parent_pcs_ptr->ref_frame_type_arr[refIt];
+            inject_compound_inter(
+                sequence_control_set_ptr,
+                context_ptr,
+                picture_control_set_ptr,
+                context_ptr->cu_ptr,
+                ref_frame_pair,
+                &canTotalCnt);
+        }
+    }
+#endif
+
     if (inject_newmv_candidate) {
 #if CLEAN_UP_INJECTION
         inject_new_candidates(
@@ -3640,26 +3662,7 @@ void  inject_inter_candidates(
             }
         }
 
-#if CLEAN_UP_INJECTION
-        //----------------------
-        //    NEAREST_NEWMV, NEW_NEARESTMV, NEAR_NEWMV, NEW_NEARMV.
-        //----------------------
 
-        EbBool allow_compound = (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
-        if (allow_compound) {
-            //compound ref pairs only: (3)compound Bi-Dir List0-List1  (4)compound Uni-Dir List0-List0  (5)compound Uni-Dir List1-List1
-            for (refIt = 2; refIt < picture_control_set_ptr->parent_pcs_ptr->tot_ref_frame_types; ++refIt) {
-                MvReferenceFrame ref_frame_pair = picture_control_set_ptr->parent_pcs_ptr->ref_frame_type_arr[refIt];
-                inject_compound_inter(
-                    sequence_control_set_ptr,
-                    context_ptr,
-                    picture_control_set_ptr,
-                    context_ptr->cu_ptr,
-                    ref_frame_pair,
-                    &canTotalCnt);
-            }
-        }
-#endif
 
 // update the total number of candidates injected
 (*candidateTotalCnt) = canTotalCnt;

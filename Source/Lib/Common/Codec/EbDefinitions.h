@@ -155,10 +155,10 @@ extern "C" {
 
 #define CLEAN_UP_INJECTION                              1
 #if CLEAN_UP_INJECTION
-#define NEW_NEARESTMV_INJECTION                         0
-#define NEAREST_NEWMV_INJECTION                         0
-#define NEW_NEARMV_INJECTION                            0
-#define NEAR_NEWMV_INJECTION                            0
+#define NEW_NEARESTMV_INJECTION                         1
+#define NEAREST_NEWMV_INJECTION                         1
+#define NEW_NEARMV_INJECTION                            1
+#define NEAR_NEWMV_INJECTION                            1
 #endif
 
 #define CHROMA_DC_ONLY                                  0
