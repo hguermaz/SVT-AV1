@@ -443,7 +443,7 @@ int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config, uint32_t core_count, 
         uint32_t min_ppcs_count = (2 << config->hierarchical_levels) + 1; // min picture count to start encoding
 #endif
         fps        = fps > 120 ? 120   : fps;
-        fps        = fps < 24  ? 24    : fps;
+        fps        = fps < 60  ? 60    : fps;
 
 #if MINI_GOP_PCS
         if (core_count == 4) 
@@ -453,7 +453,7 @@ int32_t set_parent_pcs(EbSvtAv1EncConfiguration*   config, uint32_t core_count, 
 #else
         ppcs_count = MAX(min_ppcs_count, fps);
 #endif
-#if NEW_BUFF_CFG        
+#if NEW_BUFF_CFG
         if (core_count <= SINGLE_CORE_COUNT)
             ppcs_count = min_ppcs_count;
         else{
@@ -542,6 +542,7 @@ EbErrorType load_default_buffer_configuration_settings(
 #if CHECK_MEM_REDUCTION
     core_count = 4;
 #endif
+    core_count = (core_count > LOW_SERVER_CORE_COUNT) && (core_count < MED_SERVER_CORE_COUNT) ? MED_SERVER_CORE_COUNT : core_count;
     int32_t return_ppcs = set_parent_pcs(&sequence_control_set_ptr->static_config, 
                     core_count, sequence_control_set_ptr->input_resolution);
     if (return_ppcs == -1)
