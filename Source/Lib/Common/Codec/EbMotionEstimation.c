@@ -3589,7 +3589,7 @@ static void GetEightHorizontalSearchPointResultsAll85PUs(
 /*******************************************
 * FullPelSearch_LCU
 *******************************************/
-static void FullPelSearch_LCU(
+void FullPelSearch_LCU(
     MeContext             *context_ptr,
     uint32_t                   listIndex,
 #if MRP_ME
@@ -3647,7 +3647,7 @@ static void FullPelSearch_LCU(
 /*******************************************
 * open_loop_me_fullpel_search_sblock
 *******************************************/
-static void open_loop_me_fullpel_search_sblock(
+void open_loop_me_fullpel_search_sblock(
     MeContext             *context_ptr,
     uint32_t                   listIndex,
 #if MRP_ME

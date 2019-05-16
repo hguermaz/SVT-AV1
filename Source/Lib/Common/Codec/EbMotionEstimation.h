@@ -1604,6 +1604,30 @@ extern "C" {
         uint32_t                 geom_offset_y
     );
 
+    void open_loop_me_fullpel_search_sblock(
+        MeContext             *context_ptr,
+        uint32_t                   listIndex,
+#if MRP_ME
+        uint32_t                 ref_pic_index,
+#endif
+        int16_t                   x_search_area_origin,
+        int16_t                     y_search_area_origin,
+        uint32_t                   search_area_width,
+        uint32_t                   search_area_height,
+        EbAsm                   asm_type);
+
+    void FullPelSearch_LCU(
+        MeContext             *context_ptr,
+        uint32_t                   listIndex,
+#if MRP_ME
+        uint32_t                 ref_pic_index,
+#endif
+        int16_t                   x_search_area_origin,
+        int16_t                     y_search_area_origin,
+        uint32_t                   search_area_width,
+        uint32_t                   search_area_height,
+        EbAsm                   asm_type);
+
 
 #ifdef __cplusplus
 }

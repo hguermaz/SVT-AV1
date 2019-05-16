@@ -14,6 +14,13 @@ include_directories (${PROJECT_SOURCE_DIR}/Bin/${CMAKE_BUILD_TYPE}/)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/googletest/include third_party/googletest/src)
 include_directories(${PROJECT_SOURCE_DIR}/Source/API )
 include_directories(${PROJECT_SOURCE_DIR}/Source/Lib/Common/Codec )
+include_directories(${PROJECT_SOURCE_DIR}/Source/Lib/Common/C_DEFAULT/)
+include_directories(${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSE2/)
+include_directories(${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSSE3/)
+include_directories(${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_SSE4_1/)
+include_directories(${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_AVX2/)
+include_directories(${PROJECT_SOURCE_DIR}/Source/Lib/Common/ASM_AVX512/)
+include_directories (${PROJECT_SOURCE_DIR}/Source/Lib/Encoder/Codec/)
 
 # Define helper functions and macros used by Google Test.
 include(../third_party/googletest/cmake/internal_utils.cmake)
@@ -41,9 +48,13 @@ enable_testing()
 
 file(GLOB all_files
     "*.h"
+    "*.c"
     "*.cc"
-    "../Source/Lib/Common/Codec/grainSynthesis.h"
-    "../Source/Lib/Common/Codec/grainSynthesis.c")
+    "../Source/Lib/Common/Codec/*.h"
+    "../Source/Lib/Common/Codec/*.c"
+    "../Source/Lib/Encoder/Codec/*.h"
+    "../Source/Lib/Encoder/Codec/*.c"
+    )
 
 if (UNIX)
   # App Source Files
@@ -69,6 +80,11 @@ if (MSVC OR MSYS OR MINGW OR WIN32)
                         PROPERTIES
                         COMPILE_DEFINITIONS "GTEST_LINKED_AS_SHARED_LIBRARY=1")
 
+    # Link the Encoder App
+    target_link_libraries (SvtAv1UnitTests
+                           SvtAv1Enc
+                           SvtAv1Dec
+                           gtest_all)
 endif(MSVC OR MSYS OR MINGW OR WIN32)
 
 install(TARGETS SvtAv1UnitTests RUNTIME DESTINATION bin)
