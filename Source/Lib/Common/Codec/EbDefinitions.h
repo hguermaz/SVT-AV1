@@ -258,10 +258,8 @@ extern "C" {
 #define TXS_ENC                                         1
 #define TXS_MD                                          1
 #define TXS_SPLIT                                       1
-
 #define TXS_SPLIT_SETTINGS                              1
 #define FIX_TX_TYPE_SEARCH                              0
-
 #define DISABLE_TX_TYPE                                 0
 #define TXS_TX_TYPE                                     1
 #define TX_H4                                           1
@@ -269,8 +267,6 @@ extern "C" {
 #define IMPERICAL_LAMBDA                                0
 #define TXS_INTRA                                       1
 #define TXS_INTRA_CFL                                   0
-#define TXS_DISABLE_CFL                                 1
-#define TXS_CTX_EP                                      1 
 #define TXS_ADDED_AS_MD_CAND                            0
 #if TXS_ADDED_AS_MD_CAND
 #define TXS_DECISION                                    0
@@ -279,9 +275,13 @@ extern "C" {
 #define TXS_DECISION                                    0
 #define TXS_SEARCH_2                                    0
 #endif
-#define ENABLE_INTRA_TX_SIZE_SEARCH_AT_ENCDEC                 0
+#define ENABLE_INTRA_TX_SIZE_SEARCH_AT_ENCDEC           1
 #endif
- 
+
+#define TXS_INTRA_FULL_COST                             1
+#define TXS_CTX_EP                                      1 
+#define TXS_DISABLE_CFL                                 1
+
 struct Buf2D 
 {
     uint8_t *buf;

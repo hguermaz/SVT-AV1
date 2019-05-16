@@ -2022,7 +2022,7 @@ EbErrorType Av1FullCost(
 
     rate = lumaRate + chromaRate + coeffRate;
 
-#if TXS_INTRA
+#if TXS_INTRA_FULL_COST
     if (candidate_buffer_ptr->candidate_ptr->block_has_coeff) {
         uint64_t tx_size_bits = estimate_tx_size_bits(
             picture_control_set_ptr,
@@ -2146,7 +2146,7 @@ EbErrorType  Av1MergeSkipFullCost(
 
 
     mergeRate += coeffRate;
-#if TXS_INTRA
+#if TXS_INTRA_FULL_COST
     if (candidate_buffer_ptr->candidate_ptr->block_has_coeff) {
         uint64_t tx_size_bits = estimate_tx_size_bits(
             picture_control_set_ptr,
