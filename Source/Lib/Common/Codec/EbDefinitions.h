@@ -37,6 +37,8 @@ extern "C" {
 
 #define MRP_SUPPORT            1// MRP Main Flag
 
+#define M8_tune_flag           1
+
 // New  presets
 #define NEW_PRESETS                       1
 #define NEW_BUFF_CFG                      1
