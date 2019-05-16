@@ -1536,82 +1536,7 @@ void inject_mvp_candidates_II(
 }
 
 #if CLEAN_UP_INJECTION
-
-void ChooseBestAv1MvPredToRemove(
-    ModeDecisionContext            *context_ptr,
-    struct MdRateEstimationContext      *md_rate_estimation_ptr,
-    CodingUnit      *cu_ptr,
-    MvReferenceFrame ref_frame,
-    uint8_t              is_compound,
-    PredictionMode    mode,              //NEW or NEW_NEW
-    int16_t             mv0x,
-    int16_t             mv0y,
-    int16_t             mv1x,
-    int16_t             mv1y,
-    uint8_t             *bestDrlIndex,      // output
-    IntMv             bestPredmv[2]      // output
-)
-{
-    uint8_t              drli, maxDrlIndex;
-    IntMv             nearestmv[2];
-    IntMv             nearmv[2];
-    IntMv             ref_mv[2];
-    uint32_t             bestmvCost = 0xFFFFFFFF;
-    MV                 mv;
-
-    maxDrlIndex = 1;// GetMaxDrlIndex(cu_ptr->av1xd->ref_mv_count[ref_frame], mode);
-    // maxDrlIndex = 1;
-
-    for (drli = 0; drli < maxDrlIndex; drli++) {
-
-        get_av1_mv_pred_drl(
-            context_ptr,
-            cu_ptr,
-            ref_frame,
-            is_compound,
-            mode,
-            drli,
-            nearestmv,
-            nearmv,
-            ref_mv);
-
-        //compute the rate for this drli Cand
-        mv.row = mv0y;
-        mv.col = mv0x;
-
-        uint32_t mvRate = (uint32_t)av1_mv_bit_cost(
-            &mv,
-            &(ref_mv[0].as_mv),
-            md_rate_estimation_ptr->nmv_vec_cost,
-            md_rate_estimation_ptr->nmvcoststack,
-            MV_COST_WEIGHT);
-
-        if (is_compound) {
-
-            mv.row = mv1y;
-            mv.col = mv1x;
-
-            mvRate += (uint32_t)av1_mv_bit_cost(
-                &mv,
-                &(ref_mv[1].as_mv),
-                md_rate_estimation_ptr->nmv_vec_cost,
-                md_rate_estimation_ptr->nmvcoststack,
-                MV_COST_WEIGHT);
-        }
-
-        if (mvRate < bestmvCost) {
-
-            bestmvCost = mvRate;
-            *bestDrlIndex = drli;
-            bestPredmv[0] = ref_mv[0];
-            bestPredmv[1] = ref_mv[1];
-        }
-
-    }
-
-}
-
-void inject_compound_inter(
+void inject_new_nearest_new_comb_candidates(
     const SequenceControlSet       *sequence_control_set_ptr,
     struct ModeDecisionContext     *context_ptr,
     PictureControlSet              *picture_control_set_ptr,
@@ -1786,6 +1711,7 @@ void inject_compound_inter(
             }
 #endif
             //NEW_NEARMV
+            // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
             maxDrlIndex = 1;//GetMaxDrlIndex(xd->ref_mv_count[ref_pair], NEW_NEARMV);
             for (drli = 0; drli < maxDrlIndex; drli++) {
 
@@ -1845,7 +1771,7 @@ void inject_compound_inter(
 
                         IntMv  bestPredmv[2] = { {0}, {0} };
 
-                        ChooseBestAv1MvPredToRemove(
+                        ChooseBestAv1MvPred(
                             context_ptr,
                             candidateArray[canIdx].md_rate_estimation_ptr,
                             context_ptr->cu_ptr,
@@ -1858,6 +1784,8 @@ void inject_compound_inter(
                             candidateArray[canIdx].motion_vector_yl1,
                             &candidateArray[canIdx].drl_index,
                             bestPredmv);
+                        // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
+                        candidateArray[canIdx].drl_index = 0;
 
                         candidateArray[canIdx].motion_vector_pred_x[REF_LIST_0] = bestPredmv[0].as_mv.col;
                         candidateArray[canIdx].motion_vector_pred_y[REF_LIST_0] = bestPredmv[0].as_mv.row;
@@ -1879,6 +1807,7 @@ void inject_compound_inter(
 
 
             //NEAR_NEWMV
+            // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
             maxDrlIndex = 1;//GetMaxDrlIndex(xd->ref_mv_count[ref_pair], NEAR_NEWMV);
             for (drli = 0; drli < maxDrlIndex; drli++) {
 
@@ -1937,7 +1866,7 @@ void inject_compound_inter(
 
                         IntMv  bestPredmv[2] = { {0}, {0} };
 
-                        ChooseBestAv1MvPredToRemove(
+                        ChooseBestAv1MvPred(
                             context_ptr,
                             candidateArray[canIdx].md_rate_estimation_ptr,
                             context_ptr->cu_ptr,
@@ -1950,6 +1879,8 @@ void inject_compound_inter(
                             candidateArray[canIdx].motion_vector_yl1,
                             &candidateArray[canIdx].drl_index,
                             bestPredmv);
+                        // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
+                        candidateArray[canIdx].drl_index = 0;
 
                         candidateArray[canIdx].motion_vector_pred_x[REF_LIST_0] = bestPredmv[0].as_mv.col;
                         candidateArray[canIdx].motion_vector_pred_y[REF_LIST_0] = bestPredmv[0].as_mv.row;
@@ -3088,19 +3019,20 @@ void  inject_inter_candidates(
     //----------------------
     //    NEAREST_NEWMV, NEW_NEARESTMV, NEAR_NEWMV, NEW_NEARMV.
     //----------------------
-
-    EbBool allow_compound = (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
-    if (allow_compound) {
-        //all of ref pairs: (1)single-ref List0  (2)single-ref List1  (3)compound Bi-Dir List0-List1  (4)compound Uni-Dir List0-List0  (5)compound Uni-Dir List1-List1
-        for (refIt = 0; refIt < picture_control_set_ptr->parent_pcs_ptr->tot_ref_frame_types; ++refIt) {
-            MvReferenceFrame ref_frame_pair = picture_control_set_ptr->parent_pcs_ptr->ref_frame_type_arr[refIt];
-            inject_compound_inter(
-                sequence_control_set_ptr,
-                context_ptr,
-                picture_control_set_ptr,
-                context_ptr->cu_ptr,
-                ref_frame_pair,
-                &canTotalCnt);
+    if (context_ptr->new_nearest_near_comb_injection) {
+        EbBool allow_compound = (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
+        if (allow_compound) {
+            //all of ref pairs: (1)single-ref List0  (2)single-ref List1  (3)compound Bi-Dir List0-List1  (4)compound Uni-Dir List0-List0  (5)compound Uni-Dir List1-List1
+            for (refIt = 0; refIt < picture_control_set_ptr->parent_pcs_ptr->tot_ref_frame_types; ++refIt) {
+                MvReferenceFrame ref_frame_pair = picture_control_set_ptr->parent_pcs_ptr->ref_frame_type_arr[refIt];
+                inject_new_nearest_new_comb_candidates(
+                    sequence_control_set_ptr,
+                    context_ptr,
+                    picture_control_set_ptr,
+                    context_ptr->cu_ptr,
+                    ref_frame_pair,
+                    &canTotalCnt);
+            }
         }
     }
 #endif

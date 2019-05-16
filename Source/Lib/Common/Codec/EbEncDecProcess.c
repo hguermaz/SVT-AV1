@@ -1495,6 +1495,13 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->global_mv_injection = 0;
 
+#if CLEAN_UP_INJECTION
+    if (picture_control_set_ptr->enc_mode == ENC_M0)
+        context_ptr->new_nearest_near_comb_injection = 1;
+    else
+        context_ptr->new_nearest_near_comb_injection = 0;
+#endif
+
 #if M9_NEAR_INJECTION
     // Set NEAR injection
     // Level                Settings
