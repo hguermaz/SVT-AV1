@@ -1771,6 +1771,7 @@ void inject_new_nearest_new_comb_candidates(
 
                         IntMv  bestPredmv[2] = { {0}, {0} };
 
+#if 0 // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
                         ChooseBestAv1MvPred(
                             context_ptr,
                             candidateArray[canIdx].md_rate_estimation_ptr,
@@ -1784,13 +1785,14 @@ void inject_new_nearest_new_comb_candidates(
                             candidateArray[canIdx].motion_vector_yl1,
                             &candidateArray[canIdx].drl_index,
                             bestPredmv);
-                        // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
+#endif
+                        
                         candidateArray[canIdx].drl_index = 0;
 
-                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_0] = bestPredmv[0].as_mv.col;
-                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_0] = bestPredmv[0].as_mv.row;
-                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_1] = bestPredmv[1].as_mv.col;
-                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_1] = bestPredmv[1].as_mv.row;
+                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_0] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.col;
+                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_0] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.row;
+                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_1] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.col;
+                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_1] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.row;
 
                         context_ptr->injected_mv_x_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_x_l0;
                         context_ptr->injected_mv_y_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_y_l0;
@@ -1866,6 +1868,7 @@ void inject_new_nearest_new_comb_candidates(
 
                         IntMv  bestPredmv[2] = { {0}, {0} };
 
+#if 0 // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
                         ChooseBestAv1MvPred(
                             context_ptr,
                             candidateArray[canIdx].md_rate_estimation_ptr,
@@ -1879,13 +1882,14 @@ void inject_new_nearest_new_comb_candidates(
                             candidateArray[canIdx].motion_vector_yl1,
                             &candidateArray[canIdx].drl_index,
                             bestPredmv);
-                        // Hsan: turn around to fix a conformance problem (to be fixed urgent !!)
+#endif
+
                         candidateArray[canIdx].drl_index = 0;
 
-                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_0] = bestPredmv[0].as_mv.col;
-                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_0] = bestPredmv[0].as_mv.row;
-                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_1] = bestPredmv[1].as_mv.col;
-                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_1] = bestPredmv[1].as_mv.row;
+                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_0] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.col;
+                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_0] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.row;
+                        candidateArray[canIdx].motion_vector_pred_x[REF_LIST_1] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.col;
+                        candidateArray[canIdx].motion_vector_pred_y[REF_LIST_1] = context_ptr->md_local_cu_unit[context_ptr->blk_geom->blkidx_mds].ed_ref_mv_stack[ref_pair][0].comp_mv.as_mv.row;
 
                         context_ptr->injected_mv_x_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_x_l0;
                         context_ptr->injected_mv_y_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_y_l0;
