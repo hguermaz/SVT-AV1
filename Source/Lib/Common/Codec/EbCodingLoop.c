@@ -3388,6 +3388,7 @@ uint8_t ed_tx_size_search_intra(
             //    PICTURE_BUFFER_DESC_LUMA_MASK);
 
             // Update Recon Samples-INTRA-
+            if(context_ptr->tx_depth)
             EncodePassUpdateReconSampleNeighborArrays(
                 ep_luma_recon_neighbor_array,
                 ep_luma_recon_neighbor_array,
@@ -3518,7 +3519,11 @@ void intra_tx_loop(
 
     const EbBool isIntraLCU = picture_control_set_ptr->limit_intra ? EB_FALSE : EB_TRUE;
 
-    uint8_t end_tx_depth = 0;// get_end_tx_depth(context_ptr->blk_geom->bsize, cu_ptr->prediction_mode_flag);
+#if ENABLE_INTRA_TX_SIZE_SEARCH_AT_ENCDEC
+    uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, cu_ptr->prediction_mode_flag);
+#else
+    uint8_t end_tx_depth = 0;
+#endif
 
     if (end_tx_depth) {
         //copy neigh recon data in cu_ptr

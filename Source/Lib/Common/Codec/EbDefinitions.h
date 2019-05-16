@@ -271,14 +271,15 @@ extern "C" {
 #define TXS_INTRA_CFL                                   0
 #define TXS_DISABLE_CFL                                 1
 #define TXS_CTX_EP                                      1 
-#define TXS_ADDED_AS_MD_CAND                            1
+#define TXS_ADDED_AS_MD_CAND                            0
 #if TXS_ADDED_AS_MD_CAND
 #define TXS_DECISION                                    0
 #define TXS_SEARCH_2                                    0
 #else
-#define TXS_DECISION                                    1
-#define TXS_SEARCH_2                                    1
+#define TXS_DECISION                                    0
+#define TXS_SEARCH_2                                    0
 #endif
+#define ENABLE_INTRA_TX_SIZE_SEARCH_AT_ENCDEC                 0
 #endif
  
 struct Buf2D 

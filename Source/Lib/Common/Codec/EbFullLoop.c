@@ -5638,8 +5638,8 @@ void ep_tx_size_cost(
 
     av1_tu_estimate_coeff_bits(
 #if CABAC_UP
-        1,//allow_update_cdf,
-        &picture_control_set_ptr->ec_ctx_array[sb_ptr->index],
+        0,
+        NULL,
 #endif
         picture_control_set_ptr,
         candidateBuffer,
