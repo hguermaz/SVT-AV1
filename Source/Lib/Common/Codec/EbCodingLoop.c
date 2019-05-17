@@ -3573,6 +3573,7 @@ void intra_tx_loop(
     for (context_ptr->tx_depth = 0; context_ptr->tx_depth <= end_tx_depth; context_ptr->tx_depth++)
     //if (0)
     {
+        cu_ptr->tx_depth = context_ptr->tx_depth;
 
         // Reset block_has_coeff
         cu_ptr->block_has_coeff = 0;
@@ -3802,6 +3803,68 @@ void intra_tx_loop(
                 eobs[context_ptr->txb_itr],
                 cuPlane);
 
+
+#if CHECK_ATB_CONFORMANCE
+#if  CABAC_UP 
+            if (picture_control_set_ptr->update_cdf)
+            {
+                ModeDecisionCandidateBuffer         **candidateBufferPtrArrayBase = context_ptr->md_context->candidate_buffer_ptr_array;
+                ModeDecisionCandidateBuffer         **candidate_buffer_ptr_array = &(candidateBufferPtrArrayBase[0]);
+                ModeDecisionCandidateBuffer          *candidateBuffer;
+
+                // Set the Candidate Buffer
+                candidateBuffer = candidate_buffer_ptr_array[0];
+                // Rate estimation function uses the values from CandidatePtr. The right values are copied from cu_ptr to CandidatePtr
+#if TXS_TX_TYPE
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
+#
+#else
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
+#endif
+                candidateBuffer->candidate_ptr->type = cu_ptr->prediction_mode_flag;
+                candidateBuffer->candidate_ptr->pred_mode = cu_ptr->pred_mode;
+
+                const uint32_t coeff1dOffset = context_ptr->coded_area_sb;
+
+                av1_tu_estimate_coeff_bits(
+                    1,//allow_update_cdf,
+                    &picture_control_set_ptr->ec_ctx_array[tbAddr],
+                    picture_control_set_ptr,
+                    candidateBuffer,
+                    cu_ptr,
+                    coeff1dOffset,
+                    context_ptr->coded_area_sb_uv,
+                    coeff_est_entropy_coder_ptr,
+                    coeff_buffer_sb,
+                    eobs[context_ptr->txb_itr][0],
+                    eobs[context_ptr->txb_itr][1],
+                    eobs[context_ptr->txb_itr][2],
+                    &y_tu_coeff_bits,
+                    &cb_tu_coeff_bits,
+                    &cr_tu_coeff_bits,
+#if TXS_ENC
+                    context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+                    context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+#else
+                    context_ptr->blk_geom->txsize[context_ptr->txb_itr],
+                    context_ptr->blk_geom->txsize_uv[context_ptr->txb_itr],
+#endif
+#if TXS_TX_TYPE
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr],
+                    candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr],
+#endif
+#if TXS_INTRA
+                    context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
+#else
+                    context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
+#endif
+                    asm_type);
+
+            }
+#endif
+#endif
             //CodingUnit          *cu_ptr = context_ptr->cu_ptr;
             //TransformUnit       *txb_ptr = &cu_ptr->transform_unit_array[context_ptr->txb_itr];
             //txb_ptr->y_has_coeff = 0;
@@ -3818,7 +3881,10 @@ void intra_tx_loop(
                 asm_type);
 
             // Update Recon Samples-INTRA-
-            if (context_ptr->tx_depth) {
+#if !CHECK_ATB_CONFORMANCE
+            if (context_ptr->tx_depth)
+#endif
+            {
                 EncodePassUpdateReconSampleNeighborArrays(
                     ep_luma_recon_neighbor_array,
                     ep_cb_recon_neighbor_array,
@@ -3864,18 +3930,22 @@ void intra_tx_loop(
     }
     context_ptr->tx_depth = cu_ptr->tx_depth = 0;//end_tx_depth;// Hsan atb end_tx_depth;
     //  Reset coded_area_sb
+#if !CHECK_ATB_CONFORMANCE    
     context_ptr->coded_area_sb = track_coded_area_sb;
     context_ptr->coded_area_sb_uv = track_coded_area_sb_uv;
 
     // Reset block_has_coeff
     cu_ptr->block_has_coeff = 0;
 #endif
+#endif
+
     //context_ptr->tx_depth = cu_ptr->tx_depth = 1;
     uint32_t totTu = context_ptr->blk_geom->txb_count[cu_ptr->tx_depth];
     uint8_t   tuIt;
     uint8_t   cb_qp = cu_ptr->qp;
     uint32_t  component_mask = context_ptr->blk_geom->has_uv ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK;
     //context_ptr->coded_area_sb = 0;
+#if !CHECK_ATB_CONFORMANCE
     for (tuIt = 0; tuIt < totTu; tuIt++) {
         context_ptr->txb_itr = tuIt;
 #if FIX_ATB
@@ -4234,6 +4304,7 @@ void intra_tx_loop(
             context_ptr->coded_area_sb_uv += context_ptr->blk_geom->tx_width_uv[context_ptr->tx_depth][context_ptr->txb_itr] * context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr];
 
     } // Transform Loop
+#endif
 }
 
 #endif

@@ -255,6 +255,8 @@ extern "C" {
 #define TX_SIZE_SEARCH_LEVELS                           1
 #if TX_SIZE_SEARCH_LEVELS
 #define FIX_ATB                                         1
+#define CHECK_ATB_CONFORMANCE                           0
+
 #define TX_SIZE_UPDATE_GEOM                             1
 #define TXS_ENC                                         1
 #define TXS_MD                                          1
