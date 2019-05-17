@@ -131,7 +131,7 @@ EbErrorType me_context_ctor(
     EB_MALLOC(EbByte, (*object_dbl_ptr)->one_d_intermediate_results_buf1, sizeof(uint8_t)*BLOCK_SIZE_64*BLOCK_SIZE_64, EB_N_PTR);
 
 #if MEMORY_FOOTPRINT_OPT_ME_MV
-    EB_MALLOC(MotionEstimationTierZero *, (*object_dbl_ptr)->me_candidate, sizeof(MotionEstimationTierZero) * ((mrp_mode == 0) ? ME_RES_CAND_MRP_MODE_0 : ME_RES_CAND_MRP_MODE_1), EB_N_PTR);
+    EB_MALLOC(MotionEstimationTierZero *, (*object_dbl_ptr)->me_candidate, sizeof(MotionEstimationTierZero) * ((mrp_mode == 0) ? ME_RES_CAND_MRP_MODE_0 : (mrp_mode == 1) ? ME_RES_CAND_MRP_MODE_1 : ME_RES_CAND_MRP_MODE_2), EB_N_PTR);
 #endif
 #if REDUCE_BLOCK_COUNT_ME
     for (pu_index = 0; pu_index < (nsq_present ? MAX_ME_PU_COUNT : SQUARE_PU_COUNT); pu_index++) {
@@ -139,7 +139,7 @@ EbErrorType me_context_ctor(
     for (pu_index = 0; pu_index < MAX_ME_PU_COUNT; pu_index++) {
 #endif
 #if MEMORY_FOOTPRINT_OPT_ME_MV
-        for (meCandidateIndex = 0; meCandidateIndex < ((mrp_mode == 0) ? ME_RES_CAND_MRP_MODE_0 : ME_RES_CAND_MRP_MODE_1); meCandidateIndex++) {
+        for (meCandidateIndex = 0; meCandidateIndex < ((mrp_mode == 0) ? ME_RES_CAND_MRP_MODE_0 : (mrp_mode == 1) ? ME_RES_CAND_MRP_MODE_1 : ME_RES_CAND_MRP_MODE_2); meCandidateIndex++) {
 #else
         for (meCandidateIndex = 0; meCandidateIndex < MAX_ME_CANDIDATE_PER_PU; meCandidateIndex++) {
 #endif

@@ -2332,7 +2332,8 @@ void SetParamBasedOnInput(SequenceControlSet *sequence_control_set_ptr)
 
 #if MEMORY_FOOTPRINT_OPT_ME_MV
     //0: MRP Mode 0 (4,3)
-    //1: MRP Mode 1 (2,2)                            
+    //1: MRP Mode 1 (2,2)
+    //2: MRP Mode 1 (1,1)                           
     sequence_control_set_ptr->static_config.mrp_mode = (uint8_t) (sequence_control_set_ptr->static_config.enc_mode == ENC_M0) ? 0 : 1;
 
     //0: ON
@@ -3140,7 +3141,7 @@ EB_API EbErrorType eb_svt_enc_set_parameter(
     // Initialize the Prediction Structure Group
     return_error = (EbErrorType)prediction_structure_group_ctor(
 #if MRP_M1
-        pEncCompData->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->static_config.enc_mode,
+        pEncCompData->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->static_config.mrp_mode,
 #endif
         &pEncCompData->sequence_control_set_instance_array[instance_index]->encode_context_ptr->prediction_structure_group_ptr,
         pEncCompData->sequence_control_set_instance_array[instance_index]->sequence_control_set_ptr->static_config.base_layer_switch_mode);

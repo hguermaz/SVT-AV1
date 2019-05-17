@@ -1928,34 +1928,34 @@ static EbErrorType PredictionStructureCtor(
 
 EbErrorType prediction_structure_group_ctor(
 #if MRP_M1
-    uint8_t          enc_mode,
+    uint8_t                      mrp_mode,
 #endif
     PredictionStructureGroup   **predictionStructureGroupDblPtr,
-    uint32_t                         baseLayerSwitchMode)
+    uint32_t                     baseLayerSwitchMode)
 {
     uint32_t          predStructIndex = 0;
     uint32_t          refIdx;
     uint32_t          hierarchicalLevelIdx;
     uint32_t          predTypeIdx;
     uint32_t          numberOfReferences;
-    EbErrorType    return_error = EB_ErrorNone;
+    EbErrorType       return_error = EB_ErrorNone;
 
     PredictionStructureGroup *predictionStructureGroupPtr;
     EB_MALLOC(PredictionStructureGroup*, predictionStructureGroupPtr, sizeof(PredictionStructureGroup), EB_N_PTR);
     *predictionStructureGroupDblPtr = predictionStructureGroupPtr;
 
 #if MRP_M1
-    if (enc_mode > ENC_M0) {
-
-        for (int gop_i = 1; gop_i < 8; ++gop_i) {
-            for (int i = 1; i < 4; ++i) {
+    if (mrp_mode > 0) {
+        int init = mrp_mode == 1 ? 1 : 0;
+        for (int gop_i = init; gop_i < 8; ++gop_i) {   // loop all pictures in minigop
+            for (int i = 1   ; i < 4; ++i) {           // loop over all reference frames for picture selected within the minigop
                 four_level_hierarchical_pred_struct[gop_i].ref_list0[i] = 0;
                 four_level_hierarchical_pred_struct[gop_i].ref_list1[i] = 0;
             }
         }
 
-        for (int gop_i = 1; gop_i < 16; ++gop_i) {
-            for (int i = 1; i < 4; ++i) {
+        for (int gop_i = init; gop_i < 16; ++gop_i) {  // loop all pictures in minigop
+            for (int i = 1   ; i < 4; ++i) {           // loop over all reference frames for picture selected within the minigop
                 five_level_hierarchical_pred_struct[gop_i].ref_list0[i] = 0;
                 five_level_hierarchical_pred_struct[gop_i].ref_list1[i] = 0;
             }

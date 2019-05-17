@@ -19,8 +19,11 @@ extern "C" {
 #define ME_RES_CAND_MRP_MODE_0   23            // [Single Ref = 7] + [BiDir = 12 = 3*4 ] + [UniDir = 4 = 3+1]
 #define ME_MV_MRP_MODE_0          7            // [7 = 4+3]
                                  
-#define ME_RES_CAND_MRP_MODE_1   10            // [Single Ref = 4] + [UniDir = 4 = 2*2] + [UniDir = 2 = 1+1]
+#define ME_RES_CAND_MRP_MODE_1   10            // [Single Ref = 4] + [BiDir = 4 = 2*2] + [UniDir = 2 = 1+1]
 #define ME_MV_MRP_MODE_1          4            // [4 = 2+2]
+
+#define ME_RES_CAND_MRP_MODE_2    3            // [Single Ref = 2] + [BiDir = 1] + [UniDir = 0]
+#define ME_MV_MRP_MODE_2          2            // [2 = 1+1]
 
 #else
 #define ME_RES_CAND              23            // [Single Ref = 7] + [BiDir = 12 = 3*4 ] + [UniDir = 4 = 3+1]
