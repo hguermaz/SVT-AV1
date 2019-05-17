@@ -13871,8 +13871,12 @@ extern "C" {
         NeighborArrayUnit                  *amvp_mv_merge_mode_type_neighbor_array;
 #endif
 #if TXS_INTRA
-        NeighborArrayUnit                  *ep_luma_recon_neighbor_array_txs;
-        NeighborArrayUnit                  *ep_luma_recon_neighbor_array16bit_txs;
+        NeighborArrayUnit                  *ep_txs_luma_recon_neighbor_array;
+        NeighborArrayUnit                  *ep_txs_cb_recon_neighbor_array;
+        NeighborArrayUnit                  *ep_txs_cr_recon_neighbor_array;
+        NeighborArrayUnit                  *ep_txs_luma_recon_neighbor_array16bit;
+        NeighborArrayUnit                  *ep_txs_cb_recon_neighbor_array16bit;
+        NeighborArrayUnit                  *ep_txs_cr_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_txfm_context_array;
 #endif
 #if TXS_CTX_EP

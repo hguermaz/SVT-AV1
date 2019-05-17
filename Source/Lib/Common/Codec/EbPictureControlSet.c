@@ -666,20 +666,6 @@ EbErrorType picture_control_set_ctor(
         return EB_ErrorInsufficientResources;
     }
 
-#if TXS_INTRA
-    return_error = neighbor_array_unit_ctor(
-        &object_ptr->ep_luma_recon_neighbor_array_txs,
-        MAX_PICTURE_WIDTH_SIZE,
-        MAX_PICTURE_HEIGHT_SIZE,
-        sizeof(uint8_t),
-        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
-        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
-        NEIGHBOR_ARRAY_UNIT_FULL_MASK);
-
-    if (return_error == EB_ErrorInsufficientResources) {
-        return EB_ErrorInsufficientResources;
-    }
-#endif
     return_error = neighbor_array_unit_ctor(
         &object_ptr->ep_cb_recon_neighbor_array,
         MAX_PICTURE_WIDTH_SIZE >> subsampling_x,
@@ -702,9 +688,51 @@ EbErrorType picture_control_set_ctor(
         SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
         NEIGHBOR_ARRAY_UNIT_FULL_MASK);
 
+
     if (return_error == EB_ErrorInsufficientResources) {
         return EB_ErrorInsufficientResources;
     }
+#if TXS_INTRA
+    return_error = neighbor_array_unit_ctor(
+        &object_ptr->ep_txs_luma_recon_neighbor_array,
+        MAX_PICTURE_WIDTH_SIZE,
+        MAX_PICTURE_HEIGHT_SIZE,
+        sizeof(uint8_t),
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+
+    if (return_error == EB_ErrorInsufficientResources) {
+        return EB_ErrorInsufficientResources;
+    }
+
+    return_error = neighbor_array_unit_ctor(
+        &object_ptr->ep_txs_cb_recon_neighbor_array,
+        MAX_PICTURE_WIDTH_SIZE >> subsampling_x,
+        MAX_PICTURE_HEIGHT_SIZE >> subsampling_y,
+        sizeof(uint8_t),
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+
+    if (return_error == EB_ErrorInsufficientResources) {
+        return EB_ErrorInsufficientResources;
+    }
+
+    return_error = neighbor_array_unit_ctor(
+        &object_ptr->ep_txs_cr_recon_neighbor_array,
+        MAX_PICTURE_WIDTH_SIZE >> subsampling_x,
+        MAX_PICTURE_HEIGHT_SIZE >> subsampling_y,
+        sizeof(uint8_t),
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+        NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+
+
+    if (return_error == EB_ErrorInsufficientResources) {
+        return EB_ErrorInsufficientResources;
+    }
+#endif
 #if TXS_INTRA
      return_error = neighbor_array_unit_ctor(
         &object_ptr->ep_txfm_context_array,
@@ -732,21 +760,7 @@ EbErrorType picture_control_set_ctor(
         if (return_error == EB_ErrorInsufficientResources) {
             return EB_ErrorInsufficientResources;
         }
-#if TXS_INTRA
-        return_error = neighbor_array_unit_ctor(
-            &object_ptr->ep_luma_recon_neighbor_array16bit_txs,
-            MAX_PICTURE_WIDTH_SIZE,
-            MAX_PICTURE_HEIGHT_SIZE,
-            sizeof(uint16_t),
-            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
-            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
-            NEIGHBOR_ARRAY_UNIT_FULL_MASK);
 
-        if (return_error == EB_ErrorInsufficientResources) {
-            return EB_ErrorInsufficientResources;
-        }
-
-#endif
         return_error = neighbor_array_unit_ctor(
             &object_ptr->ep_cb_recon_neighbor_array16bit,
             MAX_PICTURE_WIDTH_SIZE >> subsampling_x,
@@ -770,13 +784,54 @@ EbErrorType picture_control_set_ctor(
         if (return_error == EB_ErrorInsufficientResources) {
             return EB_ErrorInsufficientResources;
         }
+
+#if TXS_INTRA
+        return_error = neighbor_array_unit_ctor(
+            &object_ptr->ep_txs_luma_recon_neighbor_array16bit,
+            MAX_PICTURE_WIDTH_SIZE,
+            MAX_PICTURE_HEIGHT_SIZE,
+            sizeof(uint16_t),
+            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+            NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+
+        if (return_error == EB_ErrorInsufficientResources) {
+            return EB_ErrorInsufficientResources;
+        }
+
+        return_error = neighbor_array_unit_ctor(
+            &object_ptr->ep_txs_cb_recon_neighbor_array16bit,
+            MAX_PICTURE_WIDTH_SIZE >> subsampling_x,
+            MAX_PICTURE_HEIGHT_SIZE >> subsampling_y,
+            sizeof(uint16_t),
+            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+            NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+
+        if (return_error == EB_ErrorInsufficientResources) {
+            return EB_ErrorInsufficientResources;
+        }
+        return_error = neighbor_array_unit_ctor(
+            &object_ptr->ep_txs_cr_recon_neighbor_array16bit,
+            MAX_PICTURE_WIDTH_SIZE >> subsampling_x,
+            MAX_PICTURE_HEIGHT_SIZE >> subsampling_y,
+            sizeof(uint16_t),
+            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+            SAMPLE_NEIGHBOR_ARRAY_GRANULARITY,
+            NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+        if (return_error == EB_ErrorInsufficientResources) {
+            return EB_ErrorInsufficientResources;
+        }
+#endif
     }
     else {
         object_ptr->ep_luma_recon_neighbor_array16bit = 0;
         object_ptr->ep_cb_recon_neighbor_array16bit = 0;
         object_ptr->ep_cr_recon_neighbor_array16bit = 0;
 #if TXS_INTRA
-        object_ptr->ep_luma_recon_neighbor_array16bit_txs = 0;
+        object_ptr->ep_txs_luma_recon_neighbor_array16bit = 0;
+        object_ptr->ep_txs_cb_recon_neighbor_array16bit = 0;
+        object_ptr->ep_txs_cr_recon_neighbor_array16bit = 0;
 #endif
     }
 #if !OPT_LOSSLESS_0

@@ -3149,6 +3149,7 @@ uint64_t estimate_tx_size_bits(
     return bits;
 }
 #endif
+#if !FIX_ATB
 uint8_t ed_tx_size_search_intra(
     SequenceControlSet      *sequence_control_set_ptr,
     PictureControlSet       *picture_control_set_ptr,
@@ -3428,7 +3429,7 @@ uint8_t ed_tx_size_search_intra(
   
     return best_tx_depth;
 }
-
+#endif
 void intra_tx_loop(
     SequenceControlSet      *sequence_control_set_ptr,
     PictureControlSet       *picture_control_set_ptr,
@@ -3461,9 +3462,11 @@ void intra_tx_loop(
     NeighborArrayUnit      *ep_intra_luma_mode_neighbor_array = picture_control_set_ptr->ep_intra_luma_mode_neighbor_array;
     NeighborArrayUnit      *ep_intra_chroma_mode_neighbor_array = picture_control_set_ptr->ep_intra_chroma_mode_neighbor_array;
     NeighborArrayUnit      *ep_mv_neighbor_array = picture_control_set_ptr->ep_mv_neighbor_array;
+#if !FIX_ATB
     NeighborArrayUnit      *ep_luma_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_luma_recon_neighbor_array16bit : picture_control_set_ptr->ep_luma_recon_neighbor_array;
     NeighborArrayUnit      *ep_cb_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cb_recon_neighbor_array16bit : picture_control_set_ptr->ep_cb_recon_neighbor_array;
     NeighborArrayUnit      *ep_cr_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cr_recon_neighbor_array16bit : picture_control_set_ptr->ep_cr_recon_neighbor_array;
+#endif
     NeighborArrayUnit      *ep_skip_flag_neighbor_array = picture_control_set_ptr->ep_skip_flag_neighbor_array;
     EbPictureBufferDesc    *residual_buffer = context_ptr->residual_buffer;
     EbPictureBufferDesc    *transform_buffer = context_ptr->transform_buffer;
@@ -3577,6 +3580,22 @@ void intra_tx_loop(
         //  Reset coded_area_sb
         context_ptr->coded_area_sb = track_coded_area_sb;
         context_ptr->coded_area_sb_uv = track_coded_area_sb_uv;
+      
+        NeighborArrayUnit *ep_luma_recon_neighbor_array;
+        NeighborArrayUnit *ep_cb_recon_neighbor_array;
+        NeighborArrayUnit *ep_cr_recon_neighbor_array;
+
+        if (context_ptr->tx_depth) {
+            ep_luma_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_txs_luma_recon_neighbor_array16bit : picture_control_set_ptr->ep_txs_luma_recon_neighbor_array;
+            ep_cb_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_txs_cb_recon_neighbor_array16bit : picture_control_set_ptr->ep_txs_cb_recon_neighbor_array;
+            ep_cr_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_txs_cr_recon_neighbor_array16bit : picture_control_set_ptr->ep_txs_cr_recon_neighbor_array;
+        }
+        else {
+            ep_luma_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_luma_recon_neighbor_array16bit : picture_control_set_ptr->ep_luma_recon_neighbor_array;
+            ep_cb_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cb_recon_neighbor_array16bit : picture_control_set_ptr->ep_cb_recon_neighbor_array;
+            ep_cr_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cr_recon_neighbor_array16bit : picture_control_set_ptr->ep_cr_recon_neighbor_array;
+        }
+
         uint32_t totTu = context_ptr->blk_geom->txb_count[context_ptr->tx_depth];
         uint8_t   tuIt;
         uint8_t   cb_qp = cu_ptr->qp;
@@ -3798,37 +3817,23 @@ void intra_tx_loop(
                 eobs[context_ptr->txb_itr],
                 asm_type);
 
-
-            //// Update the Intra-specific Neighbor Arrays
-            //EncodePassUpdateIntraModeNeighborArrays(
-            //    ep_mode_type_neighbor_array,
-            //    ep_intra_luma_mode_neighbor_array,
-            //    ep_intra_chroma_mode_neighbor_array,
-            //    (uint8_t)cu_ptr->pred_mode,
-            //    (uint8_t)pu_ptr->intra_chroma_mode,
-            //    txb_origin_x,
-            //    txb_origin_y,
-            //    context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-            //    context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
-            //    context_ptr->blk_geom->tx_width_uv[context_ptr->tx_depth][context_ptr->txb_itr],
-            //    context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr],
-            //    context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK);
-#if 0 // Hsan atb
             // Update Recon Samples-INTRA-
-            EncodePassUpdateReconSampleNeighborArrays(
-                ep_luma_recon_neighbor_array,
-                ep_cb_recon_neighbor_array,
-                ep_cr_recon_neighbor_array,
-                recon_buffer,
-                txb_origin_x,
-                txb_origin_y,
-                context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->tx_width_uv[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
-                is16bit);
-#endif
+            if (context_ptr->tx_depth) {
+                EncodePassUpdateReconSampleNeighborArrays(
+                    ep_luma_recon_neighbor_array,
+                    ep_cb_recon_neighbor_array,
+                    ep_cr_recon_neighbor_array,
+                    recon_buffer,
+                    txb_origin_x,
+                    txb_origin_y,
+                    context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
+                    context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
+                    context_ptr->blk_geom->tx_width_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+                    context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+                    context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+                    is16bit);
+            }
+
             if (context_ptr->blk_geom->has_uv && uv_pass) {
 
                 cu_ptr->block_has_coeff = cu_ptr->block_has_coeff |
@@ -3877,7 +3882,12 @@ void intra_tx_loop(
         // Reset Tx Type
         cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y] = track_transform_type;
         cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV] = track_transform_type_uv;
+
+        NeighborArrayUnit *ep_luma_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_luma_recon_neighbor_array16bit : picture_control_set_ptr->ep_luma_recon_neighbor_array;
+        NeighborArrayUnit *ep_cb_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cb_recon_neighbor_array16bit : picture_control_set_ptr->ep_cb_recon_neighbor_array;
+        NeighborArrayUnit *ep_cr_recon_neighbor_array = is16bit ? picture_control_set_ptr->ep_cr_recon_neighbor_array16bit : picture_control_set_ptr->ep_cr_recon_neighbor_array;
 #endif
+
         uint8_t uv_pass = context_ptr->tx_depth && tuIt ? 0 : 1; //NM: 128x128 exeption
         uint16_t txb_origin_x = context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->tx_depth][tuIt];
         uint16_t txb_origin_y = context_ptr->cu_origin_y + context_ptr->blk_geom->tx_boff_y[context_ptr->tx_depth][tuIt];
@@ -4178,6 +4188,24 @@ void intra_tx_loop(
             context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr],
             context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
             is16bit);
+
+
+#if FIX_ATB
+        // Update Recon Samples-INTRA-
+        EncodePassUpdateReconSampleNeighborArrays(
+            is16bit ? picture_control_set_ptr->ep_txs_luma_recon_neighbor_array16bit : picture_control_set_ptr->ep_txs_luma_recon_neighbor_array,
+            is16bit ? picture_control_set_ptr->ep_txs_cb_recon_neighbor_array16bit : picture_control_set_ptr->ep_txs_cb_recon_neighbor_array,
+            is16bit ? picture_control_set_ptr->ep_txs_cr_recon_neighbor_array16bit : picture_control_set_ptr->ep_txs_cr_recon_neighbor_array,
+            recon_buffer,
+            txb_origin_x,
+            txb_origin_y,
+            context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->tx_width_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->has_uv && uv_pass ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK,
+            is16bit);
+#endif
 
         if (context_ptr->blk_geom->has_uv && uv_pass) {
 
