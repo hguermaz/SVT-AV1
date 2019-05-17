@@ -3561,6 +3561,15 @@ void intra_tx_loop(
     uint32_t cu_originx_uv = (context_ptr->cu_origin_x >> 3 << 3) >> 1;
 
 #if FIX_ATB
+
+    uint64_t total_distortion;
+
+    uint64_t best_distortion_search = (uint64_t) ~0;
+#if DEBUG_ATB
+    uint64_t best_distortion_ep = (uint64_t)~0;
+#endif
+    uint8_t best_tx_depth = (uint8_t)~0;
+
     // Kep track of coded_area_sb
     uint16_t track_coded_area_sb = context_ptr->coded_area_sb;
     uint16_t track_coded_area_sb_uv = context_ptr->coded_area_sb_uv;
@@ -3572,8 +3581,6 @@ void intra_tx_loop(
     uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, cu_ptr->prediction_mode_flag);
 
 
-    uint64_t best_distortion = (uint64_t) ~0;
-    uint8_t best_tx_depth = (uint8_t)~0;
 
     for (context_ptr->tx_depth = 0; context_ptr->tx_depth <= end_tx_depth; context_ptr->tx_depth++)
     //if (0)
@@ -3607,8 +3614,7 @@ void intra_tx_loop(
         uint8_t   cb_qp = cu_ptr->qp;
         uint32_t  component_mask = context_ptr->blk_geom->has_uv ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK;
    
-
-        uint16_t total_distortion = 0;
+        total_distortion = 0;
         for (tuIt = 0; tuIt < totTu; tuIt++) {
             context_ptr->txb_itr = tuIt;
 
@@ -3949,14 +3955,14 @@ void intra_tx_loop(
 
         } // Transform Loop
 
-        if (total_distortion < best_distortion) {
-            best_distortion = total_distortion;
+        if (total_distortion < best_distortion_search) {
+            best_distortion_search = total_distortion;
             best_tx_depth = context_ptr->tx_depth;
         }
 
     } // Transform Depth Loop
 
-    context_ptr->tx_depth = cu_ptr->tx_depth = 0;// best_tx_depth;// end_tx_depth;// best_tx_depth;//end_tx_depth;// Hsan atb end_tx_depth;
+    context_ptr->tx_depth = cu_ptr->tx_depth = best_tx_depth;// best_tx_depth;// end_tx_depth;// best_tx_depth;//end_tx_depth;// Hsan atb end_tx_depth;
     //  Reset coded_area_sb
 #if !CHECK_ATB_CONFORMANCE    
     context_ptr->coded_area_sb = track_coded_area_sb;
@@ -3974,6 +3980,7 @@ void intra_tx_loop(
     uint32_t  component_mask = context_ptr->blk_geom->has_uv ? PICTURE_BUFFER_DESC_FULL_MASK : PICTURE_BUFFER_DESC_LUMA_MASK;
     //context_ptr->coded_area_sb = 0;
 #if !CHECK_ATB_CONFORMANCE
+    total_distortion = 0;
     for (tuIt = 0; tuIt < totTu; tuIt++) {
         context_ptr->txb_itr = tuIt;
 #if FIX_ATB
@@ -4256,7 +4263,23 @@ void intra_tx_loop(
             eobs[context_ptr->txb_itr],
             asm_type);
 
+#if DEBUG_ATB
+        // Hsan atb
+        uint32_t recon_luma_offset = (recon_buffer->origin_y + txb_origin_y) * recon_buffer->stride_y + (recon_buffer->origin_x + txb_origin_x);
+        uint32_t input_luma_offset = (context_ptr->input_samples->origin_y + txb_origin_y) * context_ptr->input_samples->stride_y + (context_ptr->input_samples->origin_x + txb_origin_x);
 
+        uint64_t distortion = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr]) - 2](
+            context_ptr->input_samples->buffer_y + input_luma_offset,
+            context_ptr->input_samples->stride_y,
+            recon_buffer->buffer_y + recon_luma_offset,
+            recon_buffer->stride_y,
+            context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]);
+
+        distortion <<= 4;
+
+        total_distortion += distortion;
+#endif
         //// Update the Intra-specific Neighbor Arrays
         //EncodePassUpdateIntraModeNeighborArrays(
         //    ep_mode_type_neighbor_array,
@@ -4332,6 +4355,10 @@ void intra_tx_loop(
             context_ptr->coded_area_sb_uv += context_ptr->blk_geom->tx_width_uv[context_ptr->tx_depth][context_ptr->txb_itr] * context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr];
 
     } // Transform Loop
+#if DEBUG_ATB
+    if (total_distortion != best_distortion_search)
+        printf("");
+#endif
 #endif
 }
 
