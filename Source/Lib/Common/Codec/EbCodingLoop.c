@@ -3561,6 +3561,11 @@ void intra_tx_loop(
     // Kep track of coded_area_sb
     uint16_t track_coded_area_sb = context_ptr->coded_area_sb;
     uint16_t track_coded_area_sb_uv = context_ptr->coded_area_sb_uv;
+
+    // Kep track of Tx Type (will be used for all TUs)
+    TxType track_transform_type = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_Y];
+    TxType track_transform_type_uv = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV];
+
     uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, cu_ptr->prediction_mode_flag);
     //for (context_ptr->tx_depth = 0; context_ptr->tx_depth <= end_tx_depth; context_ptr->tx_depth++)
     if (0)
@@ -3576,9 +3581,9 @@ void intra_tx_loop(
         for (tuIt = 0; tuIt < totTu; tuIt++) {
             context_ptr->txb_itr = tuIt;
 
-            // To be done @ MD
-            cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y] = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_Y];
-            cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV];
+            // Reset Tx Type
+            cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y] = track_transform_type;
+            cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV] = track_transform_type_uv;
 
             uint8_t uv_pass = context_ptr->tx_depth && tuIt ? 0 : 1; //NM: 128x128 exeption
             uint16_t txb_origin_x = context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->tx_depth][tuIt];
@@ -3848,7 +3853,7 @@ void intra_tx_loop(
 
         } // Transform Loop
     }
-    context_ptr->tx_depth = cu_ptr->tx_depth = 0;// Hsan atb end_tx_depth;
+    context_ptr->tx_depth = cu_ptr->tx_depth = 0; //  end_tx_depth;// Hsan atb end_tx_depth;
     //  Reset coded_area_sb
     context_ptr->coded_area_sb = track_coded_area_sb;
     context_ptr->coded_area_sb_uv = track_coded_area_sb_uv;
@@ -3862,9 +3867,9 @@ void intra_tx_loop(
     for (tuIt = 0; tuIt < totTu; tuIt++) {
         context_ptr->txb_itr = tuIt;
 #if FIX_ATB
-        // To be done @ MD
-        cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y]  = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_Y];
-        cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV];
+        // Reset Tx Type
+        cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y] = track_transform_type;
+        cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV] = track_transform_type_uv;
 #endif
         uint8_t uv_pass = context_ptr->tx_depth && tuIt ? 0 : 1; //NM: 128x128 exeption
         uint16_t txb_origin_x = context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->tx_depth][tuIt];
