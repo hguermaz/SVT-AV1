@@ -254,6 +254,7 @@ extern "C" {
 #define AOM_INTERP_EXTEND 4
 #define TX_SIZE_SEARCH_LEVELS                           1
 #if TX_SIZE_SEARCH_LEVELS
+#define FIX_ATB                                         1
 #define TX_SIZE_UPDATE_GEOM                             1
 #define TXS_ENC                                         1
 #define TXS_MD                                          1
@@ -275,7 +276,9 @@ extern "C" {
 #define TXS_DECISION                                    0
 #define TXS_SEARCH_2                                    0
 #endif
+#if !FIX_ATB
 #define ENABLE_INTRA_TX_SIZE_SEARCH_AT_ENCDEC           1
+#endif
 #endif
 
 #define TXS_INTRA_FULL_COST                             1
