@@ -3567,9 +3567,13 @@ void intra_tx_loop(
     TxType track_transform_type_uv = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV];
 
     uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, cu_ptr->prediction_mode_flag);
-    //for (context_ptr->tx_depth = 0; context_ptr->tx_depth <= end_tx_depth; context_ptr->tx_depth++)
-    if (0)
+    for (context_ptr->tx_depth = 0; context_ptr->tx_depth <= end_tx_depth; context_ptr->tx_depth++)
+    //if (0)
     {
+
+        // Reset block_has_coeff
+        cu_ptr->block_has_coeff = 0;
+
         //  Reset coded_area_sb
         context_ptr->coded_area_sb = track_coded_area_sb;
         context_ptr->coded_area_sb_uv = track_coded_area_sb_uv;
@@ -3853,10 +3857,13 @@ void intra_tx_loop(
 
         } // Transform Loop
     }
-    context_ptr->tx_depth = cu_ptr->tx_depth = 0; //  end_tx_depth;// Hsan atb end_tx_depth;
+    context_ptr->tx_depth = cu_ptr->tx_depth = 0;//end_tx_depth;// Hsan atb end_tx_depth;
     //  Reset coded_area_sb
     context_ptr->coded_area_sb = track_coded_area_sb;
     context_ptr->coded_area_sb_uv = track_coded_area_sb_uv;
+
+    // Reset block_has_coeff
+    cu_ptr->block_has_coeff = 0;
 #endif
     //context_ptr->tx_depth = cu_ptr->tx_depth = 1;
     uint32_t totTu = context_ptr->blk_geom->txb_count[cu_ptr->tx_depth];
