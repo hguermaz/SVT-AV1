@@ -3568,7 +3568,7 @@ void intra_tx_loop(
 #if DEBUG_ATB
     uint64_t best_distortion_ep = (uint64_t)~0;
 #endif
-    uint8_t best_tx_depth = (uint8_t)~0;
+    uint8_t best_tx_depth = 0;
 
     // Kep track of coded_area_sb
     uint16_t track_coded_area_sb = context_ptr->coded_area_sb;
@@ -3580,8 +3580,9 @@ void intra_tx_loop(
 
     uint8_t end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, cu_ptr->prediction_mode_flag);
 
-
-
+#if SHUT_ATB
+    end_tx_depth = 0;
+#endif
     for (context_ptr->tx_depth = 0; context_ptr->tx_depth <= end_tx_depth; context_ptr->tx_depth++)
     //if (0)
     {

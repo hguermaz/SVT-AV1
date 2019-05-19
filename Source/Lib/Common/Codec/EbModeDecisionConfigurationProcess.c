@@ -2078,6 +2078,16 @@ void forward_sq_non4_blocks_to_md(
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].leaf_index = 0;//valid only for square 85 world. will be removed.
                 resultsPtr->leaf_data_array[resultsPtr->leaf_count].mds_idx = blk_index;
 
+#if DEBUG_ATB
+                if (blk_geom->sq_size == 8)
+                {
+                    resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = EB_FALSE;
+                    split_flag = EB_FALSE;
+                }
+                else {
+                    split_flag = EB_TRUE;
+                }
+#else
                 if (blk_geom->sq_size > 8)
                 {
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = EB_TRUE;
@@ -2087,7 +2097,7 @@ void forward_sq_non4_blocks_to_md(
                     resultsPtr->leaf_data_array[resultsPtr->leaf_count++].split_flag = EB_FALSE;
                     split_flag = EB_FALSE;
                 }
-
+#endif
 
             }
 

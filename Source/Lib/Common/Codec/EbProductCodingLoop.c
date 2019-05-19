@@ -3032,7 +3032,7 @@ void AV1PerformFullLoop(
 
             tx_search_skip_fag = (picture_control_set_ptr->parent_pcs_ptr->skip_tx_search && best_fastLoop_candidate_index > NFL_TX_TH) ? 1 : tx_search_skip_fag;
 
-#if DISABLE_TX_TYPE
+#if DISABLE_TX_TYPE || DEBUG_ATB
             tx_search_skip_fag = 1;
 #endif
             if (!tx_search_skip_fag) {

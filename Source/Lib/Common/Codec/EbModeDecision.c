@@ -4623,6 +4623,11 @@ void  inject_intra_candidates(
 #if TXS_MD
     uint8_t tx_depth = context_ptr->tx_depth;
 #endif
+
+#if DEBUG_ATB
+    intra_mode_start = DC_PRED;
+    intra_mode_end = DC_PRED;
+#endif
     for (openLoopIntraCandidate = intra_mode_start; openLoopIntraCandidate <= intra_mode_end ; ++openLoopIntraCandidate) {
 
         if (av1_is_directional_mode((PredictionMode)openLoopIntraCandidate)) {
