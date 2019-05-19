@@ -329,7 +329,16 @@ void mode_decision_update_neighbor_arrays(
             origin_y,
             context_ptr->blk_geom->bwidth,
             context_ptr->blk_geom->bheight);
-
+#if ATB_MD_INTRA
+        update_recon_neighbor_array(
+            picture_control_set_ptr->md_tx_depth_1_luma_recon_neighbor_array,
+            context_ptr->cu_ptr->neigh_top_recon[0],
+            context_ptr->cu_ptr->neigh_left_recon[0],
+            origin_x,
+            origin_y,
+            context_ptr->blk_geom->bwidth,
+            context_ptr->blk_geom->bheight);
+#endif  
     }
 
 
@@ -5137,7 +5146,7 @@ EB_EXTERN EbErrorType mode_decision_sb(
         else
 #endif
 #if TXS_MD
-        // Init tx_epth for the CU
+        // Init tx_depth for the CU
         cu_ptr->tx_depth = 0;
 #endif
         md_encode_block(
