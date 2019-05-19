@@ -13846,6 +13846,11 @@ extern "C" {
         NeighborArrayUnit32                *md_interpolation_type_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
 
         NeighborArrayUnit                  *mdleaf_partition_neighbor_array[NEIGHBOR_ARRAY_TOTAL_COUNT];
+
+#if ATB_MD_INTRA
+        NeighborArrayUnit                  *md_tx_depth_1_luma_recon_neighbor_array;
+#endif
+
 #if !MEMORY_FOOTPRINT_OPT
         // Mode Decision Refinement Neighbor Arrays
         NeighborArrayUnit                  *md_refinement_intra_luma_mode_neighbor_array;

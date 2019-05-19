@@ -114,6 +114,9 @@ extern "C" {
         NeighborArrayUnit            *luma_recon_neighbor_array;
         NeighborArrayUnit            *cb_recon_neighbor_array;
         NeighborArrayUnit            *cr_recon_neighbor_array;
+#if ATB_MD_INTRA
+        NeighborArrayUnit            *tx_search_luma_recon_neighbor_array;
+#endif
 #if !REMOVE_SKIP_COEFF_NEIGHBOR_ARRAY
         NeighborArrayUnit            *skip_coeff_neighbor_array;
 #endif
@@ -276,7 +279,7 @@ extern "C" {
         uint8_t                           tx_depth;
 #endif
 #if TXS_INTRA
-        uint8_t                           tx_idx;
+        uint8_t                           txb_itr;
 #endif
     } ModeDecisionContext;
 

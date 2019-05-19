@@ -4582,24 +4582,19 @@ void av1_predict_intra_block_16bit(
 }
 
 #if TXS_INTRA
-/** IntraPrediction()
-is the main function to compute intra prediction for a PU
-*/
 EbErrorType av1_intra_luma_prediction(
     ModeDecisionContext                  *md_context_ptr,
     PictureControlSet                    *picture_control_set_ptr,
-    ModeDecisionCandidateBuffer          *candidate_buffer_ptr,
-    EbAsm                                 asm_type)
+    ModeDecisionCandidateBuffer          *candidate_buffer_ptr)
 {
 
-    (void)asm_type;
     EbErrorType return_error = EB_ErrorNone;
 
-    uint16_t txb_origin_x = md_context_ptr->cu_origin_x + md_context_ptr->blk_geom->tx_boff_x[md_context_ptr->tx_depth][md_context_ptr->tx_idx];
-    uint16_t txb_origin_y = md_context_ptr->cu_origin_y + md_context_ptr->blk_geom->tx_boff_y[md_context_ptr->tx_depth][md_context_ptr->tx_idx];
-    uint8_t  tx_depth = candidate_buffer_ptr->candidate_ptr->tx_depth;
-    uint8_t  tx_width = md_context_ptr->blk_geom->tx_width[tx_depth][md_context_ptr->tx_idx];
-    uint8_t  tx_height = md_context_ptr->blk_geom->tx_height[tx_depth][md_context_ptr->tx_idx];
+    uint16_t txb_origin_x = md_context_ptr->cu_origin_x + md_context_ptr->blk_geom->tx_boff_x[md_context_ptr->tx_depth][md_context_ptr->txb_itr];
+    uint16_t txb_origin_y = md_context_ptr->cu_origin_y + md_context_ptr->blk_geom->tx_boff_y[md_context_ptr->tx_depth][md_context_ptr->txb_itr];
+
+    uint8_t  tx_width = md_context_ptr->blk_geom->tx_width[md_context_ptr->tx_depth][md_context_ptr->txb_itr];
+    uint8_t  tx_height = md_context_ptr->blk_geom->tx_height[md_context_ptr->tx_depth][md_context_ptr->txb_itr];
 
     uint32_t modeTypeLeftNeighborIndex = get_neighbor_array_unit_left_index(
         md_context_ptr->mode_type_neighbor_array,
@@ -4622,18 +4617,18 @@ EbErrorType av1_intra_luma_prediction(
         (md_context_ptr->mode_type_neighbor_array->top_array[modeTypeTopNeighborIndex] != INTRA_MODE) ? DC_PRED/*EB_INTRA_DC*/ :
         (uint32_t)md_context_ptr->intra_luma_mode_neighbor_array->top_array[intraLumaModeTopNeighborIndex]);       //   use DC. This seems like we could use a LCU-width
 
-    TxSize  tx_size = md_context_ptr->blk_geom->txsize[tx_depth][md_context_ptr->tx_idx];
+    TxSize  tx_size = md_context_ptr->blk_geom->txsize[md_context_ptr->tx_depth][md_context_ptr->txb_itr];
 
     uint8_t    topNeighArray[64 * 2 + 1];
     uint8_t    leftNeighArray[64 * 2 + 1];
     PredictionMode mode;
 
     if (txb_origin_y != 0)
-        memcpy(topNeighArray + 1, md_context_ptr->luma_recon_neighbor_array->top_array + txb_origin_x, tx_width * 2);
+        memcpy(topNeighArray + 1, md_context_ptr->tx_search_luma_recon_neighbor_array->top_array + txb_origin_x, tx_width * 2);
     if (txb_origin_x != 0)
-        memcpy(leftNeighArray + 1, md_context_ptr->luma_recon_neighbor_array->left_array + txb_origin_y, tx_height * 2);
+        memcpy(leftNeighArray + 1, md_context_ptr->tx_search_luma_recon_neighbor_array->left_array + txb_origin_y, tx_height * 2);
     if (txb_origin_y != 0 && txb_origin_x != 0)
-        topNeighArray[0] = leftNeighArray[0] = md_context_ptr->luma_recon_neighbor_array->top_left_array[MAX_PICTURE_HEIGHT_SIZE + txb_origin_x - txb_origin_y];
+        topNeighArray[0] = leftNeighArray[0] = md_context_ptr->tx_search_luma_recon_neighbor_array->top_left_array[MAX_PICTURE_HEIGHT_SIZE + txb_origin_x - txb_origin_y];
 
     mode = candidate_buffer_ptr->candidate_ptr->pred_mode;
     av1_predict_intra_block(
@@ -4651,8 +4646,8 @@ EbErrorType av1_intra_luma_prediction(
         topNeighArray + 1,
         leftNeighArray + 1,
         candidate_buffer_ptr->prediction_ptr,                                              //uint8_t *dst,
-        md_context_ptr->blk_geom->tx_boff_x[md_context_ptr->tx_depth][md_context_ptr->tx_idx] >> 2, //int32_t col_off,
-        md_context_ptr->blk_geom->tx_boff_y[md_context_ptr->tx_depth][md_context_ptr->tx_idx] >> 2,                                                                              //int32_t row_off,
+        md_context_ptr->blk_geom->tx_boff_x[md_context_ptr->tx_depth][md_context_ptr->txb_itr] >> 2, //int32_t col_off,
+        md_context_ptr->blk_geom->tx_boff_y[md_context_ptr->tx_depth][md_context_ptr->txb_itr] >> 2,                                                                              //int32_t row_off,
         PLANE_TYPE_Y,                                                                          //int32_t plane,
         md_context_ptr->blk_geom->bsize,       //uint32_t puSize,
 #if TXS_INTRA
@@ -4661,8 +4656,8 @@ EbErrorType av1_intra_luma_prediction(
 #endif
         md_context_ptr->cu_origin_x,                  //uint32_t cuOrgX,
         md_context_ptr->cu_origin_y,                  //uint32_t cuOrgY
-        md_context_ptr->blk_geom->tx_org_x[md_context_ptr->tx_depth][md_context_ptr->tx_idx],  //uint32_t cuOrgX used only for prediction Ptr
-        md_context_ptr->blk_geom->tx_org_y[md_context_ptr->tx_depth][md_context_ptr->tx_idx]   //uint32_t cuOrgY used only for prediction Ptr
+        md_context_ptr->blk_geom->tx_org_x[md_context_ptr->tx_depth][md_context_ptr->txb_itr],  //uint32_t cuOrgX used only for prediction Ptr
+        md_context_ptr->blk_geom->tx_org_y[md_context_ptr->tx_depth][md_context_ptr->txb_itr]   //uint32_t cuOrgY used only for prediction Ptr
     );
 
     return return_error;
