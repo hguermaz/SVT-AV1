@@ -283,8 +283,8 @@ extern "C" {
 #endif
 #endif
 
-#define TXS_INTRA_FULL_COST                             1
-#define TXS_CTX_EP                                      1 
+#define TXS_INTRA_FULL_COST                             0 
+#define TXS_CTX_EP                                      0 
 #define TXS_DISABLE_CFL                                 1
 
 struct Buf2D 
