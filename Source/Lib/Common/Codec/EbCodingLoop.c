@@ -3951,7 +3951,7 @@ void intra_tx_loop(
             eobs[context_ptr->txb_itr],
             asm_type);
 
-#if DEBUG_ATB
+#if 0//DEBUG_ATB
         // Hsan atb
         uint32_t recon_luma_offset = (recon_buffer->origin_y + txb_origin_y) * recon_buffer->stride_y + (recon_buffer->origin_x + txb_origin_x);
         uint32_t input_luma_offset = (context_ptr->input_samples->origin_y + txb_origin_y) * context_ptr->input_samples->stride_y + (context_ptr->input_samples->origin_x + txb_origin_x);
@@ -4043,7 +4043,7 @@ void intra_tx_loop(
             context_ptr->coded_area_sb_uv += context_ptr->blk_geom->tx_width_uv[context_ptr->tx_depth][context_ptr->txb_itr] * context_ptr->blk_geom->tx_height_uv[context_ptr->tx_depth][context_ptr->txb_itr];
 
     } // Transform Loop
-#if DEBUG_ATB
+#if 0//DEBUG_ATB
     if (total_distortion != best_distortion_search)
         printf("");
 #endif
