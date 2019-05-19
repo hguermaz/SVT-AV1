@@ -245,7 +245,7 @@ static void ResetEncodePassNeighborArrays(PictureControlSet *picture_control_set
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cr_dc_sign_level_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_cb_dc_sign_level_coeff_neighbor_array);
 #endif
-#if TXS_INTRA
+#if FIX_ATB
     neighbor_array_unit_reset(picture_control_set_ptr->ep_txfm_context_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_txs_luma_recon_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->ep_txs_cb_recon_neighbor_array);

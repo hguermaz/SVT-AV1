@@ -13870,14 +13870,13 @@ extern "C" {
         NeighborArrayUnit                  *amvp_mv_merge_mv_neighbor_array;
         NeighborArrayUnit                  *amvp_mv_merge_mode_type_neighbor_array;
 #endif
-#if TXS_INTRA
+#if FIX_ATB
         NeighborArrayUnit                  *ep_txs_luma_recon_neighbor_array;
         NeighborArrayUnit                  *ep_txs_cb_recon_neighbor_array;
         NeighborArrayUnit                  *ep_txs_cr_recon_neighbor_array;
         NeighborArrayUnit                  *ep_txs_luma_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_txs_cb_recon_neighbor_array16bit;
         NeighborArrayUnit                  *ep_txs_cr_recon_neighbor_array16bit;
-        NeighborArrayUnit                  *ep_txfm_context_array;
 #endif
 #if TXS_CTX_EP
         NeighborArrayUnit                  *ep_luma_dc_sign_level_coeff_neighbor_array;

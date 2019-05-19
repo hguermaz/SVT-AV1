@@ -692,7 +692,7 @@ EbErrorType picture_control_set_ctor(
     if (return_error == EB_ErrorInsufficientResources) {
         return EB_ErrorInsufficientResources;
     }
-#if TXS_INTRA
+#if FIX_ATB
     return_error = neighbor_array_unit_ctor(
         &object_ptr->ep_txs_luma_recon_neighbor_array,
         MAX_PICTURE_WIDTH_SIZE,
@@ -733,7 +733,7 @@ EbErrorType picture_control_set_ctor(
         return EB_ErrorInsufficientResources;
     }
 #endif
-#if TXS_INTRA
+#if FIX_ATB
      return_error = neighbor_array_unit_ctor(
         &object_ptr->ep_txfm_context_array,
         MAX_PICTURE_WIDTH_SIZE,
@@ -785,7 +785,7 @@ EbErrorType picture_control_set_ctor(
             return EB_ErrorInsufficientResources;
         }
 
-#if TXS_INTRA
+#if FIX_ATB
         return_error = neighbor_array_unit_ctor(
             &object_ptr->ep_txs_luma_recon_neighbor_array16bit,
             MAX_PICTURE_WIDTH_SIZE,
@@ -828,7 +828,7 @@ EbErrorType picture_control_set_ctor(
         object_ptr->ep_luma_recon_neighbor_array16bit = 0;
         object_ptr->ep_cb_recon_neighbor_array16bit = 0;
         object_ptr->ep_cr_recon_neighbor_array16bit = 0;
-#if TXS_INTRA
+#if FIX_ATB
         object_ptr->ep_txs_luma_recon_neighbor_array16bit = 0;
         object_ptr->ep_txs_cb_recon_neighbor_array16bit = 0;
         object_ptr->ep_txs_cr_recon_neighbor_array16bit = 0;
