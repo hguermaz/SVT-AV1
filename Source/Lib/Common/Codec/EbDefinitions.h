@@ -281,9 +281,6 @@ extern "C" {
 #define TXS_DECISION                                    0
 #define TXS_SEARCH_2                                    0
 #endif
-#if !FIX_ATB
-#define ENABLE_INTRA_TX_SIZE_SEARCH_AT_ENCDEC           1
-#endif
 #endif
 
 #define TXS_INTRA_FULL_COST                             1
