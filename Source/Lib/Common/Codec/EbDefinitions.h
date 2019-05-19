@@ -254,7 +254,7 @@ extern "C" {
 #define AOM_INTERP_EXTEND 4
 #define TX_SIZE_SEARCH_LEVELS                           1
 #if TX_SIZE_SEARCH_LEVELS
-
+#define ATB_MD_INTRA                                    1
 #define FIX_ATB                                         0
 #define CHECK_ATB_CONFORMANCE                           0
 #define DEBUG_ATB                                       0
