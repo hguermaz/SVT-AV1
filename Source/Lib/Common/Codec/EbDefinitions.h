@@ -2422,7 +2422,7 @@ if (*(app_memory_map_index) >= MAX_APP_NUM_PTR) { \
         } \
 app_malloc_count++;
 
-#define ALVALUE 32
+#define ALVALUE 64
 
 #ifdef _MSC_VER
 #define EB_ALLIGN_MALLOC(type, pointer, n_elements, pointer_class) \
