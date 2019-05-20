@@ -266,7 +266,7 @@ extern "C" {
 #define TXS_SPLIT                                       1
 #define TXS_SPLIT_SETTINGS                              1
 #define FIX_TX_TYPE_SEARCH                              0
-#define DISABLE_TX_TYPE                                 0
+
 #define TXS_TX_TYPE                                     1
 #define TX_H4                                           1
 #define ADD_TX_SIZE_COST                                0
@@ -286,6 +286,8 @@ extern "C" {
 #define TXS_INTRA_FULL_COST                             0 
 #define TXS_CTX_EP                                      0 
 #define TXS_DISABLE_CFL                                 1
+#define DISABLE_TX_TYPE                                 0
+#define DISABLE_INTRA_CBF_ZERO_MODE                     1
 
 struct Buf2D 
 {

@@ -2227,6 +2227,79 @@ static void tx_search_update_recon_sample_neighbor_array(
     return;
 }
 
+#if TXS_SPLIT_SETTINGS
+uint8_t get_end_tx_depth(BlockSize bsize, uint8_t btype) {
+
+#if TXS_INTRA
+    uint8_t tx_depth = 0;
+    if (bsize == BLOCK_64X64 ||
+        bsize == BLOCK_32X32 ||
+        bsize == BLOCK_16X16 ||
+        bsize == BLOCK_64X32 ||
+        bsize == BLOCK_32X64 ||
+        bsize == BLOCK_16X32 ||
+        bsize == BLOCK_32X16 ||
+        bsize == BLOCK_16X8 ||
+        bsize == BLOCK_8X16)
+        tx_depth = 2;
+    else if (bsize == BLOCK_8X8 ||
+        bsize == BLOCK_64X16 ||
+        bsize == BLOCK_16X64 ||
+        bsize == BLOCK_32X8 ||
+        bsize == BLOCK_8X32 ||
+        bsize == BLOCK_16X4 ||
+        bsize == BLOCK_4X16)
+        tx_depth = 1;
+
+    /*if (bsize == BLOCK_64X64 ||
+        bsize == BLOCK_32X32 ||
+        bsize == BLOCK_16X16 ||
+        bsize == BLOCK_64X32 ||
+        bsize == BLOCK_32X64 ||
+        bsize == BLOCK_16X32 ||
+        bsize == BLOCK_32X16 )
+        tx_depth = 1;*/
+
+    tx_depth = btype == INTRA_MODE ? MIN(tx_depth, 1) : tx_depth;
+
+    return tx_depth;
+#else
+    if ((bsize == BLOCK_64X64 ||
+        bsize == BLOCK_32X32 ||
+        bsize == BLOCK_16X16 ||
+        bsize == BLOCK_64X32 ||
+        bsize == BLOCK_32X64 ||
+        bsize == BLOCK_16X32 ||
+        bsize == BLOCK_32X16 ||
+        bsize == BLOCK_16X8 ||
+        bsize == BLOCK_8X16) &&
+        btype == INTER_MODE)
+        return 2;
+
+    if ((bsize == BLOCK_8X8) &&
+        btype == INTER_MODE)
+        return 1;
+
+    //if ((bsize == BLOCK_64X16 ||
+    //    bsize == BLOCK_16X64 /*||
+    //    bsize == BLOCK_32X8 ||
+    //    bsize == BLOCK_8X32*/) &&
+    //    btype == INTER_MODE)
+    //    return 2;
+
+    if ((bsize == BLOCK_64X16 ||
+        bsize == BLOCK_16X64 ||
+        bsize == BLOCK_32X8 ||
+        bsize == BLOCK_8X32 ||
+        bsize == BLOCK_16X4 ||
+        bsize == BLOCK_4X16) &&
+        btype == INTER_MODE)
+        return 1;
+    return 0;
+#endif
+}
+#endif
+
 void full_loop_luma_intra(
     ModeDecisionCandidateBuffer  *candidateBuffer,
     ModeDecisionContext          *context_ptr,
@@ -2247,12 +2320,16 @@ void full_loop_luma_intra(
 
     uint8_t end_tx_depth = 0;
 
-#if 1
+#if ATB_MD_INTRA
     // ATB Search
     uint64_t total_distortion;
-    uint64_t best_distortion_search = (uint64_t)~0;
-    uint8_t  best_tx_depth = 0;
+    uint64_t cost;
 
+    uint64_t best_distortion_search = (uint64_t)~0;
+    uint64_t best_cost_search = (uint64_t)~0;
+
+    uint8_t  best_tx_depth = 0;
+    end_tx_depth = get_end_tx_depth(context_ptr->blk_geom->bsize, candidateBuffer->candidate_ptr->type);
     for (context_ptr->tx_depth = 0; context_ptr->tx_depth <= end_tx_depth; context_ptr->tx_depth++) {
 
         // Set recon neighbor array to be used @ intra compensation
@@ -2444,7 +2521,7 @@ void full_loop_luma_intra(
                 asm_type);
 
 
-#if 0 // Hsan atb usless for intra
+#if !DISABLE_INTRA_CBF_ZERO_MODE
             //TODO: fix cbf decision
             av1_tu_calc_cost_luma(
                 context_ptr->cu_ptr->luma_txb_skip_context,//this should be updated here.
@@ -2479,14 +2556,26 @@ void full_loop_luma_intra(
 
             }
         } // Transform Loop
+
+
+#if 1
+        uint64_t cost = RDCOST(context_ptr->full_lambda, 0/**y_coeff_bits*/, total_distortion);
+
+        if (cost < best_cost_search) {
+            best_cost_search = cost;
+            best_tx_depth = context_ptr->tx_depth;
+        }
+#else
         if (total_distortion < best_distortion_search) {
             best_distortion_search = total_distortion;
             best_tx_depth = context_ptr->tx_depth;
         }
+#endif
+
     } // Transform Depth Loop
 
 #endif
-#if ATB_MD_INTRA
+#if 1
     // ATB Recon
     context_ptr->tx_depth = candidateBuffer->candidate_ptr->tx_depth = best_tx_depth;
 
@@ -2673,6 +2762,7 @@ void full_loop_luma_intra(
             COMPONENT_LUMA,
             asm_type);
 
+#if !DISABLE_INTRA_CBF_ZERO_MODE
         //TODO: fix cbf decision
         av1_tu_calc_cost_luma(
             context_ptr->cu_ptr->luma_txb_skip_context,//this should be updated here.
@@ -2684,7 +2774,7 @@ void full_loop_luma_intra(
             &y_tu_coeff_bits,            //gets updated inside based on cbf decision
             &y_full_cost,
             context_ptr->full_lambda);
-
+#endif
         (*y_coeff_bits) += y_tu_coeff_bits;
 
         y_full_distortion[DIST_CALC_RESIDUAL] += tuFullDistortion[0][DIST_CALC_RESIDUAL];
@@ -5018,78 +5108,7 @@ void product_full_loop_tx_search(
         candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y];
 }
 #endif
-#if TXS_SPLIT_SETTINGS
-uint8_t get_end_tx_depth(BlockSize bsize, uint8_t btype) {
 
-#if TXS_INTRA
-   uint8_t tx_depth = 0;
-     if (bsize == BLOCK_64X64 ||
-        bsize == BLOCK_32X32 ||
-        bsize == BLOCK_16X16 ||
-        bsize == BLOCK_64X32 ||
-        bsize == BLOCK_32X64 ||
-        bsize == BLOCK_16X32 ||
-        bsize == BLOCK_32X16 ||
-        bsize == BLOCK_16X8 ||
-        bsize == BLOCK_8X16)
-        tx_depth = 2;
-    else if (bsize == BLOCK_8X8 ||
-       bsize == BLOCK_64X16 ||
-        bsize == BLOCK_16X64 ||
-        bsize == BLOCK_32X8 ||
-        bsize == BLOCK_8X32 ||
-        bsize == BLOCK_16X4 ||
-        bsize == BLOCK_4X16)
-        tx_depth = 1;
-
-   /*if (bsize == BLOCK_64X64 ||
-       bsize == BLOCK_32X32 ||
-       bsize == BLOCK_16X16 ||
-       bsize == BLOCK_64X32 ||
-       bsize == BLOCK_32X64 ||
-       bsize == BLOCK_16X32 ||
-       bsize == BLOCK_32X16 )
-       tx_depth = 1;*/
-
-    tx_depth = btype == INTRA_MODE ? MIN(tx_depth, 1) : tx_depth;
-
-    return tx_depth;
-#else
-    if ((bsize == BLOCK_64X64 ||
-        bsize == BLOCK_32X32  ||
-        bsize == BLOCK_16X16  ||
-        bsize == BLOCK_64X32  ||
-        bsize == BLOCK_32X64  ||
-        bsize == BLOCK_16X32  ||
-        bsize == BLOCK_32X16  ||
-        bsize == BLOCK_16X8   ||
-        bsize == BLOCK_8X16) &&
-        btype == INTER_MODE)
-        return 2;
-
-    if ((bsize == BLOCK_8X8) &&
-        btype == INTER_MODE)
-        return 1;
-
-    //if ((bsize == BLOCK_64X16 ||
-    //    bsize == BLOCK_16X64 /*||
-    //    bsize == BLOCK_32X8 ||
-    //    bsize == BLOCK_8X32*/) &&
-    //    btype == INTER_MODE)
-    //    return 2;
-
-    if ((bsize == BLOCK_64X16 ||
-         bsize == BLOCK_16X64 ||
-         bsize == BLOCK_32X8  ||
-         bsize == BLOCK_8X32  ||
-         bsize == BLOCK_16X4  ||
-         bsize == BLOCK_4X16) &&
-         btype == INTER_MODE)
-        return 1;
-    return 0;
-#endif
-}
-#endif
 void encode_pass_tx_search(
     PictureControlSet            *picture_control_set_ptr,
     EncDecContext                *context_ptr,
