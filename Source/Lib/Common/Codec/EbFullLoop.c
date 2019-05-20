@@ -2245,7 +2245,7 @@ void full_loop_luma_intra(
     uint64_t tuFullDistortion[3][DIST_CALC_TOTAL];
     uint32_t txb_1d_offset;
 
-    uint8_t end_tx_depth = 1;
+    uint8_t end_tx_depth = 0;
 
 #if 1
     // ATB Search
@@ -2444,7 +2444,7 @@ void full_loop_luma_intra(
                 asm_type);
 
 
-
+#if 0 // Hsan atb usless for intra
             //TODO: fix cbf decision
             av1_tu_calc_cost_luma(
                 context_ptr->cu_ptr->luma_txb_skip_context,//this should be updated here.
@@ -2456,6 +2456,7 @@ void full_loop_luma_intra(
                 &y_tu_coeff_bits,            //gets updated inside based on cbf decision
                 &y_full_cost,
                 context_ptr->full_lambda);
+#endif
 
 
             (*y_coeff_bits) += y_tu_coeff_bits;
