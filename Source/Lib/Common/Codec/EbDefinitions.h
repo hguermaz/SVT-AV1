@@ -255,7 +255,8 @@ extern "C" {
 #define TX_SIZE_SEARCH_LEVELS                           1
 #if TX_SIZE_SEARCH_LEVELS
 #define ATB_MD_INTRA                                    1
-#define ATB_OFF                                         0
+#define FORCE_1_NFL                                     0
+#define ATB_OFF                                         1
 #define FIX_ATB                                         0
 #define CHECK_ATB_CONFORMANCE                           0
 #define DEBUG_ATB                                       0
@@ -288,7 +289,7 @@ extern "C" {
 #define TXS_CTX_EP                                      0 
 #define TXS_DISABLE_CFL                                 1
 #define DISABLE_TX_TYPE                                 1
-#define DISABLE_INTRA_CBF_ZERO_MODE                     1
+#define DISABLE_INTRA_CBF_ZERO_MODE                     0
 
 struct Buf2D 
 {

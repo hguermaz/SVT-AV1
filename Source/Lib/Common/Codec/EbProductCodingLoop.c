@@ -715,6 +715,10 @@ void set_nfl(
         context_ptr->full_recon_search_count = nfl_non_ref[nfl_index];
     }
 #endif
+
+#if FORCE_1_NFL
+    context_ptr->full_recon_search_count = 1;
+#endif
     ASSERT(context_ptr->full_recon_search_count <= MAX_NFL);
 }
 

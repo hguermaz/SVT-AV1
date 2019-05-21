@@ -2323,7 +2323,6 @@ void full_loop_luma_intra(
     uint8_t  best_tx_depth = 0;
 
     // ATB Search
-    uint64_t total_distortion;
     uint64_t cost;
 
     uint64_t best_distortion_search = (uint64_t)~0;
@@ -2348,8 +2347,8 @@ void full_loop_luma_intra(
         *y_coeff_bits = 0;
         txb_1d_offset = 0;
         context_ptr->three_quad_energy = 0;
+        candidateBuffer->candidate_ptr->y_has_coeff = 0;
 
-        total_distortion = 0;
         uint16_t txb_count = context_ptr->blk_geom->txb_count[context_ptr->tx_depth];
         for (context_ptr->txb_itr = 0; context_ptr->txb_itr < txb_count; context_ptr->txb_itr++) {
 
@@ -2494,8 +2493,6 @@ void full_loop_luma_intra(
             tuFullDistortion[0][DIST_CALC_PREDICTION] <<= 4;
             tuFullDistortion[0][DIST_CALC_RESIDUAL] <<= 4;
             
-            // Hsan atb simplify 
-            total_distortion += tuFullDistortion[0][DIST_CALC_RESIDUAL];
 
             //LUMA-ONLY
             av1_tu_estimate_coeff_bits(
@@ -2529,13 +2526,13 @@ void full_loop_luma_intra(
 #if !DISABLE_INTRA_CBF_ZERO_MODE
             //TODO: fix cbf decision
             av1_tu_calc_cost_luma(
-                context_ptr->cu_ptr->luma_txb_skip_context,//this should be updated here.
+                context_ptr->cu_ptr->luma_txb_skip_context,
                 candidateBuffer->candidate_ptr,
                 context_ptr->txb_itr,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][0],// NM: why  tu_index 0?
+                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
                 y_count_non_zero_coeffs[context_ptr->txb_itr],
-                tuFullDistortion[0],      //gets updated inside based on cbf decision
-                &y_tu_coeff_bits,            //gets updated inside based on cbf decision
+                tuFullDistortion[0],    
+                &y_tu_coeff_bits,       
                 &y_full_cost,
                 context_ptr->full_lambda);
 #endif
@@ -2545,7 +2542,6 @@ void full_loop_luma_intra(
 
             y_full_distortion[DIST_CALC_RESIDUAL] += tuFullDistortion[0][DIST_CALC_RESIDUAL];
             y_full_distortion[DIST_CALC_PREDICTION] += tuFullDistortion[0][DIST_CALC_PREDICTION];
-
 
             txb_1d_offset += context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr] * context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr];
 
@@ -2565,7 +2561,7 @@ void full_loop_luma_intra(
 
 
 #if 1
-        uint64_t cost = RDCOST(context_ptr->full_lambda, 0/**y_coeff_bits*/, total_distortion);
+        uint64_t cost = RDCOST(context_ptr->full_lambda, (*y_coeff_bits), y_full_distortion[DIST_CALC_RESIDUAL]);
 
         if (cost < best_cost_search) {
             best_cost_search = cost;
@@ -2595,6 +2591,7 @@ void full_loop_luma_intra(
         *y_coeff_bits = 0;
         txb_1d_offset = 0;
         context_ptr->three_quad_energy = 0;
+        candidateBuffer->candidate_ptr->y_has_coeff = 0;
 
         uint16_t txb_count = context_ptr->blk_geom->txb_count[context_ptr->tx_depth];
         for (context_ptr->txb_itr = 0; context_ptr->txb_itr < txb_count; context_ptr->txb_itr++) {
@@ -2772,13 +2769,13 @@ void full_loop_luma_intra(
 #if !DISABLE_INTRA_CBF_ZERO_MODE
             //TODO: fix cbf decision
             av1_tu_calc_cost_luma(
-                context_ptr->cu_ptr->luma_txb_skip_context,//this should be updated here.
+                context_ptr->cu_ptr->luma_txb_skip_context,
                 candidateBuffer->candidate_ptr,
                 context_ptr->txb_itr,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][0],// NM: why  tu_index 0?
+                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
                 y_count_non_zero_coeffs[context_ptr->txb_itr],
-                tuFullDistortion[0],      //gets updated inside based on cbf decision
-                &y_tu_coeff_bits,            //gets updated inside based on cbf decision
+                tuFullDistortion[0],
+                &y_tu_coeff_bits,
                 &y_full_cost,
                 context_ptr->full_lambda);
 #endif
