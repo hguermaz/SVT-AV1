@@ -2333,7 +2333,7 @@ void SetParamBasedOnInput(SequenceControlSet *sequence_control_set_ptr)
 #if MEMORY_FOOTPRINT_OPT_ME_MV
     //0: MRP Mode 0 (4,3)
     //1: MRP Mode 1 (2,2)
-    //2: MRP Mode 1 (1,1)                           
+    //2: MRP Mode 2 (1,1)                           
     sequence_control_set_ptr->static_config.mrp_mode = (uint8_t) (sequence_control_set_ptr->static_config.enc_mode == ENC_M0) ? 0 : 1;
 
     //0: ON
@@ -2349,6 +2349,11 @@ void SetParamBasedOnInput(SequenceControlSet *sequence_control_set_ptr)
     sequence_control_set_ptr->static_config.nsq_present = 1;
 #endif
 #endif
+
+    if (sequence_control_set_ptr->static_config.mrp_mode == 2) {
+        sequence_control_set_ptr->reference_count = 1;
+    }
+
 }
 
 void CopyApiFromApp(
