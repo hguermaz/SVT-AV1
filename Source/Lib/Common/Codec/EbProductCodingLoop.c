@@ -331,7 +331,7 @@ void mode_decision_update_neighbor_arrays(
             context_ptr->blk_geom->bheight);
 #if ATB_MD_INTRA
         update_recon_neighbor_array(
-            picture_control_set_ptr->md_tx_depth_1_luma_recon_neighbor_array,
+            picture_control_set_ptr->md_tx_depth_1_luma_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX],
             context_ptr->cu_ptr->neigh_top_recon[0],
             context_ptr->cu_ptr->neigh_left_recon[0],
             origin_x,
@@ -453,6 +453,17 @@ void copy_neighbour_arrays(
         blk_geom->bwidth,
         blk_geom->bheight,
         NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+
+#if ATB_MD_INTRA
+    copy_neigh_arr(
+        picture_control_set_ptr->md_tx_depth_1_luma_recon_neighbor_array[src_idx],
+        picture_control_set_ptr->md_tx_depth_1_luma_recon_neighbor_array[dst_idx],
+        blk_org_x,
+        blk_org_y,
+        blk_geom->bwidth,
+        blk_geom->bheight,
+        NEIGHBOR_ARRAY_UNIT_FULL_MASK);
+#endif
 
     if (blk_geom->has_uv && context_ptr->chroma_level <= CHROMA_MODE_1) {
 
