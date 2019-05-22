@@ -764,8 +764,13 @@ void Unipred3x3CandidatesInjection(
             candidateArray[canTotalCnt].ref_frame_type = LAST_FRAME;
 #endif
 
+#if TRANSFORM_TYPE_SEARCH
+            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else
             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
             ChooseBestAv1MvPred(
                 context_ptr,
@@ -871,10 +876,13 @@ void Unipred3x3CandidatesInjection(
 #else
                 candidateArray[canTotalCnt].ref_frame_type = BWDREF_FRAME;
 #endif            
-            
+#if TRANSFORM_TYPE_SEARCH
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-            
+#endif   
                 ChooseBestAv1MvPred(
                     context_ptr,
                     candidateArray[canTotalCnt].md_rate_estimation_ptr,
@@ -1049,9 +1057,13 @@ void Bipred3x3CandidatesInjection(
 #else
             candidateArray[canTotalCnt].ref_frame_type = LAST_BWD_FRAME;
 #endif
+#if TRANSFORM_TYPE_SEARCH
+            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
+#endif
             ChooseBestAv1MvPred(
                 context_ptr,
                 candidateArray[canTotalCnt].md_rate_estimation_ptr,
@@ -1170,9 +1182,13 @@ void Bipred3x3CandidatesInjection(
 #else
                 candidateArray[canTotalCnt].ref_frame_type = LAST_BWD_FRAME;
 #endif
+#if TRANSFORM_TYPE_SEARCH
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
+#endif
                 ChooseBestAv1MvPred(
                     context_ptr,
                     candidateArray[canTotalCnt].md_rate_estimation_ptr,
@@ -1312,10 +1328,13 @@ void inject_mvp_candidates_II(
 
             candidateArray[canIdx].ref_frame_index_l0 = (list_idx == 0) ? ref_idx : -1;
             candidateArray[canIdx].ref_frame_index_l1 = (list_idx == 1) ? ref_idx : -1;
-
+#if TRANSFORM_TYPE_SEARCH
+            candidateArray[canIdx].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+            candidateArray[canIdx].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
             candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
             candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
+#endif
             if (list_idx == 0) {
                 candidateArray[canIdx].motion_vector_xl0 = to_inject_mv_x;
                 candidateArray[canIdx].motion_vector_yl0 = to_inject_mv_y;
@@ -1380,9 +1399,13 @@ void inject_mvp_candidates_II(
                 candidateArray[canIdx].ref_frame_index_l0 = (list_idx == 0) ? ref_idx : -1;
                 candidateArray[canIdx].ref_frame_index_l1 = (list_idx == 1) ? ref_idx : -1;
 
+#if TRANSFORM_TYPE_SEARCH
+                candidateArray[canIdx].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                candidateArray[canIdx].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                 candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                 candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
+#endif
                 if (list_idx == 0) {
                     candidateArray[canIdx].motion_vector_xl0 = to_inject_mv_x;
                     candidateArray[canIdx].motion_vector_yl0 = to_inject_mv_y;
@@ -1452,8 +1475,13 @@ void inject_mvp_candidates_II(
                 candidateArray[canIdx].ref_frame_index_l0 = ref_idx_0;
                 candidateArray[canIdx].ref_frame_index_l1 = ref_idx_1;
 
+#if TRANSFORM_TYPE_SEARCH
+                candidateArray[canIdx].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                candidateArray[canIdx].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                 candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                 candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
                 context_ptr->injected_mv_x_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_x_l0;
                 context_ptr->injected_mv_y_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_y_l0;
@@ -1515,8 +1543,13 @@ void inject_mvp_candidates_II(
                     candidateArray[canIdx].ref_frame_index_l0 = ref_idx_0;
                     candidateArray[canIdx].ref_frame_index_l1 = ref_idx_1;
 
+#if TRANSFORM_TYPE_SEARCH
+                    candidateArray[canIdx].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                    candidateArray[canIdx].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                     candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                     candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
                     context_ptr->injected_mv_x_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_x_l0;
                     context_ptr->injected_mv_y_bipred_l0_array[context_ptr->injected_mv_count_bipred] = to_inject_mv_y_l0;
@@ -1888,8 +1921,13 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].ref_frame_index_l0 = 0;
         candidateArray[canIdx].ref_frame_index_l1 = -1;
 #endif
+#if TRANSFORM_TYPE_SEARCH
+        candidateArray[canIdx].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+        candidateArray[canIdx].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
         candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
         candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
         Mv mv_0;
         mv_0.x = candidateArray[canIdx].motion_vector_xl0;
@@ -1965,8 +2003,13 @@ void inject_warped_motion_candidates(
             candidateArray[canIdx].ref_frame_index_l0 = 0;
             candidateArray[canIdx].ref_frame_index_l1 = -1;
 #endif
+#if TRANSFORM_TYPE_SEARCH
+            candidateArray[canIdx].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+            candidateArray[canIdx].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
             candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
             candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
             Mv mv_0;
             mv_0.x = candidateArray[canIdx].motion_vector_xl0;
@@ -2078,8 +2121,13 @@ void inject_warped_motion_candidates(
         candidateArray[canIdx].ref_frame_type = LAST_FRAME;
 #endif
 
+#if TRANSFORM_TYPE_SEARCH
+        candidateArray[canIdx].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+        candidateArray[canIdx].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
         candidateArray[canIdx].transform_type[PLANE_TYPE_Y] = DCT_DCT;
         candidateArray[canIdx].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
         ChooseBestAv1MvPred(
             context_ptr,
@@ -2353,9 +2401,13 @@ void  inject_inter_candidates(
                     candidateArray[canTotalCnt].ref_frame_type = LAST_FRAME;
 #endif
 
-
+#if TRANSFORM_TYPE_SEARCH
+                    candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                    candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                     candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                     candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
                     ChooseBestAv1MvPred(
                         context_ptr,
@@ -2444,10 +2496,13 @@ void  inject_inter_candidates(
                         candidateArray[canTotalCnt].ref_frame_type = BWDREF_FRAME;
 #endif
 
-
+#if TRANSFORM_TYPE_SEARCH
+                        candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                        candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else
                         candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                         candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
+#endif
                         ChooseBestAv1MvPred(
                             context_ptr,
                             candidateArray[canTotalCnt].md_rate_estimation_ptr,
@@ -2560,8 +2615,13 @@ void  inject_inter_candidates(
                             candidateArray[canTotalCnt].ref_frame_type = LAST_BWD_FRAME;
 #endif
 
+#if TRANSFORM_TYPE_SEARCH
+                            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else
                             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
 
                             ChooseBestAv1MvPred(
                                 context_ptr,
@@ -2647,9 +2707,13 @@ void  inject_inter_candidates(
                 candidateArray[canTotalCnt].ref_frame_index_l1 = -1;
 #endif
 
+#if TRANSFORM_TYPE_SEARCH
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
+#endif
                 // Set the MV to frame MV
                 candidateArray[canTotalCnt].motion_vector_xl0 = to_inject_mv_x;
                 candidateArray[canTotalCnt].motion_vector_yl0 = to_inject_mv_y;
@@ -2714,9 +2778,13 @@ void  inject_inter_candidates(
                 candidateArray[canTotalCnt].ref_frame_index_l0 = 0;
                 candidateArray[canTotalCnt].ref_frame_index_l1 = 0;
 #endif
+#if TRANSFORM_TYPE_SEARCH
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else  
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
-
+#endif
                 // Set the MV to frame MV
 
                 candidateArray[canTotalCnt].motion_vector_xl0 = to_inject_mv_x_l0;
@@ -3626,12 +3694,22 @@ void  inject_intra_candidates_ois(
             candidate_array[can_total_cnt].cfl_alpha_idx = 0;
             candidate_array[can_total_cnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidate_array[can_total_cnt].intra_chroma_mode);
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_UV] = 0;
+
+#if TRANSFORM_TYPE_SEARCH
+            candidate_array[can_total_cnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+
+            if (candidate_array[can_total_cnt].intra_chroma_mode == UV_CFL_PRED)
+                candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+            else
+                candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV][0] =
+#else  
             candidate_array[can_total_cnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
 
             if (candidate_array[can_total_cnt].intra_chroma_mode == UV_CFL_PRED)
                 candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
             else
                 candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV] =
+#endif
                 av1_get_tx_type(
                     context_ptr->blk_geom->bsize,
                     0,
@@ -3675,12 +3753,21 @@ void  inject_intra_candidates_ois(
             candidate_array[can_total_cnt].cfl_alpha_idx = 0;
             candidate_array[can_total_cnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidate_array[can_total_cnt].intra_chroma_mode);
             candidate_array[can_total_cnt].angle_delta[PLANE_TYPE_UV] = 0;
+#if TRANSFORM_TYPE_SEARCH
+            candidate_array[can_total_cnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+
+            if (candidate_array[can_total_cnt].intra_chroma_mode == UV_CFL_PRED)
+                candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+            else
+                candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV][0] =
+#else
             candidate_array[can_total_cnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
 
             if (candidate_array[can_total_cnt].intra_chroma_mode == UV_CFL_PRED)
                 candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
             else
                 candidate_array[can_total_cnt].transform_type[PLANE_TYPE_UV] =
+#endif
                 av1_get_tx_type(
                     context_ptr->blk_geom->bsize,
                     0,
@@ -4012,8 +4099,13 @@ void  inject_intra_bc_candidates(
         candidateArray[*cand_cnt].cfl_alpha_idx = 0;
         candidateArray[*cand_cnt].is_directional_chroma_mode_flag = 0;
         candidateArray[*cand_cnt].angle_delta[PLANE_TYPE_UV] = 0;
+#if TRANSFORM_TYPE_SEARCH
+        candidateArray[*cand_cnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+        candidateArray[*cand_cnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+#else
         candidateArray[*cand_cnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
         candidateArray[*cand_cnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
+#endif
         candidateArray[*cand_cnt].ref_frame_type = INTRA_FRAME;
         candidateArray[*cand_cnt].pred_mode = DC_PRED;
         candidateArray[*cand_cnt].motion_mode = SIMPLE_TRANSLATION;
@@ -4202,12 +4294,21 @@ void  inject_intra_candidates(
                         candidateArray[canTotalCnt].cfl_alpha_idx = 0;
                         candidateArray[canTotalCnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode);
                         candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_UV] = 0;
+#if TRANSFORM_TYPE_SEARCH
+                        candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+
+                        if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
+                            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+                        else
+                            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] =
+#else
                         candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
 
                         if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
                             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
                         else
                             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] =
+#endif
                             av1_get_tx_type(
                                 context_ptr->blk_geom->bsize,
                                 0,
@@ -4282,12 +4383,21 @@ void  inject_intra_candidates(
             candidateArray[canTotalCnt].cfl_alpha_idx = 0;
             candidateArray[canTotalCnt].is_directional_chroma_mode_flag = (uint8_t)av1_is_directional_mode((PredictionMode)candidateArray[canTotalCnt].intra_chroma_mode);
             candidateArray[canTotalCnt].angle_delta[PLANE_TYPE_UV] = 0;
+#if TRANSFORM_TYPE_SEARCH
+            candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y][0] = DCT_DCT;
+
+            if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] = DCT_DCT;
+            else
+                candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV][0] =
+#else
             candidateArray[canTotalCnt].transform_type[PLANE_TYPE_Y] = DCT_DCT;
 
             if (candidateArray[canTotalCnt].intra_chroma_mode == UV_CFL_PRED)
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] = DCT_DCT;
             else
                 candidateArray[canTotalCnt].transform_type[PLANE_TYPE_UV] =
+#endif
                 av1_get_tx_type(
                     context_ptr->blk_geom->bsize,
                     0,
@@ -4638,8 +4748,13 @@ uint8_t product_full_mode_decision(
         txb_ptr->y_has_coeff = (EbBool)(((candidate_ptr->y_has_coeff)  & (1 << tu_index)) > 0);
         txb_ptr->u_has_coeff = (EbBool)(((candidate_ptr->u_has_coeff) & (1 << (tu_index))) > 0);
         txb_ptr->v_has_coeff = (EbBool)(((candidate_ptr->v_has_coeff) & (1 << (tu_index))) > 0);
+#if TRANSFORM_TYPE_SEARCH
+        txb_ptr->transform_type[PLANE_TYPE_Y] = candidate_ptr->transform_type[PLANE_TYPE_Y][tu_index];
+        txb_ptr->transform_type[PLANE_TYPE_UV] = candidate_ptr->transform_type[PLANE_TYPE_UV][tu_index];
+#else
         txb_ptr->transform_type[PLANE_TYPE_Y] = candidate_ptr->transform_type[PLANE_TYPE_Y];
         txb_ptr->transform_type[PLANE_TYPE_UV] = candidate_ptr->transform_type[PLANE_TYPE_UV];
+#endif
 
 
 #if NO_ENCDEC
