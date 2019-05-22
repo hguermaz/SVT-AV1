@@ -62,7 +62,7 @@ static void EntropyCodingResetNeighborArrays(PictureControlSet *picture_control_
 
     neighbor_array_unit_reset(picture_control_set_ptr->skip_flag_neighbor_array);
 
-    neighbor_array_unit_reset(picture_control_set_ptr->skip_coeff_neighbor_array);
+    neighbor_array_unit_reset(picture_control_set_ptr->skip_coeff_neighbor_array);            // tx_depth 1 geom settings
     neighbor_array_unit_reset(picture_control_set_ptr->luma_dc_sign_level_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->cb_dc_sign_level_coeff_neighbor_array);
     neighbor_array_unit_reset(picture_control_set_ptr->cr_dc_sign_level_coeff_neighbor_array);

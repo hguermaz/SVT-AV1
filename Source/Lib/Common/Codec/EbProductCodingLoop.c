@@ -4935,20 +4935,7 @@ void md_encode_block(
 #if RED_CU
         context_ptr->md_local_cu_unit[cu_ptr->mds_idx].avail_blk_flag = EB_TRUE;
 #endif
-#if 0//TXS_SPLIT_SETTINGS
-        /*if (context_ptr->blk_geom->bsize == BLOCK_64X16 ||
-            context_ptr->blk_geom->bsize == BLOCK_16X64 ||
-            context_ptr->blk_geom->bsize == BLOCK_32X8 ||
-            context_ptr->blk_geom->bsize == BLOCK_8X32 ||
-            context_ptr->blk_geom->bsize == BLOCK_16X4 ||
-            context_ptr->blk_geom->bsize == BLOCK_4X16)*/
-            if (context_ptr->blk_geom->bsize == BLOCK_64X32 ||
-                context_ptr->blk_geom->bsize == BLOCK_32X16 ||
-                context_ptr->blk_geom->bsize == BLOCK_4X8 )
-        {
-            context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost = context_ptr->md_local_cu_unit[cu_ptr->mds_idx].cost / 100;
-        }
-#endif
+
     }
     else
     {
