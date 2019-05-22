@@ -2741,7 +2741,7 @@ void intra_tx_loop(
             // Rate estimation function uses the values from CandidatePtr. The right values are copied from cu_ptr to CandidatePtr
 #if TRANSFORM_TYPE_SEARCH
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
-            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
+            candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][0] = cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV];
 #else
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y];
             candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV] = cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV];
@@ -2771,7 +2771,7 @@ void intra_tx_loop(
                 context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
 #if TRANSFORM_TYPE_SEARCH
                 candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_Y][context_ptr->txb_itr],
-                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][context_ptr->txb_itr],
+                candidateBuffer->candidate_ptr->transform_type[PLANE_TYPE_UV][0],
 #endif
 #if ATB_EP
                 context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
@@ -3703,7 +3703,7 @@ EB_EXTERN void av1_encode_pass(
 #endif
 #if TRANSFORM_TYPE_SEARCH
                                         cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y],
-                                        cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV],
+                                        cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV],
 #endif
                                         context_ptr->blk_geom->has_uv ? COMPONENT_ALL : COMPONENT_LUMA,
                                         asm_type);
@@ -4144,7 +4144,7 @@ EB_EXTERN void av1_encode_pass(
 #endif
 #if TRANSFORM_TYPE_SEARCH
                                         cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y],
-                                        cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV],
+                                        cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV],
 #endif
 #if TXS_SPLIT
                                         context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
@@ -4258,7 +4258,7 @@ EB_EXTERN void av1_encode_pass(
 #endif
 #if TRANSFORM_TYPE_SEARCH
                                         cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y],
-                                        cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV],
+                                        cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV],
 #endif
 #if TXS_SPLIT
                                         context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
@@ -4409,7 +4409,7 @@ EB_EXTERN void av1_encode_pass(
 #endif
 #if TRANSFORM_TYPE_SEARCH
                                     cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_Y],
-                                    cu_ptr->transform_unit_array[context_ptr->txb_itr].transform_type[PLANE_TYPE_UV],
+                                    cu_ptr->transform_unit_array[0].transform_type[PLANE_TYPE_UV],
 #endif
 #if TXS_SPLIT
                                     context_ptr->blk_geom->has_uv && uv_pass ? COMPONENT_ALL : COMPONENT_LUMA,
