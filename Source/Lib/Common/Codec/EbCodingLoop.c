@@ -686,7 +686,7 @@ static void Av1EncodeLoop(
             txb_ptr->transform_type[PLANE_TYPE_Y],
             &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
             cu_ptr->luma_txb_skip_context,
-#if ATB_DC_CONTEXT_SUPPORT
+#if ATB_DC_CONTEXT_SUPPORT_0
             cu_ptr->luma_dc_sign_context[context_ptr->txb_itr],
 #else
             cu_ptr->luma_dc_sign_context,
@@ -1264,7 +1264,11 @@ static void Av1EncodeLoop16bit(
                 txb_ptr->transform_type[PLANE_TYPE_Y],
                 &(context_ptr->md_context->candidate_buffer_ptr_array[0][0]),
                 cu_ptr->luma_txb_skip_context,
+#if ATB_DC_CONTEXT_SUPPORT_0
+                cu_ptr->luma_dc_sign_context[context_ptr->txb_itr],
+#else
                 cu_ptr->luma_dc_sign_context,
+#endif
                 cu_ptr->pred_mode,
                 EB_TRUE);
 #if BLK_SKIP_DECISION
@@ -3686,7 +3690,7 @@ EB_EXTERN void av1_encode_pass(
                                         1,//allow_update_cdf,
                                         &picture_control_set_ptr->ec_ctx_array[tbAddr],
                                         picture_control_set_ptr,
- #if ATB_DC_CONTEXT_SUPPORT
+ #if ATB_DC_CONTEXT_SUPPORT_0
                                         context_ptr->txb_itr,
 #endif
                                         candidateBuffer,
@@ -4130,7 +4134,7 @@ EB_EXTERN void av1_encode_pass(
                                         NULL,
 #endif
                                         picture_control_set_ptr,
-#if ATB_DC_CONTEXT_SUPPORT
+#if ATB_DC_CONTEXT_SUPPORT_0
                                         tuIt,
 #endif
                                         candidateBuffer,
@@ -4247,7 +4251,7 @@ EB_EXTERN void av1_encode_pass(
                                         1,//allow_update_cdf,
                                         &picture_control_set_ptr->ec_ctx_array[tbAddr],
                                         picture_control_set_ptr,
-#if ATB_DC_CONTEXT_SUPPORT
+#if ATB_DC_CONTEXT_SUPPORT_0
                                         tuIt,
 #endif
                                         candidateBuffer,
@@ -4401,7 +4405,7 @@ EB_EXTERN void av1_encode_pass(
                                     1,//allow_update_cdf,
                                     &picture_control_set_ptr->ec_ctx_array[tbAddr],
                                     picture_control_set_ptr,
-#if ATB_DC_CONTEXT_SUPPORT
+#if ATB_DC_CONTEXT_SUPPORT_0
                                     tuIt,
 #endif
                                     candidateBuffer,
