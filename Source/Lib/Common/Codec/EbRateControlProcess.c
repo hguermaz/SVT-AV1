@@ -3760,7 +3760,9 @@ static int adaptive_qindex_calc(
     const int cq_level = qindex;
     int active_best_quality = 0;
     int active_worst_quality = qindex;
+#if !QPS_SCALING
     rc->arf_q = 0;
+#endif 
     int q;
     int is_src_frame_alt_ref, refresh_golden_frame, refresh_alt_ref_frame, new_bwdref_update_rule, is_intrl_arf_boost, rf_level, update_type, this_height;
 
@@ -3817,8 +3819,11 @@ static int adaptive_qindex_calc(
     else if (!is_src_frame_alt_ref &&
         (refresh_golden_frame || is_intrl_arf_boost ||
             refresh_alt_ref_frame)) {
-
+#if QPS_SCALING
+        rc->gfu_boost = (((150 - (picture_control_set_ptr->parent_pcs_ptr->qp_scaling_average_complexity))  * (gf_high - gf_low)) / 150) + gf_low;
+#else
         rc->gfu_boost = (((NON_MOVING_SCORE_3 - picture_control_set_ptr->parent_pcs_ptr->non_moving_index_average)  * (gf_high - gf_low)) / NON_MOVING_SCORE_3) + gf_low;
+#endif     
         rc->arf_boost_factor = 1;
         q = active_worst_quality;
 
@@ -3993,7 +3998,27 @@ void* rate_control_kernel(void *input_ptr)
                 if (sequence_control_set_ptr->static_config.enable_qp_scaling_flag && picture_control_set_ptr->parent_pcs_ptr->qp_on_the_fly == EB_FALSE) {
                     const int32_t qindex = quantizer_to_qindex[(uint8_t)sequence_control_set_ptr->qp];
                     const double q_val = av1_convert_qindex_to_q(qindex, (AomBitDepth)sequence_control_set_ptr->static_config.encoder_bit_depth);
+#if NON_ADAPTIVE_QP_SCALING
                     if (picture_control_set_ptr->slice_type == I_SLICE) {
+                        const int32_t delta_qindex = av1_compute_qdelta(
+                            q_val,
+                            q_val * 0.25,
+                            (AomBitDepth)sequence_control_set_ptr->static_config.encoder_bit_depth);
+                        picture_control_set_ptr->parent_pcs_ptr->base_qindex =
+                            (uint8_t)CLIP3(
+                            (int32_t)quantizer_to_qindex[sequence_control_set_ptr->static_config.min_qp_allowed],
+                                (int32_t)quantizer_to_qindex[sequence_control_set_ptr->static_config.max_qp_allowed],
+                                (int32_t)(qindex + delta_qindex));
+                    }
+                    
+#else
+#if QP_SCALING
+                    // AMIR to be fixed for the last minigop
+                    if (picture_control_set_ptr->picture_number < 49) {
+
+#else                    
+                    if (picture_control_set_ptr->slice_type == I_SLICE) {
+#endif
                         int32_t new_qindex = adaptive_qindex_calc(
                             picture_control_set_ptr,
                             &rc,
@@ -4005,6 +4030,7 @@ void* rate_control_kernel(void *input_ptr)
                                 (int32_t)quantizer_to_qindex[sequence_control_set_ptr->static_config.max_qp_allowed],
                                 (int32_t)(new_qindex));
                     }
+#endif
                     else {
                         const  double delta_rate_new[2][6] =
                         { { 0.40, 0.7, 0.85, 1.0, 1.0, 1.0 },

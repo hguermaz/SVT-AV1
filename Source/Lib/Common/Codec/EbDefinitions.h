@@ -34,6 +34,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define NON_ADAPTIVE_QP_SCALING           0 // Turns OFF adaptive QP scaling. Set to 0 if QP_SCALING is active
+
+#if !NON_ADAPTIVE_QP_SCALING
+#define QP_SCALING                        0 // Content based QP scaling
+#endif
+
 #define ALT_REF_SUPPORT                   1// ALT_REF main flag
 
 #if ALT_REF_SUPPORT
@@ -52,6 +58,7 @@ extern "C" {
 
 #define ALT_REF_OVERLAY                   1 // support for ALT_REF overlay frames.
 #define	ALT_REF_OVERLAY_MODE              0 // make overlay mode dependent. Active only for M0 for now
+
 #endif
 
 #define PCS_ME_FIX                        1 // pcs flags shall not be set in seg based process

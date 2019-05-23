@@ -1015,7 +1015,10 @@ void UpdateBeaInfoOverTime(
     // Update motionIndexArray of the current picture by averaging the motionIndexArray of the N future pictures
     // Determine number of frames to check N
     updateNonMovingIndexArrayFramesToCheck = MIN(MIN(((picture_control_set_ptr->pred_struct_ptr->pred_struct_period << 1) + 1), picture_control_set_ptr->frames_in_sw), sequence_control_set_ptr->static_config.look_ahead_distance);
-
+#if QP_SCALING
+    uint64_t meDist = 0;
+    uint8_t me_dist_count = 0;
+#endif
     // SB Loop
     for (lcuIdx = 0; lcuIdx < picture_control_set_ptr->sb_total_count; ++lcuIdx) {
 #if !MEMORY_FOOTPRINT_OPT 
@@ -1038,6 +1041,13 @@ void UpdateBeaInfoOverTime(
 #if !MEMORY_FOOTPRINT_OPT 
             zzCostOverSlidingWindow += temporaryPictureControlSetPtr->zz_cost_array[lcuIdx];
 #endif
+#if QP_SCALING
+            if (temporaryPictureControlSetPtr->temporal_layer_index < 1) {
+                if (lcuIdx == 0)
+                    me_dist_count++;
+                meDist += (temporaryPictureControlSetPtr->slice_type == I_SLICE) ? 0 : (uint64_t)temporaryPictureControlSetPtr->rc_me_distortion[lcuIdx];
+            }
+#endif
             nonMovingIndexOverSlidingWindow += temporaryPictureControlSetPtr->non_moving_index_array[lcuIdx];
 
             // Increment the inputQueueIndex Iterator
@@ -1050,7 +1060,11 @@ void UpdateBeaInfoOverTime(
 
         nonMovingIndexSum += picture_control_set_ptr->non_moving_index_array[lcuIdx];
     }
-
+#if QP_SCALING    
+    me_dist_count = MAX(me_dist_count, 1);
+    picture_control_set_ptr->qp_scaling_average_complexity = (uint16_t)((uint64_t)meDist / picture_control_set_ptr->sb_total_count / 256 / me_dist_count);
+    printf("POC:%d\t%lld\n", picture_control_set_ptr->picture_number, picture_control_set_ptr->qp_scaling_average_complexity);
+#endif
     picture_control_set_ptr->non_moving_index_average = (uint16_t)nonMovingIndexSum / picture_control_set_ptr->sb_total_count;
 
     return;
