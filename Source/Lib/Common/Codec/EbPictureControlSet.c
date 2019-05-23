@@ -491,6 +491,7 @@ EbErrorType picture_control_set_ctor(
         if (return_error == EB_ErrorInsufficientResources) {
             return EB_ErrorInsufficientResources;
         }
+
         // for each 4x4
         return_error = neighbor_array_unit_ctor(
             &object_ptr->md_cr_dc_sign_level_coeff_neighbor_array[depth],
@@ -504,6 +505,7 @@ EbErrorType picture_control_set_ctor(
         if (return_error == EB_ErrorInsufficientResources) {
             return EB_ErrorInsufficientResources;
         }
+
         // for each 4x4
         return_error = neighbor_array_unit_ctor(
             &object_ptr->md_cb_dc_sign_level_coeff_neighbor_array[depth],
@@ -517,6 +519,21 @@ EbErrorType picture_control_set_ctor(
         if (return_error == EB_ErrorInsufficientResources) {
             return EB_ErrorInsufficientResources;
         }
+
+#if ATB_RATE
+        return_error = neighbor_array_unit_ctor(
+            &object_ptr->md_txfm_context_array[depth],
+            MAX_PICTURE_WIDTH_SIZE,
+            MAX_PICTURE_HEIGHT_SIZE,
+            sizeof(TXFM_CONTEXT),
+            PU_NEIGHBOR_ARRAY_GRANULARITY,
+            PU_NEIGHBOR_ARRAY_GRANULARITY,
+            NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
+
+        if (return_error == EB_ErrorInsufficientResources) {
+            return EB_ErrorInsufficientResources;
+        }
+#endif
 
         return_error = neighbor_array_unit_ctor(
             &object_ptr->md_inter_pred_dir_neighbor_array[depth],
@@ -555,8 +572,6 @@ EbErrorType picture_control_set_ctor(
         if (return_error == EB_ErrorInsufficientResources) {
             return EB_ErrorInsufficientResources;
         }
-
-
 
     }
 #if !MEMORY_FOOTPRINT_OPT
