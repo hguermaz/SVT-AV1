@@ -3760,7 +3760,7 @@ static int adaptive_qindex_calc(
     const int cq_level = qindex;
     int active_best_quality = 0;
     int active_worst_quality = qindex;
-#if !QPS_SCALING
+#if !QP_SCALING
     rc->arf_q = 0;
 #endif 
     int q;
@@ -3819,7 +3819,7 @@ static int adaptive_qindex_calc(
     else if (!is_src_frame_alt_ref &&
         (refresh_golden_frame || is_intrl_arf_boost ||
             refresh_alt_ref_frame)) {
-#if QPS_SCALING
+#if QP_SCALING
         rc->gfu_boost = (((150 - (picture_control_set_ptr->parent_pcs_ptr->qp_scaling_average_complexity))  * (gf_high - gf_low)) / 150) + gf_low;
 #else
         rc->gfu_boost = (((NON_MOVING_SCORE_3 - picture_control_set_ptr->parent_pcs_ptr->non_moving_index_average)  * (gf_high - gf_low)) / NON_MOVING_SCORE_3) + gf_low;
