@@ -748,8 +748,7 @@ static INLINE void round_shift_16x16_avx512(__m512i *in, int32_t shift) {
     }
 }
 
-static INLINE void iidentity16_and_round_shift_avx512(__m512i *input, int32_t shift)
-{
+static INLINE void iidentity16_and_round_shift_avx512(__m512i *input, int32_t shift) {
     const __m512i scalar = _mm512_set1_epi32(NewSqrt2);
     const __m512i rnding = _mm512_set1_epi32((1 << (NewSqrt2Bits - 2)) +
         (!!(shift) << (shift + NewSqrt2Bits - 2)));
@@ -761,8 +760,7 @@ static INLINE void iidentity16_and_round_shift_avx512(__m512i *input, int32_t sh
     }
 }
 
-static INLINE void idct16_col_avx512(__m512i *in, __m512i *out, int32_t bit)
-{
+static INLINE void idct16_col_avx512(__m512i *in, __m512i *out, int32_t bit) {
 
     const int32_t *cospi = cospi_arr(bit);
     const __m512i cospi60 = _mm512_set1_epi32(cospi[60]);
