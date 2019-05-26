@@ -85,8 +85,6 @@ static INLINE int get_relative_dist(const OrderHintInfo *oh, int a, int b) {
 }
 void av1_setup_skip_mode_allowed(PictureParentControlSet  *parent_pcs_ptr) {
 
-
-
     RefFrameInfo ref_frame_arr_single[7];
 
 #if REF_ORDER
