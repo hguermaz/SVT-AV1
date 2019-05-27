@@ -3760,7 +3760,15 @@ static int adaptive_qindex_calc(
     const int cq_level = qindex;
     int active_best_quality = 0;
     int active_worst_quality = qindex;
-#if !QP_SCALING
+#if QP_SCALING
+    rc->arf_q = 0;
+    if (picture_control_set_ptr->ref_slice_type_array[0][0] != I_SLICE) {
+        rc->arf_q = MAX(rc->arf_q, ((picture_control_set_ptr->ref_pic_qp_array[0][0]<<2) + 2));
+    }
+    if ((picture_control_set_ptr->slice_type == B_SLICE) && (picture_control_set_ptr->ref_slice_type_array[1][0] != I_SLICE)) {
+        rc->arf_q = MAX(rc->arf_q, ((picture_control_set_ptr->ref_pic_qp_array[1][0]<<2)+ 2));
+    }
+#else
     rc->arf_q = 0;
 #endif 
     int q;
@@ -3820,7 +3828,7 @@ static int adaptive_qindex_calc(
         (refresh_golden_frame || is_intrl_arf_boost ||
             refresh_alt_ref_frame)) {
 #if QP_SCALING
-        rc->gfu_boost = (((150 - (picture_control_set_ptr->parent_pcs_ptr->qp_scaling_average_complexity))  * (gf_high - gf_low)) / 150) + gf_low;
+        rc->gfu_boost = (((MAX_QPS_COMPL - (picture_control_set_ptr->parent_pcs_ptr->qp_scaling_average_complexity))  * (gf_high - gf_low)) / MAX_QPS_COMPL) + gf_low;
 #else
         rc->gfu_boost = (((NON_MOVING_SCORE_3 - picture_control_set_ptr->parent_pcs_ptr->non_moving_index_average)  * (gf_high - gf_low)) / NON_MOVING_SCORE_3) + gf_low;
 #endif     
@@ -3835,29 +3843,40 @@ static int adaptive_qindex_calc(
             // base layer
             if (update_type == ARF_UPDATE) {
                 active_best_quality = get_gf_active_quality(rc, q, bit_depth);
-                //*arf_q = active_best_quality;
                 rc->arf_q = active_best_quality;
                 const int min_boost = get_gf_high_motion_quality(q, bit_depth);
                 const int boost = min_boost - active_best_quality;
 
                 active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
+#if QP_SCALING
+                if ((picture_control_set_ptr->parent_pcs_ptr->hierarchical_levels != 4))
+                    active_best_quality = active_best_quality*(100 + NON_5L_QPS_BIAS )/100;
+#endif
             }
             else {
                 active_best_quality = rc->arf_q;
             }
-            // non Based Ref frames && !P
+
+            //// non Based Ref frames && !P
+#if QP_SCALING
+            // active_best_quality is updated with the q index of the reference
+            if (rf_level == GF_ARF_LOW)
+                active_best_quality = (active_best_quality + cq_level + 1) / 2;
+
+#else
             if (new_bwdref_update_rule && is_intrl_arf_boost) {
                 while (this_height < picture_control_set_ptr->parent_pcs_ptr->hierarchical_levels /*gf_group->pyramid_height*/) {
                     active_best_quality = (active_best_quality + cq_level + 1) / 2;
                     ++this_height;
                 }
             }
-            else {
+            else{
                 // Modify best quality for second level arfs. For mode AOM_Q this
                 // becomes the baseline frame q.
                 if (rf_level == GF_ARF_LOW)
                     active_best_quality = (active_best_quality + cq_level + 1) / 2;
             }
+#endif
         }
     }
     else {
@@ -4013,9 +4032,7 @@ void* rate_control_kernel(void *input_ptr)
                     
 #else
 #if QP_SCALING
-                    // AMIR to be fixed for the last minigop
-                    if (picture_control_set_ptr->picture_number < 49) {
-
+                      if (picture_control_set_ptr->slice_type != P_SLICE) {
 #else                    
                     if (picture_control_set_ptr->slice_type == I_SLICE) {
 #endif
@@ -4035,7 +4052,6 @@ void* rate_control_kernel(void *input_ptr)
                         const  double delta_rate_new[2][6] =
                         { { 0.40, 0.7, 0.85, 1.0, 1.0, 1.0 },
                         { 0.35, 0.6, 0.8,  0.9, 1.0, 1.0 } };
-
                         const int32_t delta_qindex = av1_compute_qdelta(
                             q_val,
                             q_val * delta_rate_new[picture_control_set_ptr->parent_pcs_ptr->hierarchical_levels == 4][picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index],
