@@ -35,6 +35,8 @@
 extern "C" {
 #endif
 
+//CHKN
+
 #define MRP_SUPPORT                       1// MRP Main Flag
 
 // New  presets
