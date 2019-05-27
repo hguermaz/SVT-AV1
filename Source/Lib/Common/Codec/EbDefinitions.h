@@ -35,7 +35,8 @@
 extern "C" {
 #endif
 
-//CHKN
+#define COMP_MODE                       1// add compound modes
+
 
 #define MRP_SUPPORT                       1// MRP Main Flag
 
