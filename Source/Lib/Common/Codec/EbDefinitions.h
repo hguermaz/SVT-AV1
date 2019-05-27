@@ -227,9 +227,10 @@ extern "C" {
 #define MRP_COST_EST              1
 #define MRP_DUPLICATION_FIX       1
 #define MRP_ENABLE_BI_FOR_BASE    1
-#endif
-#define MRP_BASE                  1 //enable MRP for Base
 #define MRP_REF_MODE              1  
+#define MRP_BASE                  1 //enable MRP for Base
+
+#endif
 #define SETUP_SKIP                1
 #define INJ_MVP                   1   //new injection of MVP supporting MRP case.
 #define FIX_INIT                  1   //fix ref_poc_array init

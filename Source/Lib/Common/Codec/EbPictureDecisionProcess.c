@@ -1813,7 +1813,10 @@ void  Av1GenerateRpsInfo(
 #endif
 
             av1Rps->refresh_frame_mask = 1 << context_ptr->lay0_toggle;
-
+#if MRP_LOSSLESS
+            memset(av1Rps->ref_dpb_index, 0, 7);
+            av1Rps->refresh_frame_mask = 1;
+#endif
             break;
 
         case 1:
@@ -2394,7 +2397,10 @@ void  Av1GenerateRpsInfo(
             av1Rps->ref_dpb_index[ALT2] = av1Rps->ref_dpb_index[BWD];
 #endif        
             av1Rps->refresh_frame_mask = 1 << context_ptr->lay0_toggle;
-
+#if MRP_LOSSLESS
+            memset(av1Rps->ref_dpb_index, 0, 7);
+            av1Rps->refresh_frame_mask = 1;
+#endif
             break;
 
         case 1:

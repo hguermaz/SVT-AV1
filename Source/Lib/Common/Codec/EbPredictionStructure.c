@@ -1945,7 +1945,7 @@ EbErrorType prediction_structure_group_ctor(
     *predictionStructureGroupDblPtr = predictionStructureGroupPtr;
 
 #if MRP_M1
-    if (mrp_mode == 1) {
+    if (mrp_mode > 0) {
         int init = mrp_mode == 1 ? 1 : 0;
         for (int gop_i = init; gop_i < 8; ++gop_i) {   // loop all pictures in minigop
             for (int i = 1   ; i < 4; ++i) {           // loop over all reference frames for picture selected within the minigop
