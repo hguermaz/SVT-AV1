@@ -821,6 +821,7 @@ void PredictionPartitionLoop(
                     const MeCandidate *me_block_results = me_results->me_candidate[cuIndexInRaterScan];
                     uint8_t total_me_cnt = me_results->total_me_candidate_index[cuIndexInRaterScan];
                     uint8_t me_index = 0;
+#if !MRP_FIX_ADP
                     for (uint8_t me_candidate_index = 0; me_candidate_index < total_me_cnt; me_candidate_index++) {
                         const MeCandidate *me_block_results_ptr = &me_block_results[me_candidate_index];
                         if (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE) {
@@ -836,6 +837,7 @@ void PredictionPartitionLoop(
                             }
                         }
                     }
+#endif
 
                     //const MeCandidate_t *me_results = &me_block_results[me_index];
 

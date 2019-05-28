@@ -9145,6 +9145,94 @@ EbErrorType motion_estimate_lcu(
 
 #if MRP_ME
         // Sorting of the ME candidates
+
+#if SAME_SORT
+        uint32_t L0Sad = context_ptr->me_candidate[0].pu[pu_index].distortion;
+        uint32_t L1Sad = context_ptr->me_candidate[1].pu[pu_index].distortion;
+        uint32_t biSad = context_ptr->me_candidate[2].pu[pu_index].distortion;
+        MePredUnit tempPtr, tempPtr2, tempPtr3;
+        MePredUnit *a = &(context_ptr->me_candidate[0].pu[pu_index]);
+        MePredUnit *b = &(context_ptr->me_candidate[1].pu[pu_index]);
+        MePredUnit *c = &(context_ptr->me_candidate[2].pu[pu_index]);
+
+        if (total_me_candidate_index == 3) {
+
+            uint32_t order = sort_3_elements(L0Sad, L1Sad, biSad);
+
+            switch (order) {
+                // a = l0Sad, b= l1Sad, c= biSad
+            case a_b_c:
+
+                break;
+
+            case a_c_b:
+                tempPtr = *b;
+                *b = *c;
+                *c = tempPtr;
+                break;
+
+            case b_a_c:
+
+                tempPtr = *a;
+                *a = *b;
+                *b = tempPtr;
+                break;
+
+            case b_c_a:
+
+                tempPtr = *a;
+                tempPtr2 = *b;
+                tempPtr3 = *c;
+                *a = tempPtr2;
+                *b = tempPtr3;
+                *c = tempPtr;
+                break;
+                
+            case c_a_b:
+
+                tempPtr = *a;
+                tempPtr2 = *b;
+                tempPtr3 = *c;
+                *a = tempPtr3;
+                *b = tempPtr;
+                *c = tempPtr2;
+                break;
+
+            case c_b_a:
+
+                tempPtr = *a;
+                tempPtr2 = *b;
+                tempPtr3 = *c;
+                *a = tempPtr3;
+                *b = tempPtr2;
+                *c = tempPtr;
+                    break;
+
+            default:
+                printf("Err in sorting");
+                break;
+            }
+
+        }
+        else if (total_me_candidate_index == 2) {
+
+            uint32_t L0Sad = context_ptr->p_sb_best_sad[0][0][nIdx];
+            uint32_t L1Sad = context_ptr->p_sb_best_sad[1][0][nIdx];
+
+            if (L0Sad <= L1Sad) {
+               
+            }
+            else {
+                tempPtr = *a;
+                *a = *b;
+                *b = tempPtr;
+                break;
+            }
+        }
+        else {
+            
+        }
+#else
         for (candidate_index = 0; candidate_index < total_me_candidate_index - 1; ++candidate_index) {
             for (next_candidate_index = candidate_index + 1; next_candidate_index < total_me_candidate_index; ++next_candidate_index) {
                 if (context_ptr->me_candidate[candidate_index].pu[pu_index].distortion > context_ptr->me_candidate[next_candidate_index].pu[pu_index].distortion) {
@@ -9155,6 +9243,8 @@ EbErrorType motion_estimate_lcu(
                 }
             }
         }
+#endif
+
 
         MeLcuResults * mePuResult = picture_control_set_ptr->me_results[sb_index];
         mePuResult->total_me_candidate_index[pu_index] = total_me_candidate_index;

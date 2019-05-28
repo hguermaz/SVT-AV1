@@ -1264,7 +1264,7 @@ void inject_mvp_candidates_II(
     MvReferenceFrame            ref_pair,
     uint32_t                   *candTotCnt)
 {
-#if MRP_LOSSLESS
+#if DISABLE_COMP_FOR_BASE
     EbBool allow_compound = (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4 || picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) ? EB_FALSE : EB_TRUE; 
 #else
     EbBool allow_compound = (picture_control_set_ptr->parent_pcs_ptr->reference_mode == SINGLE_REFERENCE || context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
@@ -1299,6 +1299,11 @@ void inject_mvp_candidates_II(
                 context_ptr->injected_mv_count_l0 == 0 || is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE :
                 context_ptr->injected_mv_count_l1 == 0 || is_already_injected_mv_l1(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE;
 #endif
+#if DISABLE_COMP_FOR_BASE
+            if (!allow_compound && list_idx == 1)
+                inj_mv = 0;
+#endif
+
         if (inj_mv) {
 
             candidateArray[canIdx].type = INTER_MODE;
@@ -1375,7 +1380,10 @@ void inject_mvp_candidates_II(
                 context_ptr->injected_mv_count_l0 == 0 || is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE :
                 context_ptr->injected_mv_count_l1 == 0 || is_already_injected_mv_l1(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE;
 #endif
-
+#if DISABLE_COMP_FOR_BASE
+            if (!allow_compound && list_idx == 1)
+                inj_mv = 0;
+#endif
             if (inj_mv) {
 
                 candidateArray[canIdx].type = INTER_MODE;
@@ -2056,11 +2064,20 @@ void inject_warped_motion_candidates(
 
 #if !MRP_DUPLICATION_FIX
         // MD_INJECTION
+#if MD_INJECTION
         int16_t to_inject_mv_x = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : meResult->me_mv_array[context_ptr->me_block_offset][list0_ref_index].x_mv << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.col;
         int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : meResult->me_mv_array[context_ptr->me_block_offset][list0_ref_index].y_mv << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.row;
         to_inject_mv_x += neighbors[i].col;
         to_inject_mv_y += neighbors[i].row;
         if (context_ptr->injected_mv_count_l0 == 0 || is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE) {
+#else
+        int16_t to_inject_mv_x = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : mePuResult->x_mv_l0 << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.col;
+        int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : mePuResult->x_mv_l1 << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.row;
+        to_inject_mv_x += neighbors[i].col;
+        to_inject_mv_y += neighbors[i].row;
+        if (context_ptr->injected_mv_count_l0 == 0 || is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE) {
+
+#endif
 #endif
 
         candidateArray[canIdx].type = INTER_MODE;
@@ -2252,6 +2269,9 @@ void  inject_inter_candidates(
 #endif
 #else    
     EbBool allow_bipred = (context_ptr->blk_geom->bwidth == 4 || context_ptr->blk_geom->bheight == 4) ? EB_FALSE : EB_TRUE;
+#endif
+#if DISABLE_COMP_FOR_BASE
+    allow_bipred = (picture_control_set_ptr->parent_pcs_ptr->temporal_layer_index == 0) ? EB_FALSE : allow_bipred;
 #endif
     IntMv  bestPredmv[2] = { {0}, {0} };
     uint8_t sq_index = LOG2F(context_ptr->blk_geom->sq_size) - 2;

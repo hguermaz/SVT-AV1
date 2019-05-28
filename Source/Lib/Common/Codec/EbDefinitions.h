@@ -223,14 +223,20 @@ extern "C" {
 #define MRP_MVP                   1 //MVP upgrade to support MRP
 #define MCP_4XN_FIX               1 //Fix for MCP chroma for 4xN modes
 #define CHECK_CAND                1 //increased and added a safety check for number of fast candidates
+#define MRP_BASE                  1 //enable MRP for Base
 #if !MRP_LOSSLESS
 #define MRP_COST_EST              1
 #define MRP_DUPLICATION_FIX       1
 #define MRP_ENABLE_BI_FOR_BASE    1
 #define MRP_REF_MODE              1  
-#define MRP_BASE                  1 //enable MRP for Base
 
 #endif
+#if MRP_LOSSLESS
+#define DISABLE_COMP_FOR_BASE     1
+#define SAME_SORT                 1
+#define MRP_FIX_ADP               1
+#endif
+
 #define SETUP_SKIP                1
 #define INJ_MVP                   1   //new injection of MVP supporting MRP case.
 #define FIX_INIT                  1   //fix ref_poc_array init
