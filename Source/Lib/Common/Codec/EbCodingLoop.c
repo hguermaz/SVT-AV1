@@ -260,8 +260,8 @@ static void EncodePassUpdateIntraModeNeighborArrays(
         neighbor_array_unit_mode_write(
             luma_dc_sign_level_coeff_neighbor_array,
             (uint8_t*)&dcSignLevelCoeff,
-            context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->tx_depth][txb_itr],
-            context_ptr->cu_origin_y + context_ptr->blk_geom->tx_boff_y[context_ptr->tx_depth][txb_itr],
+            context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->cu_ptr->tx_depth][txb_itr],
+            context_ptr->cu_origin_y + context_ptr->blk_geom->tx_boff_y[context_ptr->cu_ptr->tx_depth][txb_itr],
             context_ptr->blk_geom->tx_width[context_ptr->cu_ptr->tx_depth][txb_itr],
             context_ptr->blk_geom->tx_height[context_ptr->cu_ptr->tx_depth][txb_itr],
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
@@ -360,8 +360,8 @@ static void EncodePassUpdateInterModeNeighborArrays(
         neighbor_array_unit_mode_write(
             luma_dc_sign_level_coeff_neighbor_array,
             (uint8_t*)&dcSignLevelCoeff,
-            context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->tx_depth][txb_itr],
-            context_ptr->cu_origin_y + context_ptr->blk_geom->tx_boff_y[context_ptr->tx_depth][txb_itr],
+            context_ptr->cu_origin_x + context_ptr->blk_geom->tx_boff_x[context_ptr->cu_ptr->tx_depth][txb_itr],
+            context_ptr->cu_origin_y + context_ptr->blk_geom->tx_boff_y[context_ptr->cu_ptr->tx_depth][txb_itr],
             context_ptr->blk_geom->tx_width[context_ptr->cu_ptr->tx_depth][txb_itr],
             context_ptr->blk_geom->tx_height[context_ptr->cu_ptr->tx_depth][txb_itr],
             NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
@@ -2624,7 +2624,7 @@ void perform_intra_coding_loop(
             txb_origin_x,
             txb_origin_y,
             context_ptr->blk_geom->bsize,
-            context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->txsize[cu_ptr->tx_depth][context_ptr->txb_itr],
             &context_ptr->cu_ptr->luma_txb_skip_context,
             &context_ptr->cu_ptr->luma_dc_sign_context[context_ptr->txb_itr]);
 #endif
@@ -2843,7 +2843,7 @@ void perform_intra_coding_loop(
             cu_originx_uv,
             cu_originy_uv,
             context_ptr->blk_geom->bsize_uv,
-            context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->txsize_uv[cu_ptr->tx_depth][context_ptr->txb_itr],
             &cu_ptr->cb_txb_skip_context,
             &cu_ptr->cb_dc_sign_context);
 
@@ -2856,7 +2856,7 @@ void perform_intra_coding_loop(
             cu_originx_uv,
             cu_originy_uv,
             context_ptr->blk_geom->bsize_uv,
-            context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+            context_ptr->blk_geom->txsize_uv[context_ptr->cu_ptr->tx_depth][context_ptr->txb_itr],
             &cu_ptr->cr_txb_skip_context,
             &cu_ptr->cr_dc_sign_context);
 #endif
@@ -4369,7 +4369,7 @@ EB_EXTERN void av1_encode_pass(
                                 txb_origin_x,
                                 txb_origin_y,
                                 context_ptr->blk_geom->bsize,
-                                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+                                context_ptr->blk_geom->txsize[cu_ptr->tx_depth][context_ptr->txb_itr],
                                 &context_ptr->cu_ptr->luma_txb_skip_context,
                                 &context_ptr->cu_ptr->luma_dc_sign_context[context_ptr->txb_itr]);
 
@@ -4381,7 +4381,7 @@ EB_EXTERN void av1_encode_pass(
                                 cu_originx_uv,
                                 cu_originy_uv,
                                 context_ptr->blk_geom->bsize_uv,
-                                context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+                                context_ptr->blk_geom->txsize_uv[context_ptr->cu_ptr->tx_depth][context_ptr->txb_itr],
                                 &cu_ptr->cb_txb_skip_context,
                                 &cu_ptr->cb_dc_sign_context);
 
@@ -4394,7 +4394,7 @@ EB_EXTERN void av1_encode_pass(
                                 cu_originx_uv,
                                 cu_originy_uv,
                                 context_ptr->blk_geom->bsize_uv,
-                                context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
+                                context_ptr->blk_geom->txsize_uv[cu_ptr->tx_depth][context_ptr->txb_itr],
                                 &cu_ptr->cr_txb_skip_context,
                                 &cu_ptr->cr_dc_sign_context);
 #endif
