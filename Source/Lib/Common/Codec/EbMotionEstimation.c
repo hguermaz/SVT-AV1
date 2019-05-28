@@ -9226,7 +9226,6 @@ EbErrorType motion_estimate_lcu(
                 tempPtr = *a;
                 *a = *b;
                 *b = tempPtr;
-                break;
             }
         }
         else {

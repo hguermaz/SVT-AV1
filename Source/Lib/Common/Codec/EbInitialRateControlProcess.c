@@ -1532,7 +1532,7 @@ void QpmGatherStatisticsSW(
             OisCandidate *ois_cu_ptr = ois_sb_results_ptr->ois_candidate_array[mdScanCuIndex];
             oisSad = ois_cu_ptr[ois_sb_results_ptr->best_distortion_index[mdScanCuIndex]].distortion;
 #if MRP_CONNECTION
-        meSad = picture_control_set_ptr->me_results[sb_index]->me_candidate[rasterScanCuIndex][0].distortion;
+        meSad = picture_control_set_ptr->me_results[sb_index]->me_candidate[RASTER_SCAN_CU_INDEX_64x64][0].distortion;
 #else
         meSad = picture_control_set_ptr->me_results[sb_index][RASTER_SCAN_CU_INDEX_64x64].distortion_direction[0].distortion;
 #endif

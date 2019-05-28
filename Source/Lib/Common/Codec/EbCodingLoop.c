@@ -3148,8 +3148,8 @@ EB_EXTERN void av1_encode_pass(
                     EbReferenceObject* refObj0 = ref_idx_l0 >= 0 ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx0][ref_idx_l0]->object_ptr : (EbReferenceObject*)EB_NULL;
                     EbReferenceObject* refObj1 = ref_idx_l1 >= 0 ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[list_idx1][ref_idx_l1]->object_ptr : (EbReferenceObject*)EB_NULL;
 #else
-                    EbReferenceObject_t* refObj0 = ref_idx_l0 >= 0 ? (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx_l0]->object_ptr : (EbReferenceObject_t*)EB_NULL;
-                    EbReferenceObject_t* refObj1 = ref_idx_l1 >= 0 ? (EbReferenceObject_t*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][ref_idx_l1]->object_ptr : (EbReferenceObject_t*)EB_NULL;
+                    EbReferenceObject* refObj0 = ref_idx_l0 >= 0 ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0][ref_idx_l0]->object_ptr : (EbReferenceObject*)EB_NULL;
+                    EbReferenceObject* refObj1 = ref_idx_l1 >= 0 ? (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_1][ref_idx_l1]->object_ptr : (EbReferenceObject*)EB_NULL;
 #endif
 #else
                     EbReferenceObject* refObj0 = (EbReferenceObject*)picture_control_set_ptr->ref_pic_ptr_array[REF_LIST_0]->object_ptr;

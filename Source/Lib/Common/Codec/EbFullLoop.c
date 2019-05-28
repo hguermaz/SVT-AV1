@@ -3705,12 +3705,26 @@ void   compute_depth_costs(
             sequence_control_set_ptr->max_sb_depth);
 #endif
         *above_depth_cost = context_ptr->md_local_cu_unit[above_depth_mds].cost + above_non_split_rate;
+#if SPLIT_RATE_FIX 
+        // Compute curr depth  cost
+        av1_split_flag_rate(
+            sequence_control_set_ptr,
+            context_ptr,
+            &context_ptr->md_cu_arr_nsq[above_depth_mds],
+            0,
+            PARTITION_SPLIT,
+            &above_split_rate,
+            context_ptr->full_lambda,
+            context_ptr->md_rate_estimation_ptr,
+            sequence_control_set_ptr->max_sb_depth);
+#endif
     }
     else {
         *above_depth_cost = MAX_MODE_COST;
     }
 
     // Compute curr depth  cost
+#if !SPLIT_RATE_FIX
     av1_split_flag_rate(
         sequence_control_set_ptr,
         context_ptr,
@@ -3721,6 +3735,7 @@ void   compute_depth_costs(
         context_ptr->full_lambda,
         context_ptr->md_rate_estimation_ptr,
         sequence_control_set_ptr->max_sb_depth);
+#endif
 
     if (context_ptr->blk_geom->bsize > BLOCK_4X4) {
 

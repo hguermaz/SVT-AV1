@@ -1438,7 +1438,9 @@ void inject_mvp_candidates_II(
         uint8_t ref_idx_0 = get_ref_frame_idx(rf[0]);
         uint8_t ref_idx_1 = get_ref_frame_idx(rf[1]);
 
-#if !MRP_MD_UNI_DIR_BIPRED    
+#if !MRP_MD_UNI_DIR_BIPRED
+        uint8_t list_idx_0 = get_list_idx(rf[0]);
+        uint8_t list_idx_1 = get_list_idx(rf[1]);
         if (list_idx_0 != list_idx_1) //only bi-directional compound for now
 #endif
         {
@@ -2065,8 +2067,13 @@ void inject_warped_motion_candidates(
 #if !MRP_DUPLICATION_FIX
         // MD_INJECTION
 #if MD_INJECTION
+#if MEMORY_FOOTPRINT_OPT_ME_MV
         int16_t to_inject_mv_x = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : meResult->me_mv_array[context_ptr->me_block_offset][list0_ref_index].x_mv << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.col;
         int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : meResult->me_mv_array[context_ptr->me_block_offset][list0_ref_index].y_mv << 1; // context_ptr->cu_ptr->ref_mvs[LAST_FRAME][0].as_mv.row;
+#else
+        int16_t to_inject_mv_x = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][0] << 1 : me_block_results_ptr->x_mv_l0 << 1; 
+        int16_t to_inject_mv_y = use_close_loop_me ? ss_mecontext->inloop_me_mv[0][0][close_loop_me_index][1] << 1 : me_block_results_ptr->y_mv_l0 << 1; 
+#endif
         to_inject_mv_x += neighbors[i].col;
         to_inject_mv_y += neighbors[i].row;
         if (context_ptr->injected_mv_count_l0 == 0 || is_already_injected_mv_l0(context_ptr, to_inject_mv_x, to_inject_mv_y) == EB_FALSE) {

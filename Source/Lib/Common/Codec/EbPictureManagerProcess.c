@@ -616,7 +616,7 @@ void* picture_manager_kernel(void *input_ptr)
 #if MRP_ME
                     uint8_t refIdx;
                     for (refIdx = 0; refIdx < entryPictureControlSetPtr->ref_list0_count; ++refIdx) {
-                        //if (entryPictureControlSetPtr->ref_list0_count)  // NM: to double check.
+                        if (entryPictureControlSetPtr->ref_list0_count)  // NM: to double check.
                         {
                             referenceQueueIndex = (uint32_t)CIRCULAR_ADD(
                                 ((int32_t)inputEntryPtr->reference_entry_index) -     // Base
@@ -697,7 +697,7 @@ void* picture_manager_kernel(void *input_ptr)
 #if MRP_ME
                         uint8_t refIdx;
                         for (refIdx = 0; refIdx < entryPictureControlSetPtr->ref_list1_count; ++refIdx) {
-                            // if (entryPictureControlSetPtr->ref_list1_count) // NM: To double check
+                             if (entryPictureControlSetPtr->ref_list1_count) // NM: To double check
                             {
                                 // If Reference is valid (non-zero), update the availability
                                 if (inputEntryPtr->list1_ptr->reference_list[refIdx] != (int32_t)INVALID_POC) {

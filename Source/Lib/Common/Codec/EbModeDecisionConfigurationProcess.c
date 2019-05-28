@@ -1843,7 +1843,11 @@ void derive_sb_score(
                 for (cu8x8Index = RASTER_SCAN_CU_INDEX_8x8_0; cu8x8Index <= RASTER_SCAN_CU_INDEX_8x8_63; cu8x8Index++) {
                     if (sb_params->raster_scan_cu_validity[cu8x8Index]) {
 #if MRP_CONNECTION
+#if MRP_FIX_ADP
+                        distortion += picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[cu8x8Index][0].distortion;
+#else
                         distortion = picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index]->me_candidate[cu8x8Index][0].distortion;
+#endif
 #else
                         distortion += picture_control_set_ptr->parent_pcs_ptr->me_results[sb_index][cu8x8Index].distortion_direction[0].distortion;
 #endif
