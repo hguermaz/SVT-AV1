@@ -32,6 +32,14 @@
 #include "aom_dsp_rtcd.h"
 #include "EbCodingLoop.h"
 
+#ifdef linux
+#define LIKELY(x)       __builtin_expect((x),1)
+#define UNLIKELY(x)     __builtin_expect((x),0)
+#else
+#define LIKELY(x)       (x)
+#define UNLIKELY(x)     (x)
+#endif
+
 #define TH_NFL_BIAS             7
 
 EbErrorType ProductGenerateMdCandidatesCu(
@@ -3467,6 +3475,7 @@ void perform_intra_tx_partitioning(
     SequenceControlSet  *sequence_control_set_ptr = (SequenceControlSet*)picture_control_set_ptr->sequence_control_set_wrapper_ptr->object_ptr;
     EbAsm    asm_type = sequence_control_set_ptr->encode_context_ptr->asm_type;
     uint32_t tu_origin_index;
+	uint32_t input_tu_origin_index;
     uint64_t y_full_cost;
     uint64_t y_tu_coeff_bits;
     uint64_t tuFullDistortion[3][DIST_CALC_TOTAL];
@@ -3505,14 +3514,14 @@ void perform_intra_tx_partitioning(
 
         // Set recon neighbor array to be used @ intra compensation
         context_ptr->tx_search_luma_recon_neighbor_array =
-            (context_ptr->tx_depth) ?
+			LIKELY(context_ptr->tx_depth) ?
             picture_control_set_ptr->md_tx_depth_1_luma_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX] :
             picture_control_set_ptr->md_luma_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
 
 #if ATB_DC_CONTEXT_SUPPORT_2
         // Set luma dc sign level coeff
         context_ptr->tx_search_luma_dc_sign_level_coeff_neighbor_array =
-            (context_ptr->tx_depth) ?
+			LIKELY(context_ptr->tx_depth) ?
             picture_control_set_ptr->md_tx_depth_1_luma_dc_sign_level_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX] :
             picture_control_set_ptr->md_luma_dc_sign_level_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
 #endif
@@ -3526,27 +3535,39 @@ void perform_intra_tx_partitioning(
         candidateBuffer->candidate_ptr->y_has_coeff = 0;
 
         uint16_t txb_count = context_ptr->blk_geom->txb_count[context_ptr->tx_depth];
+
+		// Transform Size Loop
         for (context_ptr->txb_itr = 0; context_ptr->txb_itr < txb_count; context_ptr->txb_itr++) {
 
+			// x,y origins of transforms
             uint16_t tx_org_x = context_ptr->blk_geom->tx_org_x[context_ptr->tx_depth][context_ptr->txb_itr];
             uint16_t tx_org_y = context_ptr->blk_geom->tx_org_y[context_ptr->tx_depth][context_ptr->txb_itr];
 
+			// blocksize of transform
+			TxType curr_tx_size = context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr];
+			uint8_t curr_tx_w = context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr];
+			uint8_t curr_tx_h = context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr];
+
 #if ATB_DC_CONTEXT_SUPPORT_2
-            context_ptr->cu_ptr->luma_txb_skip_context = 0;
+            
+			context_ptr->cu_ptr->luma_txb_skip_context = 0;
             context_ptr->cu_ptr->luma_dc_sign_context[context_ptr->txb_itr] = 0;
+
             get_txb_ctx(
                 COMPONENT_LUMA,
                 context_ptr->tx_search_luma_dc_sign_level_coeff_neighbor_array,
                 context_ptr->sb_origin_x + tx_org_x,
                 context_ptr->sb_origin_y + tx_org_y,
                 context_ptr->blk_geom->bsize,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				curr_tx_size,
                 &context_ptr->cu_ptr->luma_txb_skip_context,
                 &context_ptr->cu_ptr->luma_dc_sign_context[context_ptr->txb_itr]);
 #endif
-            tu_origin_index = tx_org_x + (tx_org_y * candidateBuffer->residual_ptr->stride_y);
-
-            uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+			//transform unit origin is raster scan position
+            tu_origin_index			= tx_org_x + 
+									 (tx_org_y * candidateBuffer->residual_ptr->stride_y);
+			input_tu_origin_index	= (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + 
+									 ((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
 
             // Y Prediction
             av1_intra_luma_prediction(
@@ -3562,8 +3583,8 @@ void perform_intra_tx_partitioning(
                 candidateBuffer->prediction_ptr->stride_y,
                 &(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
                 candidateBuffer->residual_ptr->stride_y,
-                context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]);
+                curr_tx_w,
+                curr_tx_h);
 
             TxType best_tx_type = DCT_DCT;
             TxType txk_start = DCT_DCT;
@@ -3571,11 +3592,12 @@ void perform_intra_tx_partitioning(
             uint64_t best_cost_tx_search = (uint64_t)~0;
 
 #if 0
-            const TxSetType tx_set_type = get_ext_tx_set_type(context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr], is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+            const TxSetType tx_set_type = get_ext_tx_set_type(curr_tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 #else
-            const TxSetType tx_set_type = get_ext_tx_set_type(context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr], 0, 0);
+            const TxSetType tx_set_type = get_ext_tx_set_type(curr_tx_size, 0, 0);
 
 #endif
+			// Transform Type Loop
             for (int32_t tx_type = txk_start; tx_type < txk_end; ++tx_type) {
 
                 y_tu_coeff_bits = 0;
@@ -3591,16 +3613,16 @@ void perform_intra_tx_partitioning(
                     if (eset <= 0) continue;
                     else if (av1_ext_tx_used[tx_set_type][tx_type] == 0) continue;
                     else if (tx_height > 32 || tx_width > 32) continue;
-        }
-                int32_t eset = get_ext_tx_set(context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr], is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
+				}
+                int32_t eset = get_ext_tx_set(curr_tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
 #else
-                int32_t eset = get_ext_tx_set(context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr], 0, 0);
+                int32_t eset = get_ext_tx_set(curr_tx_size, 0, 0);
 #endif
                 // eset == 0 should correspond to a set with only DCT_DCT and there
                 // is no need to send the tx_type
                 if (eset <= 0) continue;
                 else if (av1_ext_tx_used[tx_set_type][tx_type] == 0) continue;
-                else if (context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr] > 32 || context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr] > 32) continue;
+                else if (curr_tx_h > 32 || curr_tx_w > 32) continue;
 #if 0
                 if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set)
                     if (!allowed_tx_set_a[context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr]][tx_type]) continue;
@@ -3611,7 +3633,7 @@ void perform_intra_tx_partitioning(
                     candidateBuffer->residual_ptr->stride_y,
                     &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
                     NOT_USED_VALUE,
-                    context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+					curr_tx_size,
                     &context_ptr->three_quad_energy,
                     context_ptr->transform_inner_array_ptr,
                     0,
@@ -3628,9 +3650,9 @@ void perform_intra_tx_partitioning(
                     &(((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]),
                     &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
                     qp,
-                    context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+                    curr_tx_w,
+                    curr_tx_h,
+					curr_tx_size,
                     &candidateBuffer->candidate_ptr->eob[0][context_ptr->txb_itr],
                     asm_type,
                     &(y_count_non_zero_coeffs[context_ptr->txb_itr]),
@@ -3667,15 +3689,17 @@ void perform_intra_tx_partitioning(
                     uint8_t *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
 
                     uint32_t j;
-                    for (j = 0; j < context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]; j++)
-                        memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr]);
+                    for (j = 0; j < curr_tx_h; j++)
+                        memcpy(	rec_buffer + j * candidateBuffer->recon_ptr->stride_y, 
+								pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, 
+								curr_tx_w);
 
                     av1_inv_transform_recon8bit(
 
                         &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
                         rec_buffer,
                         candidateBuffer->recon_ptr->stride_y,
-                        context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+						curr_tx_size,
                         tx_type,
                         PLANE_TYPE_Y,
                         (uint16_t)candidateBuffer->candidate_ptr->eob[0][context_ptr->txb_itr]);
@@ -3690,8 +3714,8 @@ void perform_intra_tx_partitioning(
                         candidateBuffer->recon_ptr,
                         tu_origin_index,
                         0,
-                        context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                        context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
+                        curr_tx_w,
+                        curr_tx_h,
                         0,
                         0,
                         PICTURE_BUFFER_DESC_Y_FLAG,
@@ -3703,16 +3727,16 @@ void perform_intra_tx_partitioning(
                     input_picture_ptr->stride_y,
                     candidateBuffer->prediction_ptr->buffer_y + tu_origin_index,
                     candidateBuffer->prediction_ptr->stride_y,
-                    context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]);
+                    curr_tx_w,
+                    curr_tx_h);
 
                 tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr]) - 2](
                     input_picture_ptr->buffer_y + input_tu_origin_index,
                     input_picture_ptr->stride_y,
                     &(((uint8_t*)candidateBuffer->recon_ptr->buffer_y)[tu_origin_index]),
                     candidateBuffer->recon_ptr->stride_y,
-                    context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]);
+					curr_tx_w,
+					curr_tx_h);
 
                 tuFullDistortion[0][DIST_CALC_PREDICTION] <<= 4;
                 tuFullDistortion[0][DIST_CALC_RESIDUAL] <<= 4;
@@ -3740,7 +3764,7 @@ void perform_intra_tx_partitioning(
                     &y_tu_coeff_bits,
                     &y_tu_coeff_bits,
                     &y_tu_coeff_bits,
-                    context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+					curr_tx_size,
                     context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
                     tx_type,
                     candidateBuffer->candidate_ptr->transform_type_uv,
@@ -3752,7 +3776,7 @@ void perform_intra_tx_partitioning(
                     context_ptr->cu_ptr->luma_txb_skip_context,
                     candidateBuffer->candidate_ptr,
                     context_ptr->txb_itr,
-                    context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+					curr_tx_size,
                     y_count_non_zero_coeffs[context_ptr->txb_itr],
                     tuFullDistortion[0],
                     &y_tu_coeff_bits,
@@ -3765,7 +3789,7 @@ void perform_intra_tx_partitioning(
                     best_cost_tx_search = cost;
                     best_tx_type = tx_type;
                 }
-    }
+			} // end xform type loop
 
             // Record the best tx type @ depth 0
             best_tx_type_depth_0 = (context_ptr->tx_depth == 0) ? best_tx_type : best_tx_type_depth_0;
@@ -3781,7 +3805,7 @@ void perform_intra_tx_partitioning(
                 candidateBuffer->residual_ptr->stride_y,
                 &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
                 NOT_USED_VALUE,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				curr_tx_size,
                 &context_ptr->three_quad_energy,
                 context_ptr->transform_inner_array_ptr,
                 0,
@@ -3805,9 +3829,9 @@ void perform_intra_tx_partitioning(
                 &(((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]),
                 &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
                 qp,
-                context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				curr_tx_w,
+				curr_tx_h,
+				curr_tx_size,
                 &candidateBuffer->candidate_ptr->eob[0][context_ptr->txb_itr],
                 asm_type,
                 &(y_count_non_zero_coeffs[context_ptr->txb_itr]),
@@ -3842,15 +3866,17 @@ void perform_intra_tx_partitioning(
                 uint8_t *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
 
                 uint32_t j;
-                for (j = 0; j < context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]; j++)
-                    memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr]);
+                for (j = 0; j < curr_tx_h; j++)
+                    memcpy(	rec_buffer + j * candidateBuffer->recon_ptr->stride_y, 
+							pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, 
+							curr_tx_w);
 
                 av1_inv_transform_recon8bit(
 
                     &(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
                     rec_buffer,
                     candidateBuffer->recon_ptr->stride_y,
-                    context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+                    curr_tx_size,
 #if ATB_TX_TYPE_SUPPORT_PER_TU
                     candidateBuffer->candidate_ptr->transform_type[context_ptr->txb_itr],
 #else
@@ -3869,8 +3895,8 @@ void perform_intra_tx_partitioning(
                     candidateBuffer->recon_ptr,
                     tu_origin_index,
                     0,
-                    context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
+                    curr_tx_w,
+                    curr_tx_h,
                     0,
                     0,
                     PICTURE_BUFFER_DESC_Y_FLAG,
@@ -3882,16 +3908,16 @@ void perform_intra_tx_partitioning(
                 input_picture_ptr->stride_y,
                 candidateBuffer->prediction_ptr->buffer_y + tu_origin_index,
                 candidateBuffer->prediction_ptr->stride_y,
-                context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]);
+                curr_tx_w,
+                curr_tx_h);
 
             tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr]) - 2](
                 input_picture_ptr->buffer_y + input_tu_origin_index,
                 input_picture_ptr->stride_y,
                 &(((uint8_t*)candidateBuffer->recon_ptr->buffer_y)[tu_origin_index]),
                 candidateBuffer->recon_ptr->stride_y,
-                context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]);
+				curr_tx_w,
+				curr_tx_h);
 
             tuFullDistortion[0][DIST_CALC_PREDICTION] <<= 4;
             tuFullDistortion[0][DIST_CALC_RESIDUAL] <<= 4;
@@ -3919,7 +3945,7 @@ void perform_intra_tx_partitioning(
                 &y_tu_coeff_bits,
                 &y_tu_coeff_bits,
                 &y_tu_coeff_bits,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				curr_tx_size,
                 context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
 #if ATB_TX_TYPE_SUPPORT_PER_TU
                 candidateBuffer->candidate_ptr->transform_type[context_ptr->txb_itr],
@@ -3932,7 +3958,7 @@ void perform_intra_tx_partitioning(
                 context_ptr->cu_ptr->luma_txb_skip_context,
                 candidateBuffer->candidate_ptr,
                 context_ptr->txb_itr,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				curr_tx_size,
                 y_count_non_zero_coeffs[context_ptr->txb_itr],
                 tuFullDistortion[0],
                 &y_tu_coeff_bits,
@@ -3955,8 +3981,8 @@ void perform_intra_tx_partitioning(
                     context_ptr->blk_geom->tx_org_y[context_ptr->tx_depth][context_ptr->txb_itr],
                     context_ptr->sb_origin_x + context_ptr->blk_geom->tx_org_x[context_ptr->tx_depth][context_ptr->txb_itr],
                     context_ptr->sb_origin_y + context_ptr->blk_geom->tx_org_y[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr]);
+					curr_tx_w,
+					curr_tx_h);
 
 #if ATB_DC_CONTEXT_SUPPORT_2
 #if DC_SIGN_CONTEXT_FIX
@@ -3981,12 +4007,12 @@ void perform_intra_tx_partitioning(
                     (uint8_t*)&dcSignLevelCoeff,
                     context_ptr->sb_origin_x + context_ptr->blk_geom->tx_org_x[context_ptr->tx_depth][context_ptr->txb_itr],
                     context_ptr->sb_origin_y + context_ptr->blk_geom->tx_org_y[context_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_width[context_ptr->cu_ptr->tx_depth][context_ptr->txb_itr],
-                    context_ptr->blk_geom->tx_height[context_ptr->cu_ptr->tx_depth][context_ptr->txb_itr],
+					curr_tx_w,
+					curr_tx_h,
                     NEIGHBOR_ARRAY_UNIT_TOP_AND_LEFT_ONLY_MASK);
 #endif
             }
-} // Transform Loop
+		} // Transform Type Loop
 
 #if ATB_RATE
         uint64_t tx_size_bits = 0;
@@ -4047,7 +4073,7 @@ void perform_intra_tx_partitioning(
                 context_ptr->sb_origin_x + tx_org_x,
                 context_ptr->sb_origin_y + tx_org_y,
                 context_ptr->blk_geom->bsize,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
                 &context_ptr->cu_ptr->luma_txb_skip_context,
                 &context_ptr->cu_ptr->luma_dc_sign_context[context_ptr->txb_itr]);
 #endif
@@ -4086,7 +4112,7 @@ void perform_intra_tx_partitioning(
                 candidateBuffer->residual_ptr->stride_y,
                 &(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
                 NOT_USED_VALUE,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
                 &context_ptr->three_quad_energy,
                 context_ptr->transform_inner_array_ptr,
                 0,
@@ -4113,7 +4139,7 @@ void perform_intra_tx_partitioning(
                 qp,
                 context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr],
                 context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr],
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
                 &candidateBuffer->candidate_ptr->eob[0][context_ptr->txb_itr],
                 asm_type,
                 &(y_count_non_zero_coeffs[context_ptr->txb_itr]),
@@ -4225,7 +4251,7 @@ void perform_intra_tx_partitioning(
                 &y_tu_coeff_bits,
                 &y_tu_coeff_bits,
                 &y_tu_coeff_bits,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
                 context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
 #if ATB_TX_TYPE_SUPPORT_PER_TU
                 candidateBuffer->candidate_ptr->transform_type[context_ptr->txb_itr],
@@ -4239,7 +4265,7 @@ void perform_intra_tx_partitioning(
                 context_ptr->cu_ptr->luma_txb_skip_context,
                 candidateBuffer->candidate_ptr,
                 context_ptr->txb_itr,
-                context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
+				context_ptr->blk_geom->txsize[context_ptr->tx_depth][context_ptr->txb_itr],
                 y_count_non_zero_coeffs[context_ptr->txb_itr],
                 tuFullDistortion[0],
                 &y_tu_coeff_bits,
@@ -4254,7 +4280,7 @@ void perform_intra_tx_partitioning(
             txb_1d_offset += context_ptr->blk_geom->tx_width[context_ptr->tx_depth][context_ptr->txb_itr] * context_ptr->blk_geom->tx_height[context_ptr->tx_depth][context_ptr->txb_itr];
 
         } // Transform Loop
-    }
+    } 
 }
 #endif
 void AV1PerformFullLoop(
