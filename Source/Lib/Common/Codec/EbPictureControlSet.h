@@ -14132,7 +14132,7 @@ extern "C" {
 #endif
         uint16_t                              non_moving_index_average;            // used by ModeDecisionConfigurationProcess()
 
-#if QP_SCALING
+#if ADAPTIVE_QP_SCALING
         uint16_t                              qp_scaling_average_complexity;            
 #endif
 #if !MEMORY_FOOTPRINT_OPT

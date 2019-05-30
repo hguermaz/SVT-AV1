@@ -34,13 +34,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define NON_ADAPTIVE_QP_SCALING           0 // Turns OFF adaptive QP scaling. Set to 0 if QP_SCALING is active
 
-#if !NON_ADAPTIVE_QP_SCALING
-#define QP_SCALING                        1 // Content based QP scaling
-#define MAX_QPS_COMPL                     200
-#define NON_5L_QPS_BIAS                   30
-#endif
+#define ADAPTIVE_QP_SCALING               1 // Content based QP scaling
 
 #define ALT_REF_SUPPORT                   1// ALT_REF main flag
 
