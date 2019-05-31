@@ -46,14 +46,6 @@ EbErrorType ProductGenerateMdCandidatesCu(
 	EbPtr                           interPredContextPtr,
 	PictureControlSet            *picture_control_set_ptr);
 
-#ifdef linux
-#define LIKELY(x)       __builtin_expect((x),1)
-#define UNLIKELY(x)     __builtin_expect((x),0)
-#else
-#define LIKELY(x)       (x)
-#define UNLIKELY(x)     (x)
-#endif
-
 
 /*******************************************
 * set Penalize Skip Flag
@@ -3483,8 +3475,7 @@ void perform_intra_tx_search(
 	//TxType best_tx_type = DCT_DCT;
 	TxType txk_start = DCT_DCT;
 	TxType txk_end = TX_TYPES;
-
-	//uint64_t tuFullDistortion[3][DIST_CALC_TOTAL];
+	uint32_t j;
 
 	//transform type loop
 	for (int32_t tx_type = txk_start; tx_type < txk_end; ++tx_type) {
@@ -3577,9 +3568,10 @@ void perform_intra_tx_search(
 			uint8_t *pred_buffer = &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
 			uint8_t *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
 
-			uint32_t j;
 			for (j = 0; j < curr_tx_h; j++)
-				memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, curr_tx_w);
+				memcpy(	rec_buffer + j * candidateBuffer->recon_ptr->stride_y, 
+						pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, 
+						curr_tx_w);
 
 			av1_inv_transform_recon8bit(
 
@@ -3607,6 +3599,7 @@ void perform_intra_tx_search(
 				0,
 				PICTURE_BUFFER_DESC_Y_FLAG,
 				asm_type);
+
 		}
 
 		tuFullDistortion[0][DIST_CALC_PREDICTION] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(curr_tx_w) - 2](
@@ -3703,6 +3696,7 @@ void perform_intra_tx_partitioning(
 	tuFullDistortion[1] = malloc(DIST_CALC_TOTAL * sizeof(uint64_t));
 	tuFullDistortion[2] = malloc(DIST_CALC_TOTAL * sizeof(uint64_t));
 
+	uint32_t j;
 
 	uint8_t  best_tx_depth = 0;
 
@@ -3737,14 +3731,14 @@ void perform_intra_tx_partitioning(
 
 		// Set recon neighbor array to be used @ intra compensation
 		context_ptr->tx_search_luma_recon_neighbor_array =
-			LIKELY(context_ptr->tx_depth) ?
+			(context_ptr->tx_depth) ?
 			picture_control_set_ptr->md_tx_depth_1_luma_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX] :
 			picture_control_set_ptr->md_luma_recon_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
 
 #if ATB_DC_CONTEXT_SUPPORT_2
 		// Set luma dc sign level coeff
 		context_ptr->tx_search_luma_dc_sign_level_coeff_neighbor_array =
-			LIKELY(context_ptr->tx_depth) ?
+			(context_ptr->tx_depth) ?
 			picture_control_set_ptr->md_tx_depth_1_luma_dc_sign_level_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX] :
 			picture_control_set_ptr->md_luma_dc_sign_level_coeff_neighbor_array[MD_NEIGHBOR_ARRAY_INDEX];
 #endif
@@ -3783,7 +3777,8 @@ void perform_intra_tx_partitioning(
 #endif
 			tu_origin_index = tx_org_x + (tx_org_y * candidateBuffer->residual_ptr->stride_y);
 
-			uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+			uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + 
+											((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
 
 			// Y Prediction
 			av1_intra_luma_prediction(
@@ -3814,219 +3809,25 @@ void perform_intra_tx_partitioning(
 
 #endif
 
-# if  1
 			perform_intra_tx_search(
-			candidateBuffer,
-			context_ptr,
-			picture_control_set_ptr,
-			input_picture_ptr,
-			qp,
-			y_count_non_zero_coeffs,
-			curr_tx_size,
-			curr_tx_w,
-			curr_tx_h,
-			y_tu_coeff_bits,
-			tx_set_type,
-			tu_origin_index,
-			input_tu_origin_index,
-			txb_1d_offset,
-			asm_type,
-			&best_tx_type,
-			tuFullDistortion,
-			&best_cost_tx_search);
-#else
-			//transform type loop
-			for (int32_t tx_type = txk_start; tx_type < txk_end; ++tx_type) {
-
-				y_tu_coeff_bits = 0;
-#if 0
-				if (is_inter) {
-					TxSize max_tx_size = context_ptr->blk_geom->txsize_uv[0][txb_itr];
-					const TxSetType                tx_set_type =
-						get_ext_tx_set_type(max_tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-
-					int32_t eset = get_ext_tx_set(max_tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-					// eset == 0 should correspond to a set with only DCT_DCT and there
-					// is no need to send the tx_type
-					if (eset <= 0) continue;
-					else if (av1_ext_tx_used[tx_set_type][tx_type] == 0) continue;
-					else if (tx_height > 32 || tx_width > 32) continue;
-				}
-				int32_t eset = get_ext_tx_set(curr_tx_size, is_inter, picture_control_set_ptr->parent_pcs_ptr->reduced_tx_set_used);
-#else
-				int32_t eset = get_ext_tx_set(curr_tx_size, 0, 0);
-#endif
-				// eset == 0 should correspond to a set with only DCT_DCT and there
-				// is no need to send the tx_type
-				if (eset <= 0) continue;
-				else if (av1_ext_tx_used[tx_set_type][tx_type] == 0) continue;
-				else if (curr_tx_h > 32 || curr_tx_w > 32) continue;
-#if 0
-				if (picture_control_set_ptr->parent_pcs_ptr->tx_search_reduced_set)
-					if (!allowed_tx_set_a[curr_tx_size][tx_type]) continue;
-#endif
-				// Y: T Q iQ
-				av1_estimate_transform(
-					&(((int16_t*)candidateBuffer->residual_ptr->buffer_y)[tu_origin_index]),
-					candidateBuffer->residual_ptr->stride_y,
-					&(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
-					NOT_USED_VALUE,
-					curr_tx_size,
-					&context_ptr->three_quad_energy,
-					context_ptr->transform_inner_array_ptr,
-					0,
-					tx_type,
-					asm_type,
-					PLANE_TYPE_Y,
-					DEFAULT_SHAPE);
-
-				av1_quantize_inv_quantize(
-					picture_control_set_ptr,
-					context_ptr,
-					&(((int32_t*)context_ptr->trans_quant_buffers_ptr->tu_trans_coeff2_nx2_n_ptr->buffer_y)[txb_1d_offset]),
-					NOT_USED_VALUE,
-					&(((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]),
-					&(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
-					qp,
-					curr_tx_w,
-					curr_tx_h,
-					curr_tx_size,
-					&candidateBuffer->candidate_ptr->eob[0][context_ptr->txb_itr],
-					asm_type,
-					&(y_count_non_zero_coeffs[context_ptr->txb_itr]),
-					COMPONENT_LUMA,
-					BIT_INCREMENT_8BIT,
-					tx_type,
-					candidateBuffer,
-					context_ptr->cu_ptr->luma_txb_skip_context,
-#if ATB_DC_CONTEXT_SUPPORT_0
-					context_ptr->cu_ptr->luma_dc_sign_context[context_ptr->txb_itr],
-#else
-					context_ptr->cu_ptr->luma_dc_sign_context,
-#endif
-					candidateBuffer->candidate_ptr->pred_mode,
-					EB_FALSE);
-
-#if ATB_DC_CONTEXT_SUPPORT_1
-				candidateBuffer->candidate_ptr->quantized_dc[0][context_ptr->txb_itr] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]);
-#else
-				candidateBuffer->candidate_ptr->quantized_dc[0] = (((int32_t*)candidateBuffer->residual_quant_coeff_ptr->buffer_y)[txb_1d_offset]);
-#endif
-
-
-				uint32_t y_has_coeff = y_count_non_zero_coeffs[context_ptr->txb_itr] > 0;
-
-				// tx_type not equal to DCT_DCT and no coeff is not an acceptable option in AV1.
-				if (y_has_coeff == 0 && tx_type != DCT_DCT) {
-					continue;
-				}
-
-				if (y_has_coeff) {
-
-					uint8_t *pred_buffer = &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
-					uint8_t *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
-
-					uint32_t j;
-					for (j = 0; j < curr_tx_h; j++)
-						memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, curr_tx_w);
-
-					av1_inv_transform_recon8bit(
-
-						&(((int32_t*)candidateBuffer->recon_coeff_ptr->buffer_y)[txb_1d_offset]),
-						rec_buffer,
-						candidateBuffer->recon_ptr->stride_y,
-						curr_tx_size,
-						tx_type,
-						PLANE_TYPE_Y,
-						(uint16_t)candidateBuffer->candidate_ptr->eob[0][context_ptr->txb_itr]);
-
-				}
-				else {
-
-					picture_copy8_bit(
-						candidateBuffer->prediction_ptr,
-						tu_origin_index,
-						0,
-						candidateBuffer->recon_ptr,
-						tu_origin_index,
-						0,
-						curr_tx_w,
-						curr_tx_h,
-						0,
-						0,
-						PICTURE_BUFFER_DESC_Y_FLAG,
-						asm_type);
-				}
-
-				tuFullDistortion[0][DIST_CALC_PREDICTION] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(curr_tx_w) - 2](
-					input_picture_ptr->buffer_y + input_tu_origin_index,
-					input_picture_ptr->stride_y,
-					candidateBuffer->prediction_ptr->buffer_y + tu_origin_index,
-					candidateBuffer->prediction_ptr->stride_y,
-					curr_tx_w,
-					curr_tx_h);
-
-				tuFullDistortion[0][DIST_CALC_RESIDUAL] = spatial_full_distortion_kernel_func_ptr_array[asm_type][Log2f(curr_tx_w) - 2](
-					input_picture_ptr->buffer_y + input_tu_origin_index,
-					input_picture_ptr->stride_y,
-					&(((uint8_t*)candidateBuffer->recon_ptr->buffer_y)[tu_origin_index]),
-					candidateBuffer->recon_ptr->stride_y,
-					curr_tx_w,
-					curr_tx_h);
-
-				tuFullDistortion[0][DIST_CALC_PREDICTION] <<= 4;
-				tuFullDistortion[0][DIST_CALC_RESIDUAL] <<= 4;
-
-
-				//LUMA-ONLY
-				av1_tu_estimate_coeff_bits(
-#if CABAC_UP
-					0,   //allow_update_cdf,
-					NULL,//FRAME_CONTEXT *ec_ctx,
-#endif
-					picture_control_set_ptr,
-#if ATB_DC_CONTEXT_SUPPORT_0
-					context_ptr->txb_itr,
-#endif
-					candidateBuffer,
-					context_ptr->cu_ptr,
-					txb_1d_offset,
-					0,
-					context_ptr->coeff_est_entropy_coder_ptr,
-					candidateBuffer->residual_quant_coeff_ptr,
-					y_count_non_zero_coeffs[context_ptr->txb_itr],
-					0,
-					0,
-					&y_tu_coeff_bits,
-					&y_tu_coeff_bits,
-					&y_tu_coeff_bits,
-					curr_tx_size,
-					context_ptr->blk_geom->txsize_uv[context_ptr->tx_depth][context_ptr->txb_itr],
-					tx_type,
-					candidateBuffer->candidate_ptr->transform_type_uv,
-					COMPONENT_LUMA,
-					asm_type);
-#if 0
-				//TODO: fix cbf decision
-				av1_tu_calc_cost_luma(
-					context_ptr->cu_ptr->luma_txb_skip_context,
-					candidateBuffer->candidate_ptr,
-					context_ptr->txb_itr,
-					curr_tx_size,
-					y_count_non_zero_coeffs[context_ptr->txb_itr],
-					tuFullDistortion[0],
-					&y_tu_coeff_bits,
-					&y_full_cost,
-					context_ptr->full_lambda);
-#endif
-
-				uint64_t cost = RDCOST(context_ptr->full_lambda, y_tu_coeff_bits, tuFullDistortion[0][DIST_CALC_RESIDUAL]);
-				if (cost < best_cost_tx_search) {
-					best_cost_tx_search = cost;
-					best_tx_type = tx_type;
-				}
-			}
-#endif
+				candidateBuffer,
+				context_ptr,
+				picture_control_set_ptr,
+				input_picture_ptr,
+				qp,
+				y_count_non_zero_coeffs,
+				curr_tx_size,
+				curr_tx_w,
+				curr_tx_h,
+				y_tu_coeff_bits,
+				tx_set_type,
+				tu_origin_index,
+				input_tu_origin_index,
+				txb_1d_offset,
+				asm_type,
+				&best_tx_type,
+				tuFullDistortion,
+				&best_cost_tx_search);
 
 			// Record the best tx type @ depth 0
 			best_tx_type_depth_0 = (context_ptr->tx_depth == 0) ? best_tx_type : best_tx_type_depth_0;
@@ -4099,12 +3900,13 @@ void perform_intra_tx_partitioning(
 
 			if (y_has_coeff) {
 
-				uint8_t *pred_buffer = &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
-				uint8_t *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
+				uint8_t *pred_buffer	= &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
+				uint8_t *rec_buffer		= &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
 
-				uint32_t j;
 				for (j = 0; j < curr_tx_h; j++)
-					memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, curr_tx_w);
+					memcpy(	rec_buffer + j * candidateBuffer->recon_ptr->stride_y, 
+							pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, 
+							curr_tx_w);
 
 				av1_inv_transform_recon8bit(
 
@@ -4202,7 +4004,7 @@ void perform_intra_tx_partitioning(
 
 			(*y_coeff_bits) += y_tu_coeff_bits;
 
-			y_full_distortion[DIST_CALC_RESIDUAL] += tuFullDistortion[0][DIST_CALC_RESIDUAL];
+			y_full_distortion[DIST_CALC_RESIDUAL]	+= tuFullDistortion[0][DIST_CALC_RESIDUAL];
 			y_full_distortion[DIST_CALC_PREDICTION] += tuFullDistortion[0][DIST_CALC_PREDICTION];
 
 			txb_1d_offset += curr_tx_w * curr_tx_h;
@@ -4321,7 +4123,8 @@ void perform_intra_tx_partitioning(
 			y_tu_coeff_bits = 0;
 
 
-			uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + ((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
+			uint32_t input_tu_origin_index = (context_ptr->sb_origin_x + tx_org_x + input_picture_ptr->origin_x) + 
+											((context_ptr->sb_origin_y + tx_org_y + input_picture_ptr->origin_y) * input_picture_ptr->stride_y);
 
 			// Y Prediction
 			av1_intra_luma_prediction(
@@ -4412,9 +4215,11 @@ void perform_intra_tx_partitioning(
 				uint8_t *pred_buffer = &(candidateBuffer->prediction_ptr->buffer_y[tu_origin_index]);
 				uint8_t *rec_buffer = &(candidateBuffer->recon_ptr->buffer_y[tu_origin_index]);
 
-				uint32_t j;
+				//uint32_t j;
 				for (j = 0; j < curr_tx_h; j++)
-					memcpy(rec_buffer + j * candidateBuffer->recon_ptr->stride_y, pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, curr_tx_w);
+					memcpy(	rec_buffer + j * candidateBuffer->recon_ptr->stride_y, 
+							pred_buffer + j * candidateBuffer->prediction_ptr->stride_y, 
+							curr_tx_w);
 
 				av1_inv_transform_recon8bit(
 
@@ -4520,6 +4325,11 @@ void perform_intra_tx_partitioning(
 
 		} // Transform Loop
 	}
+
+	free(tuFullDistortion[2]);
+	free(tuFullDistortion[1]);
+	free(tuFullDistortion[0]);
+	free(tuFullDistortion);
 }
 #endif
 void AV1PerformFullLoop(
