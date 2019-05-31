@@ -3475,14 +3475,16 @@ void perform_intra_tx_search(
 	uint32_t					input_tu_origin_index,
 	uint32_t					txb_1d_offset,
 	EbAsm						asm_type,
+	TxType						*best_tx_type,
+	uint64_t					**tuFullDistortion,
 	uint64_t					*best_cost_tx_search
 )
 {
-	TxType best_tx_type = DCT_DCT;
+	//TxType best_tx_type = DCT_DCT;
 	TxType txk_start = DCT_DCT;
 	TxType txk_end = TX_TYPES;
 
-	uint64_t tuFullDistortion[3][DIST_CALC_TOTAL];
+	//uint64_t tuFullDistortion[3][DIST_CALC_TOTAL];
 
 	//transform type loop
 	for (int32_t tx_type = txk_start; tx_type < txk_end; ++tx_type) {
@@ -3670,9 +3672,9 @@ void perform_intra_tx_search(
 #endif
 
 		uint64_t cost = RDCOST(context_ptr->full_lambda, y_tu_coeff_bits, tuFullDistortion[0][DIST_CALC_RESIDUAL]);
-		if (cost < best_cost_tx_search) {
+		if (cost < *best_cost_tx_search) {
 			*best_cost_tx_search = cost;
-			best_tx_type = tx_type;
+			*best_tx_type = tx_type;
 		}
 	}
 }
@@ -3695,7 +3697,12 @@ void perform_intra_tx_partitioning(
 	uint64_t y_tu_coeff_bits = 0;
 	uint32_t txb_1d_offset;
 
-	uint64_t tuFullDistortion[3][DIST_CALC_TOTAL];
+	//uint64_t tuFullDistortion[3][DIST_CALC_TOTAL];
+	uint64_t **tuFullDistortion = malloc(3 * sizeof(uint64_t *));
+	tuFullDistortion[0] = malloc(DIST_CALC_TOTAL * sizeof(uint64_t));
+	tuFullDistortion[1] = malloc(DIST_CALC_TOTAL * sizeof(uint64_t));
+	tuFullDistortion[2] = malloc(DIST_CALC_TOTAL * sizeof(uint64_t));
+
 
 	uint8_t  best_tx_depth = 0;
 
@@ -3807,24 +3814,26 @@ void perform_intra_tx_partitioning(
 
 #endif
 
-# if 1
+# if  1
 			perform_intra_tx_search(
-				candidateBuffer,
-				context_ptr,
-				picture_control_set_ptr,
-				input_picture_ptr,
-				qp,
-				y_count_non_zero_coeffs,
-				curr_tx_size,
-				curr_tx_w,
-				curr_tx_h,
-				y_tu_coeff_bits,
-				tx_set_type,
-				tu_origin_index,
-				input_tu_origin_index,
-				txb_1d_offset,
-				asm_type,
-				&best_cost_tx_search);
+			candidateBuffer,
+			context_ptr,
+			picture_control_set_ptr,
+			input_picture_ptr,
+			qp,
+			y_count_non_zero_coeffs,
+			curr_tx_size,
+			curr_tx_w,
+			curr_tx_h,
+			y_tu_coeff_bits,
+			tx_set_type,
+			tu_origin_index,
+			input_tu_origin_index,
+			txb_1d_offset,
+			asm_type,
+			&best_tx_type,
+			tuFullDistortion,
+			&best_cost_tx_search);
 #else
 			//transform type loop
 			for (int32_t tx_type = txk_start; tx_type < txk_end; ++tx_type) {
