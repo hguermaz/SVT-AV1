@@ -13,6 +13,7 @@
 #include "EbComputeSAD_SSE2.h"
 #include "EbComputeSAD_SSE4_1.h"
 #include "EbComputeSAD_AVX2.h"
+#include "EbComputeSAD_AVX512.h"
 #include "EbUtility.h"
 #ifdef __cplusplus
 extern "C" {
@@ -200,8 +201,13 @@ extern "C" {
     {
         // NON_AVX2
         sad_loop_kernel_sse4_1_intrin,
+#ifndef NON_AVX512_SUPPORT
+        // AVX2
+        sad_loop_kernel_avx512_intrin,
+#else
         // AVX2
         sad_loop_kernel_avx2_intrin,
+#endif
     };
 
     static EbGetEightSad8x8 FUNC_TABLE get_eight_horizontal_search_point_results_8x8_16x16_func_ptr_array[ASM_TYPE_TOTAL] =
