@@ -24,6 +24,7 @@
 #endif
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "EbUnitTest.h"
@@ -59,11 +60,38 @@ void eb_buf_random_u8(uint8_t *const buf, const uint32_t sizeBuf) {
 
 void eb_buf_random_u8_to_0_or_255(uint8_t *const buf, const uint32_t sizeBuf) {
     for (uint32_t i = 0; i < sizeBuf; i++)
-        buf[i] = (rand() >(RAND_MAX >> 1)) ? 255 : 0;
+        buf[i] = (rand() > (RAND_MAX >> 1)) ? 255 : 0;
 }
 
 void eb_buf_random_u8_to_255(uint8_t *const buf, const uint32_t sizeBuf) {
     memset(buf, 255, sizeBuf);
+}
+
+void eb_buf_random_u8_to_large(uint8_t *const buf, const uint32_t sizeBuf) {
+    for (uint32_t i = 0; i < sizeBuf; i++)
+        buf[i] = 255 - (rand() % 10);
+}
+
+void eb_buf_random_u8_to_near_value(uint8_t *const buf, const uint32_t sizeBuf,
+    const uint8_t val, const uint32_t range) {
+    for (uint32_t i = 0; i < sizeBuf; i++) {
+        int32_t v = val;
+        v += (rand() % range);
+        v -= (rand() % range);
+        if (v > 255) v = 255;
+        if (v < 0) v = 0;
+        buf[i] = (uint8_t)v;
+    }
+}
+
+void eb_buf_random_u8_to_small(uint8_t *const buf, const uint32_t sizeBuf) {
+    for (uint32_t i = 0; i < sizeBuf; i++)
+        buf[i] = (rand() % 10);
+}
+
+void eb_buf_random_u8_to_small_or_large(uint8_t *const buf, const uint32_t sizeBuf) {
+    for (uint32_t i = 0; i < sizeBuf; i++)
+        buf[i] = (rand() > (RAND_MAX >> 1)) ? (rand() % 10) : (255 - (rand() % 10));
 }
 
 void eb_buf_random_u8_with_max(uint8_t *const buf, const uint32_t sizeBuf,
@@ -232,8 +260,10 @@ EbBool name(const type *buf1, const type *buf2, const size_t width,             
          i++, buf1 += stride, buf2 += stride) {                                 \
         for (uint32_t j = 0; j < stride; j++) {                                 \
             if (buf1[j] != buf2[j]) {                                           \
-                printf("\nbuf1[%3d][%3d] = 0x%16llx\tbuf2[%3d][%3d] = 0x%16llx" \
-                       ,i, j, (uint64_t)buf1[j], i, j, (uint64_t)buf2[j]);      \
+                printf("\nbuf1[%3d][%3d] = 0x%16" PRIx64                        \
+                       "\tbuf2[%3d][%3d] = 0x%16" PRIx64,                       \
+                       i, j, (uint64_t)buf1[j], i, j,                           \
+                       (uint64_t)buf2[j]);                                      \
                 if ((i < 0) || (i >= (int32_t)height) || (j >= width))          \
                     printf(" (outside image)");                                 \
                 result = EB_FALSE;                                              \
@@ -344,10 +374,10 @@ void eb_unit_test_log_s64(const char *const nameBuf, const int64_t *const buf,
     const uint32_t sizeBuf) {
     printf("%16s = ", nameBuf);
 
-    if (sizeBuf == 1) printf("%lld\n", buf[0]);
+    if (sizeBuf == 1) printf("%" PRIx64 "\n", buf[0]);
     else {
         for (uint32_t i = 0; i < sizeBuf; i++) {
-            printf("%10lld,", buf[i]);
+            printf("%10" PRIx64 ",", buf[i]);
             if (!((i + 1) % 32)) printf("\n  ");
         }
         printf("\n");
@@ -358,10 +388,10 @@ void eb_unit_test_log_u64(const char *const nameBuf, const uint64_t *const buf,
     const uint32_t sizeBuf) {
     printf("%16s = ", nameBuf);
 
-    if (sizeBuf == 1) printf("%llu\n", buf[0]);
+    if (sizeBuf == 1) printf("%" PRIu64 "\n", buf[0]);
     else {
         for (uint32_t i = 0; i < sizeBuf; i++) {
-            printf("%10llu,", buf[i]);
+            printf("%10" PRIu64 ",", buf[i]);
             if (!((i + 1) % 32)) printf("\n  ");
         }
         printf("\n");
@@ -372,10 +402,10 @@ void eb_unit_test_log_ptrdiff(const char *const nameBuf,
     const ptrdiff_t *const buf, const uint32_t sizeBuf) {
     printf("%16s = ", nameBuf);
 
-    if (sizeBuf == 1) printf("%llu\n", buf[0]);
+    if (sizeBuf == 1) printf("%" PRIu64 "\n", buf[0]);
     else {
         for (uint32_t i = 0; i < sizeBuf; i++) {
-            printf("%10llu,", buf[i]);
+            printf("%10" PRIu64 ",", buf[i]);
             if (!((i + 1) % 32)) printf("\n  ");
         }
         printf("\n");

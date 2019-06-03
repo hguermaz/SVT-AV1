@@ -16,7 +16,7 @@ struct DistInfo {
     uint32_t height;
 };
 
-const struct DistInfo size_info[num_test] = {
+static const struct DistInfo size_info[num_test] = {
     { 4,  4},
     { 4,  8},
     { 4, 16},
@@ -114,13 +114,13 @@ TEST(PictureOperators, spatial_full_distortion_speed)
         EbStartTime(&start_time_seconds, &start_time_useconds);
 
         for (uint64_t i = 0; i < num_loop; i++) {
-            dist_org = spatial_full_distortion_kernel_func_ptr_array[ASM_AVX2][Log2f(area_width) - 2](input, input_stride, recon, recon_stride, area_width, area_height);
+            dist_org = spatial_full_distortion_kernel_func_ptr_array[ASM_NON_AVX2][Log2f(area_width) - 2](input, input_stride, recon, recon_stride, area_width, area_height);
         }
 
         EbStartTime(&middle_time_seconds, &middle_time_useconds);
 
         for (uint64_t i = 0; i < num_loop; i++) {
-            dist_opt = spatial_full_distortion_kernel_func_ptr_array[ASM_AVX512][Log2f(area_width) - 2](input, input_stride, recon, recon_stride, area_width, area_height);
+            dist_opt = spatial_full_distortion_kernel_func_ptr_array[ASM_AVX2][Log2f(area_width) - 2](input, input_stride, recon, recon_stride, area_width, area_height);
         }
 
         EbStartTime(&finish_time_seconds, &finish_time_useconds);
@@ -136,7 +136,7 @@ TEST(PictureOperators, spatial_full_distortion_speed)
         printf("Average Nanoseconds per Function Call\n");
         printf("    SpatialFullDistortionKernel_%2dx%2d_SSE2()   : %6.2f\n",
             area_width, area_height, 1000000 * time_c / num_loop);
-        printf("    SpatialFullDistortionKernel_%2dx%2d_AVX2() : %6.2f   (Comparison: "
+        printf("    SpatialFullDistortionKernel_%2dx%2d_AVX512() : %6.2f   (Comparison: "
             "%5.2fx)\n", area_width, area_height, 1000000 * time_o / num_loop, time_c / time_o);
     }
 }

@@ -25,6 +25,10 @@ extern void eb_buf_random_s8_with_max(int8_t *const buf, const uint32_t sizeBuf,
 extern void eb_buf_random_u8(uint8_t *const buf, const uint32_t sizeBuf);
 extern void eb_buf_random_u8_to_0_or_255(uint8_t *const buf, const uint32_t sizeBuf);
 extern void eb_buf_random_u8_to_255(uint8_t *const buf, const uint32_t sizeBuf);
+extern void eb_buf_random_u8_to_large(uint8_t *const buf, const uint32_t sizeBuf);
+extern void eb_buf_random_u8_to_near_value(uint8_t *const buf, const uint32_t sizeBuf, const uint8_t val, const uint32_t range);
+extern void eb_buf_random_u8_to_small(uint8_t *const buf, const uint32_t sizeBuf);
+extern void eb_buf_random_u8_to_small_or_large(uint8_t *const buf, const uint32_t sizeBuf);
 extern void eb_buf_random_u8_with_max(uint8_t *const buf, const uint32_t sizeBuf, const uint8_t max);
 extern void eb_buf_random_s16(int16_t *const buf, const uint32_t sizeBuf);
 extern void eb_buf_random_s16_to_bd(int16_t *const buf, const uint32_t sizeBuf, const uint32_t bd);
