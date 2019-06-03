@@ -36,8 +36,8 @@ extern "C" {
 #endif
 
 #define MRP_SUPPORT                       1// MRP Main Flag
-#define MRP_LOSSLESS                      1
-
+#define MRP_LOSSLESS                      0
+#define REF_MRP_PER_PICTURE               1
 // New  presets
 #define NEW_PRESETS                       1
 #define NEW_BUFF_CFG                      1

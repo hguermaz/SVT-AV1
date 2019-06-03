@@ -1963,6 +1963,29 @@ EbErrorType prediction_structure_group_ctor(
     }
 #endif
 
+#if REF_MRP_PER_PICTURE
+	{
+		int init = mrp_mode == 1 ? 1 : 0;
+		for (int gop_i = init; gop_i < 8; ++gop_i) {   // loop all pictures in minigop
+			if (!(gop_i % 2)) {
+				for (int i = 1; i < 4; ++i) {           // loop over all reference frames for picture selected within the minigop
+					four_level_hierarchical_pred_struct[gop_i].ref_list0[i] = 0;
+					four_level_hierarchical_pred_struct[gop_i].ref_list1[i] = 0;
+				}
+			}
+		}
+
+		for (int gop_i = init; gop_i < 16; ++gop_i) {  // loop all pictures in minigop
+			if (!(gop_i % 2)) {
+				for (int i = 1; i < 4; ++i) {           // loop over all reference frames for picture selected within the minigop
+					five_level_hierarchical_pred_struct[gop_i].ref_list0[i] = 0;
+					five_level_hierarchical_pred_struct[gop_i].ref_list1[i] = 0;
+				}
+			}
+		}
+	}
+#endif
+
     // Count the number of Prediction Structures
     while ((PredictionStructureConfigArray[predStructIndex].entry_array != 0) && (PredictionStructureConfigArray[predStructIndex].entry_count != 0)) {
         // Get Random Access + P for temporal ID 0
