@@ -21,10 +21,10 @@ static INLINE __m128i dc_sum_large(const __m256i src) {
     return dc_sum_4x32bit(sum);
 }
 
-static INLINE int dc_common_predictor_32xh_kernel_avx512(uint16_t *dst,
+static INLINE void dc_common_predictor_32xh_kernel_avx512(uint16_t *dst,
     const ptrdiff_t stride, const int32_t h, const __m512i dc) {
     for (int32_t i = 0; i < h; i++) {
-        _mm512_store_si512((__m512i *)dst, dc);
+        _mm512_storeu_si512((__m512i *)dst, dc);
         dst += stride;
     }
 }
@@ -38,8 +38,8 @@ static INLINE void dc_common_predictor_32xh(uint16_t *const dst,
 static INLINE void dc_common_predictor_64xh_kernel_avx512(uint16_t *dst,
     const ptrdiff_t stride, const int32_t h, const __m512i dc) {
     for (int32_t i = 0; i < h; i++) {
-        _mm512_store_si512((__m512i *)(dst + 0x00), dc);
-        _mm512_store_si512((__m512i *)(dst + 0x20), dc);
+        _mm512_storeu_si512((__m512i *)(dst + 0x00), dc);
+        _mm512_storeu_si512((__m512i *)(dst + 0x20), dc);
         dst += stride;
     }
 }
@@ -59,10 +59,6 @@ static INLINE __m128i dc_sum_16(const uint16_t *const src) {
 }
 
 static INLINE __m128i dc_sum_32(const uint16_t *const src) {
-    /*const __m256i s0 = _mm256_loadu_si256((const __m256i *)(src + 0x00));
-    const __m256i s1 = _mm256_loadu_si256((const __m256i *)(src + 0x10));
-    const __m256i sum = _mm256_add_epi16(s0, s1); uncomment only if faster than avx512 code*/
-
     const __m512i s32 = _mm512_loadu_si512((const __m512i *) src);
     const __m256i s0 = _mm512_extracti64x4_epi64(s32, 0);
     const __m256i s1 = _mm512_extracti64x4_epi64(s32, 1);
@@ -257,10 +253,10 @@ void aom_highbd_dc_top_predictor_64x64_avx512(uint16_t *dst, ptrdiff_t stride,
 
 static INLINE __m128i dc_sum_8_32(const uint16_t *const src_8,
     const uint16_t *const src_32) {
-    const __m128i s_8 = _mm_load_si128((const __m128i *)src_8);
-    // need to change if single load avx512 and two extracts in dc left predictor 32x32 gives better performance than avx2 code.
-    const __m256i s_32_0 = _mm256_loadu_si256((const __m256i *)(src_32 + 0x00));
-    const __m256i s_32_1 = _mm256_loadu_si256((const __m256i *)(src_32 + 0x10));
+    const __m128i s_8 = _mm_loadu_si128((const __m128i *)src_8);
+    const __m512i s32_01 = _mm512_loadu_si512((const __m512i *)(src_32 + 0x00));
+    const __m256i s_32_0 = _mm512_extracti64x4_epi64(s32_01,0);
+    const __m256i s_32_1 = _mm512_extracti64x4_epi64(s32_01,1);
     const __m256i s_32 = _mm256_add_epi16(s_32_0, s_32_1);
     const __m128i s_lo = _mm256_extracti128_si256(s_32, 0);
     const __m128i s_hi = _mm256_extracti128_si256(s_32, 1);
@@ -272,9 +268,9 @@ static INLINE __m128i dc_sum_8_32(const uint16_t *const src_8,
 static INLINE __m128i dc_sum_16_32(const uint16_t *const src_16,
     const uint16_t *const src_32) {
     const __m256i s_16 = _mm256_loadu_si256((const __m256i *)src_16);
-    // need to change if single load avx512 and two extracts in dc left predictor 32x32 gives better performance than avx2 code.
-    const __m256i s_32_0 = _mm256_loadu_si256((const __m256i *)(src_32 + 0x00));
-    const __m256i s_32_1 = _mm256_loadu_si256((const __m256i *)(src_32 + 0x20));
+    const __m512i s32_01 = _mm512_loadu_si512((const __m512i *)(src_32 + 0x00));
+    const __m256i s_32_0 = _mm512_extracti64x4_epi64(s32_01, 0);
+    const __m256i s_32_1 = _mm512_extracti64x4_epi64(s32_01, 1);
     const __m256i sum0 = _mm256_add_epi16(s_16, s_32_0);
     const __m256i sum = _mm256_add_epi16(sum0, s_32_1);
     return dc_sum_large(sum);
