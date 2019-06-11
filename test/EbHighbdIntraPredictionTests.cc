@@ -34,7 +34,7 @@ static void uninit_coeff(uint16_t *coeff, uint16_t *coeff_opt) {
     TEST_ALLIGN_FREE(coeff_opt);
 }
 
-void dc_compare_u16(uint16_t * output_base, uint16_t *output_opt,ptrdiff_t stride,int height, int width) {
+void dc_compare_u16(uint16_t * output_base, uint16_t *output_opt, ptrdiff_t stride, int height, int width) {
     for(int x = 0; x < height; x++) {
         for(int y = 0; y < width; y++) {
            EXPECT_EQ(output_base[y], output_opt[y]);
