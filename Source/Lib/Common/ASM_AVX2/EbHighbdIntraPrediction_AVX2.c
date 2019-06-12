@@ -901,7 +901,7 @@ static INLINE void h_pred_32x8(uint16_t **dst, const ptrdiff_t stride,
     assert(!((intptr_t)*dst % 32));
     assert(!(stride % 32));
 
-    const __m128i left_u16 = _mm_load_si128((const __m128i *)left);
+    const __m128i left_u16 = _mm_loadu_si128((const __m128i *)left);
 
     h_pred_32(dst, stride, _mm_srli_si128(left_u16, 0));
     h_pred_32(dst, stride, _mm_srli_si128(left_u16, 2));
@@ -962,7 +962,7 @@ static INLINE void h_pred_64x8(uint16_t **dst, const ptrdiff_t stride,
     assert(!((intptr_t)*dst % 32));
     assert(!(stride % 32));
 
-    const __m128i left_u16 = _mm_load_si128((const __m128i *)left);
+    const __m128i left_u16 = _mm_loadu_si128((const __m128i *)left);
 
     h_pred_64(dst, stride, _mm_srli_si128(left_u16, 0));
     h_pred_64(dst, stride, _mm_srli_si128(left_u16, 2));
