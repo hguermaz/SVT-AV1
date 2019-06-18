@@ -269,15 +269,25 @@ extern "C" {
     static EbFullDistortionKernelCbfZero32Bits FUNC_TABLE full_distortion_kernel_cbf_zero32_bits_func_ptr_array[ASM_TYPE_TOTAL] = {
         // NON_AVX2
         full_distortion_kernel_cbf_zero32_bits,
+#ifndef NON_AVX512_SUPPORT
+        // AVX512
+        full_distortion_kernel_cbf_zero32_bits_avx512,
+#else
         // AVX2
         full_distortion_kernel_cbf_zero32_bits_avx2,
+#endif
     };
 
     static EbFullDistortionKernel32Bits FUNC_TABLE full_distortion_kernel32_bits_func_ptr_array[ASM_TYPE_TOTAL] = {
         // NON_AVX2
         full_distortion_kernel32_bits,
+#ifndef NON_AVX512_SUPPORT
+        // AVX512
+        full_distortion_kernel32_bits_avx512,
+#else
         // AVX2
         full_distortion_kernel32_bits_avx2,
+#endif
     };
 
     /***************************************
