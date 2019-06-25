@@ -3412,7 +3412,7 @@ extern "C" {
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_32x32 = aom_highbd_smooth_predictor_32x32_avx512;
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_32x64 = aom_highbd_smooth_predictor_32x64_avx512;
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x16 = aom_highbd_smooth_predictor_64x16_avx512;
-        if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x16 = aom_highbd_smooth_predictor_64x32_avx512;
+        if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x32 = aom_highbd_smooth_predictor_64x32_avx512;
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x64 = aom_highbd_smooth_predictor_64x64_avx512;
 #else
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_32x8 = aom_highbd_smooth_predictor_32x8_avx2;
@@ -3420,7 +3420,7 @@ extern "C" {
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_32x32 = aom_highbd_smooth_predictor_32x32_avx2;
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_32x64 = aom_highbd_smooth_predictor_32x64_avx2;
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x16 = aom_highbd_smooth_predictor_64x16_avx2;
-        if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x16 = aom_highbd_smooth_predictor_64x32_avx2;
+        if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x32 = aom_highbd_smooth_predictor_64x32_avx2;
         if (flags & HAS_AVX2) aom_highbd_smooth_predictor_64x64 = aom_highbd_smooth_predictor_64x64_avx2;
 #endif // !NON_AVX512_SUPPORT
 

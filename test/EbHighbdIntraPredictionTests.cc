@@ -569,7 +569,7 @@ TEST(HighbdIntraPredictionTest, aom_v_predictor_kernels)
     }
 }
 
-TEST(HighbdIntraPredictionTest, aom_dc_smooth_predictor_kernels)
+TEST(HighbdIntraPredictionTest, aom_highbd_smooth_predictor_kernels)
 {
     uint16_t *input = NULL, *above = NULL, *left = NULL;
     uint16_t* dc_coeff = NULL, *dc_coeff_opt = NULL;
