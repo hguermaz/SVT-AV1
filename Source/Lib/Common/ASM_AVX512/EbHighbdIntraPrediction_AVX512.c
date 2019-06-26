@@ -1522,7 +1522,7 @@ static INLINE void smooth_h_pred_32x8(uint16_t *dst,
     load_right_weights_32(above, &r, weights);
 
     for (int32_t i = 0; i < n; i++) {
-        load_left_8(left, r, &lr);
+        load_left_8(left, r, lr);
         smooth_h_pred_32x4(weights, ((__m512i *)&lr + 0), &dst, stride);
         smooth_h_pred_32x4(weights, ((__m512i *)&lr + 1), &dst, stride);
         left += 8;
